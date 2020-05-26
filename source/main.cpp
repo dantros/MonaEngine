@@ -1,12 +1,18 @@
-#include <iostream>
+
 #include <glad/glad.h>
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
+#ifndef _WINDOWS_
+#undef APIENTRY
+#endif
 
-
+#include "spdlog/spdlog.h"
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <iostream>
+#include <glm/glm.hpp>
 
 static const char* vertex_shader_text =
-"#version 450\n"
+"#version 460\n"
 "void main()\n"
 "{\n"
 "	 const vec4 vertices[3] = vec4[3](vec4(0.25, -0.25, 0.5, 1.0), vec4(-0.25, -0.25, 0.5, 1.0), vec4(0.25, 0.25, 0.5, 1.0)); \n"
@@ -14,7 +20,7 @@ static const char* vertex_shader_text =
 "}\n";
 
 static const char* fragment_shader_text =
-"#version 450\n"
+"#version 460\n"
 "out vec4 color;\n"
 "void main()\n"
 "{\n"
@@ -36,16 +42,28 @@ int main()
 {
 	GLFWwindow* window;
 	GLuint vertex_buffer, vertex_shader, fragment_shader, program;
+	spdlog::set_pattern("%^[%T] %n: %v%$");
 
+	auto s_coreLogger = spdlog::stdout_color_mt("MONA");
+	s_coreLogger->set_level(spdlog::level::trace);
+	
+	auto s_clientLogger = spdlog::stdout_color_mt("APP");
+	s_clientLogger->set_level(spdlog::level::trace);
+
+	
 	glfwSetErrorCallback(error_callback);
 
 	if (!glfwInit())
 		exit(EXIT_FAILURE);
 
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 
-	window = glfwCreateWindow(1200, 600, "Simple example", NULL, NULL);
+	const char* title = "Simple example";
+	glm::vec<2,int> windowDimensions(1200, 600);
+
+	s_coreLogger->info("Creating GLFW Window {0} with dimensions ({1},{2})", title, windowDimensions.x, windowDimensions.y);
+	window = glfwCreateWindow(windowDimensions.x, windowDimensions.y, title, NULL, NULL);
 	if (!window)
 	{
 		glfwTerminate();
@@ -77,7 +95,8 @@ int main()
 	glLinkProgram(program);
 
 
-
+	glm::vec3 pos(1.0f, 1.0f, 2.0f);
+	glm::vec3 pos2(2.0f, 3.0f, 4.0f);
 	while (!glfwWindowShouldClose(window))
 	{
 		float ratio;

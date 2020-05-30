@@ -12,26 +12,7 @@ if (POLICY CMP0077)
     cmake_policy(SET CMP0077 NEW)
 endif()
 
-
-
-option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
-option(GLFW_BUILD_EXAMPLES "Build the GLFW example programs" OFF)
-option(GLFW_BUILD_TESTS "Build the GLFW test programs" OFF)
-option(GLFW_BUILD_DOCS "Build the GLFW documentation" OFF)
-option(GLFW_INSTALL "Generate installation target" OFF)
-option(GLFW_VULKAN_STATIC "Assume the Vulkan loader is linked with the application" OFF)
-
 include(GNUInstallDirs)
-include(CMakeDependentOption)
-
-cmake_dependent_option(GLFW_USE_OSMESA "Use OSMesa for offscreen context creation" OFF
-                       "UNIX" OFF)
-cmake_dependent_option(GLFW_USE_HYBRID_HPG "Force use of high-performance GPU on hybrid systems" OFF
-                       "WIN32" OFF)
-cmake_dependent_option(GLFW_USE_WAYLAND "Use Wayland for window creation" OFF
-                       "UNIX;NOT APPLE" OFF)
-cmake_dependent_option(USE_MSVC_RUNTIME_LIBRARY_DLL "Use MSVC runtime library DLL" ON
-                       "MSVC" OFF)
 
 if (BUILD_SHARED_LIBS)
     set(_GLFW_BUILD_DLL 1)

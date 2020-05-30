@@ -10,17 +10,56 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <iostream>
 #include <glm/glm.hpp>
+#include <thread>
+#include <mutex>
+#include <vector>
+#include <condition_variable>
+
+std::mutex m;
+std::condition_variable cv;
+struct rendercommand{
+	GLint first;
+	GLsizei count;
+};
+std::vector<rendercommand> data;
+bool ready = false;
+bool processed = false;
+bool running = true;
+
+void worker_thread()
+{
+	while (running)
+	{
+		// Wait until main() sends data
+		std::unique_lock<std::mutex> lk(m);
+		cv.wait(lk, [] {return ready; });
+
+		// after the wait, we own the lock.
+		data.push_back({ 0, 3 });
+		data.push_back({ 3, 3 });
+
+		// Send data back to main()
+		processed = true;
+		// Manual unlocking is done before notifying, to avoid waking up
+		// the waiting thread only to block again (see notify_one for details)
+		ready = false;
+		lk.unlock();
+		cv.notify_one();
+
+	}
+	
+}
 
 static const char* vertex_shader_text =
-"#version 460\n"
+"#version 450 core\n"
 "void main()\n"
 "{\n"
-"	 const vec4 vertices[3] = vec4[3](vec4(0.25, -0.25, 0.5, 1.0), vec4(-0.25, -0.25, 0.5, 1.0), vec4(0.25, 0.25, 0.5, 1.0)); \n"
+"	 const vec4 vertices[6] = vec4[6](vec4(0.25, -0.25, 0.5, 1.0), vec4(-0.25, -0.25, 0.5, 1.0), vec4(0.25, 0.25, 0.5, 1.0), vec4(-0.25, 0.25, 0.5, 1.0), vec4(-0.25, -0.25, 0.5, 1.0), vec4(0.25, 0.25, 0.5, 1.0)); \n"
 "    gl_Position = vertices[gl_VertexID];\n"
 "}\n";
 
 static const char* fragment_shader_text =
-"#version 460\n"
+"#version 450 core \n"
 "out vec4 color;\n"
 "void main()\n"
 "{\n"
@@ -57,7 +96,8 @@ int main()
 		exit(EXIT_FAILURE);
 
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	const char* title = "Simple example";
 	glm::vec<2,int> windowDimensions(1200, 600);
@@ -73,7 +113,12 @@ int main()
 	glfwSetKeyCallback(window, key_callback);
 
 	glfwMakeContextCurrent(window);
-	gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+	{
+		s_coreLogger->error("Failed to load OpenGL functions using glad");
+		glfwTerminate();
+		exit(EXIT_FAILURE);
+	}
 	glfwSwapInterval(1);
 
 	// NOTE: OpenGL error checks have been omitted for brevity
@@ -97,6 +142,7 @@ int main()
 
 	glm::vec3 pos(1.0f, 1.0f, 2.0f);
 	glm::vec3 pos2(2.0f, 3.0f, 4.0f);
+	std::thread worker(worker_thread);
 	while (!glfwWindowShouldClose(window))
 	{
 		float ratio;
@@ -112,7 +158,24 @@ int main()
 		
 
 		glUseProgram(program);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		{
+			std::lock_guard<std::mutex> lk(m);
+			data.clear();
+			ready = true;
+			
+		}
+		cv.notify_one();
+
+		// wait for the worker
+		{
+			std::unique_lock<std::mutex> lk(m);
+			cv.wait(lk, [] {return processed; });
+			processed = false;
+		}
+		for (const auto& command : data)
+		{
+			glDrawArrays(GL_TRIANGLES, command.first, command.count);
+		}
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

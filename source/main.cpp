@@ -5,50 +5,44 @@
 #ifndef _WINDOWS_
 #undef APIENTRY
 #endif
+#include "Core/Common.h"
+#include "Core/Log.h"
+/*
+	TODO:
+		- Main por ahora hara de engineLoop ------ DONE
+		- Add common header => assertions + types (see benny common.hpp).  ------- DONE 
+		- Logging class -> Add engine assert/log macros. -------- DONE
+		- Create config class. IVAR Registry CVAR config.
+		- GLFWWindow.
+		- GLFWInput.
+		- Window --> typedef?.
+		- Input  --> typedef?.
+		- memory alloc?
+		- Device/Context OpenGL -> benny.
+		- Buffer classes -> VBO/IBO/UBO.
+		- Shader class -> .
+		- VAO.
+		- Basic primitives.
+		- Textures.
+		- Model loading.
+		- Mesh drawing.
+		- Animation loading.
+		- Animation rendering.
+		- Collision.
+*/
+/*
+	Reu:
+		- Mejor forma de implementar singletons.
+		- Engine loop approach.
+		- Confirmar plazos sobre plazos.
+		- Contar que hare.
+		- Framework de testing.
+		- 
+*/
 
-#include "spdlog/spdlog.h"
-#include <spdlog/sinks/stdout_color_sinks.h>
 #include <iostream>
 #include <glm/glm.hpp>
-#include <thread>
-#include <mutex>
-#include <vector>
-#include <condition_variable>
-
-std::mutex m;
-std::condition_variable cv;
-struct rendercommand{
-	GLint first;
-	GLsizei count;
-};
-std::vector<rendercommand> data;
-bool ready = false;
-bool processed = false;
-bool running = true;
-
-void worker_thread()
-{
-	while (running)
-	{
-		// Wait until main() sends data
-		std::unique_lock<std::mutex> lk(m);
-		cv.wait(lk, [] {return ready; });
-
-		// after the wait, we own the lock.
-		data.push_back({ 0, 3 });
-		data.push_back({ 3, 3 });
-
-		// Send data back to main()
-		processed = true;
-		// Manual unlocking is done before notifying, to avoid waking up
-		// the waiting thread only to block again (see notify_one for details)
-		ready = false;
-		lk.unlock();
-		cv.notify_one();
-
-	}
-	
-}
+#include <memory>
 
 static const char* vertex_shader_text =
 "#version 450 core\n"
@@ -81,15 +75,9 @@ int main()
 {
 	GLFWwindow* window;
 	GLuint vertex_buffer, vertex_shader, fragment_shader, program;
-	spdlog::set_pattern("%^[%T] %n: %v%$");
-
-	auto s_coreLogger = spdlog::stdout_color_mt("MONA");
-	s_coreLogger->set_level(spdlog::level::trace);
 	
-	auto s_clientLogger = spdlog::stdout_color_mt("APP");
-	s_clientLogger->set_level(spdlog::level::trace);
+	Mona::Log::StartUp();
 
-	
 	glfwSetErrorCallback(error_callback);
 
 	if (!glfwInit())
@@ -101,21 +89,21 @@ int main()
 
 	const char* title = "Simple example";
 	glm::vec<2,int> windowDimensions(1200, 600);
-
-	s_coreLogger->info("Creating GLFW Window {0} with dimensions ({1},{2})", title, windowDimensions.x, windowDimensions.y);
 	window = glfwCreateWindow(windowDimensions.x, windowDimensions.y, title, NULL, NULL);
+	MONA_LOG_INFO("Creating GLFW window with title: {0}, and dimensions ({1},{2})", title, windowDimensions.x, windowDimensions.y);
+
 	if (!window)
 	{
 		glfwTerminate();
 		exit(EXIT_FAILURE);
 	}
-
+	
 	glfwSetKeyCallback(window, key_callback);
 
 	glfwMakeContextCurrent(window);
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
-		s_coreLogger->error("Failed to load OpenGL functions using glad");
+		
 		glfwTerminate();
 		exit(EXIT_FAILURE);
 	}
@@ -142,47 +130,21 @@ int main()
 
 	glm::vec3 pos(1.0f, 1.0f, 2.0f);
 	glm::vec3 pos2(2.0f, 3.0f, 4.0f);
-	std::thread worker(worker_thread);
 	while (!glfwWindowShouldClose(window))
 	{
 		float ratio;
 		int width, height;
-		
-
 		glfwGetFramebufferSize(window, &width, &height);
 		ratio = width / (float)height;
-
 		glViewport(0, 0, width, height);
 		glClear(GL_COLOR_BUFFER_BIT);
-
-		
-
 		glUseProgram(program);
-		{
-			std::lock_guard<std::mutex> lk(m);
-			data.clear();
-			ready = true;
-			
-		}
-		cv.notify_one();
-
-		// wait for the worker
-		{
-			std::unique_lock<std::mutex> lk(m);
-			cv.wait(lk, [] {return processed; });
-			processed = false;
-		}
-		for (const auto& command : data)
-		{
-			glDrawArrays(GL_TRIANGLES, command.first, command.count);
-		}
-
+		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
 
 	glfwDestroyWindow(window);
-
 	glfwTerminate();
 	exit(EXIT_SUCCESS);
 }

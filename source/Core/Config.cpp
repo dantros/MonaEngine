@@ -2,6 +2,7 @@
 #include "Log.hpp"
 #include "RootDirectory.hpp"
 #include <fstream>
+#include <iostream>
 namespace Mona
 {
 
@@ -23,6 +24,7 @@ namespace Mona
 		in.seekg(0, std::ios::beg);
 		in.read(&contents[0], contents.size());
 		in.close();
+		std::cout << contents << "\n";
 		return;
 	}
 

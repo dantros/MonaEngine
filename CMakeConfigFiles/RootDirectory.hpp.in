@@ -1,5 +1,12 @@
 /*
 	This field was automatically created with CMake please don't modify it
 */
+#pragma once
+#ifndef ROOTDIRECTORY_HPP
+#define ROOTDIRECTORY_HPP
+namespace Mona{
+	static const char * const source_directory = "${CMAKE_SOURCE_DIR}";
+}
 
-constexpr char* source_directory = "${CMAKE_SOURCE_DIR}";
+
+#endif

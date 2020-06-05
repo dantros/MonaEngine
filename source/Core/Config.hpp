@@ -12,7 +12,7 @@ namespace Mona {
 		Config() noexcept;
 		void readFile(const std::string& path); 
 		template <typename T>
-		T getValueOrDefault(const std::string& key, const T& defaultValue) const noexcept
+		inline T getValueOrDefault(const std::string& key, const T& defaultValue) const noexcept
 		{
 			auto it = m_configurations.find(key);
 			if (it != m_configurations.end())
@@ -29,20 +29,22 @@ namespace Mona {
 			return defaultValue;
 		}
 
-		template <>
-		std::string getValueOrDefault(const std::string& key, const std::string& defaultValue) const noexcept
-		{
-			auto it = m_configurations.find(key);
-			if (it != m_configurations.end()) {
-				return it->second;
-			}
-			return defaultValue;
-		}
+
 
 	private:
 		std::unordered_map<std::string, std::string> m_configurations;
 	};
 
+	template <>
+	inline std::string Config::getValueOrDefault(const std::string& key, const std::string& defaultValue) const noexcept
+	{
+		auto it = m_configurations.find(key);
+		if (it != m_configurations.end()) {
+			return it->second;
+		}
+		return defaultValue;
+	}
+	
 }
 
 

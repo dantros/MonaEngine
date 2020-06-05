@@ -5,14 +5,21 @@
 #ifndef _WINDOWS_
 #undef APIENTRY
 #endif
-#include "Core/Common.h"
-#include "Core/Log.h"
+#include "Core/Common.hpp"
+#include "Core/Log.hpp"
+#include "Core/Config.hpp"
 /*
 	TODO:
 		- Main por ahora hara de engineLoop ------ DONE
 		- Add common header => assertions + types (see benny common.hpp).  ------- DONE 
 		- Logging class -> Add engine assert/log macros. -------- DONE
 		- Create config class. IVAR Registry CVAR config.
+			- Cambiar .h a .hpp. --------------------- DONE
+			- Add ReadFile method do dummy shit. --------------- DONE
+			- Add .hpp generation with directory info CMAKE. ---------------- DONE
+			- Test Linux build 
+			- ReadFile read config file.
+			- Implement parsing.
 		- GLFWWindow.
 		- GLFWInput.
 		- Window --> typedef?.
@@ -25,6 +32,7 @@
 		- Basic primitives.
 		- Textures.
 		- Model loading.
+		- Resource Manager
 		- Mesh drawing.
 		- Animation loading.
 		- Animation rendering.
@@ -37,7 +45,7 @@
 		- Confirmar plazos sobre plazos.
 		- Contar que hare.
 		- Framework de testing.
-		- 
+		- Que se espera de la entrega
 */
 
 #include <iostream>
@@ -89,7 +97,14 @@ int main()
 
 	const char* title = "Simple example";
 	glm::vec<2,int> windowDimensions(1200, 600);
-	window = glfwCreateWindow(windowDimensions.x, windowDimensions.y, title, NULL, NULL);
+	Mona::Config config = Mona::Config();
+	config.readFile("config.cfg");
+	int windowWidth2 = config.getValueOrDefault<int>("windowWidth", 500);
+	int windowHeight2 = config.getValueOrDefault<int>("windowHeight", 600);
+	std::string windowTitle = config.getValueOrDefault<std::string>("windowTitle", "NoTitle");
+
+
+	window = glfwCreateWindow(windowDimensions.x, windowDimensions.y, windowTitle.c_str(), NULL, NULL);
 	MONA_LOG_INFO("Creating GLFW window with title: {0}, and dimensions ({1},{2})", title, windowDimensions.x, windowDimensions.y);
 
 	if (!window)

@@ -1,16 +1,15 @@
 #pragma once
-#ifndef LOG_H
-#define LOG_H
-#include "Common.h"
+#ifndef LOG_HPP
+#define LOG_HPP
+#include "Common.hpp"
 #include <memory>
-#include <utility>
 #include <spdlog/spdlog.h>
 
 namespace Mona {
 	class Log {
 	public:
 		static void StartUp() noexcept;
-		inline static std::shared_ptr<spdlog::logger>& GetLogger() { return m_loggerImplementation; }
+		inline static std::shared_ptr<spdlog::logger>& GetLogger() noexcept{ return m_loggerImplementation; }
 
 	private:
 		Log() = default;

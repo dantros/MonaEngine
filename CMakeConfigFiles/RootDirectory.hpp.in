@@ -1,0 +1,5 @@
+/*
+	This field was automatically created with CMake please don't modify it
+*/
+
+constexpr char* source_directory = "${CMAKE_SOURCE_DIR}";

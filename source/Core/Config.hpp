@@ -9,7 +9,7 @@
 namespace Mona {
 	class Config {
 	public:
-		Config() noexcept;
+		Config() noexcept {}
 		void readFile(const std::string& path); 
 		template <typename T>
 		inline T getValueOrDefault(const std::string& key, const T& defaultValue) const noexcept

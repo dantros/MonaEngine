@@ -17,9 +17,9 @@
 			- Cambiar .h a .hpp. --------------------- DONE
 			- Add ReadFile method do dummy shit. --------------- DONE
 			- Add .hpp generation with directory info CMAKE. ---------------- DONE
-			- Test Linux build 
-			- ReadFile read config file.
-			- Implement parsing.
+			- Test Linux build ----------------------- DONE
+			- ReadFile read config file. ------------- DONE
+			- Implement parsing. ------------------ DONE
 		- GLFWWindow.
 		- GLFWInput.
 		- Window --> typedef?.
@@ -96,11 +96,12 @@ int main()
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	const char* title = "Simple example";
-	glm::vec<2,int> windowDimensions(1200, 600);
+	
 	Mona::Config config = Mona::Config();
 	config.readFile("config.cfg");
-	int windowWidth2 = config.getValueOrDefault<int>("windowWidth", 500);
-	int windowHeight2 = config.getValueOrDefault<int>("windowHeight", 600);
+	int windowWidth = config.getValueOrDefault<int>("windowWidth", 500);
+	int windowHeight = config.getValueOrDefault<int>("windowHeight", 600);
+	glm::vec<2, int> windowDimensions(windowWidth, windowHeight);
 	std::string windowTitle = config.getValueOrDefault<std::string>("windowTitle", "NoTitle");
 
 

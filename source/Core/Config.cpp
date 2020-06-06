@@ -2,29 +2,48 @@
 #include "Log.hpp"
 #include "RootDirectory.hpp"
 #include <fstream>
-#include <iostream>
 namespace Mona
 {
-
-	Config::Config() noexcept
-	{
-		m_configurations["windowWidth"] = "sdasdas1920";
-		m_configurations["windowTitle"] = "FirstWindow";
-	}
-
-
 	void Config::readFile(const std::string& path)
 	{
 		//TODO(FILESYSTEM): This path calculation may be move from to another FilePathSystem or something like that
 		const std::string new_path = source_directory + ("/" + path);
 		std::ifstream in(new_path);
-		std::string contents;
-		in.seekg(0, std::ios::end);
-		contents.resize(in.tellg());
-		in.seekg(0, std::ios::beg);
-		in.read(&contents[0], contents.size());
-		in.close();
-		std::cout << contents << "\n";
+		if(in.is_open())
+		{
+			std::string line;
+			std::string::size_type lineNumber = 0;
+			const std::string chars = "\t\n\v\f\r ";
+			while (std::getline(in, line))
+			{
+				if (line.empty() || line[0] == '#' || line.find_first_not_of(chars) == std::string::npos)
+					continue;
+				auto delimeterPos = line.find_first_of("=");
+				if (delimeterPos == 0 || delimeterPos == std::string::npos)
+				{
+					MONA_LOG_ERROR("Configuration: Incorrect line format (Line = {0}, Content = \"{1}\")", lineNumber, line);
+					continue;
+				}
+				
+				auto keyStart = line.find_first_not_of(chars);
+				auto keyEnd = line.find_last_not_of(chars, delimeterPos-1);
+				auto valueStart = line.find_first_not_of(chars, delimeterPos + 1);
+				auto valueEnd = line.find_last_not_of(chars);
+				
+				if (keyStart == delimeterPos || (keyEnd - keyStart) < 0 || (valueEnd - valueStart) < 0)
+				{
+					MONA_LOG_ERROR("Configuration: Incorrect line format (Line = {0}, Content = \"{1}\")", lineNumber, line);
+					continue;
+				}
+				m_configurations[line.substr(keyStart, keyEnd - keyStart + 1)] = line.substr(valueStart, valueEnd -  valueStart +1);
+			}
+			
+		}
+		else
+		{
+			MONA_LOG_ERROR("Configuration: Failed to open file {0}", new_path);
+		}
+		
 		return;
 	}
 

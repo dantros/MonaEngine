@@ -9,7 +9,13 @@
 namespace Mona {
 	class Config {
 	public:
-		Config() noexcept {}
+		Config(Config const&) = delete;
+		Config& operator=(Config const&) = delete;
+		static Config& GetInstance()
+		{
+			static Config instance;
+			return instance;
+		}
 		void readFile(const std::string& path); 
 		template <typename T>
 		inline T getValueOrDefault(const std::string& key, const T& defaultValue) const noexcept
@@ -32,6 +38,7 @@ namespace Mona {
 
 
 	private:
+		Config() noexcept {}
 		std::unordered_map<std::string, std::string> m_configurations;
 	};
 

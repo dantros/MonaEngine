@@ -6,7 +6,7 @@ namespace Mona
 {
 	void Config::readFile(const std::string& path)
 	{
-		//TODO(FILESYSTEM): This path calculation may be move from to another FilePathSystem or something like that
+		//TODO(BYRON): This path calculation may be move from to another FilePathSystem or something like that
 		const std::string new_path = source_directory + ("/" + path);
 		std::ifstream in(new_path);
 		if(in.is_open())

@@ -1,29 +1,24 @@
 
-#include <glad/glad.h>
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-#ifndef _WINDOWS_
-#undef APIENTRY
-#endif
+
 #include "Core/Common.hpp"
 #include "Core/Log.hpp"
 #include "Core/Config.hpp"
+#include <glad/glad.h>
+#include "Platform/Window.hpp"
+#include "Platform/Input.hpp"
+
+
 /*
 	TODO:
-		- Main por ahora hara de engineLoop ------ DONE
-		- Add common header => assertions + types (see benny common.hpp).  ------- DONE 
-		- Logging class -> Add engine assert/log macros. -------- DONE
-		- Create config class. IVAR Registry CVAR config.
-			- Cambiar .h a .hpp. --------------------- DONE
-			- Add ReadFile method do dummy shit. --------------- DONE
-			- Add .hpp generation with directory info CMAKE. ---------------- DONE
-			- Test Linux build ----------------------- DONE
-			- ReadFile read config file. ------------- DONE
-			- Implement parsing. ------------------ DONE
 		- GLFWWindow.
-		- GLFWInput.
-		- Window --> typedef?.
-		- Input  --> typedef?.
+			- Complete creation. ---- DONE
+			- Complete destruction. ----- DONE
+			- Complete windowMode => Fullscreen/NoFullscreen. ----- DONE
+			- Complete windowRes. ----------------- DONE 
+			- Default callbacks.
+				- ERRROR. ------------- DONE
+		- GLFWInput. ------------- DONE
+		- Events for both
 		- memory alloc?
 		- Device/Context OpenGL -> benny.
 		- Buffer classes -> VBO/IBO/UBO.
@@ -40,12 +35,16 @@
 */
 /*
 	Reu:
-		- Mejor forma de implementar singletons.
-		- Engine loop approach.
-		- Confirmar plazos sobre plazos.
-		- Contar que hare.
-		- Framework de testing.
-		- Que se espera de la entrega
+		- Temas memoria
+			- Contar lo que se espera de la segunda entrega.
+			- Preguntar cual debería ser mi acercamiento al Estado del arte.
+			- Confirmar plazos.
+		- Temas codigo.
+			- Mejor forma de implementar singletons.
+			- Engine loop approach.
+			- Contar en que estoy hasta el momento.
+			- Framework de testing.
+
 */
 
 #include <iostream>
@@ -68,64 +67,18 @@ static const char* fragment_shader_text =
 "    color = vec4(0.0, 0.8, 1.0, 1.0);\n"
 "}\n";
 
-static void error_callback(int error, const char* description)
-{
-	fprintf(stderr, "Error: %s\n", description);
-}
-
-static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-		glfwSetWindowShouldClose(window, GLFW_TRUE);
-}
-
 int main()
 {
-	GLFWwindow* window;
 	GLuint vertex_buffer, vertex_shader, fragment_shader, program;
 	
 	Mona::Log::StartUp();
-
-	glfwSetErrorCallback(error_callback);
-
-	if (!glfwInit())
-		exit(EXIT_FAILURE);
-
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-	const char* title = "Simple example";
-	
-	Mona::Config config = Mona::Config();
+	Mona::Config& config = Mona::Config::GetInstance();
 	config.readFile("config.cfg");
-	int windowWidth = config.getValueOrDefault<int>("windowWidth", 500);
-	int windowHeight = config.getValueOrDefault<int>("windowHeight", 600);
-	glm::vec<2, int> windowDimensions(windowWidth, windowHeight);
-	std::string windowTitle = config.getValueOrDefault<std::string>("windowTitle", "NoTitle");
-
-
-	window = glfwCreateWindow(windowDimensions.x, windowDimensions.y, windowTitle.c_str(), NULL, NULL);
-	MONA_LOG_INFO("Creating GLFW window with title: {0}, and dimensions ({1},{2})", title, windowDimensions.x, windowDimensions.y);
-
-	if (!window)
-	{
-		glfwTerminate();
-		exit(EXIT_FAILURE);
-	}
+	Mona::Window window = Mona::Window();
+	window.StartUp();
+	Mona::Input input = Mona::Input();
 	
-	glfwSetKeyCallback(window, key_callback);
 
-	glfwMakeContextCurrent(window);
-	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-	{
-		
-		glfwTerminate();
-		exit(EXIT_FAILURE);
-	}
-	glfwSwapInterval(1);
-
-	// NOTE: OpenGL error checks have been omitted for brevity
 	GLuint vao;
 	glCreateVertexArrays(1, &vao);
 	glBindVertexArray(vao);
@@ -146,21 +99,36 @@ int main()
 
 	glm::vec3 pos(1.0f, 1.0f, 2.0f);
 	glm::vec3 pos2(2.0f, 3.0f, 4.0f);
-	while (!glfwWindowShouldClose(window))
+	int count = 0;
+	while (!window.ShouldClose())
 	{
-		float ratio;
-		int width, height;
-		glfwGetFramebufferSize(window, &width, &height);
-		ratio = width / (float)height;
-		glViewport(0, 0, width, height);
+
+		input.Update();
+		if (input.IsKeyPressed(MONA_KEY_G))
+		{
+			window.SetFullScreen(true);
+		}
+		else if (input.IsKeyPressed(MONA_KEY_H))
+		{
+			window.SetFullScreen(false);
+		}
+		else if (input.IsKeyPressed(MONA_KEY_J))
+		{
+			window.SetWindowDimensions(glm::ivec2(1000, 1000));
+		}
+
+		if (count > 120)
+		{
+			auto cursorPos = input.GetMousePosition();
+			MONA_LOG_INFO("The is cursor is at ({0},{1})", cursorPos.x, cursorPos.y);
+			count = 0;
+		}
 		glClear(GL_COLOR_BUFFER_BIT);
 		glUseProgram(program);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
-		glfwSwapBuffers(window);
-		glfwPollEvents();
+		window.Update();
+		count++;
 	}
 
-	glfwDestroyWindow(window);
-	glfwTerminate();
-	exit(EXIT_SUCCESS);
+	window.ShutDown();
 }

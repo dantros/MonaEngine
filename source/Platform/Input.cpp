@@ -1,0 +1,87 @@
+#include "Input.hpp"
+#include "../Core/Common.hpp"
+#include "../Core/Log.hpp"
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
+
+namespace Mona
+{
+	class Input::Impl {
+	public:
+		Impl() : m_windowHandle(glfwGetCurrentContext())
+		{
+			MONA_ASSERT(m_windowHandle != NULL, "GLFW Error: Unable to find window");
+		}
+		Impl(const Impl& input) = delete;
+		Impl& operator=(const Impl& input) = delete;
+		void Update() {
+			glfwPollEvents();
+		}
+		inline bool IsKeyPressed(int keycode) const noexcept
+		{
+			return glfwGetKey(m_windowHandle, keycode) == GLFW_PRESS;
+		}
+		inline bool IsMouseButtonPressed(int button) const noexcept {
+			return glfwGetMouseButton(m_windowHandle, button) == GLFW_PRESS;
+		}
+		inline glm::dvec2 GetMousePosition() const noexcept {
+			double x, y;
+			glfwGetCursorPos(m_windowHandle, &x, &y);
+			return glm::dvec2(x, y);
+		}
+		void SetCursorType(CursorType type)
+		{
+			switch (type)
+			{
+				case CursorType::Disabled: 
+				{
+					glfwSetInputMode(m_windowHandle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+					return;
+				}
+				case CursorType::Hidden:
+				{
+					glfwSetInputMode(m_windowHandle, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+					return;
+				}
+				case CursorType::Normal:
+				{
+					glfwSetInputMode(m_windowHandle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+					return;
+				}
+
+			}
+		}
+	private:
+		GLFWwindow* m_windowHandle;
+	};
+
+	Input::Input() : p_Impl(std::make_unique<Impl>()) {}
+
+	Input::~Input() = default;
+
+	void Input::Update()
+	{
+		p_Impl->Update();
+	}
+
+	bool Input::IsKeyPressed(int keycode) const noexcept
+	{
+		return p_Impl->IsKeyPressed(keycode);
+	}
+
+	bool Input::IsMouseButtonPressed(int button) const noexcept
+	{
+		return p_Impl->IsMouseButtonPressed(button);
+	}
+
+	glm::dvec2 Input::GetMousePosition() const noexcept
+	{
+		return p_Impl->GetMousePosition();
+	}
+
+	void Input::SetCursorType(CursorType type)
+	{
+		p_Impl->SetCursorType(type);
+	}
+
+}

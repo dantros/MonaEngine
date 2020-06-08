@@ -8,14 +8,15 @@
 namespace Mona {
 	class Log {
 	public:
+		//TODO(Byron) Maybe move StartUp and ShutDown to private and make caller friend class
 		static void StartUp() noexcept;
-		inline static std::shared_ptr<spdlog::logger>& GetLogger() noexcept{ return m_loggerImplementation; }
+		inline static std::shared_ptr<spdlog::logger>& GetLogger() noexcept{ return s_loggerImplementation; }
 
 	private:
-		Log() = default;
+		Log() {}
 		Log(const Log& log) = delete;
 		Log& operator=(const Log& l) = delete;
-		static std::shared_ptr<spdlog::logger> m_loggerImplementation;
+		static std::shared_ptr<spdlog::logger> s_loggerImplementation;
 	};
 }
 

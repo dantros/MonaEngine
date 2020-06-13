@@ -1,6 +1,8 @@
 #include "Window.hpp"
 #include "../Core/Config.hpp"
 #include "../Core/Common.hpp"
+#include "../Event/Events.hpp"
+#include "../Event/EventManager.hpp"
 #include <glad/glad.h>
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
@@ -15,10 +17,10 @@ namespace Mona {
 	}
 	class Window::Impl {
 	public:
-		Impl() {}
+		Impl() : m_data(){}
 		Impl(const Impl& window) = delete;
 		Impl& operator=(const Impl& window) = delete;
-		void StartUp() noexcept
+		void StartUp(EventManager* eventManager) noexcept
 		{
 			MONA_ASSERT(m_windowHandle == nullptr, "Calling Window::StartUp for the second time!!!.");
 			const int success = glfwInit();
@@ -44,12 +46,28 @@ namespace Mona {
 			m_windowHandle = glfwCreateWindow(windowWidth, windowHeight, windowTitle.c_str(), fullScreen? monitor : NULL, NULL);
 			glfwMakeContextCurrent(m_windowHandle);
 			glfwGetWindowPos(m_windowHandle, &m_oldWindowPos[0], &m_oldWindowPos[1]);
-			int a, b;
-			glfwGetFramebufferSize(m_windowHandle, &a, &b);
+			m_data.eventManager = eventManager;
+			glfwSetWindowUserPointer(m_windowHandle, &m_data);
+			glfwSetFramebufferSizeCallback(m_windowHandle, [](GLFWwindow* window, int width, int height)
+				{
+					WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+					WindowResizeEvent e;
+					e.width = width;
+					e.height = height;
+					(data.eventManager)->Publish(e);
+				});
+			glfwSetScrollCallback(m_windowHandle, [](GLFWwindow* window, double xOffset, double yOffset)
+				{
+					WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+					MouseScrollEvent e;
+					e.xOffset = xOffset;
+					e.yOffset = yOffset;
+					(data.eventManager)->Publish(e);
+				});
 			int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 			MONA_ASSERT(status, "Failed to initialize Glad!");
 
-			glfwSwapInterval(1);
+			glfwSwapInterval(0);
 		}
 		void ShutDown() noexcept
 		{
@@ -113,7 +131,11 @@ namespace Mona {
 			return m_windowHandle;
 		}
 	private:
+		struct WindowData {
+			EventManager* eventManager = nullptr;
+		};
 		GLFWwindow* m_windowHandle = nullptr;
+		WindowData m_data;
 		glm::ivec2 m_oldWindowPos = glm::vec2(0,0);
 	};
 
@@ -121,9 +143,9 @@ namespace Mona {
 
 	Window::~Window() = default;
 
-	void Window::StartUp() noexcept
+	void Window::StartUp(EventManager* eventManager) noexcept
 	{
-		p_Impl->StartUp();
+		p_Impl->StartUp(eventManager);
 	}
 
 	void Window::ShutDown() noexcept

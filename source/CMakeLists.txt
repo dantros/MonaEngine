@@ -5,16 +5,21 @@ set(MONA_HEADERS
 				Core/RootDirectory.hpp
 				Platform/Window.hpp
 				Platform/Input.hpp
-				Platform/KeyCodes.hpp)
+				Platform/KeyCodes.hpp
+				Event/EventManager.hpp
+				Event/Events.hpp
+				Engine.hpp)
 set(MONA_SOURCES 
 				Core/Log.cpp
 				Core/Config.cpp
+				Event/EventManager.cpp
 				Platform/Window.cpp
-				Platform/Input.cpp)
+				Platform/Input.cpp
+				Engine.cpp)
 
-add_executable(Sandbox main.cpp ${MONA_HEADERS} ${MONA_SOURCES})
-target_include_directories(Sandbox PRIVATE ${THIRD_PARTY_INCLUDE_DIRECTORIES})
-target_link_libraries(Sandbox PRIVATE ${THIRD_PARTY_LIBRARIES})
-set_property(TARGET Sandbox PROPERTY CXX_STANDARD 20)
+add_library(MonaEngine STATIC ${MONA_SOURCES} ${MONA_HEADERS})
+target_include_directories(MonaEngine PRIVATE ${THIRD_PARTY_INCLUDE_DIRECTORIES} MONA_INCLUDE_DIRECTORY)
+target_link_libraries(MonaEngine PRIVATE ${THIRD_PARTY_LIBRARIES})
+set_property(TARGET MonaEngine PROPERTY CXX_STANDARD 20)
 
 

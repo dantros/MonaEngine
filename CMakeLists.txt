@@ -6,7 +6,9 @@ set(THIRD_PARTY_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/glad
 									"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/glfw-3.3.2/include"
 									"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/spdlog-1.6.0/include"
 									"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/glm-0.9.9.8")
+set(MONA_INCLUDE_DIRECTORY "${CMAKE_SOURCE_DIR}/source")
 set(THIRD_PARTY_LIBRARIES glad glfw ${OPENGL_LIBRARIES})
 configure_file(CMakeConfigFiles/RootDirectory.hpp.in "${CMAKE_SOURCE_DIR}/source/Core/RootDirectory.hpp")
 add_subdirectory(thirdParty)
 add_subdirectory(source)
+add_subdirectory(examples)

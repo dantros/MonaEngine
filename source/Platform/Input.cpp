@@ -1,21 +1,31 @@
 #include "Input.hpp"
 #include "../Core/Common.hpp"
 #include "../Core/Log.hpp"
+#include "../Event/EventManager.hpp"
+#include "../Event/Events.hpp"
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
-
 namespace Mona
 {
 	class Input::Impl {
 	public:
-		Impl() : m_windowHandle(glfwGetCurrentContext())
-		{
-			MONA_ASSERT(m_windowHandle != NULL, "GLFW Error: Unable to find window");
-		}
+		Impl():m_windowHandle(nullptr), m_mouseWheelOffset(0.0,0.0) {}
 		Impl(const Impl& input) = delete;
 		Impl& operator=(const Impl& input) = delete;
-		void Update() {
+		void StartUp(EventManager* eventManager) noexcept {
+			m_windowHandle = glfwGetCurrentContext();
+			MONA_ASSERT(m_windowHandle != NULL, "GLFW Error: Unable to find window");
+			eventManager->Subscribe(this, &Input::Impl::OnMouseScroll);
+		}
+
+		void Update() noexcept {
+			m_mouseWheelOffset.x = 0.0;
+			m_mouseWheelOffset.y = 0.0;
 			glfwPollEvents();
+		}
+		void OnMouseScroll(const MouseScrollEvent& e)
+		{
+			m_mouseWheelOffset = glm::dvec2(e.xOffset, e.yOffset);
 		}
 		inline bool IsKeyPressed(int keycode) const noexcept
 		{
@@ -29,7 +39,10 @@ namespace Mona
 			glfwGetCursorPos(m_windowHandle, &x, &y);
 			return glm::dvec2(x, y);
 		}
-		void SetCursorType(CursorType type)
+		inline glm::dvec2 GetMouseWheelOffset() const noexcept {
+			return m_mouseWheelOffset;
+		}
+		void SetCursorType(CursorType type) noexcept
 		{
 			switch (type)
 			{
@@ -53,13 +66,14 @@ namespace Mona
 		}
 	private:
 		GLFWwindow* m_windowHandle;
+		glm::dvec2 m_mouseWheelOffset;
 	};
 
 	Input::Input() : p_Impl(std::make_unique<Impl>()) {}
 
 	Input::~Input() = default;
 
-	void Input::Update()
+	void Input::Update() noexcept
 	{
 		p_Impl->Update();
 	}
@@ -79,9 +93,17 @@ namespace Mona
 		return p_Impl->GetMousePosition();
 	}
 
-	void Input::SetCursorType(CursorType type)
+	glm::dvec2 Input::GetMouseWheelOffset() const noexcept
+	{
+		return p_Impl->GetMouseWheelOffset();
+	}
+	void Input::SetCursorType(CursorType type) noexcept
 	{
 		p_Impl->SetCursorType(type);
+	}
+
+	void Input::StartUp(EventManager* eventManager) noexcept {
+		p_Impl->StartUp(eventManager);
 	}
 
 }

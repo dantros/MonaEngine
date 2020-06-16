@@ -4,23 +4,30 @@
 #include "Core/Config.hpp"
 #include <glad/glad.h>
 #include "Event/Events.hpp"
+#include <chrono>
 
 namespace Mona {
 	
-	void Engine::StartUp() noexcept
+	void Engine::StartUp(std::unique_ptr<Application> app) noexcept
 	{
+		
 		Mona::Log::StartUp();
 		Mona::Config& config = Mona::Config::GetInstance();
 		config.readFile("config.cfg");
+		MONA_ASSERT(app != nullptr, "Engine StartUp Error: Must provido not null Application pointer");
 		m_window.StartUp(&m_eventManager);
 		m_input.StartUp(&m_eventManager);
+		m_application = std::move(app);
+		m_application->StartUp();
 		
 	}
 
 	void Engine::ShutDown() noexcept
 	{
 		//First thing to clean should be Event Manager.
+		m_application->ShutDown();
 		m_window.ShutDown();
+
 	}
 
 	void Engine::StartMainLoop() noexcept
@@ -62,38 +69,34 @@ namespace Mona {
 		glm::vec3 pos(1.0f, 1.0f, 2.0f);
 		glm::vec3 pos2(2.0f, 3.0f, 4.0f);
 		int count = 0;
+		float accumMs = 0;
+		float accumSec = 0;
+		std::chrono::time_point<std::chrono::steady_clock> startTime = std::chrono::steady_clock::now();
 		while (!m_window.ShouldClose())
 		{
-			m_input.Update();
-			if (m_input.IsKeyPressed(MONA_KEY_G))
+			std::chrono::time_point<std::chrono::steady_clock> newTime = std::chrono::steady_clock::now();
+			const auto frameTime = newTime - startTime;
+			startTime = newTime;
+			float timeStep = std::chrono::duration_cast<std::chrono::duration<float>>(frameTime).count();
+			float ms = std::chrono::duration_cast<std::chrono::duration<float, std::milli>>(frameTime).count();
+			
+			m_application->Update(timeStep);
+			accumSec += timeStep;
+			accumMs += ms;
+			if (count == 200)
 			{
-				m_window.SetFullScreen(true);
-			}
-			else if (m_input.IsKeyPressed(MONA_KEY_H))
-			{
-				m_window.SetFullScreen(false);
-			}
-			else if (m_input.IsKeyPressed(MONA_KEY_J))
-			{
-				m_window.SetWindowDimensions(glm::ivec2(1000, 1000));
+				MONA_LOG_INFO("Frame time = {0} ms.\t timeStep = {1} seconds", accumMs/count, accumSec);
+				count = 0;
+				accumMs = 0;
+				accumSec = 0;
 			}
 			
-			if (count > 360)
-			{
-				auto cursorPos = m_input.GetMousePosition();
-				MONA_LOG_INFO("The is cursor is at ({0},{1})", cursorPos.x, cursorPos.y);
-				count = 0;
-			}
-			if (m_input.GetMouseWheelOffset().y > 0.0)
-			{
-				auto Offset = m_input.GetMouseWheelOffset();
-				MONA_LOG_INFO("The mouse offset is ({0},{1})", Offset.x, Offset.y);
-				
-			}
+			
 			glClear(GL_COLOR_BUFFER_BIT);
 			glUseProgram(program);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 			m_window.Update();
+			m_input.Update();
 			count++;
 		}
 

@@ -6,15 +6,9 @@
 			- Reentrancy
 				- Guard against it.
 				- Allow reentraancy but maintain consistency.
-			- unsubscribe.
+			- unsubscribe. http://bitsquid.blogspot.com/2011/09/managing-decoupling-part-4-id-lookup.html
 			- duplicate registrations.
-		- Link glfw event ------------------------- DONE
-		- TIME using chrono? ------------------------------------------------ FIRST
-		- Add first example.
-			- Build Mona as static library ------ DONE
-			- Add new target for each example ------ DONE
-			- Application.h ----> interface for the moment.  --------------------- SECOND
-			- write first example using different interfaces. -------------------- THIRD
+			- Free functions
 		- Design OPENGL Abs ------------------------------> FOURTH
 		- Device/Context OpenGL ->.
 		- Buffer classes -> VBO/IBO/UBO.
@@ -29,37 +23,50 @@
 		- Animation rendering.
 		- Collision.
 */
-/*
-	Reu:
-		- Temas memoria
-			- Cambio de fechas.
-			- Contar lo que se espera de la segunda entrega.
-			- Approarch de la memoria en general.
-				- Preguntar cual debería ser mi acercamiento al Estado del arte.
-				- Acercamiento a implementar cosas => probablemente nada sera del estado del arte.
-					- Engine Approach examinar motores desde una perspectiva general, y detallar sistemas overviewmente.
-			- Confirmar plazos.
-		- Temas codigo.
-			- Log/Assertion/Window/Config/Input.
-			- Event System.
-				- Tipos de eventos.
-					- Basados en herencia.
-					- Data-driven??.
-					- Queued?.
-					- Recursion problematica?.
-			- Allocation ?? std::chrono etc..
-			- Framework de testing.
-			- Complejidad de ejemplos.
-				- .
-				- .
-				- .
 
-*/
-#include "Engine.hpp"
+#include "MonaEngine.hpp"
+
+class Sandbox : public Mona::Application
+{
+public:
+	Sandbox() = default;
+	~Sandbox() = default;
+	virtual void StartUp() noexcept override{
+		MONA_LOG_INFO("Starting User App: Sandbox");
+	}
+
+	virtual void ShutDown() noexcept override {
+		MONA_LOG_INFO("StuttingDown User App: Sandbox");
+	}
+
+	virtual void Update(float timeStep) noexcept override {
+		auto &input = Mona::Engine::GetInstance().GetInput();
+		auto &window = Mona::Engine::GetInstance().GetWindow();
+		if (input.IsKeyPressed(MONA_KEY_G))
+		{
+			window.SetFullScreen(true);
+		}
+		else if (input.IsKeyPressed(MONA_KEY_H))
+		{
+			window.SetFullScreen(false);
+		}
+		else if (input.IsKeyPressed(MONA_KEY_J))
+		{
+			window.SetWindowDimensions(glm::ivec2(1000, 1000));
+		}
+
+		else if (input.GetMouseWheelOffset().y > 0.0)
+		{
+			auto Offset = input.GetMouseWheelOffset();
+			MONA_LOG_INFO("The mouse offset is ({0},{1})", Offset.x, Offset.y);
+
+		}
+	}
+};
 int main()
 {	
-	Mona::Engine engine = Mona::Engine();
-	engine.StartUp();
+	Mona::Engine& engine = Mona::Engine::GetInstance();
+	engine.StartUp(std::unique_ptr<Mona::Application>(new Sandbox()));
 	engine.StartMainLoop();
 	engine.ShutDown();
 }

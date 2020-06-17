@@ -9,6 +9,9 @@
 			- unsubscribe. http://bitsquid.blogspot.com/2011/09/managing-decoupling-part-4-id-lookup.html
 			- duplicate registrations.
 			- Free functions
+		- Add Virtual implmentation to make Application not an abstract class
+		- ECS Base work
+		- 
 		- Design OPENGL Abs ------------------------------> FOURTH
 		- Device/Context OpenGL ->.
 		- Buffer classes -> VBO/IBO/UBO.

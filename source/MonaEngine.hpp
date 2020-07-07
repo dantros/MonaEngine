@@ -7,5 +7,6 @@
 #include "Engine.hpp"
 #include "Platform/KeyCodes.hpp"
 #include "Application.hpp"
+#include "World/World.hpp"
 #include <memory>
 #endif

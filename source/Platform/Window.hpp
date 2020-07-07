@@ -10,6 +10,8 @@ namespace Mona
 	class Window {
 	public:
 		friend class Engine;
+		Window();
+		~Window();
 		Window(const Window& window) = delete;
 		Window& operator=(const Window& window) = delete;
 		bool IsFullScreen() const noexcept;
@@ -20,8 +22,6 @@ namespace Mona
 		glm::ivec2 GetWindowFrameBufferSize() const noexcept;
 		void SetWindowDimensions(const glm::ivec2 &dimensions) noexcept;
 	private:
-		Window();
-		~Window();
 		void StartUp(EventManager* eventManager) noexcept;
 		void ShutDown() noexcept;
 		void Update() noexcept;

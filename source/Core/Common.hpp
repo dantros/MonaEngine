@@ -3,6 +3,7 @@
 #define COMMON_HPP
 #include <cassert>
 #include <stdio.h>
+#include <cstdint>
 
 #ifdef NDEBUG
 	#define ASSERT(expr) (void(0))
@@ -34,7 +35,6 @@
 			assert(expr);}}
 	#endif
 #endif
-
 
 
 #endif

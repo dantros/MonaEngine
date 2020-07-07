@@ -4,6 +4,7 @@
 #include "Core/Config.hpp"
 #include <glad/glad.h>
 #include "Event/Events.hpp"
+#include "World/World.hpp"
 #include <chrono>
 
 namespace Mona {
@@ -15,18 +16,22 @@ namespace Mona {
 		Mona::Config& config = Mona::Config::GetInstance();
 		config.readFile("config.cfg");
 		MONA_ASSERT(app != nullptr, "Engine StartUp Error: Must provido not null Application pointer");
-		m_window.StartUp(&m_eventManager);
-		m_input.StartUp(&m_eventManager);
+		m_window = std::make_shared<Window>();
+		m_input = std::make_shared<Input>();
+		m_window->StartUp(&m_eventManager);
+		m_input->StartUp(&m_eventManager);
 		m_application = std::move(app);
-		m_application->StartUp();
+		m_application->StartUp(m_window, m_input);
+		Mona::World::GetInstance().StartUp();
 		
 	}
 
 	void Engine::ShutDown() noexcept
 	{
 		//First thing to clean should be Event Manager.
-		m_application->ShutDown();
-		m_window.ShutDown();
+		m_application->UserShutDown();
+		Mona::World::GetInstance().ShutDown();
+		m_window->ShutDown();
 
 	}
 
@@ -72,7 +77,8 @@ namespace Mona {
 		float accumMs = 0;
 		float accumSec = 0;
 		std::chrono::time_point<std::chrono::steady_clock> startTime = std::chrono::steady_clock::now();
-		while (!m_window.ShouldClose())
+		auto& world = Mona::World::GetInstance();
+		while (!m_window->ShouldClose())
 		{
 			std::chrono::time_point<std::chrono::steady_clock> newTime = std::chrono::steady_clock::now();
 			const auto frameTime = newTime - startTime;
@@ -80,23 +86,23 @@ namespace Mona {
 			float timeStep = std::chrono::duration_cast<std::chrono::duration<float>>(frameTime).count();
 			float ms = std::chrono::duration_cast<std::chrono::duration<float, std::milli>>(frameTime).count();
 			
-			m_application->Update(timeStep);
+			world.Update(timeStep);
+			m_application->UserUpdate(timeStep);
 			accumSec += timeStep;
 			accumMs += ms;
 			if (count == 200)
 			{
-				MONA_LOG_INFO("Frame time = {0} ms.\t timeStep = {1} seconds", accumMs/count, accumSec);
+				MONA_LOG_INFO("Frame time = {0} ms.\t timeStep = {1} seconds", accumMs/count, accumSec/count);
 				count = 0;
 				accumMs = 0;
 				accumSec = 0;
 			}
 			
-			
 			glClear(GL_COLOR_BUFFER_BIT);
 			glUseProgram(program);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
-			m_window.Update();
-			m_input.Update();
+			m_window->Update();
+			m_input->Update();
 			count++;
 		}
 

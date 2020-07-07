@@ -13,6 +13,8 @@ namespace Mona
 		enum class CursorType{Hidden, Disabled, Normal};
 	public:
 		friend class Engine;
+		Input();
+		~Input();
 		Input(const Input& input) = delete;
 		Input& operator=(const Input& input) = delete;
 		//TODO(Byron) Maybe move StartUp/Update to private and make caller friend class
@@ -22,8 +24,7 @@ namespace Mona
 		glm::dvec2 GetMouseWheelOffset() const noexcept;
 		void SetCursorType(CursorType type) noexcept;
 	private:
-		Input();
-		~Input();
+
 		void Update() noexcept;
 		void StartUp(EventManager* eventManager) noexcept;
 		class Impl;

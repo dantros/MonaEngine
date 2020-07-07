@@ -11,7 +11,7 @@ endfunction(Add_Example)
 #Cambiar en el futuro, Ejemplos no deberian necesitar las otras librerias solo los includes.  ${THIRD_PARTY_LIBRARIES}
 #target_link_libraries(Sandbox PRIVATE MonaEngine)
 #target_include_directories(Sandbox PRIVATE ${MONA_INCLUDE_DIRECTORY} ${THIRD_PARTY_INCLUDE_DIRECTORIES})
-Add_Example(Sanbox main.cpp)
+Add_Example(Sandbox main.cpp)
 Add_Example(Example0_BasicPrimitives_NoTransform Example0_BasicPrimitives_NoTransform.cpp)
 Add_Example(Example1_BasicPrimitives Example1_BasicPrimitives.cpp)
 Add_Example(Example2_BasicPrimitives_Camera Example2_BasicPrimitives_Camera.cpp)

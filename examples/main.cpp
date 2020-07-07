@@ -1,70 +1,78 @@
-/*
-	TODO:
-		- Events class.
-			- WindowResize/Close for the moment. -------------- DONE
-			- Chain of responsability.
-			- Reentrancy
-				- Guard against it.
-				- Allow reentraancy but maintain consistency.
-			- unsubscribe. http://bitsquid.blogspot.com/2011/09/managing-decoupling-part-4-id-lookup.html
-			- duplicate registrations.
-			- Free functions
-		- Add Virtual implmentation to make Application not an abstract class
-		- ECS Base work
-		- 
-		- Design OPENGL Abs ------------------------------> FOURTH
-		- Device/Context OpenGL ->.
-		- Buffer classes -> VBO/IBO/UBO.
-		- Shader class -> .
-		- VAO.
-		- Basic primitives.
-		- Textures.
-		- Model loading.
-		- Resource Manager
-		- Mesh drawing.
-		- Animation loading.
-		- Animation rendering.
-		- Collision.
-*/
-
 #include "MonaEngine.hpp"
+
+class MyBox : public Mona::GameObject
+{
+public:
+	virtual void Start() noexcept override{
+		MONA_LOG_INFO("Starting Box Object");
+		counter =  0;
+		m_transformComponent = AddComponent<Mona::TransformComponent>();
+		//auto m_cameraComponent = AddComponent<Mona::StaticMeshComponent>();
+	}
+	virtual void Update(float timeStep) noexcept override
+	{
+		if (counter > 300)
+		{
+			MONA_LOG_INFO("Updating MyBox Object: ID {0} , counter = {1}", GetObjectID(), counter);
+			auto translation = m_transformComponent->GetLocalTranslation();
+			MONA_LOG_INFO("Current Transform Position ({0},{1},{2})", translation.x, translation.y, translation.z);
+			counter = 0;
+		}
+
+		m_transformComponent->Translate(glm::vec3(timeStep));
+		counter++;
+	}
+	~MyBox() {
+		MONA_LOG_INFO("Callling Box Deconstructor");
+	}
+private:
+	int counter;
+	Mona::ComponentHandle<Mona::TransformComponent> m_transformComponent;
+
+};
 
 class Sandbox : public Mona::Application
 {
 public:
 	Sandbox() = default;
 	~Sandbox() = default;
-	virtual void StartUp() noexcept override{
+	virtual void UserStartUp() noexcept override{
 		MONA_LOG_INFO("Starting User App: Sandbox");
+		auto& world = Mona::World::GetInstance();
+		m_boxObject = world.CreateGameObject<MyBox>();
+		m_boxObject2 = world.CreateGameObject<MyBox>();
 	}
 
-	virtual void ShutDown() noexcept override {
-		MONA_LOG_INFO("StuttingDown User App: Sandbox");
+	virtual void UserShutDown() noexcept override {
+		MONA_LOG_INFO("ShuttingDown User App: Sandbox");
 	}
 
-	virtual void Update(float timeStep) noexcept override {
-		auto &input = Mona::Engine::GetInstance().GetInput();
-		auto &window = Mona::Engine::GetInstance().GetWindow();
-		if (input.IsKeyPressed(MONA_KEY_G))
+	virtual void UserUpdate(float timeStep) noexcept override {
+		if (m_input->IsKeyPressed(MONA_KEY_G))
 		{
-			window.SetFullScreen(true);
+			m_window->SetFullScreen(true);
 		}
-		else if (input.IsKeyPressed(MONA_KEY_H))
+		else if (m_input->IsKeyPressed(MONA_KEY_H))
 		{
-			window.SetFullScreen(false);
+			m_window->SetFullScreen(false);
 		}
-		else if (input.IsKeyPressed(MONA_KEY_J))
+		else if (m_input->IsKeyPressed(MONA_KEY_J))
 		{
-			window.SetWindowDimensions(glm::ivec2(1000, 1000));
+			m_window->SetWindowDimensions(glm::ivec2(1000, 1000));
 		}
-
-		else if (input.GetMouseWheelOffset().y > 0.0)
+		else if (m_input->IsKeyPressed(MONA_KEY_D)) {
+			Mona::World::GetInstance().DestroyGameObject(m_boxObject);
+		}
+		else if (m_input->GetMouseWheelOffset().y > 0.0)
 		{
-			auto Offset = input.GetMouseWheelOffset();
+			auto Offset = m_input->GetMouseWheelOffset();
 			MONA_LOG_INFO("The mouse offset is ({0},{1})", Offset.x, Offset.y);
 
 		}
 	}
+private:
+	std::weak_ptr<Mona::GameObject> m_boxObject;
+	std::weak_ptr<Mona::GameObject> m_boxObject2;
 };
 int main()
 {	

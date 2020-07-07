@@ -20,14 +20,12 @@ namespace Mona {
 			return s_engine;
 		}
 		EventManager& GetEventManager() noexcept{ return m_eventManager; }
-		Window& GetWindow() noexcept { return m_window; }
-		Input& GetInput() noexcept { return m_input; }
 	private:
 		Engine() = default;
 		~Engine() = default;
-		Input m_input;
-		Window m_window;
 		EventManager  m_eventManager;
+		std::shared_ptr<Window> m_window;
+		std::shared_ptr<Input> m_input;
 		std::unique_ptr<Application> m_application;
 	};
 }

@@ -29,7 +29,7 @@ namespace Mona {
 		ComponentHandle<ComponentType> AddComponent(GameObjectID gameObjectID) noexcept;
 		void RemoveComponent(ComponentHandle<ComponentType>& handle) noexcept;
 		ComponentHandle<ComponentType> GetComponentHandle(GameObjectID gameObjectID) noexcept;
-		ComponentType* GetComponentPtr(ComponentHandle<ComponentType>& handle) noexcept;
+		ComponentType* GetComponentPointer(ComponentHandle<ComponentType>& handle) noexcept;
 		size_type GetCount() const noexcept;
 		GameObjectID GetObjectID(size_type index) const noexcept;
 		ComponentType& operator[](size_type index) noexcept;

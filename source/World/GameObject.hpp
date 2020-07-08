@@ -25,6 +25,11 @@ namespace Mona {
 		{
 			return Mona::World::GetInstance().AddComponent<ComponentType>(GetObjectID());
 		}
+		template <typename ComponentType>
+		void RemoveComponent(ComponentHandle<ComponentType>& handle) {
+			return Mona::World::GetInstance().RemoveComponent(handle);
+		}
+
 	private:
 		GameObjectID m_id;
 

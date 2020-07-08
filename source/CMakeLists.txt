@@ -17,7 +17,8 @@ set(MONA_HEADERS
 				World/ComponentHandle.hpp
 				World/ComponentManager.hpp
 				World/Detail/ComponentManager.hpp
-				World/World.hpp)
+				World/World.hpp
+				World/Detail/World.hpp)
 set(MONA_SOURCES 
 				Core/Log.cpp
 				Core/Config.cpp
@@ -26,7 +27,8 @@ set(MONA_SOURCES
 				Platform/Input.cpp
 				Engine.cpp
 				Application.cpp
-				World/GameObjectManager.cpp)
+				World/GameObjectManager.cpp
+				World/World.cpp)
 
 add_library(MonaEngine STATIC ${MONA_SOURCES} ${MONA_HEADERS} MonaEngine.hpp)
 target_include_directories(MonaEngine PRIVATE ${THIRD_PARTY_INCLUDE_DIRECTORIES} MONA_INCLUDE_DIRECTORY)

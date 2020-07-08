@@ -17,7 +17,7 @@ namespace Mona {
 			: m_managerPtr(managerPtr), m_ownerID(ownerID) {}
 		GameObjectID GetOwnerID() const noexcept { return m_ownerID; }
 		ComponentType* operator->() {
-			auto ptr = m_managerPtr->GetComponentPtr(*this);
+			auto ptr = m_managerPtr->GetComponentPointer(*this);
 			MONA_ASSERT(ptr != nullptr, "WORLD: Trying to dereference Invalid Handle!");
 			return ptr;
 		}
@@ -25,6 +25,8 @@ namespace Mona {
 		ComponentManager<ComponentType>* m_managerPtr;
 		GameObjectID m_ownerID;
 	};
+
+
 }
 
 

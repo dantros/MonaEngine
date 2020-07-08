@@ -61,7 +61,7 @@ namespace Mona {
 	}
 
 	template <typename ComponentType>
-	ComponentType* ComponentManager<ComponentType>::GetComponentPtr(ComponentHandle<ComponentType>& handle) noexcept {
+	ComponentType* ComponentManager<ComponentType>::GetComponentPointer(ComponentHandle<ComponentType>& handle) noexcept {
 		auto it = m_lookUp.find(handle.GetOwnerID());
 		if (it != m_lookUp.end())
 		{

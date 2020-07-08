@@ -1,7 +1,7 @@
 #pragma once
 #ifndef COMPONENTMANAGER_DETAIL_HPP
 #define COMPONENTMANAGER_DETAIL_HPP
-#include "../Core/Log.hpp"
+#include "../../Core/Log.hpp"
 namespace Mona {
 	template <typename ComponentType>
 	ComponentManager<ComponentType>::ComponentManager() : BaseComponentManager() {}
@@ -45,7 +45,7 @@ namespace Mona {
 			}
 			m_components.pop_back();
 			m_gameObjects.pop_back();
-			m_lookUp.erase(gameObjectID);
+			m_lookUp.erase(it);
 		}
 	}
 

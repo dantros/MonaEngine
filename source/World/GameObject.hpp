@@ -20,15 +20,6 @@ namespace Mona {
 		virtual void Update(float timeStep) noexcept {};
 		virtual void Start() noexcept {};
 		GameObjectID GetObjectID() const noexcept{ return m_id; }
-		template <typename ComponentType>
-		ComponentHandle<ComponentType> AddComponent()
-		{
-			return Mona::World::GetInstance().AddComponent<ComponentType>(GetObjectID());
-		}
-		template <typename ComponentType>
-		void RemoveComponent(ComponentHandle<ComponentType>& handle) {
-			return Mona::World::GetInstance().RemoveComponent(handle);
-		}
 
 	private:
 		GameObjectID m_id;

@@ -43,6 +43,17 @@ namespace Mona {
 
 	};
 
+		template <typename ComponentType>
+		ComponentHandle<ComponentType> AddComponent(GameObject &object) noexcept{
+			return World::GetInstance().AddComponent<ComponentType>(object.GetObjectID());
+		}
+
+		template <typename ComponentType>
+		void RemoveComponent(ComponentHandle<ComponentType>& handle) {
+			World::GetInstance().RemoveComponent(handle);
+		}
+
+
 }
 #include "Detail/World.hpp"
 #endif

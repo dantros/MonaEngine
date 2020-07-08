@@ -6,7 +6,7 @@ public:
 	virtual void Start() noexcept override{
 		MONA_LOG_INFO("Starting Box Object");
 		counter =  0;
-		m_transformComponent = AddComponent<Mona::TransformComponent>();
+		m_transformComponent = Mona::AddComponent<Mona::TransformComponent>(*this);
 		//auto m_cameraComponent = AddComponent<Mona::StaticMeshComponent>();
 	}
 	virtual void Update(float timeStep) noexcept override

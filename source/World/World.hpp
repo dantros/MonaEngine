@@ -1,6 +1,8 @@
 #pragma once
 #ifndef WORLD_HPP
 #define WORLD_HPP
+#include "GameObjectTypes.hpp"
+#include "GameObject.hpp"
 #include "GameObjectManager.hpp"
 #include "Component.hpp"
 #include "ComponentManager.hpp"
@@ -9,9 +11,11 @@
 #include <string>
 
 namespace Mona {
-
+	
 	class World {
 	public:
+		template <typename ComponentType>
+		friend UserComponentHandle<ComponentType> AddComponent(World& world, GameObject& object); 
 		static World& GetInstance() noexcept {
 			static World s_world;
 			return s_world;
@@ -25,35 +29,25 @@ namespace Mona {
 		void DestroyGameObject(std::weak_ptr<GameObject> objectPointer) noexcept;
 		void DestroyGameObject(GameObjectID id) noexcept;
 		std::weak_ptr<GameObject> GetGameObject(GameObjectID id) noexcept;
-
+		
 		template <typename ObjectType, typename ...Args>
 		std::weak_ptr<GameObject> CreateGameObject(Args&& ... args) noexcept;
 		template <typename ComponentType>
-		ComponentHandle<ComponentType> AddComponent(GameObjectID gameObjectID) noexcept;
+		ComponentHandle AddComponent(GameObjectID gameObjectID) noexcept;
 		template <typename ComponentType>
-		void RemoveComponent(ComponentHandle<ComponentType>& handle) noexcept;
+		void RemoveComponent(const ComponentHandle& handle) noexcept;
 		template <typename ComponentType>
-		ComponentHandle<ComponentType> GetComponentHandle(GameObjectID gameObjectID) noexcept;
+		ComponentHandle GetComponentHandle(GameObjectID gameObjectID) noexcept;
 		template <typename ComponentType>
-		ComponentType* GetComponentPointer(ComponentHandle<ComponentType>& handle) noexcept;
+		ComponentType* GetComponentPointer(const ComponentHandle& handle) noexcept;
 
 	private:
 		GameObjectManager m_objectManager;
+		template <typename ComponentType>
+		ComponentManager<ComponentType>* GetManagerPointer() noexcept;
 		std::array<std::shared_ptr<BaseComponentManager>, GetComponentCount()> m_componentManagers;
 
 	};
-
-		template <typename ComponentType>
-		ComponentHandle<ComponentType> AddComponent(GameObject &object) noexcept{
-			return World::GetInstance().AddComponent<ComponentType>(object.GetObjectID());
-		}
-
-		template <typename ComponentType>
-		void RemoveComponent(ComponentHandle<ComponentType>& handle) {
-			World::GetInstance().RemoveComponent(handle);
-		}
-
-
 }
-#include "Detail/World.hpp"
+#include "Detail/World_Implementation.hpp"
 #endif

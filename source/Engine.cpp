@@ -86,6 +86,7 @@ namespace Mona {
 			float timeStep = std::chrono::duration_cast<std::chrono::duration<float>>(frameTime).count();
 			float ms = std::chrono::duration_cast<std::chrono::duration<float, std::milli>>(frameTime).count();
 			
+			m_input->Update();
 			world.Update(timeStep);
 			m_application->UserUpdate(timeStep);
 			accumSec += timeStep;
@@ -102,7 +103,6 @@ namespace Mona {
 			glUseProgram(program);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 			m_window->Update();
-			m_input->Update();
 			count++;
 		}
 

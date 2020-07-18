@@ -18,13 +18,13 @@ namespace Mona {
 	}
 
 	void World::Update(float timeStep) noexcept {
-		m_objectManager.UpdateGameObjects(timeStep);
+		m_objectManager.UpdateGameObjects(*this, timeStep);
 	}
 	void World::DestroyGameObject(std::weak_ptr<GameObject> objectPointer) noexcept {
-		m_objectManager.DestroyGameObject(objectPointer);
+		m_objectManager.DestroyGameObject(*this, objectPointer);
 	}
 	void World::DestroyGameObject(GameObjectID id) noexcept {
-		m_objectManager.DestroyGameObject(id);
+		m_objectManager.DestroyGameObject(*this, id);
 	}
 	std::weak_ptr<GameObject> World::GetGameObject(GameObjectID id) noexcept {
 		return m_objectManager.GetGameObject(id);

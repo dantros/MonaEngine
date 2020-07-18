@@ -16,13 +16,13 @@ namespace Mona {
 		return std::weak_ptr<GameObject>();
 	}
 
-	void GameObjectManager::UpdateGameObjects(float timeStep) noexcept {
+	void GameObjectManager::UpdateGameObjects(World& world, float timeStep) noexcept {
 		for (auto& objectPtr : m_gameObjects)
 		{
-			objectPtr->Update(timeStep);
+			objectPtr->Update(world, timeStep);
 		}
 	}
-	void GameObjectManager::DestroyGameObject(GameObjectID id) noexcept
+	void GameObjectManager::DestroyGameObject(World& world, GameObjectID id) noexcept
 	{
 		auto it = m_lookUp.find(id);
 		if (it != m_lookUp.end())
@@ -38,14 +38,14 @@ namespace Mona {
 		}
 		return;
 	}
-	void GameObjectManager::DestroyGameObject(std::weak_ptr<GameObject> objectPointer) noexcept
+	void GameObjectManager::DestroyGameObject(World& world, std::weak_ptr<GameObject> objectPointer) noexcept
 	{
 		auto sharedObjectPtr = objectPointer.lock();
 
 		if (sharedObjectPtr != nullptr)
 		{
 			auto id = sharedObjectPtr->GetObjectID();
-			DestroyGameObject(id);
+			DestroyGameObject(world, id);
 			return;
 		}
 		MONA_LOG_ERROR("WORLD: Attempting to destroy GameObject from invalid weak_ptr");

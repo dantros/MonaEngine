@@ -4,7 +4,7 @@
 #include <cassert>
 #include <stdio.h>
 #include <cstdint>
-
+#define NOMINMAX
 #ifdef NDEBUG
 	#define ASSERT(expr) (void(0))
 #else

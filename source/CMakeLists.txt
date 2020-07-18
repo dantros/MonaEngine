@@ -10,15 +10,15 @@ set(MONA_HEADERS
 				Event/Events.hpp
 				Engine.hpp
 				Application.hpp
+				World/GameObjectTypes.hpp
 				World/GameObject.hpp
 				World/GameObjectManager.hpp
-				World/Detail/GameObjectManager.hpp
+				World/Detail/GameObjectManager_Implementation.hpp
 				World/Component.hpp
-				World/ComponentHandle.hpp
 				World/ComponentManager.hpp
-				World/Detail/ComponentManager.hpp
+				World/Detail/ComponentManager_Implementation.hpp
 				World/World.hpp
-				World/Detail/World.hpp)
+				World/Detail/World_Implementation.hpp)
 set(MONA_SOURCES 
 				Core/Log.cpp
 				Core/Config.cpp

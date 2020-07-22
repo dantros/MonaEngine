@@ -1,33 +1,42 @@
 #include "World.hpp"
 namespace Mona {
-
+	
 	World::World() : m_objectManager() {
-		m_componentManagers[TransformComponent::componentIndex] = std::make_shared<ComponentManager<TransformComponent>>();
-		m_componentManagers[CameraComponent::componentIndex] = std::make_shared<ComponentManager<CameraComponent>>();
-		m_componentManagers[StaticMeshComponent::componentIndex] = std::make_shared<ComponentManager<StaticMeshComponent>>();
+		m_eventManagerPointer = nullptr;
+		m_componentManagers[TransformComponent::componentIndex].reset(new ComponentManager<TransformComponent>());
+		m_componentManagers[CameraComponent::componentIndex].reset(new ComponentManager<CameraComponent>());
+		m_componentManagers[StaticMeshComponent::componentIndex].reset(new ComponentManager<StaticMeshComponent>());
 	}
-	void World::StartUp(GameObjectID expectedObjects) noexcept {
+	void World::StartUp(EventManager* eventManagerPointer, GameObjectID expectedObjects) noexcept {
+		m_eventManagerPointer = eventManagerPointer;
 		m_objectManager.StartUp(expectedObjects);
 		for (auto& componentManager : m_componentManagers)
-			componentManager->StartUp();
+			componentManager->StartUp(*m_eventManagerPointer, expectedObjects);
 	}
 
 	void World::ShutDown() noexcept {
+		m_objectManager.ShutDown(*this);
 		for (auto& componentManager : m_componentManagers)
-			componentManager->Clear();
+			componentManager->ShutDown(*m_eventManagerPointer);
 	}
 
 	void World::Update(float timeStep) noexcept {
 		m_objectManager.UpdateGameObjects(*this, timeStep);
 	}
-	void World::DestroyGameObject(std::weak_ptr<GameObject> objectPointer) noexcept {
-		m_objectManager.DestroyGameObject(*this, objectPointer);
+
+	void World::DestroyGameObject(const InnerGameObjectHandle& handle) noexcept {
+		m_objectManager.DestroyGameObject(*this, handle);
 	}
-	void World::DestroyGameObject(GameObjectID id) noexcept {
-		m_objectManager.DestroyGameObject(*this, id);
+
+	bool World::IsValid(const InnerGameObjectHandle& handle) const noexcept {
+		return m_objectManager.IsValid(handle);
 	}
-	std::weak_ptr<GameObject> World::GetGameObject(GameObjectID id) noexcept {
-		return m_objectManager.GetGameObject(id);
+	GameObjectManager::size_type World::GetGameObjectCount() const noexcept
+	{
+		return m_objectManager.GetCount();
+	}
+	EventManager& World::GetEventManager() const noexcept {
+		return *m_eventManagerPointer;
 	}
 }
 

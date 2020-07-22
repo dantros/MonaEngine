@@ -4,7 +4,6 @@
 #include "Core/Config.hpp"
 #include <glad/glad.h>
 #include "Event/Events.hpp"
-#include "World/World.hpp"
 #include <chrono>
 
 namespace Mona {
@@ -15,23 +14,27 @@ namespace Mona {
 		Mona::Log::StartUp();
 		Mona::Config& config = Mona::Config::GetInstance();
 		config.readFile("config.cfg");
-		MONA_ASSERT(app != nullptr, "Engine StartUp Error: Must provido not null Application pointer");
+		MONA_ASSERT(app != nullptr, "Engine StartUp Error: Must provide not null Application pointer");
 		m_window = std::make_shared<Window>();
 		m_input = std::make_shared<Input>();
 		m_window->StartUp(&m_eventManager);
 		m_input->StartUp(&m_eventManager);
 		m_application = std::move(app);
-		m_application->StartUp(m_window, m_input);
-		Mona::World::GetInstance().StartUp();
+		m_application->StartUp(m_world, m_window, m_input);
+		const GameObjectID expectedObjects = config.getValueOrDefault<int>("expected_number_of_gameobjects", 1000);
+		m_world.StartUp(&m_eventManager, expectedObjects);
 		
 	}
 
 	void Engine::ShutDown() noexcept
 	{
 		//First thing to clean should be Event Manager.
-		m_application->UserShutDown();
-		Mona::World::GetInstance().ShutDown();
+		
+		m_application->UserShutDown(m_world);
+		m_world.ShutDown();
+		m_input->ShutDown(&m_eventManager);
 		m_window->ShutDown();
+		m_eventManager.ShutDown();
 
 	}
 
@@ -77,7 +80,6 @@ namespace Mona {
 		float accumMs = 0;
 		float accumSec = 0;
 		std::chrono::time_point<std::chrono::steady_clock> startTime = std::chrono::steady_clock::now();
-		auto& world = Mona::World::GetInstance();
 		while (!m_window->ShouldClose())
 		{
 			std::chrono::time_point<std::chrono::steady_clock> newTime = std::chrono::steady_clock::now();
@@ -87,8 +89,8 @@ namespace Mona {
 			float ms = std::chrono::duration_cast<std::chrono::duration<float, std::milli>>(frameTime).count();
 			
 			m_input->Update();
-			world.Update(timeStep);
-			m_application->UserUpdate(timeStep);
+			m_world.Update(timeStep);
+			m_application->UserUpdate(m_world, timeStep);
 			accumSec += timeStep;
 			accumMs += ms;
 			if (count == 200)

@@ -2,20 +2,23 @@
 #ifndef COMPONENTMANAGER_HPP
 #define COMPONENTMANAGER_HPP
 #include "GameObjectTypes.hpp"
+#include "Component.hpp"
+#include "../Core/Log.hpp"
+#include "../Event/Events.hpp"
 #include <vector>
 #include <unordered_map>
 #include <limits>
 namespace Mona {
-
+	class EventManager;
 	class BaseComponentManager {
 	public:
-		using size_type = typename ComponentHandle::size_type;
+		using size_type = typename InnerComponentHandle::size_type;
 		constexpr static size_type s_maxEntries = std::numeric_limits<size_type>::max();
 		constexpr static size_type s_minFreeIndices = 1024;
 		BaseComponentManager() = default;
 		virtual ~BaseComponentManager() = default;
-		virtual void StartUp(GameObjectID expectedObjects = 0) noexcept = 0;
-		virtual void Clear() noexcept = 0;
+		virtual void StartUp(EventManager& eventManager,size_type expectedObjects = 0) noexcept = 0;
+		virtual void ShutDown(EventManager& eventManager) noexcept = 0;
 		BaseComponentManager(const BaseComponentManager&) = delete;
 		BaseComponentManager& operator=(const BaseComponentManager&) = delete;
 	};
@@ -26,17 +29,17 @@ namespace Mona {
 		ComponentManager();
 		ComponentManager(const ComponentManager&) = delete;
 		ComponentManager& operator=(const ComponentManager&) = delete;
-		virtual void StartUp(size_type expectedObjects = 0) noexcept override;
-		virtual void Clear() noexcept override;
-		ComponentHandle AddComponent(const GameObjectHandle &gameObjectHandle) noexcept;
-		void RemoveComponent(const ComponentHandle& handle) noexcept;
-		ComponentType* GetComponentPointer(const ComponentHandle& handle) noexcept;
-		const ComponentType* GetComponentPointer(const ComponentHandle& handle) const noexcept;
+		virtual void StartUp(EventManager& eventManager, size_type expectedObjects = 0) noexcept override;
+		virtual void ShutDown(EventManager& eventManager) noexcept override;
+		InnerComponentHandle AddComponent(const InnerGameObjectHandle &gameObjectHandle) noexcept;
+		void RemoveComponent(const InnerComponentHandle& handle) noexcept;
+		ComponentType* GetComponentPointer(const InnerComponentHandle& handle) noexcept;
 		size_type GetCount() const noexcept;
-		GameObjectHandle GetObjectHandle(const ComponentHandle& handle) const noexcept;
+		InnerGameObjectHandle GetObjectHandle(const InnerComponentHandle& handle) const noexcept;
 		ComponentType& operator[](size_type index) noexcept;
 		const ComponentType& operator[](size_type index) const noexcept;
-		bool IsValid(const ComponentHandle& handle) const noexcept;
+		bool IsValid(const InnerComponentHandle& handle) const noexcept;
+		void OnGameObjectDestroy(const GameObjectDestroyedEvent& event);
 
 	private:
 		struct HandleEntry { 
@@ -48,9 +51,9 @@ namespace Mona {
 		};
 		struct GameObjectEntry
 		{
-			GameObjectEntry(size_type h, GameObjectHandle handle) : handleEntryIndex(h), objectHandle(handle)  {}
+			GameObjectEntry(size_type h, InnerGameObjectHandle handle) : handleEntryIndex(h), objectHandle(handle)  {}
 			size_type handleEntryIndex;
-			GameObjectHandle  objectHandle;
+			InnerGameObjectHandle  objectHandle;
 		};
 		
 		std::vector<ComponentType> m_components;
@@ -60,19 +63,26 @@ namespace Mona {
 		size_type m_firstFreeIndex;
 		size_type m_lastFreeIndex;
 		size_type m_freeIndicesCount;
-	};
 
-	/*
-	template <typename ComponentType>
-	class UserComponentHandle
-	{
-	public:
-		UserComponentHandle(ComponentHandle handle, ComponentManager<ComponentType>* manager) : m_innerHandle(handle), m_managerPtr(manager){};
-	private:
-		ComponentHandle m_innerHandle;
-		ComponentManager<ComponentType>* m_managerPtr;
+		SubscriptionHandle m_objectDestroyedSubscription;
 	};
-	*/
+	template <uint8_t componentIndex>
+	auto CastComponentManager(BaseComponentManager* ptr) noexcept{
+		if constexpr (componentIndex == TransformComponent::componentIndex) {
+			return static_cast<ComponentManager<TransformComponent>*>(ptr);
+		}
+		else if (componentIndex == StaticMeshComponent::componentIndex) {
+			return static_cast<ComponentManager<StaticMeshComponent>*>(ptr);
+		}
+		else if (componentIndex == CameraComponent::componentIndex)
+		{
+			return static_cast<ComponentManager<CameraComponent>*>(ptr);
+		}
+		else {
+			MONA_ASSERT(false, "ComponentManager Error: Trying to cast from invalid componentIndex");
+			return nullptr;
+		}
+	}
 }
 #include "Detail/ComponentManager_Implementation.hpp"
 

@@ -7,24 +7,24 @@
 namespace Mona {
 	
 
-	enum class ComponentType {
+	enum class ComponentType : uint8_t {
 		TransformComponent,
 		CameraComponent,
 		StaticMeshComponent,
-		ComponentCount
+		ComponentTypeCount
 	};
 
-	constexpr size_t GetComponentIndex(ComponentType type) {
-		return static_cast<size_t>(type);
+	constexpr uint8_t GetComponentIndex(ComponentType type) {
+		return static_cast<uint8_t>(type);
 	}
-	constexpr size_t GetComponentCount()
+	constexpr uint8_t GetComponentTypeCount()
 	{
-		return static_cast<size_t>(ComponentType::ComponentCount);
+		return static_cast<uint8_t>(ComponentType::ComponentTypeCount);
 	}
 
 	class TransformComponent {
 	public:
-		static constexpr size_t componentIndex = GetComponentIndex(ComponentType::TransformComponent);
+		static constexpr uint8_t componentIndex = GetComponentIndex(ComponentType::TransformComponent);
 		void Translate(glm::vec3 translation) {
 			localTranslation += translation;
 			UpdateWorldTransform();
@@ -58,18 +58,17 @@ namespace Mona {
 	class CameraComponent
 	{
 	public:
-		static constexpr size_t componentIndex = GetComponentIndex(ComponentType::CameraComponent);
+		static constexpr uint8_t componentIndex = GetComponentIndex(ComponentType::CameraComponent);
 		float fieldOfView;
 		float zNearPlane;
 		float zFarPlane;
 		glm::mat4 view, projection, viewProjection;
 	};
-	//TODO(BYRON): This is momentary
 	typedef uint32_t MeshHandle;
 	class StaticMeshComponent
 	{
 	public:
-		static constexpr size_t componentIndex = GetComponentIndex(ComponentType::StaticMeshComponent);
+		static constexpr uint8_t componentIndex = GetComponentIndex(ComponentType::StaticMeshComponent);
 		MeshHandle Handle;
 	};
 }

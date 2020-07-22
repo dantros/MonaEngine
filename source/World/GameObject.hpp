@@ -3,66 +3,41 @@
 #define GAMEOBJECT_HPP
 #include "../Core/Log.hpp"
 #include <limits>
+#include <unordered_map>
 #include "GameObjectTypes.hpp"
 #include "Component.hpp"
-#include "ComponentManager.hpp"
 namespace Mona {
 	class World;
-	template <typename ComponentType>
-	class UserComponentHandle {
-	public:
-		UserComponentHandle() : m_innerHandle(), m_managerPointer(nullptr) {}
-		UserComponentHandle(ComponentHandle handle, ComponentManager<ComponentType>* managerPointer) :
-			m_innerHandle(handle), m_managerPointer(managerPointer) {}
-		bool IsValid() const {
-			return m_managerPointer!= nullptr && m_managerPointer->IsValid(m_innerHandle);
-		}
-		
-		ComponentType* operator->() {
-			return m_managerPointer->GetComponentPointer(m_innerHandle);
-		}
-		ComponentHandle GetInnerHandle() const {
-			return m_innerHandle;
-		}
-	private:
-		ComponentHandle m_innerHandle;
-		ComponentManager<ComponentType>* m_managerPointer;
-	};
-
+	class GameObjectManager;
 	class GameObject {
 	public:
-		GameObject(){
-			m_id = CreateNewObjectIndex();
-		}
+		GameObject() : m_objectHandle() {}
+		GameObject(const GameObject&) = delete;
+		GameObject& operator=(const GameObject&) = delete;
+		GameObject(GameObject&&) = default;
+		GameObject& operator=(GameObject&&) = default;
 		virtual void Update(World& world, float timeStep) noexcept {};
 		virtual void StartUp(World& world) noexcept {};
-		GameObjectID GetObjectID() const noexcept{ return m_id; }
-
-	private:
-		GameObjectID m_id;
-		static GameObjectID CreateNewObjectIndex() {
-
-			static GameObjectID currentIndex = 0;
-			MONA_ASSERT(currentIndex < std::numeric_limits<GameObjectID>::max(), "WORLD: Cannot create another GameObject, maximun number of them has been reached");
-			return ++currentIndex;
+		virtual void ShutDown(World& world) noexcept {};
+		virtual ~GameObject() {
+		//TODO(BYRON): Add removal of components;
+		};
+		InnerGameObjectHandle GetObjectHandle() const noexcept{ return m_objectHandle; }
+		template <typename ComponentType>
+		InnerComponentHandle GetInnerComponentHandle() const {
+			auto& it = m_componentHandles.find(ComponentType::componentIndex);
+			if (it != m_componentHandles.end())
+				return it->second;
+			else return InnerComponentHandle();
 		}
-
+	private:
+		friend class GameObjectManager;
+		friend class World;
+		void SetObjectHandle(const InnerGameObjectHandle& handle) {
+			m_objectHandle = handle;
+		}
+		InnerGameObjectHandle m_objectHandle;
+		std::unordered_map<decltype(GetComponentTypeCount()), InnerComponentHandle> m_componentHandles;
 	};
-	
-	template <typename ComponentType>
-	UserComponentHandle<ComponentType> AddComponent(World& world, GameObject& object)
-	{
-		auto managerPtr = world.GetManagerPointer<ComponentType>();
-		return UserComponentHandle<ComponentType>(world.AddComponent<ComponentType>(object.GetObjectID()), managerPtr);
-	}
-
-	template <typename ComponentType>
-	UserComponentHandle<ComponentType> RemoveComponent(World& world, UserComponentHandle<ComponentType>& userHandle)
-	{
-		world.RemoveComponent(userHandle.GetInnerHandle());
-	}
-
-	using TransformHandle = UserComponentHandle<TransformComponent>;
-	using StaticMeshHandle = UserComponentHandle<StaticMeshComponent>;
 }
 #endif

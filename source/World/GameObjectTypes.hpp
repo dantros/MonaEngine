@@ -6,22 +6,22 @@
 namespace Mona {
 	using GameObjectID = uint32_t;
 	constexpr GameObjectID INVALID_INDEX = std::numeric_limits<GameObjectID>::max();
-	struct ComponentHandle
+	struct InnerComponentHandle
 	{
 		using size_type = GameObjectID;
-		ComponentHandle() : m_index(INVALID_INDEX), m_generation(0) {};
-		ComponentHandle(size_type index, size_type generation) :
+		InnerComponentHandle() : m_index(INVALID_INDEX), m_generation(0) {};
+		InnerComponentHandle(size_type index, size_type generation) :
 			m_index(index),
 			m_generation(generation) {};
 		size_type m_index;
 		size_type m_generation;
 	};
 
-	struct GameObjectHandle
+	struct InnerGameObjectHandle
 	{
 		using size_type = GameObjectID;
-		GameObjectHandle() : m_index(INVALID_INDEX), m_generation(0) {};
-		GameObjectHandle(size_type index, size_type generation) :
+		InnerGameObjectHandle() : m_index(INVALID_INDEX), m_generation(0) {};
+		InnerGameObjectHandle(size_type index, size_type generation) :
 			m_index(index),
 			m_generation(generation) {};
 		size_type m_index;

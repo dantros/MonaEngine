@@ -7,8 +7,4 @@ function(Add_Test TARGETNAME FILENAME)
 
 endfunction(Add_Test)
 
-Add_Test(Test000_ComponentManager Test000_ComponentManager.cpp)
-Add_Test(Test001_GameObjectManager Test001_GameObjectManager.cpp)
-
-
-
+Add_Test(Test002_World Test002_World.cpp)

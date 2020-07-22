@@ -15,9 +15,12 @@ namespace Mona
 		void StartUp(EventManager* eventManager) noexcept {
 			m_windowHandle = glfwGetCurrentContext();
 			MONA_ASSERT(m_windowHandle != NULL, "GLFW Error: Unable to find window");
-			eventManager->Subscribe(this, &Input::Impl::OnMouseScroll);
+			m_mouseScrollSubscription = eventManager->Subscribe(this, &Input::Impl::OnMouseScroll);
 		}
 
+		void ShutDown(EventManager* eventManager) noexcept {
+			eventManager->Unsubscribe<MouseScrollEvent>(m_mouseScrollSubscription);
+		}
 		void Update() noexcept {
 			m_mouseWheelOffset.x = 0.0;
 			m_mouseWheelOffset.y = 0.0;
@@ -67,6 +70,7 @@ namespace Mona
 	private:
 		GLFWwindow* m_windowHandle;
 		glm::dvec2 m_mouseWheelOffset;
+		SubscriptionHandle m_mouseScrollSubscription;
 	};
 
 	Input::Input() : p_Impl(std::make_unique<Impl>()) {}
@@ -104,6 +108,10 @@ namespace Mona
 
 	void Input::StartUp(EventManager* eventManager) noexcept {
 		p_Impl->StartUp(eventManager);
+	}
+
+	void Input::ShutDown(EventManager* eventManager) noexcept {
+		p_Impl->ShutDown(eventManager);
 	}
 
 }

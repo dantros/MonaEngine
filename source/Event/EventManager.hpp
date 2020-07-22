@@ -1,41 +1,109 @@
 #pragma once
 #ifndef EVENTMANAGER_HPP
 #define EVENTMANAGER_HPP
-#include <functional>
+#include "../Core/Log.hpp"
 #include "Events.hpp"
+#include <functional>
 #include <vector>
 #include <unordered_map>
 #include <typeindex>
 #include <type_traits>
+#include <array>
+#include <limits>
 namespace Mona
 {
 	class Engine;
+	class ObserverList {
+	public:
+		ObserverList();
+		using EventHandler = std::function<void(const Event&)>;
+		static constexpr uint32_t s_maxEntries = INVALID_EVENT_INDEX;
+		static constexpr uint32_t s_minFreeIndices = 10;
+		template <typename ObjType, typename EventType>
+		SubscriptionHandle Subscribe(ObjType* obj, void (ObjType::* memberFunction)(const EventType&)) noexcept {
+			static_assert(std::is_base_of<Event, EventType>::value, "EventType must be a derived class from Event");
+			MONA_ASSERT(m_eventHandlers.size() < s_maxEntries, "EventManager Error: Cannot Add more observers, max number reached.");
+			if (m_firstFreeIndex != s_maxEntries && m_freeIndicesCount > s_minFreeIndices)
+			{
+				auto& handleEntry = m_handleEntries[m_firstFreeIndex];
+				MONA_ASSERT(handleEntry.active == false, "EventManager Error: Incorrect active state for handleEntry");
+				MONA_ASSERT(handleEntry.generation < std::numeric_limits<decltype(handleEntry.generation)>::max(),
+					"EventManager Error: Generational Index reached its maximunn value, observer cannot be added.");
+				auto handleIndex = m_firstFreeIndex;
+
+				if (m_firstFreeIndex == m_lastFreeIndex)
+					m_firstFreeIndex = m_lastFreeIndex = s_maxEntries;
+				else
+					m_firstFreeIndex = handleEntry.index;
+				handleEntry.generation += 1;
+				handleEntry.active = true;
+				handleEntry.index = static_cast<uint32_t>(m_eventHandlers.size());
+				handleEntry.prevIndex = s_maxEntries;
+				--m_freeIndicesCount;
+				SubscriptionHandle resultHandle(handleIndex, handleEntry.generation);
+				m_eventHandlers.push_back([obj, memberFunction](const Event& e) {
+					(obj->*memberFunction)(static_cast<const EventType&>(e)); });
+				m_handleEntryIndices.emplace_back(handleIndex);
+				return resultHandle;
+			}
+			else {
+				m_handleEntries.emplace_back(static_cast<uint32_t>(m_eventHandlers.size()), s_maxEntries, 0);
+
+				SubscriptionHandle resultHandle(static_cast<uint32_t>(m_handleEntries.size() - 1), 0);
+				m_eventHandlers.push_back([obj, memberFunction](const Event& e) {
+					(obj->*memberFunction)(static_cast<const EventType&>(e)); });
+				m_handleEntryIndices.emplace_back(static_cast<uint32_t>(m_handleEntries.size() - 1));
+				return resultHandle;
+			}
+		}
+		void Unsubscribe(const SubscriptionHandle& handle) noexcept;
+		void Publish(const Event& e) noexcept;
+		void ShutDown() noexcept;
+	private:
+
+
+		struct HandleEntry {
+			HandleEntry(uint32_t i, uint32_t p, uint32_t g) : index(i), prevIndex(p), generation(g), active(true) {}
+			uint32_t index;
+			uint32_t prevIndex;
+			uint32_t generation;
+			bool active;
+		};
+		std::vector<HandleEntry> m_handleEntries;
+		std::vector<uint32_t> m_handleEntryIndices;
+		std::vector<EventHandler> m_eventHandlers;
+		uint32_t m_firstFreeIndex;
+		uint32_t m_lastFreeIndex;
+		uint32_t m_freeIndicesCount;
+		
+	};
+
+
 	class EventManager {
-		friend class Engine;
 	public:
 		template <typename ObjType, typename EventType>
-		void Subscribe(ObjType* obj, void (ObjType::* memberFunction)(const EventType&)) {
+		SubscriptionHandle Subscribe(ObjType* obj, void (ObjType::* memberFunction)(const EventType&)) {
 			static_assert(std::is_base_of<Event, EventType>::value, "EventType must be a derived class from Event");
-			m_observers[std::type_index(typeid(EventType))].push_back([obj, memberFunction](const Event &e) {
-				(obj->*memberFunction)(static_cast<const EventType&>(e)); });
+			return m_observerLists[EventType::eventIndex].Subscribe(obj, memberFunction);
 		}
 
 		template <typename EventType>
 		void Publish(const EventType& e)
 		{
 			static_assert(std::is_base_of<Event, EventType>::value, "EventType must be a derived class from Event");
-			for (const auto& cb : m_observers[std::type_index(typeid(EventType))])
-			{
-				cb(e);
-			}
+			m_observerLists[EventType::eventIndex].Publish(e);
 		}
-
-	private:
+		template <typename EventType>
+		void Unsubscribe(const SubscriptionHandle& handle) {
+			static_assert(std::is_base_of<Event, EventType>::value, "EventType must be a derived class from Event");
+			m_observerLists[EventType::eventIndex].Unsubscribe(handle);
+		}
 		EventManager() = default;
 		~EventManager() = default;
 		void ShutDown() noexcept;
-		using callBack = std::function<void(const Event&)>;
-		std::unordered_map<std::type_index, std::vector<callBack>> m_observers;
+	private:
+		std::array<ObserverList, GetEventTypeCount()> m_observerLists;
+		//std::unordered_map<std::type_index, std::vector<callBack>> m_observers;
 
 	};
 }

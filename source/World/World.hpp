@@ -124,6 +124,7 @@ namespace Mona {
 	{
 		world.DestroyGameObject(objectHandle.GetInnerHandle());
 	}
+
 }
 #include "Detail/World_Implementation.hpp"
 #endif

@@ -31,7 +31,6 @@ namespace Mona {
 			gameObjectPointer->SetObjectHandle(resultHandle);
 			m_gameObjects.emplace_back(std::move(gameObjectPointer));
 			m_gameObjectHandleIndices.emplace_back(handleIndex);
-			m_gameObjects.back()->StartUp(world);
 			return resultHandle;
 		}
 		else {
@@ -41,7 +40,6 @@ namespace Mona {
 			gameObjectPointer->SetObjectHandle(resultHandle);
 			m_gameObjects.emplace_back(std::move(gameObjectPointer));
 			m_gameObjectHandleIndices.emplace_back(static_cast<size_type>(m_handleEntries.size() - 1));
-			m_gameObjects.back()->StartUp(world);
 			return resultHandle;
 		}
 

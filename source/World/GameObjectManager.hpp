@@ -19,8 +19,7 @@ namespace Mona {
 		void ShutDown(World &world) noexcept;
 		template <typename ObjectType,typename ...Args>
 		InnerGameObjectHandle CreateGameObject(World &world, Args&& ... args);
-		void DestroyGameObject(World& world, const InnerGameObjectHandle &handle) noexcept;
-		
+		void DestroyGameObject(World& world, const InnerGameObjectHandle& handle) noexcept;
 		GameObject& GetGameObjectReference(const InnerGameObjectHandle& handle) noexcept;
 		size_type GetCount() const noexcept;
 		bool IsValid(const InnerGameObjectHandle& handle) const noexcept;
@@ -29,10 +28,7 @@ namespace Mona {
 		void UpdateGameObjects(World& world, float timeStep) noexcept;
 	private:
 		
-		//using GameObjectPtrs = std::vector<std::shared_ptr<GameObject>>;
-		//GameObjectPtrs m_gameObjects;
-		//std::unordered_map<GameObjectID, GameObjectPtrs::size_type> m_lookUp;
-		//std::unordered_map<GameObjectID, GameObjectPtrs::size_type> m_lookUp;
+		void ImmediateDestroyGameObject(World& world, const InnerGameObjectHandle& handle) noexcept;
 		constexpr static size_type s_maxEntries = std::numeric_limits<size_type>::max();
 		constexpr static size_type s_minFreeIndices = 1024;
 		struct HandleEntry {
@@ -46,12 +42,11 @@ namespace Mona {
 		std::vector<size_type> m_gameObjectHandleIndices;
 		std::vector<HandleEntry> m_handleEntries;
 
-		std::vector<std::unique_ptr<GameObject>> m_pendingAddObjects;
 		std::vector<InnerGameObjectHandle> m_pendingDestroyObjectHandles;
 		size_type m_firstFreeIndex;
 		size_type m_lastFreeIndex;
 		size_type m_freeIndicesCount;
-		bool m_IsIteratingOverObject;
+		bool m_IsIteratingOverObjects;
 	};
 }
 #include "Detail/GameObjectManager_Implementation.hpp"

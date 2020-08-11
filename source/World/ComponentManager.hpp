@@ -34,6 +34,7 @@ namespace Mona {
 		InnerComponentHandle AddComponent(const InnerGameObjectHandle &gameObjectHandle) noexcept;
 		void RemoveComponent(const InnerComponentHandle& handle) noexcept;
 		ComponentType* GetComponentPointer(const InnerComponentHandle& handle) noexcept;
+		const ComponentType* GetComponentPointer(const InnerComponentHandle& handle) const noexcept;
 		size_type GetCount() const noexcept;
 		InnerGameObjectHandle GetObjectHandle(const InnerComponentHandle& handle) const noexcept;
 		ComponentType& operator[](size_type index) noexcept;

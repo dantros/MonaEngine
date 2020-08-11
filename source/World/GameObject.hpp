@@ -38,7 +38,7 @@ namespace Mona {
 		virtual void UserShutDown(World& world) noexcept {};
 
 		const State GetState() const { return m_state; }
-		InnerGameObjectHandle GetObjectHandle() const noexcept{ return m_objectHandle; }
+		InnerGameObjectHandle GetInnerObjectHandle() const noexcept{ return m_objectHandle; }
 		template <typename ComponentType>
 		InnerComponentHandle GetInnerComponentHandle() const {
 			auto& it = m_componentHandles.find(ComponentType::componentIndex);

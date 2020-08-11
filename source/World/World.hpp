@@ -16,23 +16,26 @@ namespace Mona {
 	class ComponentHandle {
 	public:
 		static constexpr uint8_t componentIndex = ComponentType::componentIndex;
-		ComponentHandle() : m_innerHandle() {}
-		ComponentHandle(InnerComponentHandle handle) : m_innerHandle(handle) {}
+		ComponentHandle() : m_innerHandle(), m_managerPointer(nullptr) {}
+		ComponentHandle(InnerComponentHandle handle, ComponentManager<ComponentType>* manager) : m_innerHandle(handle), m_managerPointer(manager){}
 		InnerComponentHandle GetInnerHandle() const noexcept { return m_innerHandle; }
-		bool IsValid(World& world) const noexcept {
-			return world.IsValid<ComponentType>(m_innerHandle);
+		bool IsValid() const noexcept {
+			if (m_managerPointer == nullptr)
+				return false;
+			return m_managerPointer->IsValid(m_innerHandle);
 		}
-		const ComponentType& operator()(World& world) const {
-			MONA_ASSERT(IsValid(world), "Trying to access with invalid componentHandle");
-			return world.GetComponentReference<ComponentType>(m_innerHandle);
-		}
-		ComponentType& operator()(World& world)
+		ComponentType* operator->()
 		{
-			MONA_ASSERT(IsValid(world), "Trying to access with invalid componentHandle");
-			return world.GetComponentReference<ComponentType>(m_innerHandle);
+			MONA_ASSERT(IsValid(), "ComponentHandle Error: Trying to access with invalid componentHandle");
+			return m_managerPointer->GetComponentPointer(m_innerHandle);
+		}
+		const ComponentType* operator->() const {
+			MONA_ASSERT(IsValid(), "ComponentHandle Error: Trying to access with invalid componentHandle");
+			return m_managerPointer->GetComponentPointer(m_innerHandle);
 		}
 	private:
 		InnerComponentHandle m_innerHandle;
+		ComponentManager<ComponentType>* m_managerPointer;
 	};
 
 	template <typename ObjectType>
@@ -74,15 +77,11 @@ namespace Mona {
 		template <typename ObjectType, typename ...Args>
 		InnerGameObjectHandle CreateGameObject(Args&& ... args) noexcept;
 		template <typename ComponentType>
-		InnerComponentHandle AddComponent(const InnerGameObjectHandle &objectHandle) noexcept;
+		ComponentHandle<ComponentType> AddComponent(const InnerGameObjectHandle &objectHandle) noexcept;
 		template <typename ComponentType>
-		void RemoveComponent(const InnerComponentHandle& handle) noexcept;
-		template <typename ComponentType>
-		bool IsValid(const InnerComponentHandle& handle) const noexcept;
+		void RemoveComponent(const ComponentHandle<ComponentType>& handle) noexcept;
 		template <typename ComponentType>
 		InnerComponentHandle GetComponentHandle(const InnerGameObjectHandle& objectHandle) const noexcept;
-		template <typename ComponentType>
-		ComponentType& GetComponentReference(const InnerComponentHandle& handle) noexcept;
 		template <typename ComponentType>
 		BaseComponentManager::size_type GetComponentCount() const noexcept;
 
@@ -102,17 +101,6 @@ namespace Mona {
 	using StaticMeshHandle = ComponentHandle<StaticMeshComponent>;
 	using CameraHandle = ComponentHandle<CameraComponent>;
 
-
-	template <typename ComponentType>
-	ComponentHandle<ComponentType> AddComponent(World& world, GameObject& object) noexcept
-	{
-		return ComponentHandle<ComponentType>(world.AddComponent<ComponentType>(object.GetObjectHandle()));
-	};
-	
-	template <typename ComponentType>
-	void RemoveComponent(World& world, ComponentHandle<ComponentType>& componentHandle) noexcept{
-		world.RemoveComponent<ComponentType>(componentHandle.GetInnerHandle());
-	};
 
 	template <typename ObjectType, typename ... Args>
 	GameObjectHandle<ObjectType> CreateGameObject(World& world, Args&& ... args) noexcept

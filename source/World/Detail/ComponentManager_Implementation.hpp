@@ -116,6 +116,15 @@ namespace Mona {
 		MONA_ASSERT(m_handleEntries[index].generation == handle.m_generation, "ComponentManager Error: handle with incorrect generation");
 		return &m_components[m_handleEntries[index].index];
 	}
+	template <typename ComponentType>
+	const ComponentType* ComponentManager<ComponentType>::GetComponentPointer(const InnerComponentHandle& handle) const noexcept
+	{
+		auto index = handle.m_index;
+		MONA_ASSERT(index < m_handleEntries.size(), "ComponentManager Error: handle index out of range");
+		MONA_ASSERT(m_handleEntries[index].active == true, "ComponentManager Error: Trying to access inactive handle");
+		MONA_ASSERT(m_handleEntries[index].generation == handle.m_generation, "ComponentManager Error: handle with incorrect generation");
+		return &m_components[m_handleEntries[index].index];
+	}
 
 	template <typename ComponentType>
 	typename ComponentManager<ComponentType>::size_type ComponentManager<ComponentType>::GetCount() const noexcept { return m_components.size(); }

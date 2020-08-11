@@ -9,19 +9,19 @@ class MyBox : public Mona::GameObject {
 public:
 	virtual void UserUpdate(Mona::World& world, float timeStep) noexcept override{
 		globalUpdateCalls += 1;
-		m_transform(world).Translate(glm::vec3(timeStep));
+		m_transform->Translate(glm::vec3(timeStep));
 	};
 	virtual void UserStartUp(Mona::World& world) noexcept override{
 		globalStartUpCalls += 1;
-		m_transform = AddComponent<Mona::TransformComponent>(world, *this);
-		m_mesh = AddComponent<Mona::StaticMeshComponent>(world, *this);
-		m_camera = AddComponent<Mona::CameraComponent>(world, *this);
+		m_transform = world.AddComponent<Mona::TransformComponent>(GetInnerObjectHandle());
+		m_mesh = world.AddComponent<Mona::StaticMeshComponent>(GetInnerObjectHandle());
+		m_camera = world.AddComponent<Mona::CameraComponent>(GetInnerObjectHandle());
 	};
 	virtual void UserShutDown(Mona::World& world) noexcept override{
 		globalShutDownCalls += 1;
 	};
-	glm::vec3 GetTranslation(Mona::World& world) const {
-		return m_transform(world).GetLocalTranslation();
+	glm::vec3 GetTranslation() const {
+		return m_transform->GetLocalTranslation();
 	}
 	~MyBox() {
 		globalDestructorCalls += 1;
@@ -57,7 +57,7 @@ public:
 		m_frameCount += 1;
 		if (m_frameCount == 1000)
 		{
-			world.DestroyGameObject(GetObjectHandle());
+			world.DestroyGameObject(GetInnerObjectHandle());
 		}
 	}
 	virtual void UserShutDown(Mona::World& world) noexcept override {
@@ -91,7 +91,7 @@ int main(){
 	MONA_ASSERT(world.GetComponentCount<Mona::TransformComponent>() == 1, "Incorrect component count");
 	MONA_ASSERT(world.GetComponentCount<Mona::StaticMeshComponent>() == 1, "Incorrect component count");
 	MONA_ASSERT(world.GetComponentCount<Mona::CameraComponent>() == 1, "Incorrect component count");
-	MONA_ASSERT(box(world).GetTranslation(world) == glm::vec3(20.0f), "Incorrect box translation");
+	MONA_ASSERT(box(world).GetTranslation() == glm::vec3(20.0f), "Incorrect box translation");
 	Mona::DestroyGameObject(world, box);
 	MONA_ASSERT(world.GetComponentCount<Mona::TransformComponent>() == 0, "Incorrect component count");
 	MONA_ASSERT(world.GetComponentCount<Mona::StaticMeshComponent>() == 0, "Incorrect component count");

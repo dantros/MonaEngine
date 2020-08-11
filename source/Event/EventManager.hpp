@@ -19,9 +19,7 @@ namespace Mona
 		using EventHandler = std::function<void(const Event&)>;
 		static constexpr uint32_t s_maxEntries = INVALID_EVENT_INDEX;
 		static constexpr uint32_t s_minFreeIndices = 10;
-		template <typename ObjType, typename EventType>
-		SubscriptionHandle Subscribe(ObjType* obj, void (ObjType::* memberFunction)(const EventType&)) noexcept {
-			static_assert(std::is_base_of<Event, EventType>::value, "EventType must be a derived class from Event");
+		SubscriptionHandle Subscribe(EventHandler handler) noexcept {
 			MONA_ASSERT(m_eventHandlers.size() < s_maxEntries, "EventManager Error: Cannot Add more observers, max number reached.");
 			if (m_firstFreeIndex != s_maxEntries && m_freeIndicesCount > s_minFreeIndices)
 			{
@@ -41,8 +39,7 @@ namespace Mona
 				handleEntry.prevIndex = s_maxEntries;
 				--m_freeIndicesCount;
 				SubscriptionHandle resultHandle(handleIndex, handleEntry.generation);
-				m_eventHandlers.push_back([obj, memberFunction](const Event& e) {
-					(obj->*memberFunction)(static_cast<const EventType&>(e)); });
+				m_eventHandlers.push_back(handler);
 				m_handleEntryIndices.emplace_back(handleIndex);
 				return resultHandle;
 			}
@@ -50,8 +47,7 @@ namespace Mona
 				m_handleEntries.emplace_back(static_cast<uint32_t>(m_eventHandlers.size()), s_maxEntries, 0);
 
 				SubscriptionHandle resultHandle(static_cast<uint32_t>(m_handleEntries.size() - 1), 0);
-				m_eventHandlers.push_back([obj, memberFunction](const Event& e) {
-					(obj->*memberFunction)(static_cast<const EventType&>(e)); });
+				m_eventHandlers.push_back(handler);
 				m_handleEntryIndices.emplace_back(static_cast<uint32_t>(m_handleEntries.size() - 1));
 				return resultHandle;
 			}
@@ -84,7 +80,15 @@ namespace Mona
 		template <typename ObjType, typename EventType>
 		SubscriptionHandle Subscribe(ObjType* obj, void (ObjType::* memberFunction)(const EventType&)) {
 			static_assert(std::is_base_of<Event, EventType>::value, "EventType must be a derived class from Event");
-			return m_observerLists[EventType::eventIndex].Subscribe(obj, memberFunction);
+			auto eventHandler = [obj, memberFunction](const Event& e) { (obj->*memberFunction)(static_cast<const EventType&>(e)); };
+			return m_observerLists[EventType::eventIndex].Subscribe(eventHandler);
+		}
+		
+		template <typename EventType>
+		SubscriptionHandle Subscribe(void (*freeFunction)(const EventType&)) {
+			static_assert(std::is_base_of<Event, EventType>::value, "EventType must be a derived class from Event");
+			auto eventHandler = [freeFunction](const Event& e) { (*freeFunction)(static_cast<const EventType&>(e)); };
+			return m_observerLists[EventType::eventIndex].Subscribe(eventHandler);
 		}
 
 		template <typename EventType>
@@ -103,7 +107,6 @@ namespace Mona
 		void ShutDown() noexcept;
 	private:
 		std::array<ObserverList, GetEventTypeCount()> m_observerLists;
-		//std::unordered_map<std::type_index, std::vector<callBack>> m_observers;
 
 	};
 }

@@ -19,10 +19,11 @@ namespace Mona {
 		m_input = std::make_shared<Input>();
 		m_window->StartUp(&m_eventManager);
 		m_input->StartUp(&m_eventManager);
-		m_application = std::move(app);
-		m_application->StartUp(m_world, m_window, m_input);
 		const GameObjectID expectedObjects = config.getValueOrDefault<int>("expected_number_of_gameobjects", 1000);
 		m_world.StartUp(&m_eventManager, expectedObjects);
+		m_application = std::move(app);
+		m_application->StartUp(m_world, m_window, m_input);
+		
 		
 	}
 

@@ -5,11 +5,12 @@
 namespace Mona {
 
 	template <typename ObjectType, typename ...Args>
-	InnerGameObjectHandle GameObjectManager::CreateGameObject(World& world, Args&& ... args)
+	ObjectType* GameObjectManager::CreateGameObject(World& world, Args&& ... args)
 	{
 		static_assert(std::is_base_of<GameObject, ObjectType>::value, "ObjectType must be a derived class from GameObject");
 		MONA_ASSERT(m_gameObjects.size() < s_maxEntries, "GameObjectManager Error: Cannot Add more objects, max number reached.");
 		auto gameObjectPointer = std::make_unique<ObjectType>(std::forward<Args>(args)...);
+		ObjectType* rawPointer = gameObjectPointer.get();
 		if (m_firstFreeIndex != s_maxEntries && m_freeIndicesCount > s_minFreeIndices)
 		{
 			auto& handleEntry = m_handleEntries[m_firstFreeIndex];
@@ -31,7 +32,7 @@ namespace Mona {
 			gameObjectPointer->SetObjectHandle(resultHandle);
 			m_gameObjects.emplace_back(std::move(gameObjectPointer));
 			m_gameObjectHandleIndices.emplace_back(handleIndex);
-			return resultHandle;
+			return rawPointer;
 		}
 		else {
 			m_handleEntries.emplace_back(static_cast<size_type>(m_gameObjects.size()), s_maxEntries, 0);
@@ -40,7 +41,7 @@ namespace Mona {
 			gameObjectPointer->SetObjectHandle(resultHandle);
 			m_gameObjects.emplace_back(std::move(gameObjectPointer));
 			m_gameObjectHandleIndices.emplace_back(static_cast<size_type>(m_handleEntries.size() - 1));
-			return resultHandle;
+			return rawPointer;
 		}
 
 	}

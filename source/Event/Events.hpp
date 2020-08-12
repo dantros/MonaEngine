@@ -5,19 +5,19 @@
 #include <cstdint>
 namespace Mona
 {
-	enum class EventType : uint8_t {
+	enum class EEventType : uint8_t {
 		WindowResizeEvent,
 		MouseScrollEvent,
 		GameObjectDestroyedEvent,
 		EventTypeCount
 	};
 
-	constexpr uint8_t GetEventIndex(EventType type) {
+	constexpr uint8_t GetEventIndex(EEventType type) {
 		return static_cast<uint8_t>(type);
 	}
 	constexpr uint8_t GetEventTypeCount()
 	{
-		return static_cast<uint8_t>(EventType::EventTypeCount);
+		return static_cast<uint8_t>(EEventType::EventTypeCount);
 	}
 	struct Event {
 
@@ -35,19 +35,19 @@ namespace Mona
 		uint32_t m_generation;
 	};
 	struct WindowResizeEvent : public Event {
-		static constexpr uint8_t eventIndex = GetEventIndex(EventType::WindowResizeEvent);
+		static constexpr uint8_t eventIndex = GetEventIndex(EEventType::WindowResizeEvent);
 		int width;
 		int height;
 	};
 
 	struct MouseScrollEvent : public Event {
-		static constexpr uint8_t eventIndex = GetEventIndex(EventType::MouseScrollEvent);
+		static constexpr uint8_t eventIndex = GetEventIndex(EEventType::MouseScrollEvent);
 		double xOffset;
 		double yOffset;
 	};
 
 	struct GameObjectDestroyedEvent : public Event {
-		static constexpr uint8_t eventIndex = GetEventIndex(EventType::GameObjectDestroyedEvent);
+		static constexpr uint8_t eventIndex = GetEventIndex(EEventType::GameObjectDestroyedEvent);
 		GameObjectDestroyedEvent(GameObject& go) : gameObject(go) {}
 		GameObject& gameObject;
 	};

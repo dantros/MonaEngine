@@ -11,12 +11,12 @@ namespace Mona {
 	class GameObjectManager;
 	class GameObject {
 	public:
-		enum class State {
+		enum class EState {
 			UnStarted,
 			Started,
 			PendingDestroy
 		};
-		GameObject() : m_objectHandle(), m_state(State::UnStarted) {}
+		GameObject() : m_objectHandle(), m_state(EState::UnStarted) {}
 		virtual ~GameObject() {};
 		GameObject(const GameObject&) = delete;
 		GameObject& operator=(const GameObject&) = delete;
@@ -26,19 +26,24 @@ namespace Mona {
 		void StartUp(World& world) noexcept 
 		{ 
 			UserStartUp(world);
-			m_state = State::Started;
+			m_state = EState::Started;
 		};
 
 		void ShutDown(World& world) noexcept {
-			m_state = State::PendingDestroy;
+			m_state = EState::PendingDestroy;
 			UserShutDown(world);
 		}
 		virtual void UserUpdate(World& world, float timeStep) noexcept {};
 		virtual void UserStartUp(World& world) noexcept {};
 		virtual void UserShutDown(World& world) noexcept {};
 
-		const State GetState() const { return m_state; }
-		InnerGameObjectHandle GetInnerObjectHandle() const noexcept{ return m_objectHandle; }
+		const EState GetState() const { return m_state; }
+		template <typename ComponentType>
+		bool HasComponent() const {
+			auto& it = m_componentHandles.find(ComponentType::componentIndex);
+			return it != m_componentHandles.end();
+		}
+		InnerGameObjectHandle GetInnerObjectHandle() const noexcept { return m_objectHandle; }
 		template <typename ComponentType>
 		InnerComponentHandle GetInnerComponentHandle() const {
 			auto& it = m_componentHandles.find(ComponentType::componentIndex);
@@ -52,8 +57,16 @@ namespace Mona {
 		void SetObjectHandle(const InnerGameObjectHandle& handle) {
 			m_objectHandle = handle;
 		}
+
+		void RemoveInnerComponentHandle(decltype(GetComponentTypeCount()) componentIndex){
+			m_componentHandles.erase(componentIndex);
+		}
+
+		void AddInnerComponentHandle(decltype(GetComponentTypeCount()) componentIndex, InnerComponentHandle componentHandle) {
+			m_componentHandles[componentIndex] = componentHandle;
+		}
 		InnerGameObjectHandle m_objectHandle;
-		State m_state;
+		EState m_state;
 		std::unordered_map<decltype(GetComponentTypeCount()), InnerComponentHandle> m_componentHandles;
 	};
 }

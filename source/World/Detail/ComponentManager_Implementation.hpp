@@ -18,7 +18,7 @@ namespace Mona {
 	void ComponentManager<ComponentType>::OnGameObjectDestroy(const GameObjectDestroyedEvent& event)
 	{
 		auto handle = event.gameObject.GetInnerComponentHandle<ComponentType>();
-		if (IsValid(handle))
+		if(IsValid(handle))
 			RemoveComponent(handle);
 	}
 

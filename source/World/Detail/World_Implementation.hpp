@@ -3,40 +3,48 @@
 #define WORLD_IMPLEMENTATION_HPP
 namespace Mona {
 	template <typename ObjectType, typename ...Args>
-	InnerGameObjectHandle World::CreateGameObject(Args&& ... args) noexcept
+	GameObjectHandle<ObjectType> World::CreateGameObject(Args&& ... args) noexcept
 	{
 		static_assert(std::is_base_of<GameObject, ObjectType>::value, "ObjectType must be a derived class from GameObject");
-		return m_objectManager.CreateGameObject<ObjectType>(*this, std::forward<Args>(args)...);
-	}
-	template <typename ObjectType>
-	ObjectType& World::GetGameObjectReference(const InnerGameObjectHandle& handle) noexcept {
-		static_assert(std::is_base_of<GameObject, ObjectType>::value, "ObjectType must be a derived class from GameObject");
-		return static_cast<ObjectType&>(m_objectManager.GetGameObjectReference(handle));
-	}
-	template <typename ComponentType>
-	ComponentHandle<ComponentType> World::AddComponent(const InnerGameObjectHandle& objectHandle) noexcept {
-		MONA_ASSERT(m_objectManager.IsValid(objectHandle), "World Error: Trying to add component from invaled object handle");
-		auto& go = m_objectManager.GetGameObjectReference(objectHandle);
-		MONA_ASSERT(go.m_componentHandles.find(ComponentType::componentIndex) == go.m_componentHandles.end(),
-			"Trying to add already present component");
-		auto managerPtr = static_cast<ComponentManager<ComponentType>*>(m_componentManagers[ComponentType::componentIndex].get());
-		InnerComponentHandle componentHandle = managerPtr->AddComponent(objectHandle);
-		go.m_componentHandles[ComponentType::componentIndex] = componentHandle;
-		return ComponentHandle<ComponentType>(componentHandle, managerPtr);
+		auto objectPointer = m_objectManager.CreateGameObject<ObjectType>(*this, std::forward<Args>(args)...);
+		return GameObjectHandle<ObjectType>(objectPointer->GetInnerObjectHandle(), objectPointer);
 	}
 
+	template <typename ComponentType>
+	ComponentHandle<ComponentType> World::AddComponent(BaseGameObjectHandle& objectHandle) noexcept {
+		return AddComponent<ComponentType>(*objectHandle);
+	}
+	template <typename ComponentType>
+	ComponentHandle<ComponentType> World::AddComponent(GameObject& gameObject) noexcept {
+		MONA_ASSERT(m_objectManager.IsValid(gameObject.GetInnerObjectHandle()), "World Error: Trying to add component from invaled object handle");
+		//auto& go = m_objectManager.GetGameObjectReference(objectHandle);
+		MONA_ASSERT(!gameObject.HasComponent<ComponentType>(),
+			"Trying to add already present component");
+		auto managerPtr = static_cast<ComponentManager<ComponentType>*>(m_componentManagers[ComponentType::componentIndex].get());
+		InnerComponentHandle componentHandle = managerPtr->AddComponent(gameObject.GetInnerObjectHandle());
+		gameObject.AddInnerComponentHandle(ComponentType::componentIndex, componentHandle);
+		return ComponentHandle<ComponentType>(componentHandle, managerPtr);
+	}
 	template <typename ComponentType>
 	void World::RemoveComponent(const ComponentHandle<ComponentType>& handle) noexcept {
 		auto managerPtr = std::static_cast<ComponentManager<ComponentType>*>(m_componentManagers[ComponentType::componentIndex].get());
+		auto objectPtr = m_objectManager.GetGameObjectPointer(managerPtr->GetObjectHandle(handle.GetInnerHandle()));
 		managerPtr->RemoveComponent(handle.GetInnerHandle());
-		auto& go = m_objectManager.GetGameObjectReference(objectHandle);
-		go.m_componentHandles.remove(ComponentType::componentIndex);
+		objectPtr->RemoveInnerComponentHandle(ComponentType::componentIndex);
 	}
 
 	template <typename ComponentType>
-	InnerComponentHandle World::GetComponentHandle(const InnerGameObjectHandle& objectHandle) const noexcept
+	ComponentHandle<ComponentType> World::GetComponentHandle(const GameObject& gameObject) const noexcept
 	{
-		return InnerComponentHandle();
+		MONA_ASSERT(gameObject.HasComponent<ComponentType>(), "World Error: Object doesnt have component");
+		auto managerPtr = std::static_cast<ComponentManager<ComponentType>*>(m_componentManagers[ComponentType::componentIndex].get());
+		return ComponentHandle<ComponentType>(gameObject.GetInnerComponentHandle<ComponentType>(), managerPtr);
+	}
+
+	template <typename ComponentType>
+	ComponentHandle<ComponentType> World::GetComponentHandle(const BaseGameObjectHandle& objectHandle) const noexcept
+	{
+		return GetComponentHandle(*objectHandle);
 	}
 
 	template <typename ComponentType>

@@ -24,8 +24,12 @@ namespace Mona {
 		m_objectManager.UpdateGameObjects(*this, timeStep);
 	}
 
-	void World::DestroyGameObject(const InnerGameObjectHandle& handle) noexcept {
-		m_objectManager.DestroyGameObject(*this, handle);
+	void World::DestroyGameObject(BaseGameObjectHandle& handle) noexcept {
+		DestroyGameObject(*handle);
+	}
+
+	void World::DestroyGameObject(GameObject& gameObject) noexcept {
+		m_objectManager.DestroyGameObject(*this, gameObject.GetInnerObjectHandle());
 	}
 
 	bool World::IsValid(const InnerGameObjectHandle& handle) const noexcept {

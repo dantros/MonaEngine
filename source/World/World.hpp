@@ -38,29 +38,10 @@ namespace Mona {
 		ComponentManager<ComponentType>* m_managerPointer;
 	};
 
+	class BaseGameObjectHandle;
 	template <typename ObjectType>
-	class GameObjectHandle {
-		static_assert(std::is_base_of<GameObject, ObjectType>::value, "ObjectType must be a derived class from GameObject");
-	public:
-		GameObjectHandle() : m_innerHandle() {}
-		GameObjectHandle(InnerGameObjectHandle handle) : m_innerHandle(handle) {}
-		InnerGameObjectHandle GetInnerHandle() const { return m_innerHandle; }
-		bool IsValid(World& world) const noexcept {
-			
-			return world.IsValid(m_innerHandle);
-		}
-		ObjectType& operator()(World& world)
-		{
-			MONA_ASSERT(IsValid(world), "Trying to access with invalid objectHandle");
-			return world.GetGameObjectReference<ObjectType>(m_innerHandle);
-		}
-		const ObjectType& operator()(World& world) const {
-			MONA_ASSERT(IsValid(world), "Trying to access with invalid objectHandle");
-			return world.GetGameObjectReference<ObjectType>(m_innerHandle);
-		}
-	private:
-		InnerGameObjectHandle m_innerHandle;
-	};
+	class GameObjectHandle;
+	
 
 	class World {
 	public:
@@ -69,19 +50,25 @@ namespace Mona {
 		World& operator=(const World& world) = delete;
 		
 		GameObjectManager::size_type GetGameObjectCount() const noexcept;
-		void DestroyGameObject(const InnerGameObjectHandle& handle) noexcept;
+		
 		bool IsValid(const InnerGameObjectHandle& handle) const noexcept;
 
-		template <typename ObjectType>
-		ObjectType& GetGameObjectReference(const InnerGameObjectHandle& handle) noexcept;
+
 		template <typename ObjectType, typename ...Args>
-		InnerGameObjectHandle CreateGameObject(Args&& ... args) noexcept;
+		GameObjectHandle<ObjectType> CreateGameObject(Args&& ... args) noexcept;
+		void DestroyGameObject(BaseGameObjectHandle& handle) noexcept;
+		void DestroyGameObject(GameObject& gameObject) noexcept;
+
 		template <typename ComponentType>
-		ComponentHandle<ComponentType> AddComponent(const InnerGameObjectHandle &objectHandle) noexcept;
+		ComponentHandle<ComponentType> AddComponent(BaseGameObjectHandle& objectHandle) noexcept;
+		template <typename ComponentType>
+		ComponentHandle<ComponentType> AddComponent(GameObject& gameObject) noexcept;
 		template <typename ComponentType>
 		void RemoveComponent(const ComponentHandle<ComponentType>& handle) noexcept;
 		template <typename ComponentType>
-		InnerComponentHandle GetComponentHandle(const InnerGameObjectHandle& objectHandle) const noexcept;
+		ComponentHandle<ComponentType> GetComponentHandle(const BaseGameObjectHandle& objectHandle) const noexcept;
+		template <typename ComponentType>
+		ComponentHandle<ComponentType> GetComponentHandle(const GameObject& gameObject) const noexcept;
 		template <typename ComponentType>
 		BaseComponentManager::size_type GetComponentCount() const noexcept;
 
@@ -101,17 +88,53 @@ namespace Mona {
 	using StaticMeshHandle = ComponentHandle<StaticMeshComponent>;
 	using CameraHandle = ComponentHandle<CameraComponent>;
 
+	class BaseGameObjectHandle {
+	public:
+		BaseGameObjectHandle() : m_innerHandle(), m_objectPointer(nullptr){}
+		BaseGameObjectHandle(InnerGameObjectHandle handle, GameObject* object) : m_innerHandle(handle), m_objectPointer(object) {}
+		bool IsValid(World& world) const noexcept {
+			return world.IsValid(m_innerHandle);
+		}
+		const GameObject* operator->() const {
+			return m_objectPointer;
+		}
+		GameObject* operator->() {
+			return m_objectPointer;
+		}
+		GameObject& operator*() {
+			return *m_objectPointer;
+		}
 
-	template <typename ObjectType, typename ... Args>
-	GameObjectHandle<ObjectType> CreateGameObject(World& world, Args&& ... args) noexcept
-	{
-		return GameObjectHandle<ObjectType>(world.CreateGameObject<ObjectType>(std::forward<Args>(args)...));
-	}
+		const  GameObject& operator*() const {
+			return *m_objectPointer;
+		}
+		InnerGameObjectHandle GetInnerHandle() const { return m_innerHandle; }
+	protected:
+		GameObject* m_objectPointer;
+	private:
+		InnerGameObjectHandle m_innerHandle;
+	};
+
 	template <typename ObjectType>
-	void DestroyGameObject(World& world, GameObjectHandle<ObjectType> objectHandle) noexcept
-	{
-		world.DestroyGameObject(objectHandle.GetInnerHandle());
-	}
+	class GameObjectHandle : public BaseGameObjectHandle {
+		static_assert(std::is_base_of<GameObject, ObjectType>::value, "ObjectType must be a derived class from GameObject");
+	public:
+		GameObjectHandle() : BaseGameObjectHandle() {}
+		GameObjectHandle(InnerGameObjectHandle handle, ObjectType* object) : BaseGameObjectHandle(handle, object) {}
+		const ObjectType* operator->() const {
+			return static_cast<ObjectType*>(m_objectPointer);
+		}
+		ObjectType* operator->() {
+			return static_cast<ObjectType*>(m_objectPointer);
+		}
+		ObjectType& operator*() {
+			return static_cast<ObjectType&>(*m_objectPointer);
+		}
+
+		const ObjectType& operator*() const {
+			return static_cast<ObjectType&>(*m_objectPointer);
+		}
+	};
 
 }
 #include "Detail/World_Implementation.hpp"

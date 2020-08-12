@@ -18,9 +18,9 @@ namespace Mona {
 		void StartUp(GameObjectID expectedObjects = 0) noexcept;
 		void ShutDown(World &world) noexcept;
 		template <typename ObjectType,typename ...Args>
-		InnerGameObjectHandle CreateGameObject(World &world, Args&& ... args);
+		ObjectType* CreateGameObject(World &world, Args&& ... args);
 		void DestroyGameObject(World& world, const InnerGameObjectHandle& handle) noexcept;
-		GameObject& GetGameObjectReference(const InnerGameObjectHandle& handle) noexcept;
+		GameObject* GetGameObjectPointer(const InnerGameObjectHandle& handle) noexcept;
 		size_type GetCount() const noexcept;
 		bool IsValid(const InnerGameObjectHandle& handle) const noexcept;
 

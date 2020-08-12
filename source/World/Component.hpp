@@ -7,24 +7,24 @@
 namespace Mona {
 	
 
-	enum class ComponentType : uint8_t {
+	enum class EComponentType : uint8_t {
 		TransformComponent,
 		CameraComponent,
 		StaticMeshComponent,
 		ComponentTypeCount
 	};
 
-	constexpr uint8_t GetComponentIndex(ComponentType type) {
+	constexpr uint8_t GetComponentIndex(EComponentType type) {
 		return static_cast<uint8_t>(type);
 	}
 	constexpr uint8_t GetComponentTypeCount()
 	{
-		return static_cast<uint8_t>(ComponentType::ComponentTypeCount);
+		return static_cast<uint8_t>(EComponentType::ComponentTypeCount);
 	}
 
 	class TransformComponent {
 	public:
-		static constexpr uint8_t componentIndex = GetComponentIndex(ComponentType::TransformComponent);
+		static constexpr uint8_t componentIndex = GetComponentIndex(EComponentType::TransformComponent);
 		void Translate(glm::vec3 translation) {
 			localTranslation += translation;
 			UpdateWorldTransform();
@@ -58,7 +58,7 @@ namespace Mona {
 	class CameraComponent
 	{
 	public:
-		static constexpr uint8_t componentIndex = GetComponentIndex(ComponentType::CameraComponent);
+		static constexpr uint8_t componentIndex = GetComponentIndex(EComponentType::CameraComponent);
 		float fieldOfView;
 		float zNearPlane;
 		float zFarPlane;
@@ -68,7 +68,7 @@ namespace Mona {
 	class StaticMeshComponent
 	{
 	public:
-		static constexpr uint8_t componentIndex = GetComponentIndex(ComponentType::StaticMeshComponent);
+		static constexpr uint8_t componentIndex = GetComponentIndex(EComponentType::StaticMeshComponent);
 		MeshHandle Handle;
 	};
 }

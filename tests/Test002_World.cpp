@@ -5,6 +5,7 @@ int globalStartUpCalls = 0;
 int globalShutDownCalls = 0;
 int globalDestructorCalls = 0;
 int globalUpdateCalls = 0;
+
 class MyBox : public Mona::GameObject {
 public:
 	virtual void UserUpdate(Mona::World& world, float timeStep) noexcept override{

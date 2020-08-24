@@ -25,7 +25,8 @@ namespace Mona {
 	template <typename ComponentType>
 	void ComponentManager<ComponentType>::StartUp(EventManager& eventManager,size_type expectedObjects) noexcept {
 		m_components.reserve(expectedObjects);
-		m_gameObjects.reserve(expectedObjects);
+		m_componentOwners.reserve(expectedObjects);
+		m_handleEntryIndices.reserve(expectedObjects);
 		m_handleEntries.reserve(expectedObjects);
 		m_objectDestroyedSubscription = eventManager.Subscribe(this, &ComponentManager<ComponentType>::OnGameObjectDestroy);
 	}
@@ -33,7 +34,8 @@ namespace Mona {
 	template <typename ComponentType>
 	void ComponentManager<ComponentType>::ShutDown(EventManager& eventManager) noexcept {
 		m_components.clear();
-		m_gameObjects.clear();
+		m_componentOwners.clear();
+		m_handleEntryIndices.clear();
 		m_handleEntries.clear();
 		m_firstFreeIndex = s_maxEntries;
 		m_lastFreeIndex = s_maxEntries;
@@ -42,20 +44,19 @@ namespace Mona {
 	}
 
 	template <typename ComponentType>
-	InnerComponentHandle ComponentManager<ComponentType>::AddComponent(const InnerGameObjectHandle& gameObjectHandle) noexcept
+	InnerComponentHandle ComponentManager<ComponentType>::AddComponent(GameObject* gameObjectPointer) noexcept
 	{
 		MONA_ASSERT(m_components.size() < s_maxEntries, "ComponentManager Error: Cannot Add more components, max number reached.");
 		if (m_firstFreeIndex != s_maxEntries && m_freeIndicesCount > s_minFreeIndices)
 		{
-
-			//m_lookUp[gameObjectID] = m_components.size();
 			auto& handleEntry = m_handleEntries[m_firstFreeIndex];
 			MONA_ASSERT(handleEntry.active == false, "ComponentManager Error: Incorrect active state for handleEntry");
 			MONA_ASSERT(handleEntry.generation < std::numeric_limits<decltype(handleEntry.generation)>::max(),
 				"ComponentManager Error: Generational Index reached its maximunn value, component cannot be added.");
 
 			auto handleIndex = m_firstFreeIndex;
-			m_gameObjects.emplace_back(handleIndex, gameObjectHandle);
+			m_componentOwners.emplace_back(gameObjectPointer);
+			m_handleEntryIndices.emplace_back(handleIndex);
 			m_components.emplace_back();
 			if (m_firstFreeIndex == m_lastFreeIndex)
 				m_firstFreeIndex = m_lastFreeIndex = s_maxEntries;
@@ -70,7 +71,8 @@ namespace Mona {
 		}
 		else {
 			m_handleEntries.emplace_back(static_cast<size_type>(m_components.size()), s_maxEntries, 0);
-			m_gameObjects.emplace_back(static_cast<size_type>(m_handleEntries.size() - 1), gameObjectHandle);
+			m_componentOwners.emplace_back(gameObjectPointer);
+			m_handleEntryIndices.emplace_back(static_cast<size_type>(m_handleEntries.size() - 1));
 			m_components.emplace_back();
 
 			return InnerComponentHandle(static_cast<size_type>(m_handleEntries.size() - 1), 0);
@@ -88,12 +90,14 @@ namespace Mona {
 		if (handleEntry.index < m_components.size() - 1)
 		{
 			m_components[handleEntry.index] = std::move(m_components.back());
-			m_gameObjects[handleEntry.index] = m_gameObjects.back();
-			m_handleEntries[m_gameObjects.back().handleEntryIndex].index = handleEntry.index;
+			m_componentOwners[handleEntry.index] = m_componentOwners.back();
+			m_handleEntryIndices[handleEntry.index] = m_handleEntryIndices.back();
+			m_handleEntries[m_handleEntryIndices.back()].index = handleEntry.index;
 		}
 
 		m_components.pop_back();
-		m_gameObjects.pop_back();
+		m_componentOwners.pop_back();
+		m_handleEntryIndices.pop_back();
 
 		if (m_lastFreeIndex != s_maxEntries)
 			m_handleEntries[m_lastFreeIndex].index = index;
@@ -130,13 +134,13 @@ namespace Mona {
 	typename ComponentManager<ComponentType>::size_type ComponentManager<ComponentType>::GetCount() const noexcept { return m_components.size(); }
 
 	template <typename ComponentType>
-	InnerGameObjectHandle ComponentManager<ComponentType>::GetObjectHandle(const InnerComponentHandle& handle) const noexcept
+	GameObject* ComponentManager<ComponentType>::GetOwner(const InnerComponentHandle& handle) const noexcept
 	{
 		auto index = handle.m_index;
 		MONA_ASSERT(index < m_handleEntries.size(), "ComponentManager Error: handle index out of range");
 		MONA_ASSERT(m_handleEntries[index].active == true, "ComponentManager Error: Trying to access inactive handle");
 		MONA_ASSERT(m_handleEntries[index].generation == handle.m_generation, "ComponentManager Error: handle with incorrect generation");
-		return m_gameObjects[m_handleEntries[index].index].objectHandle;
+		return m_componentOwners[m_handleEntries[index].index];
 	}
 
 	template <typename ComponentType>

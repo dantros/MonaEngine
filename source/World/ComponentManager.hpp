@@ -31,12 +31,12 @@ namespace Mona {
 		ComponentManager& operator=(const ComponentManager&) = delete;
 		virtual void StartUp(EventManager& eventManager, size_type expectedObjects = 0) noexcept override;
 		virtual void ShutDown(EventManager& eventManager) noexcept override;
-		InnerComponentHandle AddComponent(const InnerGameObjectHandle &gameObjectHandle) noexcept;
+		InnerComponentHandle AddComponent(GameObject* gameObjectPointer) noexcept;
 		void RemoveComponent(const InnerComponentHandle& handle) noexcept;
 		ComponentType* GetComponentPointer(const InnerComponentHandle& handle) noexcept;
 		const ComponentType* GetComponentPointer(const InnerComponentHandle& handle) const noexcept;
 		size_type GetCount() const noexcept;
-		InnerGameObjectHandle GetObjectHandle(const InnerComponentHandle& handle) const noexcept;
+		GameObject* GetOwner(const InnerComponentHandle& handle) const noexcept;
 		ComponentType& operator[](size_type index) noexcept;
 		const ComponentType& operator[](size_type index) const noexcept;
 		bool IsValid(const InnerComponentHandle& handle) const noexcept;
@@ -58,9 +58,11 @@ namespace Mona {
 		};
 		
 		std::vector<ComponentType> m_components;
-		std::vector<GameObjectEntry> m_gameObjects;
-
+		std::vector<GameObject*> m_componentOwners;
+		
+		std::vector<uint32_t> m_handleEntryIndices;
 		std::vector<HandleEntry> m_handleEntries;
+
 		size_type m_firstFreeIndex;
 		size_type m_lastFreeIndex;
 		size_type m_freeIndicesCount;

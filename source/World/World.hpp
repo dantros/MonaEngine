@@ -59,6 +59,7 @@ namespace Mona {
 		void DestroyGameObject(BaseGameObjectHandle& handle) noexcept;
 		void DestroyGameObject(GameObject& gameObject) noexcept;
 
+
 		template <typename ComponentType>
 		ComponentHandle<ComponentType> AddComponent(BaseGameObjectHandle& objectHandle) noexcept;
 		template <typename ComponentType>
@@ -90,6 +91,7 @@ namespace Mona {
 
 	class BaseGameObjectHandle {
 	public:
+		friend class World;
 		BaseGameObjectHandle() : m_innerHandle(), m_objectPointer(nullptr){}
 		BaseGameObjectHandle(InnerGameObjectHandle handle, GameObject* object) : m_innerHandle(handle), m_objectPointer(object) {}
 		bool IsValid(World& world) const noexcept {

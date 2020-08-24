@@ -21,7 +21,7 @@ namespace Mona {
 		MONA_ASSERT(!gameObject.HasComponent<ComponentType>(),
 			"Trying to add already present component");
 		auto managerPtr = static_cast<ComponentManager<ComponentType>*>(m_componentManagers[ComponentType::componentIndex].get());
-		InnerComponentHandle componentHandle = managerPtr->AddComponent(gameObject.GetInnerObjectHandle());
+		InnerComponentHandle componentHandle = managerPtr->AddComponent(&gameObject);
 		gameObject.AddInnerComponentHandle(ComponentType::componentIndex, componentHandle);
 		return ComponentHandle<ComponentType>(componentHandle, managerPtr);
 	}

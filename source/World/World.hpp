@@ -14,6 +14,7 @@
 namespace Mona {
 	template <typename ComponentType>
 	class ComponentHandle {
+		static_assert(is_component<ComponentType>, "Cannot create handle of type that isn´t a component");
 	public:
 		static constexpr uint8_t componentIndex = ComponentType::componentIndex;
 		ComponentHandle() : m_innerHandle(), m_managerPointer(nullptr) {}

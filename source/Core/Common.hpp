@@ -4,7 +4,14 @@
 #include <cassert>
 #include <stdio.h>
 #include <cstdint>
+#include <type_traits>
 #define NOMINMAX
+
+namespace Mona {
+
+	template <typename T, typename... Rest>
+	inline constexpr bool is_any = (std::is_same_v<T, Rest> || ...);
+}
 #ifdef NDEBUG
 	#define ASSERT(expr) (void(0))
 #else
@@ -35,6 +42,5 @@
 			assert(expr);}}
 	#endif
 #endif
-
 
 #endif

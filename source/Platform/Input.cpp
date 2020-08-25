@@ -19,7 +19,7 @@ namespace Mona
 		}
 
 		void ShutDown(EventManager* eventManager) noexcept {
-			eventManager->Unsubscribe<MouseScrollEvent>(m_mouseScrollSubscription);
+			eventManager->Unsubscribe(m_mouseScrollSubscription);
 		}
 		void Update() noexcept {
 			m_mouseWheelOffset.x = 0.0;

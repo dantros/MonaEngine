@@ -39,14 +39,13 @@ namespace Mona {
 			bool active;
 		};
 		std::vector<std::unique_ptr<GameObject>> m_gameObjects;
-		std::vector<size_type> m_gameObjectHandleIndices;
+		//std::vector<size_type> m_gameObjectHandleIndices;
 		std::vector<HandleEntry> m_handleEntries;
 
 		std::vector<InnerGameObjectHandle> m_pendingDestroyObjectHandles;
 		size_type m_firstFreeIndex;
 		size_type m_lastFreeIndex;
 		size_type m_freeIndicesCount;
-		bool m_IsIteratingOverObjects;
 	};
 }
 #include "Detail/GameObjectManager_Implementation.hpp"

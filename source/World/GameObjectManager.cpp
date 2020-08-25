@@ -7,15 +7,13 @@ namespace Mona {
 	GameObjectManager::GameObjectManager() :
 		m_firstFreeIndex(s_maxEntries),
 		m_lastFreeIndex(s_maxEntries),
-		m_freeIndicesCount(0),
-		m_IsIteratingOverObjects(false)
+		m_freeIndicesCount(0)
 	{}
 	
 	void GameObjectManager::StartUp(GameObjectID expectedObjects) noexcept
 	{
 		m_handleEntries.reserve(expectedObjects);
 		m_gameObjects.reserve(expectedObjects);
-		m_gameObjectHandleIndices.reserve(expectedObjects);
 		m_pendingDestroyObjectHandles.reserve(expectedObjects);
 	}
 
@@ -23,7 +21,6 @@ namespace Mona {
 	{
 		m_handleEntries.clear();
 		m_gameObjects.clear();
-		m_gameObjectHandleIndices.clear();
 		m_pendingDestroyObjectHandles.clear();
 		m_firstFreeIndex = s_maxEntries;
 		m_lastFreeIndex = s_maxEntries;
@@ -38,11 +35,7 @@ namespace Mona {
 		auto& gameObject = m_gameObjects[handleEntry.index];
 		MONA_ASSERT(gameObject->GetState() != GameObject::EState::PendingDestroy, "GameObjectManager Error: Trying to destroy object pending to destroy");
 		gameObject->ShutDown(world);
-		if (!m_IsIteratingOverObjects)
-			ImmediateDestroyGameObject(world, handle);
-		else {
-			m_pendingDestroyObjectHandles.push_back(handle);
-		}
+		m_pendingDestroyObjectHandles.push_back(handle);
 
 	}
 	void GameObjectManager::ImmediateDestroyGameObject(World& world, const InnerGameObjectHandle& handle) noexcept
@@ -58,13 +51,12 @@ namespace Mona {
 
 		if (handleEntry.index < m_gameObjects.size() - 1)
 		{
-			auto handleEntryIndex = m_gameObjectHandleIndices.back();
+			auto handleEntryIndex = m_gameObjects.back()->GetInnerObjectHandle().m_index;
 			m_gameObjects[handleEntry.index] = std::move(m_gameObjects.back());
 			m_handleEntries[handleEntryIndex].index = handleEntry.index;
 		}
 
 		m_gameObjects.pop_back();
-		m_gameObjectHandleIndices.pop_back();
 
 		if (m_lastFreeIndex != s_maxEntries)
 			m_handleEntries[m_lastFreeIndex].index = index;
@@ -102,14 +94,10 @@ namespace Mona {
 		return true;
 	}
 	void GameObjectManager::UpdateGameObjects(World& world, float timeStep) noexcept {
-		m_IsIteratingOverObjects = true;
 		auto const count = GetCount();
 		for (decltype(GetCount()) i = 0; i < count; i++) {
-			if (m_gameObjects[i]->GetState() == GameObject::EState::UnStarted)
-				m_gameObjects[i]->StartUp(world);
-			m_gameObjects[i]->UserUpdate(world, timeStep);
+			m_gameObjects[i]->Update(world, timeStep);
 		}
-		m_IsIteratingOverObjects = false;
 		for (const auto& handle : m_pendingDestroyObjectHandles) {
 			ImmediateDestroyGameObject(world, handle);
 		}

@@ -19,6 +19,7 @@ namespace Mona {
 		virtual ~BaseComponentManager() = default;
 		virtual void StartUp(EventManager& eventManager,size_type expectedObjects = 0) noexcept = 0;
 		virtual void ShutDown(EventManager& eventManager) noexcept = 0;
+		virtual void RemoveComponent(const InnerComponentHandle& handle) = 0;
 		BaseComponentManager(const BaseComponentManager&) = delete;
 		BaseComponentManager& operator=(const BaseComponentManager&) = delete;
 	};
@@ -32,7 +33,7 @@ namespace Mona {
 		virtual void StartUp(EventManager& eventManager, size_type expectedObjects = 0) noexcept override;
 		virtual void ShutDown(EventManager& eventManager) noexcept override;
 		InnerComponentHandle AddComponent(GameObject* gameObjectPointer) noexcept;
-		void RemoveComponent(const InnerComponentHandle& handle) noexcept;
+		virtual void RemoveComponent(const InnerComponentHandle& handle) noexcept override;
 		ComponentType* GetComponentPointer(const InnerComponentHandle& handle) noexcept;
 		const ComponentType* GetComponentPointer(const InnerComponentHandle& handle) const noexcept;
 		size_type GetCount() const noexcept;
@@ -40,7 +41,6 @@ namespace Mona {
 		ComponentType& operator[](size_type index) noexcept;
 		const ComponentType& operator[](size_type index) const noexcept;
 		bool IsValid(const InnerComponentHandle& handle) const noexcept;
-		void OnGameObjectDestroy(const GameObjectDestroyedEvent& event);
 
 	private:
 		struct HandleEntry { 
@@ -69,23 +69,7 @@ namespace Mona {
 
 		SubscriptionHandle m_objectDestroyedSubscription;
 	};
-	template <uint8_t componentIndex>
-	auto CastComponentManager(BaseComponentManager* ptr) noexcept{
-		if constexpr (componentIndex == TransformComponent::componentIndex) {
-			return static_cast<ComponentManager<TransformComponent>*>(ptr);
-		}
-		else if (componentIndex == StaticMeshComponent::componentIndex) {
-			return static_cast<ComponentManager<StaticMeshComponent>*>(ptr);
-		}
-		else if (componentIndex == CameraComponent::componentIndex)
-		{
-			return static_cast<ComponentManager<CameraComponent>*>(ptr);
-		}
-		else {
-			MONA_ASSERT(false, "ComponentManager Error: Trying to cast from invalid componentIndex");
-			return nullptr;
-		}
-	}
+
 }
 #include "Detail/ComponentManager_Implementation.hpp"
 

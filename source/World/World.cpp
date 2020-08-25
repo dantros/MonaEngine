@@ -29,6 +29,11 @@ namespace Mona {
 	}
 
 	void World::DestroyGameObject(GameObject& gameObject) noexcept {
+		auto& innerComponentHandles = gameObject.m_componentHandles;
+		for (auto& it : innerComponentHandles) {
+			m_componentManagers[it.first]->RemoveComponent(it.second);
+		}
+		innerComponentHandles.clear();
 		m_objectManager.DestroyGameObject(*this, gameObject.GetInnerObjectHandle());
 	}
 

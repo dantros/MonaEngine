@@ -15,20 +15,11 @@ namespace Mona {
 	{}
 
 	template <typename ComponentType>
-	void ComponentManager<ComponentType>::OnGameObjectDestroy(const GameObjectDestroyedEvent& event)
-	{
-		auto handle = event.gameObject.GetInnerComponentHandle<ComponentType>();
-		if(IsValid(handle))
-			RemoveComponent(handle);
-	}
-
-	template <typename ComponentType>
 	void ComponentManager<ComponentType>::StartUp(EventManager& eventManager,size_type expectedObjects) noexcept {
 		m_components.reserve(expectedObjects);
 		m_componentOwners.reserve(expectedObjects);
 		m_handleEntryIndices.reserve(expectedObjects);
 		m_handleEntries.reserve(expectedObjects);
-		m_objectDestroyedSubscription = eventManager.Subscribe(this, &ComponentManager<ComponentType>::OnGameObjectDestroy);
 	}
 
 	template <typename ComponentType>
@@ -40,7 +31,6 @@ namespace Mona {
 		m_firstFreeIndex = s_maxEntries;
 		m_lastFreeIndex = s_maxEntries;
 		m_freeIndicesCount = 0;
-		eventManager.Unsubscribe<GameObjectDestroyedEvent>(m_objectDestroyedSubscription);
 	}
 
 	template <typename ComponentType>
@@ -80,7 +70,7 @@ namespace Mona {
 	}
 
 	template <typename ComponentType>
-	void  ComponentManager<ComponentType>::RemoveComponent(const InnerComponentHandle& handle) noexcept
+	void ComponentManager<ComponentType>::RemoveComponent(const InnerComponentHandle& handle) noexcept
 	{
 		auto index = handle.m_index;
 		MONA_ASSERT(index < m_handleEntries.size(), "ComponentManager Error: handle index out of bounds");

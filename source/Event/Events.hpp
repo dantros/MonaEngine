@@ -3,6 +3,7 @@
 #define EVENTS_HPP
 #include "../World/GameObject.hpp"
 #include <cstdint>
+#include "../Core/Common.hpp"
 namespace Mona
 {
 	enum class EEventType : uint8_t {
@@ -25,14 +26,18 @@ namespace Mona
 	constexpr uint32_t INVALID_EVENT_INDEX = std::numeric_limits<uint32_t>::max();
 	class SubscriptionHandle {
 	public:
-		SubscriptionHandle() : m_index(INVALID_EVENT_INDEX), m_generation(0) {};
-		SubscriptionHandle(uint32_t index, uint32_t generation) :
+		SubscriptionHandle() : m_index(INVALID_EVENT_INDEX), m_generation(0), m_typeIndex(GetEventTypeCount()) {};
+		SubscriptionHandle(uint32_t index, uint32_t generation, uint8_t typeIndex) :
 			m_index(index),
-			m_generation(generation) {};
+			m_generation(generation),
+			m_typeIndex(typeIndex)
+		{};
 		friend class ObserverList;
+		friend class EventManager;
 	private:
 		uint32_t m_index;
 		uint32_t m_generation;
+		uint8_t m_typeIndex;
 	};
 	struct WindowResizeEvent : public Event {
 		static constexpr uint8_t eventIndex = GetEventIndex(EEventType::WindowResizeEvent);
@@ -52,6 +57,8 @@ namespace Mona
 		GameObject& gameObject;
 	};
 
+	template <typename EventType>
+	inline constexpr bool is_event = is_any<EventType, WindowResizeEvent, MouseScrollEvent, GameObjectDestroyedEvent>;
 
 }
 #endif

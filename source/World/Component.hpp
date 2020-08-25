@@ -2,11 +2,12 @@
 #ifndef COMPONENT_HPP
 #define COMPONENT_HPP
 #include <cstdint>
+#include "../Core/Common.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
+
 namespace Mona {
 	
-
 	enum class EComponentType : uint8_t {
 		TransformComponent,
 		CameraComponent,
@@ -71,5 +72,9 @@ namespace Mona {
 		static constexpr uint8_t componentIndex = GetComponentIndex(EComponentType::StaticMeshComponent);
 		MeshHandle Handle;
 	};
+
+	template <typename ComponentType>
+	inline constexpr bool is_component = is_any<ComponentType, TransformComponent, CameraComponent, StaticMeshComponent>;
+
 }
 #endif

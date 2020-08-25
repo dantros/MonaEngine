@@ -29,18 +29,20 @@ namespace Mona {
 			handleEntry.prevIndex = s_maxEntries;
 			--m_freeIndicesCount;
 			InnerGameObjectHandle resultHandle(handleIndex, handleEntry.generation);
-			gameObjectPointer->SetObjectHandle(resultHandle);
 			m_gameObjects.emplace_back(std::move(gameObjectPointer));
-			m_gameObjectHandleIndices.emplace_back(handleIndex);
+			rawPointer->SetObjectHandle(resultHandle);
+			rawPointer->StartUp(world);
+			//m_gameObjectHandleIndices.emplace_back(handleIndex);
 			return rawPointer;
 		}
 		else {
 			m_handleEntries.emplace_back(static_cast<size_type>(m_gameObjects.size()), s_maxEntries, 0);
 			
 			InnerGameObjectHandle resultHandle(static_cast<size_type>(m_handleEntries.size() - 1), 0);
-			gameObjectPointer->SetObjectHandle(resultHandle);
 			m_gameObjects.emplace_back(std::move(gameObjectPointer));
-			m_gameObjectHandleIndices.emplace_back(static_cast<size_type>(m_handleEntries.size() - 1));
+			rawPointer->SetObjectHandle(resultHandle);
+			rawPointer->StartUp(world);
+			//m_gameObjectHandleIndices.emplace_back(static_cast<size_type>(m_handleEntries.size() - 1));
 			return rawPointer;
 		}
 

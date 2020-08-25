@@ -16,6 +16,7 @@ namespace Mona {
 	}
 	template <typename ComponentType>
 	ComponentHandle<ComponentType> World::AddComponent(GameObject& gameObject) noexcept {
+		static_assert(is_component<ComponentType>, "Template parameter is not a component");
 		MONA_ASSERT(m_objectManager.IsValid(gameObject.GetInnerObjectHandle()), "World Error: Trying to add component from invaled object handle");
 		//auto& go = m_objectManager.GetGameObjectReference(objectHandle);
 		MONA_ASSERT(!gameObject.HasComponent<ComponentType>(),
@@ -27,6 +28,7 @@ namespace Mona {
 	}
 	template <typename ComponentType>
 	void World::RemoveComponent(const ComponentHandle<ComponentType>& handle) noexcept {
+		static_assert(is_component<ComponentType>, "Template parameter is not a component");
 		auto managerPtr = std::static_cast<ComponentManager<ComponentType>*>(m_componentManagers[ComponentType::componentIndex].get());
 		auto objectPtr = m_objectManager.GetGameObjectPointer(managerPtr->GetObjectHandle(handle.GetInnerHandle()));
 		managerPtr->RemoveComponent(handle.GetInnerHandle());
@@ -36,6 +38,7 @@ namespace Mona {
 	template <typename ComponentType>
 	ComponentHandle<ComponentType> World::GetComponentHandle(const GameObject& gameObject) const noexcept
 	{
+		static_assert(is_component<ComponentType>, "Template parameter is not a component");
 		MONA_ASSERT(gameObject.HasComponent<ComponentType>(), "World Error: Object doesnt have component");
 		auto managerPtr = std::static_cast<ComponentManager<ComponentType>*>(m_componentManagers[ComponentType::componentIndex].get());
 		return ComponentHandle<ComponentType>(gameObject.GetInnerComponentHandle<ComponentType>(), managerPtr);
@@ -50,6 +53,7 @@ namespace Mona {
 	template <typename ComponentType>
 	BaseComponentManager::size_type World::GetComponentCount() const noexcept
 	{
+		static_assert(is_component<ComponentType>, "Template parameter is not a component");
 		auto managerPtr = static_cast<ComponentManager<ComponentType>*>(m_componentManagers[ComponentType::componentIndex].get());
 		return managerPtr->GetCount();
 	}

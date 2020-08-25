@@ -29,13 +29,17 @@ namespace Mona {
 			m_state = EState::Started;
 		};
 
+		void Update(World& world, float timeStep) noexcept {
+			if (m_state == EState::PendingDestroy)
+				return;
+			UserUpdate(world, timeStep);
+		}
+
 		void ShutDown(World& world) noexcept {
 			m_state = EState::PendingDestroy;
-			UserShutDown(world);
 		}
 		virtual void UserUpdate(World& world, float timeStep) noexcept {};
 		virtual void UserStartUp(World& world) noexcept {};
-		virtual void UserShutDown(World& world) noexcept {};
 
 		const EState GetState() const { return m_state; }
 		template <typename ComponentType>

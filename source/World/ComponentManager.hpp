@@ -50,12 +50,6 @@ namespace Mona {
 			size_type generation;
 			bool active;
 		};
-		struct GameObjectEntry
-		{
-			GameObjectEntry(size_type h, InnerGameObjectHandle handle) : handleEntryIndex(h), objectHandle(handle)  {}
-			size_type handleEntryIndex;
-			InnerGameObjectHandle  objectHandle;
-		};
 		
 		std::vector<ComponentType> m_components;
 		std::vector<GameObject*> m_componentOwners;
@@ -66,8 +60,6 @@ namespace Mona {
 		size_type m_firstFreeIndex;
 		size_type m_lastFreeIndex;
 		size_type m_freeIndicesCount;
-
-		SubscriptionHandle m_objectDestroyedSubscription;
 	};
 
 }

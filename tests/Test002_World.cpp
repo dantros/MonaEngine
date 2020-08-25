@@ -77,13 +77,12 @@ int main(){
 	MONA_ASSERT(globalStartUpCalls == 1, "Incorrect number of startUp calls");
 	world.Update(10.0f);
 	world.Update(10.0f);
-	//MONA_ASSERT(globalStartUpCalls == 1, "Incorrect number of startUp calls");
 	MONA_ASSERT(globalUpdateCalls == 2, "Incorrect number of Update calls");
 	MONA_ASSERT(box->GetTranslation() == glm::vec3(20.0f), "Incorrect box translation");
 	world.DestroyGameObject(box);
-	//MONA_ASSERT(world.GetComponentCount<Mona::TransformComponent>() == 0, "Incorrect component count");
-	//MONA_ASSERT(world.GetComponentCount<Mona::StaticMeshComponent>() == 0, "Incorrect component count");
-	//MONA_ASSERT(world.GetComponentCount<Mona::CameraComponent>() == 0, "Incorrect component count");
+	MONA_ASSERT(world.GetComponentCount<Mona::TransformComponent>() == 0, "Incorrect component count");
+	MONA_ASSERT(world.GetComponentCount<Mona::StaticMeshComponent>() == 0, "Incorrect component count");
+	MONA_ASSERT(world.GetComponentCount<Mona::CameraComponent>() == 0, "Incorrect component count");
 	MONA_ASSERT(world.GetGameObjectCount() == 1, "Incorrect game object count");
 	MONA_ASSERT(box.IsValid(world), "box should be valid");
 	MONA_ASSERT(box->GetState() == Mona::GameObject::EState::PendingDestroy, "Incorrect Object State");

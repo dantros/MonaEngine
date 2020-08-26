@@ -1,10 +1,8 @@
 #include "Application.hpp"
 
 namespace Mona {
-	void Application::StartUp(World& world, std::shared_ptr<Window> window, std::shared_ptr<Input> input) noexcept
+	void Application::StartUp(World& world) noexcept
 	{
-		m_window = window;
-		m_input = input;
 		UserStartUp(world);
 	}
 }

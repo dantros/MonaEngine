@@ -2,9 +2,9 @@
 #include "Core/Common.hpp"
 #include "Core/Log.hpp"
 #include "Core/Config.hpp"
-#include <glad/glad.h>
-#include "Event/Events.hpp"
-#include <chrono>
+//#include <glad/glad.h>
+//#include "Event/Events.hpp"
+//#include <chrono>
 
 namespace Mona {
 	
@@ -15,14 +15,15 @@ namespace Mona {
 		Mona::Config& config = Mona::Config::GetInstance();
 		config.readFile("config.cfg");
 		MONA_ASSERT(app != nullptr, "Engine StartUp Error: Must provide not null Application pointer");
-		m_window = std::make_shared<Window>();
-		m_input = std::make_shared<Input>();
-		m_window->StartUp(&m_eventManager);
-		m_input->StartUp(&m_eventManager);
-		const GameObjectID expectedObjects = config.getValueOrDefault<int>("expected_number_of_gameobjects", 1000);
-		m_world.StartUp(&m_eventManager, expectedObjects);
-		m_application = std::move(app);
-		m_application->StartUp(m_world, m_window, m_input);
+		m_world.StartUp(std::move(app));
+		//m_window = std::make_shared<Window>();
+		//m_input = std::make_shared<Input>();
+		//m_window->StartUp(&m_eventManager);
+		//m_input->StartUp(&m_eventManager);
+		//const GameObjectID expectedObjects = config.getValueOrDefault<int>("expected_number_of_gameobjects", 1000);
+		//m_world.StartUp(&m_eventManager, expectedObjects);
+		//m_application = std::move(app);
+		//m_application->StartUp(m_world, m_window, m_input);
 		
 		
 	}
@@ -31,16 +32,18 @@ namespace Mona {
 	{
 		//First thing to clean should be Event Manager.
 		
-		m_application->UserShutDown(m_world);
+		//m_application->UserShutDown(m_world);
 		m_world.ShutDown();
-		m_input->ShutDown(&m_eventManager);
-		m_window->ShutDown();
-		m_eventManager.ShutDown();
+		//m_input->ShutDown(&m_eventManager);
+		//m_window->ShutDown();
+		//m_eventManager.ShutDown();
 
 	}
 
 	void Engine::StartMainLoop() noexcept
 	{
+		m_world.StartMainLoop();
+		/*
 		const char* vertex_shader_text =
 			"#version 450 core\n"
 			"void main()\n"
@@ -108,7 +111,7 @@ namespace Mona {
 			m_window->Update();
 			count++;
 		}
-
+		*/
 	}
 
 }

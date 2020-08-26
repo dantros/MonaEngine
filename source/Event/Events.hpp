@@ -10,6 +10,7 @@ namespace Mona
 		WindowResizeEvent,
 		MouseScrollEvent,
 		GameObjectDestroyedEvent,
+		AplicationEndEvent,
 		EventTypeCount
 	};
 
@@ -57,8 +58,16 @@ namespace Mona
 		GameObject& gameObject;
 	};
 
+	struct ApplicationEndEvent : public Event {
+		static constexpr uint8_t eventIndex = GetEventIndex(EEventType::AplicationEndEvent);
+	};
+
 	template <typename EventType>
-	inline constexpr bool is_event = is_any<EventType, WindowResizeEvent, MouseScrollEvent, GameObjectDestroyedEvent>;
+	inline constexpr bool is_event = is_any<EventType,
+											WindowResizeEvent,
+											MouseScrollEvent,
+											GameObjectDestroyedEvent,
+											ApplicationEndEvent>;
 
 }
 #endif

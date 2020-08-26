@@ -12,14 +12,14 @@ namespace Mona
 		Impl():m_windowHandle(nullptr), m_mouseWheelOffset(0.0,0.0) {}
 		Impl(const Impl& input) = delete;
 		Impl& operator=(const Impl& input) = delete;
-		void StartUp(EventManager* eventManager) noexcept {
+		void StartUp(EventManager& eventManager) noexcept {
 			m_windowHandle = glfwGetCurrentContext();
 			MONA_ASSERT(m_windowHandle != NULL, "GLFW Error: Unable to find window");
-			m_mouseScrollSubscription = eventManager->Subscribe(this, &Input::Impl::OnMouseScroll);
+			m_mouseScrollSubscription = eventManager.Subscribe(this, &Input::Impl::OnMouseScroll);
 		}
 
-		void ShutDown(EventManager* eventManager) noexcept {
-			eventManager->Unsubscribe(m_mouseScrollSubscription);
+		void ShutDown(EventManager& eventManager) noexcept {
+			eventManager.Unsubscribe(m_mouseScrollSubscription);
 		}
 		void Update() noexcept {
 			m_mouseWheelOffset.x = 0.0;
@@ -106,11 +106,11 @@ namespace Mona
 		p_Impl->SetCursorType(type);
 	}
 
-	void Input::StartUp(EventManager* eventManager) noexcept {
+	void Input::StartUp(EventManager& eventManager) noexcept {
 		p_Impl->StartUp(eventManager);
 	}
 
-	void Input::ShutDown(EventManager* eventManager) noexcept {
+	void Input::ShutDown(EventManager& eventManager) noexcept {
 		p_Impl->ShutDown(eventManager);
 	}
 

@@ -5,11 +5,11 @@
 #include <glm/glm.hpp>
 namespace Mona
 {
-	class Engine;
+	class World;
 	class EventManager;
 	class Window {
 	public:
-		friend class Engine;
+		friend class World;
 		Window();
 		~Window();
 		Window(const Window& window) = delete;
@@ -22,7 +22,7 @@ namespace Mona
 		glm::ivec2 GetWindowFrameBufferSize() const noexcept;
 		void SetWindowDimensions(const glm::ivec2 &dimensions) noexcept;
 	private:
-		void StartUp(EventManager* eventManager) noexcept;
+		void StartUp(EventManager& eventManager) noexcept;
 		void ShutDown() noexcept;
 		void Update() noexcept;
 		class Impl;

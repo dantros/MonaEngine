@@ -7,12 +7,12 @@
 
 namespace Mona
 {
-	class Engine;
+	class World;
 	class EventManager;
 	class Input {
 		enum class CursorType{Hidden, Disabled, Normal};
 	public:
-		friend class Engine;
+		friend class World;
 		Input();
 		~Input();
 		Input(const Input& input) = delete;
@@ -26,8 +26,8 @@ namespace Mona
 	private:
 
 		void Update() noexcept;
-		void StartUp(EventManager* eventManager) noexcept;
-		void ShutDown(EventManager* eventManager) noexcept;
+		void StartUp(EventManager& eventManager) noexcept;
+		void ShutDown(EventManager& eventManager) noexcept;
 		class Impl;
 		std::unique_ptr<Impl> p_Impl;
 	};

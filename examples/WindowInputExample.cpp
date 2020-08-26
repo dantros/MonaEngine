@@ -24,23 +24,25 @@ public:
 		MONA_LOG_INFO("A WindowResizeEvent has ocurred! {0} {1}", event.width, event.height);
 	}
 	virtual void UserUpdate(Mona::World& world, float timeStep) noexcept override {
-		if (m_input->IsKeyPressed(MONA_KEY_G))
+		auto& input = world.GetInput();
+		auto& window = world.GetWindow();
+		if (input.IsKeyPressed(MONA_KEY_G))
 		{
-			m_window->SetFullScreen(true);
+			window.SetFullScreen(true);
 		}
-		else if (m_input->IsKeyPressed(MONA_KEY_H))
+		else if (input.IsKeyPressed(MONA_KEY_H))
 		{
-			m_window->SetFullScreen(false);
+			window.SetFullScreen(false);
 		}
-		else if (m_input->IsKeyPressed(MONA_KEY_J))
+		else if (input.IsKeyPressed(MONA_KEY_J))
 		{
-			m_window->SetWindowDimensions(glm::ivec2(1000, 1000));
+			window.SetWindowDimensions(glm::ivec2(1000, 1000));
 		}
-		else if (m_input->IsKeyPressed(MONA_KEY_D)) {
+		else if (input.IsKeyPressed(MONA_KEY_D)) {
 		}
-		else if (m_input->GetMouseWheelOffset().y > 0.0)
+		else if (input.GetMouseWheelOffset().y > 0.0)
 		{
-			auto Offset = m_input->GetMouseWheelOffset();
+			auto Offset = input.GetMouseWheelOffset();
 			MONA_LOG_INFO("The mouse offset is ({0},{1})", Offset.x, Offset.y);
 
 		}

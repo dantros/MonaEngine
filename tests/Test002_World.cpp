@@ -1,10 +1,26 @@
 #include "Core/Log.hpp"
+#include "Core/Config.hpp"
+#include "Application.hpp"
 #include "World/GameObject.hpp"
 #include "World/World.hpp"
 #include "World/UserHandleTypes.hpp"
+#include <memory>
 int globalStartUpCalls = 0;
 int globalDestructorCalls = 0;
 int globalUpdateCalls = 0;
+class Sandbox : public Mona::Application
+{
+public:
+	Sandbox() = default;
+	~Sandbox() = default;
+	virtual void UserStartUp(Mona::World& world) noexcept override {
+	}
+
+	virtual void UserShutDown(Mona::World& world) noexcept override {
+	}
+	virtual void UserUpdate(Mona::World& world, float timeStep) noexcept override {
+	}
+};
 
 class MyBox : public Mona::GameObject {
 public:
@@ -64,12 +80,15 @@ private:
 	int m_frameCount;
 };
 
+
+
 Mona::GameObjectHandle<MyBox> boxes[2000];
 int main(){
 	Mona::Log::StartUp();
-	Mona::EventManager eventManager;
+	Mona::Config& config = Mona::Config::GetInstance();
+	config.readFile("config.cfg");
 	Mona::World world;
-	world.StartUp(&eventManager, static_cast<Mona::GameObjectID>(1000));
+	world.StartUp(std::unique_ptr<Mona::Application>(new Sandbox()));
 	Mona::GameObjectHandle<MyBox> box = world.CreateGameObject<MyBox>();
 	MONA_ASSERT(world.GetComponentCount<Mona::TransformComponent>() == 1, "Incorrect component count");
 	MONA_ASSERT(world.GetComponentCount<Mona::StaticMeshComponent>() == 1, "Incorrect component count");

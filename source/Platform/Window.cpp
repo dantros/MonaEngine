@@ -20,7 +20,7 @@ namespace Mona {
 		Impl() : m_data(){}
 		Impl(const Impl& window) = delete;
 		Impl& operator=(const Impl& window) = delete;
-		void StartUp(EventManager* eventManager) noexcept
+		void StartUp(EventManager& eventManager) noexcept
 		{
 			MONA_ASSERT(m_windowHandle == nullptr, "Calling Window::StartUp for the second time!!!.");
 			const int success = glfwInit();
@@ -46,7 +46,7 @@ namespace Mona {
 			m_windowHandle = glfwCreateWindow(windowWidth, windowHeight, windowTitle.c_str(), fullScreen? monitor : NULL, NULL);
 			glfwMakeContextCurrent(m_windowHandle);
 			glfwGetWindowPos(m_windowHandle, &m_oldWindowPos[0], &m_oldWindowPos[1]);
-			m_data.eventManager = eventManager;
+			m_data.eventManager = &eventManager;
 			glfwSetWindowUserPointer(m_windowHandle, &m_data);
 			glfwSetFramebufferSizeCallback(m_windowHandle, [](GLFWwindow* window, int width, int height)
 				{
@@ -143,7 +143,7 @@ namespace Mona {
 
 	Window::~Window() = default;
 
-	void Window::StartUp(EventManager* eventManager) noexcept
+	void Window::StartUp(EventManager& eventManager) noexcept
 	{
 		p_Impl->StartUp(eventManager);
 	}

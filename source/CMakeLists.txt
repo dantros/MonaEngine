@@ -18,6 +18,7 @@ set(MONA_HEADERS
 				World/ComponentManager.hpp
 				World/Detail/ComponentManager_Implementation.hpp
 				World/World.hpp
+				World/UserHandleTypes.hpp
 				World/Detail/World_Implementation.hpp)
 set(MONA_SOURCES 
 				Core/Log.cpp

@@ -1,6 +1,7 @@
 #include "Core/Log.hpp"
 #include "World/GameObject.hpp"
 #include "World/World.hpp"
+#include "World/UserHandleTypes.hpp"
 int globalStartUpCalls = 0;
 int globalDestructorCalls = 0;
 int globalUpdateCalls = 0;

@@ -23,6 +23,10 @@ namespace Mona {
 		return static_cast<uint8_t>(EComponentType::ComponentTypeCount);
 	}
 
+	class TransformComponent;
+	class StaticMeshComponent;
+	class CameraComponent;
+
 	class TransformComponent {
 	public:
 		static constexpr uint8_t componentIndex = GetComponentIndex(EComponentType::TransformComponent);

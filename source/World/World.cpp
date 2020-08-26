@@ -1,4 +1,5 @@
 #include "World.hpp"
+#include "UserHandleTypes.hpp"
 namespace Mona {
 	
 	World::World() : m_objectManager() {

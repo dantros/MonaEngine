@@ -8,6 +8,7 @@
 #include "Platform/KeyCodes.hpp"
 #include "Application.hpp"
 #include "World/World.hpp"
+#include "World/UserHandleTypes.hpp"
 #include <memory>
 
 #endif

@@ -44,13 +44,13 @@ namespace Mona {
 		const EState GetState() const { return m_state; }
 		template <typename ComponentType>
 		bool HasComponent() const {
-			auto& it = m_componentHandles.find(ComponentType::componentIndex);
+			auto it = m_componentHandles.find(ComponentType::componentIndex);
 			return it != m_componentHandles.end();
 		}
 		InnerGameObjectHandle GetInnerObjectHandle() const noexcept { return m_objectHandle; }
 		template <typename ComponentType>
 		InnerComponentHandle GetInnerComponentHandle() const {
-			auto& it = m_componentHandles.find(ComponentType::componentIndex);
+			auto it = m_componentHandles.find(ComponentType::componentIndex);
 			if (it != m_componentHandles.end())
 				return it->second;
 			else return InnerComponentHandle();

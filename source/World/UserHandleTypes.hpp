@@ -1,15 +1,15 @@
 #pragma once
 #ifndef USERHANDLETYPES_HPP
 #define USERHANDLETYPES_HPP
-#include "GameObjectTypes.hpp"
-#include "GameObject.hpp"
-#include "Component.hpp"
-#include "ComponentManager.hpp"
-#include "World.hpp"
+//#include "GameObjectTypes.hpp"
+//#include "GameObject.hpp"
+//#include "Component.hpp"
+//#include "ComponentManager.hpp"
+//#include "World.hpp"
 namespace Mona {
 	template <typename ComponentType>
 	class ComponentHandle {
-		static_assert(is_component<ComponentType>, "Cannot create handle of type that isn´t a component");
+		static_assert(is_component<ComponentType>, "Cannot create handle of type that isnï¿½t a component");
 	public:
 		static constexpr uint8_t componentIndex = ComponentType::componentIndex;
 		ComponentHandle() : m_innerHandle(), m_managerPointer(nullptr) {}
@@ -55,7 +55,7 @@ namespace Mona {
 			return *m_objectPointer;
 		}
 
-		const  GameObject& operator*() const {
+		const GameObject& operator*() const {
 			return *m_objectPointer;
 		}
 		InnerGameObjectHandle GetInnerHandle() const { return m_innerHandle; }

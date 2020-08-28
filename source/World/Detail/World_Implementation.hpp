@@ -1,6 +1,7 @@
 #pragma once
 #ifndef WORLD_IMPLEMENTATION_HPP
 #define WORLD_IMPLEMENTATION_HPP
+#include "../UserHandleTypes.hpp"
 namespace Mona {
 	template <typename ObjectType, typename ...Args>
 	GameObjectHandle<ObjectType> World::CreateGameObject(Args&& ... args) noexcept
@@ -29,7 +30,7 @@ namespace Mona {
 	template <typename ComponentType>
 	void World::RemoveComponent(const ComponentHandle<ComponentType>& handle) noexcept {
 		static_assert(is_component<ComponentType>, "Template parameter is not a component");
-		auto managerPtr = std::static_cast<ComponentManager<ComponentType>*>(m_componentManagers[ComponentType::componentIndex].get());
+		auto managerPtr = static_cast<ComponentManager<ComponentType>*>(m_componentManagers[ComponentType::componentIndex].get());
 		auto objectPtr = m_objectManager.GetGameObjectPointer(managerPtr->GetObjectHandle(handle.GetInnerHandle()));
 		managerPtr->RemoveComponent(handle.GetInnerHandle());
 		objectPtr->RemoveInnerComponentHandle(ComponentType::componentIndex);
@@ -40,14 +41,14 @@ namespace Mona {
 	{
 		static_assert(is_component<ComponentType>, "Template parameter is not a component");
 		MONA_ASSERT(gameObject.HasComponent<ComponentType>(), "World Error: Object doesnt have component");
-		auto managerPtr = std::static_cast<ComponentManager<ComponentType>*>(m_componentManagers[ComponentType::componentIndex].get());
+		auto managerPtr = static_cast<ComponentManager<ComponentType>*>(m_componentManagers[ComponentType::componentIndex].get());
 		return ComponentHandle<ComponentType>(gameObject.GetInnerComponentHandle<ComponentType>(), managerPtr);
 	}
 
 	template <typename ComponentType>
 	ComponentHandle<ComponentType> World::GetComponentHandle(const BaseGameObjectHandle& objectHandle) const noexcept
 	{
-		return GetComponentHandle(*objectHandle);
+		return GetComponentHandle<ComponentType>(*objectHandle);
 	}
 
 	template <typename ComponentType>

@@ -66,7 +66,7 @@ public:
 	virtual void UserUpdate(Mona::World& world, float timeStep) noexcept override {
 		globalUpdateCalls += 1;
 		m_frameCount += 1;
-		if (m_frameCount == 1000)
+		if (m_frameCount == 100)
 		{
 			world.CreateGameObject<SpawnInShutDown>();
 			world.DestroyGameObject(*this);
@@ -125,7 +125,7 @@ int main(){
 	MONA_ASSERT(globalStartUpCalls == 2001, "Incorrect number of startUp calls");
 	MONA_ASSERT(globalUpdateCalls == (2 + 2000*100), "Incorrect number of Update calls");
 	Mona::GameObjectHandle<FrameCountedObject> testObject = world.CreateGameObject<FrameCountedObject>();
-	for (uint32_t i = 0; i < 1000; i++)
+	for (uint32_t i = 0; i < 100; i++)
 	{
 		world.Update(1.0f);
 	}

@@ -5,6 +5,7 @@
 #include "../World/ComponentManager.hpp"
 #include "../World/Component.hpp"
 #include "StaticMeshComponent.hpp"
+#include "CameraComponent.hpp"
 
 
 
@@ -16,7 +17,8 @@ namespace Mona {
 		void StartUp(EventManager& eventManager) noexcept;
 		void Render(EventManager& eventManager,
 					ComponentManager<StaticMeshComponent> &staticMeshDataManager,
-					ComponentManager<TransformComponent> &transformDataManager) noexcept;
+					ComponentManager<TransformComponent> &transformDataManager,
+					ComponentManager<CameraComponent> &cameraDataManager) noexcept;
 		void ShutDown(EventManager& eventManager) noexcept;
 		void OnWindowResizeEvent(const WindowResizeEvent& event);
 	private:
@@ -24,7 +26,6 @@ namespace Mona {
 		void StartImGui() noexcept;
 		void RenderImGui(EventManager& eventManager) noexcept;
 		SubscriptionHandle m_onWindowResizeSubscription;
-		int programID = 0;
 	};
 }
 #endif

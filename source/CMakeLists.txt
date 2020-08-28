@@ -23,7 +23,8 @@ set(MONA_HEADERS
 				Rendering/ImGuiBuild.cpp
 				Rendering/Renderer.hpp
 				Rendering/CameraComponent.hpp
-				Rendering/StaticMeshComponent.hpp)
+				Rendering/StaticMeshComponent.hpp
+				Utilities/BasicCameraControllers.hpp)
 set(MONA_SOURCES 
 				Core/Log.cpp
 				Core/Config.cpp

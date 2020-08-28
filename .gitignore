@@ -1,5 +1,6 @@
 #bat files
 *.bat
+.vscode/
 source/Core/RootDirectory.hpp
 ToDo_Future_Work.txt
 commit_message.txt

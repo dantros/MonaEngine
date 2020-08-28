@@ -4,7 +4,7 @@
 #include <cstdint>
 #include "../Core/Common.hpp"
 #include <glm/glm.hpp>
-#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 namespace Mona {
 	
@@ -30,33 +30,41 @@ namespace Mona {
 	class TransformComponent {
 	public:
 		static constexpr uint8_t componentIndex = GetComponentIndex(EComponentType::TransformComponent);
-		void Translate(glm::vec3 translation) {
-			localTranslation += translation;
-			UpdateWorldTransform();
-		}
-		glm::vec3 GetLocalTranslation() const
-		{
+		const glm::vec3& GetLocalTranslation() const {
 			return localTranslation;
-		}
-		glm::fquat GetLocalRotation() const {
-			return localTranslation;
-		}
-		glm::vec3 GetLocalScale() const {
-			return localScale;
-		}
-		glm::mat4 GetWorldTransform() const
-		{
-			return worldTransform;
 		}
 
-		void UpdateWorldTransform() {
-			return;
+		const glm::mat4& GetModelMatrix() const {
+			return modelMatrix;
 		}
+		void Translate(glm::vec3 translation) {
+			localTranslation += translation;
+			UpdateModelMatrix();
+		}
+		void Scale(glm::vec3 scale){
+			localScale += scale;
+			UpdateModelMatrix();
+		}
+		
+		void Rotate(glm::vec3 axis, float angle){
+			localRotation = glm::rotate(localRotation, angle, axis);
+			UpdateModelMatrix();
+		}
+		
+
 	private:
+		void UpdateModelMatrix()
+		{
+			glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), localTranslation);
+			glm::mat4 rotationMatrix = glm::toMat4(localRotation);
+			glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), localScale);
+
+			modelMatrix = translationMatrix*rotationMatrix*scaleMatrix;
+		}
 		glm::vec3 localTranslation = glm::vec3(0.0f);
 		glm::fquat localRotation = glm::fquat(0.0, 0.0, 0.0, 1.0);
 		glm::vec3 localScale = glm::vec3(1.0f);
-		glm::mat4 worldTransform = glm::mat4(1.0);
+		glm::mat4 modelMatrix = glm::mat4(1.0);
 		
 	};
 

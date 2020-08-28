@@ -21,27 +21,32 @@ void GLAPIENTRY MessageCallback(GLenum source,
 
 namespace Mona{
 	template
+		class ComponentManager<CameraComponent>;
+
+	template
 		class ComponentManager<TransformComponent>;
 	template
 		class ComponentManager<StaticMeshComponent>;
 
+
+
 	void Renderer::StartUp(EventManager& eventManager) noexcept {
 		const char* vertex_shader_text =
 			"#version 450 core\n"
-			"layout(location = 5) uniform vec3 translation;\n"
+			"layout(location = 4) uniform vec3 cameraPosition;\n"
+			"layout(location = 5) uniform mat4 worldMatrix;\n"
 			"void main()\n"
 			"{\n"
 			"	 vec4 vertices[6] = vec4[6](vec4(0.25, -0.25, 0.5, 1.0), vec4(-0.25, -0.25, 0.5, 1.0), vec4(0.25, 0.25, 0.5, 1.0), vec4(-0.25, 0.25, 0.5, 1.0), vec4(-0.25, -0.25, 0.5, 1.0), vec4(0.25, 0.25, 0.5, 1.0)); \n"
-			"    gl_Position = vec4(translation,0.0) + vec4(0.2,0.2,0.2,1.0)*vertices[gl_VertexID];\n"
+			"    gl_Position = worldMatrix * (vec4(0.2,0.2,0.2,1.0)*vertices[gl_VertexID]);\n"
 			"}\n";
 
 		const char* fragment_shader_text =
 			"#version 450 core \n"
 			"out vec4 color;\n"
-			"layout(location = 5) uniform vec3 translation;\n"
 			"void main()\n"
 			"{\n"
-			"    color = vec4(translation.x, translation.y, 1.0, 1.0);\n"
+			"    color = vec4(0.3, 0.3, 0.8, 1.0);\n"
 			"}\n";
 		GLuint vertex_buffer, vertex_shader, fragment_shader, program;
 		GLuint vao;
@@ -61,7 +66,6 @@ namespace Mona{
 		glAttachShader(program, fragment_shader);
 		glLinkProgram(program);
 		glUseProgram(program);
-		programID = program;
 		m_onWindowResizeSubscription = eventManager.Subscribe(this, &Renderer::OnWindowResizeEvent);
 
 		StartImGui();
@@ -108,8 +112,20 @@ namespace Mona{
 
 	void Renderer::Render(EventManager& eventManager,
 				ComponentManager<StaticMeshComponent>& staticMeshDataManager,
-				ComponentManager<TransformComponent>& transformDataManager) noexcept 
+				ComponentManager<TransformComponent>& transformDataManager,
+				ComponentManager<CameraComponent>& cameraDataManager) noexcept 
 	{
+		glClear(GL_COLOR_BUFFER_BIT);
+		//Setting Scene Data
+
+		//TODO(BYRON) : This should be replace with getting cameraComponentfrom code.
+		CameraComponent& camera = cameraDataManager[0];
+		GameObject* cameraOwner = cameraDataManager.GetOwnerByIndex(0);
+		TransformComponent* cameraTransform = transformDataManager.GetComponentPointer(cameraOwner->GetInnerComponentHandle<TransformComponent>());
+		glm::vec3 cameraPosition = cameraTransform->GetLocalTranslation();
+		glUniform3fv(4, 1, glm::value_ptr(cameraPosition));
+
+		//Iterating over each static mesh
 		for (decltype(staticMeshDataManager.GetCount()) i = 0;
 			i < staticMeshDataManager.GetCount();
 			i++)
@@ -117,9 +133,10 @@ namespace Mona{
 			StaticMeshComponent& staticMesh = staticMeshDataManager[i];
 			GameObject* owner = staticMeshDataManager.GetOwnerByIndex(i);
 			TransformComponent* transform = transformDataManager.GetComponentPointer(owner->GetInnerComponentHandle<TransformComponent>());
-			glm::vec3 position = transform->GetLocalTranslation();
-			glUniform3fv(5, 1, glm::value_ptr(position));
-			glClear(GL_COLOR_BUFFER_BIT);
+			//Setting per Mesh Data
+			
+			//MONA_LOG_INFO("Rendering Mesh {0}, at position ({1},{2},{3})", i, position.x, position.y, position.z);
+			glUniformMatrix4fv(5,1,GL_FALSE,glm::value_ptr(transform->GetModelMatrix()));
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 		}
 		

@@ -102,7 +102,7 @@ namespace Mona {
 		m_input.Update();
 		m_objectManager.UpdateGameObjects(*this, timeStep);
 		m_application->UserUpdate(*this, timeStep);
-		m_renderer.Render(m_eventManager, staticMeshDataManager, transformDataManager);
+		m_renderer.Render(m_eventManager, staticMeshDataManager, transformDataManager, cameraDataManager);
 		m_window.Update();
 	}
 

@@ -1,18 +1,25 @@
 #include "MonaEngine.hpp"
+#include "Utilities/BasicCameraControllers.hpp"
 #include <imgui.h>
 class Box : public Mona::GameObject {
 public:
-	Box() = default;
+	Box(float speed, float rspeed) {
+		m_speed = speed;
+		m_rotationSpeed = rspeed;
+	}
 	void UserStartUp(Mona::World& world) noexcept override {
 		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
 		m_staticMesh = world.AddComponent<Mona::StaticMeshComponent>(*this);
 	}
 	void UserUpdate(Mona::World& world, float timeStep) noexcept override {
-		m_transform->Translate(glm::vec3(0.1f)*timeStep);
+		m_transform->Translate(glm::vec3(m_speed, m_speed, 0.0f)*timeStep);
+		m_transform->Rotate(glm::vec3(0.0f,0.0f,1.0f), m_rotationSpeed*timeStep);
 	}
 private:
 	Mona::TransformHandle m_transform;
 	Mona::StaticMeshHandle m_staticMesh;
+	float m_speed;
+	float m_rotationSpeed;
 };
 
 class Sandbox : public Mona::Application
@@ -25,7 +32,9 @@ public:
 		auto& eventManager = world.GetEventManager();
 		m_windowResizeSubcription = eventManager.Subscribe(this, &Sandbox::OnWindowResize);
 		m_debugGUISubcription = eventManager.Subscribe(this, &Sandbox::OnDebugGUIEvent);
-		world.CreateGameObject<Box>();
+		world.CreateGameObject<Box>(0.1f, 0.0f);
+		world.CreateGameObject<Box>(0.0f, 0.1f);
+		world.CreateGameObject<Mona::BasicPerspectiveCamera>();
 	}
 
 	virtual void UserShutDown(Mona::World& world) noexcept override {

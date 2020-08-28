@@ -99,6 +99,7 @@ namespace Mona
 		}
 		
 		void Unsubscribe(const SubscriptionHandle& handle) {
+			MONA_ASSERT(handle.m_typeIndex < GetEventTypeCount(), "EventManager Error: Handle with invalid type index");
 			m_observerLists[handle.m_typeIndex].Unsubscribe(handle);
 		}
 		EventManager() = default;

@@ -10,6 +10,9 @@
 #include "../Platform/Window.hpp"
 #include "../Platform/Input.hpp"
 #include "../Application.hpp"
+#include "../Rendering/CameraComponent.hpp"
+#include "../Rendering/StaticMeshComponent.hpp"
+#include "../Rendering/Renderer.hpp"
 #include <memory>
 #include <array>
 #include <string>
@@ -61,6 +64,8 @@ namespace Mona {
 		void Update(float timeStep) noexcept;
 
 	private:
+		template <typename ComponentType>
+		auto& GetComponentManager() noexcept;
 
 		EventManager m_eventManager;
 		Input m_input;
@@ -68,6 +73,7 @@ namespace Mona {
 		std::unique_ptr<Application> m_application;
 		GameObjectManager m_objectManager;
 		std::array<std::unique_ptr<BaseComponentManager>, GetComponentTypeCount()> m_componentManagers;
+		Renderer m_renderer;
 		bool m_shouldClose;
 	};
 

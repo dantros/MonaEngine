@@ -133,6 +133,12 @@ namespace Mona {
 		return m_componentOwners[m_handleEntries[index].index];
 	}
 
+
+	template <typename ComponentType>
+	GameObject* ComponentManager<ComponentType>::GetOwnerByIndex(size_type i) noexcept {
+		MONA_ASSERT(i < m_componentOwners.size(), "ComponentManager Error: owner index out of range");
+		return m_componentOwners[i];
+	}
 	template <typename ComponentType>
 	ComponentType& ComponentManager<ComponentType>::operator[](ComponentManager<ComponentType>::size_type index) noexcept
 	{

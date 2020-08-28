@@ -58,5 +58,11 @@ namespace Mona {
 		return managerPtr->GetCount();
 	}
 
+	template <typename ComponentType>
+	auto& World::GetComponentManager() noexcept {
+		static_assert(is_component<ComponentType>, "Template parameter is not a component");
+		return *static_cast<ComponentManager<ComponentType>*>(m_componentManagers[ComponentType::componentIndex].get());
+	}
+
 }
 #endif

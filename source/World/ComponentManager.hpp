@@ -38,6 +38,7 @@ namespace Mona {
 		const ComponentType* GetComponentPointer(const InnerComponentHandle& handle) const noexcept;
 		size_type GetCount() const noexcept;
 		GameObject* GetOwner(const InnerComponentHandle& handle) const noexcept;
+		GameObject* GetOwnerByIndex(size_type i) noexcept;
 		ComponentType& operator[](size_type index) noexcept;
 		const ComponentType& operator[](size_type index) const noexcept;
 		bool IsValid(const InnerComponentHandle& handle) const noexcept;

@@ -19,7 +19,11 @@ set(MONA_HEADERS
 				World/Detail/ComponentManager_Implementation.hpp
 				World/World.hpp
 				World/UserHandleTypes.hpp
-				World/Detail/World_Implementation.hpp)
+				World/Detail/World_Implementation.hpp
+				Rendering/ImGuiBuild.cpp
+				Rendering/Renderer.hpp
+				Rendering/CameraComponent.hpp
+				Rendering/StaticMeshComponent.hpp)
 set(MONA_SOURCES 
 				Core/Log.cpp
 				Core/Config.cpp
@@ -29,7 +33,8 @@ set(MONA_SOURCES
 				Engine.cpp
 				Application.cpp
 				World/GameObjectManager.cpp
-				World/World.cpp)
+				World/World.cpp
+				Rendering/Renderer.cpp)
 
 add_library(MonaEngine STATIC ${MONA_SOURCES} ${MONA_HEADERS} MonaEngine.hpp)
 target_include_directories(MonaEngine PRIVATE ${THIRD_PARTY_INCLUDE_DIRECTORIES} MONA_INCLUDE_DIRECTORY)

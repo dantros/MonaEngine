@@ -60,23 +60,6 @@ namespace Mona {
 		
 	};
 
-	class CameraComponent
-	{
-	public:
-		static constexpr uint8_t componentIndex = GetComponentIndex(EComponentType::CameraComponent);
-		float fieldOfView;
-		float zNearPlane;
-		float zFarPlane;
-		glm::mat4 view, projection, viewProjection;
-	};
-	typedef uint32_t MeshHandle;
-	class StaticMeshComponent
-	{
-	public:
-		static constexpr uint8_t componentIndex = GetComponentIndex(EComponentType::StaticMeshComponent);
-		MeshHandle Handle;
-	};
-
 	template <typename ComponentType>
 	inline constexpr bool is_component = is_any<ComponentType, TransformComponent, CameraComponent, StaticMeshComponent>;
 

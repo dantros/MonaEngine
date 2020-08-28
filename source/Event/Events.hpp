@@ -11,6 +11,7 @@ namespace Mona
 		MouseScrollEvent,
 		GameObjectDestroyedEvent,
 		AplicationEndEvent,
+		DebugGUIEvent,
 		EventTypeCount
 	};
 
@@ -62,12 +63,17 @@ namespace Mona
 		static constexpr uint8_t eventIndex = GetEventIndex(EEventType::AplicationEndEvent);
 	};
 
+	struct DebugGUIEvent : public Event {
+		static constexpr uint8_t eventIndex = GetEventIndex(EEventType::DebugGUIEvent);
+	};
+
 	template <typename EventType>
 	inline constexpr bool is_event = is_any<EventType,
 											WindowResizeEvent,
 											MouseScrollEvent,
 											GameObjectDestroyedEvent,
-											ApplicationEndEvent>;
+											ApplicationEndEvent,
+											DebugGUIEvent>;
 
 }
 #endif

@@ -66,7 +66,7 @@ namespace Mona {
 		return m_eventManager;
 	}
 
-	const Input& World::GetInput() const noexcept {
+	Input& World::GetInput() noexcept {
 		return m_input;
 	}
 
@@ -102,8 +102,18 @@ namespace Mona {
 		m_input.Update();
 		m_objectManager.UpdateGameObjects(*this, timeStep);
 		m_application->UserUpdate(*this, timeStep);
-		m_renderer.Render(m_eventManager, staticMeshDataManager, transformDataManager, cameraDataManager);
+		m_renderer.Render(m_eventManager, m_cameraHandle, staticMeshDataManager, transformDataManager, cameraDataManager);
 		m_window.Update();
+	}
+
+	void World::SetMainCamera(const BaseGameObjectHandle& objectHandle) noexcept {
+		SetMainCamera(*objectHandle);
+	}
+
+	void World::SetMainCamera(const GameObject& gameObject) noexcept {
+		MONA_ASSERT(gameObject.HasComponent<CameraComponent>(), "Given GameObject doesn't have a camera component");
+		m_cameraHandle = gameObject.GetInnerComponentHandle<CameraComponent>();
+
 	}
 
 }

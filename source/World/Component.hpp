@@ -33,38 +33,61 @@ namespace Mona {
 		const glm::vec3& GetLocalTranslation() const {
 			return localTranslation;
 		}
+		const glm::fquat& GetLocalRotation() const {
+			return localRotation;
+		}
+		glm::mat4 GetModelMatrix() const {
+			const glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), localTranslation);
+			const glm::mat4 rotationMatrix = glm::toMat4(localRotation);
+			const glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), localScale);
 
-		const glm::mat4& GetModelMatrix() const {
-			return modelMatrix;
+			return translationMatrix * rotationMatrix * scaleMatrix;
+		}
+		glm::mat4 GetViewMatrixFromTransform() const {
+			const glm::vec3 up = GetUpVector();
+			const glm::vec3 front = GetFrontVector();
+			return glm::lookAt(localTranslation, localTranslation + front, up);
 		}
 		void Translate(glm::vec3 translation) {
 			localTranslation += translation;
-			UpdateModelMatrix();
+			//UpdateModelMatrix();
 		}
+
 		void Scale(glm::vec3 scale){
 			localScale += scale;
-			UpdateModelMatrix();
+			//UpdateModelMatrix();
 		}
 		
 		void Rotate(glm::vec3 axis, float angle){
 			localRotation = glm::rotate(localRotation, angle, axis);
-			UpdateModelMatrix();
+			//UpdateModelMatrix();
+		}
+
+		glm::vec3 GetUpVector() const {
+			return glm::rotate(localRotation, glm::vec3(0.0f, 0.0f, 1.0f));
 		}
 		
+		glm::vec3 GetRightVector() const {
+			return glm::rotate(localRotation, glm::vec3(1.0f, 0.0f, 0.0f));
+		}
+
+		glm::vec3 GetFrontVector() const {
+			return glm::rotate(localRotation, glm::vec3(0.0f, 1.0f, 0.0f));
+		}
 
 	private:
-		void UpdateModelMatrix()
+		/*void UpdateModelMatrix()
 		{
 			glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), localTranslation);
 			glm::mat4 rotationMatrix = glm::toMat4(localRotation);
 			glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), localScale);
 
 			modelMatrix = translationMatrix*rotationMatrix*scaleMatrix;
-		}
+		}*/
 		glm::vec3 localTranslation = glm::vec3(0.0f);
-		glm::fquat localRotation = glm::fquat(0.0, 0.0, 0.0, 1.0);
+		glm::fquat localRotation = glm::fquat(1.0, 0.0, 0.0, 0.0);
 		glm::vec3 localScale = glm::vec3(1.0f);
-		glm::mat4 modelMatrix = glm::mat4(1.0);
+		//glm::mat4 modelMatrix = glm::mat4(1.0);
 		
 	};
 

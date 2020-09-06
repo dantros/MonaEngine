@@ -3,15 +3,15 @@
 #define INPUT_HPP
 #include <glm/glm.hpp>
 #include <memory>
-#include "KeyCodes.hpp"
 
 namespace Mona
 {
 	class World;
 	class EventManager;
 	class Input {
-		enum class CursorType{Hidden, Disabled, Normal};
+		
 	public:
+		enum class CursorType { Hidden, Disabled, Normal };
 		friend class World;
 		Input();
 		~Input();

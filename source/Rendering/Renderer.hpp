@@ -16,6 +16,7 @@ namespace Mona {
 	public:
 		void StartUp(EventManager& eventManager) noexcept;
 		void Render(EventManager& eventManager,
+					InnerComponentHandle cameraHandle,
 					ComponentManager<StaticMeshComponent> &staticMeshDataManager,
 					ComponentManager<TransformComponent> &transformDataManager,
 					ComponentManager<CameraComponent> &cameraDataManager) noexcept;

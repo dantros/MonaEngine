@@ -33,20 +33,105 @@ namespace Mona{
 	void Renderer::StartUp(EventManager& eventManager) noexcept {
 		const char* vertex_shader_text =
 			"#version 450 core\n"
-			"layout(location = 4) uniform vec3 cameraPosition;\n"
-			"layout(location = 5) uniform mat4 worldMatrix;\n"
+			"layout(location = 3) uniform mat4 viewMatrix;\n"
+			"layout(location = 4) uniform mat4 projectionMatrix;\n"
+			"layout(location = 5) uniform mat4 modelMatrix;\n"
+			"out vec3 normal; \n"
 			"void main()\n"
 			"{\n"
-			"	 vec4 vertices[6] = vec4[6](vec4(0.25, -0.25, 0.5, 1.0), vec4(-0.25, -0.25, 0.5, 1.0), vec4(0.25, 0.25, 0.5, 1.0), vec4(-0.25, 0.25, 0.5, 1.0), vec4(-0.25, -0.25, 0.5, 1.0), vec4(0.25, 0.25, 0.5, 1.0)); \n"
-			"    gl_Position = worldMatrix * (vec4(0.2,0.2,0.2,1.0)*vertices[gl_VertexID]);\n"
+			"vec3[36] vertices = vec3[36]( \n"
+			"vec3(-0.5f, -0.5f, -0.5f),  \n"
+			"vec3( 0.5f, -0.5f, -0.5f),  \n"
+			"vec3( 0.5f,  0.5f, -0.5f),  \n"
+			"vec3( 0.5f,  0.5f, -0.5f),  \n"
+			"vec3(-0.5f,  0.5f, -0.5f),  \n"
+			"vec3(-0.5f, -0.5f, -0.5f),  \n"
+			"vec3(-0.5f, -0.5f,  0.5f),  \n"
+			"vec3( 0.5f, -0.5f,  0.5f),  \n"
+			"vec3( 0.5f,  0.5f,  0.5f),  \n"
+			"vec3( 0.5f,  0.5f,  0.5f),  \n"
+			"vec3(-0.5f,  0.5f,  0.5f),  \n"
+			"vec3(-0.5f, -0.5f,  0.5f),  \n"
+			"vec3(-0.5f,  0.5f,  0.5f),  \n"
+			"vec3(-0.5f,  0.5f, -0.5f),  \n"
+			"vec3(-0.5f, -0.5f, -0.5f),  \n"
+			"vec3(-0.5f, -0.5f, -0.5f),  \n"
+			"vec3(-0.5f, -0.5f,  0.5f),  \n"
+			"vec3(-0.5f,  0.5f,  0.5f),  \n"
+			"vec3( 0.5f,  0.5f,  0.5f),  \n"
+			"vec3( 0.5f,  0.5f, -0.5f),  \n"
+			"vec3( 0.5f, -0.5f, -0.5f),  \n"
+			"vec3( 0.5f, -0.5f, -0.5f),  \n"
+			"vec3( 0.5f, -0.5f,  0.5f),  \n"
+			"vec3( 0.5f,  0.5f,  0.5f),  \n"
+			"vec3(-0.5f, -0.5f, -0.5f),  \n"
+			"vec3( 0.5f, -0.5f, -0.5f),  \n"
+			"vec3( 0.5f, -0.5f,  0.5f),  \n"
+			"vec3( 0.5f, -0.5f,  0.5f),  \n"
+			"vec3(-0.5f, -0.5f,  0.5f),  \n"
+			"vec3(-0.5f, -0.5f, -0.5f),  \n"
+			"vec3(-0.5f,  0.5f, -0.5f),  \n"
+			"vec3( 0.5f,  0.5f, -0.5f),  \n"
+			"vec3( 0.5f,  0.5f,  0.5f),  \n"
+			"vec3( 0.5f,  0.5f,  0.5f),  \n"
+			"vec3(-0.5f,  0.5f,  0.5f),  \n"
+			"vec3(-0.5f,  0.5f, -0.5f));\n"
+			"vec3[36] normals =  vec3[36]( \n"
+			"vec3( 0.0f,  0.0f, -1.0f), \n"
+			"vec3( 0.0f,  0.0f, -1.0f), \n"
+			"vec3( 0.0f,  0.0f, -1.0f), \n"
+			"vec3( 0.0f,  0.0f, -1.0f), \n"
+			"vec3( 0.0f,  0.0f, -1.0f), \n"
+			"vec3( 0.0f,  0.0f, -1.0f), \n"
+			"vec3( 0.0f,  0.0f,  1.0f), \n"
+			"vec3( 0.0f,  0.0f,  1.0f), \n"
+			"vec3( 0.0f,  0.0f,  1.0f), \n"
+			"vec3( 0.0f,  0.0f,  1.0f), \n"
+			"vec3( 0.0f,  0.0f,  1.0f), \n"
+			"vec3( 0.0f,  0.0f,  1.0f), \n"
+			"vec3(-1.0f,  0.0f,  0.0f), \n"
+			"vec3(-1.0f,  0.0f,  0.0f), \n"
+			"vec3(-1.0f,  0.0f,  0.0f), \n"
+			"vec3(-1.0f,  0.0f,  0.0f), \n"
+			"vec3(-1.0f,  0.0f,  0.0f), \n"
+			"vec3(-1.0f,  0.0f,  0.0f), \n"
+			"vec3( 1.0f,  0.0f,  0.0f), \n"
+			"vec3( 1.0f,  0.0f,  0.0f), \n"
+			"vec3( 1.0f,  0.0f,  0.0f), \n"
+			"vec3( 1.0f,  0.0f,  0.0f), \n"
+			"vec3( 1.0f,  0.0f,  0.0f), \n"
+			"vec3( 1.0f,  0.0f,  0.0f), \n"
+			"vec3( 0.0f, -1.0f,  0.0f), \n"
+			"vec3( 0.0f, -1.0f,  0.0f), \n"
+			"vec3( 0.0f, -1.0f,  0.0f), \n"
+			"vec3( 0.0f, -1.0f,  0.0f), \n"
+			"vec3( 0.0f, -1.0f,  0.0f), \n"
+			"vec3( 0.0f, -1.0f,  0.0f), \n"
+			"vec3( 0.0f,  1.0f,  0.0f), \n"
+			"vec3( 0.0f,  1.0f,  0.0f), \n"
+			"vec3( 0.0f,  1.0f,  0.0f), \n"
+			"vec3( 0.0f,  1.0f,  0.0f), \n"
+			"vec3( 0.0f,  1.0f,  0.0f), \n"
+			"vec3( 0.0f,  1.0f,  0.0f)); \n"
+			"normal = mat3(transpose(inverse(modelMatrix))) * normals[gl_VertexID];"
+			"gl_Position = projectionMatrix * viewMatrix *modelMatrix * (vec4(1.5,1.0,1.0,1.0) * vec4(vertices[gl_VertexID],1.0)); \n"
+			
 			"}\n";
+
 
 		const char* fragment_shader_text =
 			"#version 450 core \n"
 			"out vec4 color;\n"
+			"in vec3 normal;\n"
 			"void main()\n"
 			"{\n"
-			"    color = vec4(0.3, 0.3, 0.8, 1.0);\n"
+			" vec3 objectColor = vec3(0.2,0.2,0.8);"
+			" float ambient = 0.2f;"
+			" vec3 norm = normalize(normal);\n"
+			" vec3 lightDir = normalize(vec3(-1.0,1.0,-2.0));\n"
+			" float diffuse = max(dot(norm, -lightDir), 0.0); \n"
+			" vec3 result = (ambient + diffuse) * objectColor; \n"
+			" color = vec4(result, 1.0);\n"
 			"}\n";
 		GLuint vertex_buffer, vertex_shader, fragment_shader, program;
 		GLuint vao;
@@ -68,6 +153,8 @@ namespace Mona{
 		glUseProgram(program);
 		m_onWindowResizeSubscription = eventManager.Subscribe(this, &Renderer::OnWindowResizeEvent);
 
+		glEnable(GL_DEPTH_TEST);
+		StartDebugConfiguration();
 		StartImGui();
 	}
 	void Renderer::ShutDown(EventManager& eventManager) noexcept {
@@ -111,20 +198,34 @@ namespace Mona{
 	}
 
 	void Renderer::Render(EventManager& eventManager,
+				InnerComponentHandle cameraHandle,
 				ComponentManager<StaticMeshComponent>& staticMeshDataManager,
 				ComponentManager<TransformComponent>& transformDataManager,
 				ComponentManager<CameraComponent>& cameraDataManager) noexcept 
 	{
-		glClear(GL_COLOR_BUFFER_BIT);
+		//Add depth testing face culling in the future
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		//Setting Scene Data
 
 		//TODO(BYRON) : This should be replace with getting cameraComponentfrom code.
-		CameraComponent& camera = cameraDataManager[0];
-		GameObject* cameraOwner = cameraDataManager.GetOwnerByIndex(0);
-		TransformComponent* cameraTransform = transformDataManager.GetComponentPointer(cameraOwner->GetInnerComponentHandle<TransformComponent>());
-		glm::vec3 cameraPosition = cameraTransform->GetLocalTranslation();
-		glUniform3fv(4, 1, glm::value_ptr(cameraPosition));
 
+		//CameraComponent& camera = cameraDataManager[0];
+		glm::mat4 viewMatrix;
+		glm::mat4 projectionMatrix;
+		if (cameraDataManager.IsValid(cameraHandle)) {
+			CameraComponent* camera = cameraDataManager.GetComponentPointer(cameraHandle);
+			GameObject* cameraOwner = cameraDataManager.GetOwner(cameraHandle);
+			TransformComponent* cameraTransform = transformDataManager.GetComponentPointer(cameraOwner->GetInnerComponentHandle<TransformComponent>());
+			viewMatrix = cameraTransform->GetViewMatrixFromTransform();
+			projectionMatrix = camera->GetProjectionMatrix();
+		}
+		else {
+			MONA_LOG_INFO("Render Info: No camera has been set, using defaults transformations");
+			viewMatrix = glm::mat4(1.0f);
+			projectionMatrix = glm::perspective(glm::radians(50.0f), 16.0f / 9.0f, 0.1f, 100.0f);
+		}
+		glUniformMatrix4fv(3, 1, GL_FALSE, glm::value_ptr(viewMatrix));
+		glUniformMatrix4fv(4, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 		//Iterating over each static mesh
 		for (decltype(staticMeshDataManager.GetCount()) i = 0;
 			i < staticMeshDataManager.GetCount();
@@ -134,10 +235,8 @@ namespace Mona{
 			GameObject* owner = staticMeshDataManager.GetOwnerByIndex(i);
 			TransformComponent* transform = transformDataManager.GetComponentPointer(owner->GetInnerComponentHandle<TransformComponent>());
 			//Setting per Mesh Data
-			
-			//MONA_LOG_INFO("Rendering Mesh {0}, at position ({1},{2},{3})", i, position.x, position.y, position.z);
 			glUniformMatrix4fv(5,1,GL_FALSE,glm::value_ptr(transform->GetModelMatrix()));
-			glDrawArrays(GL_TRIANGLES, 0, 6);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 		
 		

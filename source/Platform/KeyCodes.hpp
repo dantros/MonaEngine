@@ -125,4 +125,17 @@
 #define MONA_KEY_RIGHT_SUPER        347
 #define MONA_KEY_MENU               348
 
+#define MONA_MOUSE_BUTTON_1         0
+#define MONA_MOUSE_BUTTON_2         1
+#define MONA_MOUSE_BUTTON_3         2
+#define MONA_MOUSE_BUTTON_4         3
+#define MONA_MOUSE_BUTTON_5         4
+#define MONA_MOUSE_BUTTON_6         5
+#define MONA_MOUSE_BUTTON_7         6
+#define MONA_MOUSE_BUTTON_8         7
+#define MONA_MOUSE_BUTTON_LAST      MONA_MOUSE_BUTTON_8
+#define MONA_MOUSE_BUTTON_LEFT      MONA_MOUSE_BUTTON_1
+#define MONA_MOUSE_BUTTON_RIGHT     MONA_MOUSE_BUTTON_2
+#define MONA_MOUSE_BUTTON_MIDDLE    MONA_MOUSE_BUTTON_3 
+
 #endif

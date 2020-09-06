@@ -12,14 +12,15 @@ public:
 		m_staticMesh = world.AddComponent<Mona::StaticMeshComponent>(*this);
 	}
 	void UserUpdate(Mona::World& world, float timeStep) noexcept override {
-		m_transform->Translate(glm::vec3(m_speed, m_speed, 0.0f)*timeStep);
+		m_transform->Translate(glm::vec3(m_speed, 0.0f, m_speed)*timeStep);
 		m_transform->Rotate(glm::vec3(0.0f,0.0f,1.0f), m_rotationSpeed*timeStep);
 	}
+	float m_rotationSpeed;
 private:
 	Mona::TransformHandle m_transform;
 	Mona::StaticMeshHandle m_staticMesh;
 	float m_speed;
-	float m_rotationSpeed;
+	
 };
 
 class Sandbox : public Mona::Application
@@ -32,9 +33,10 @@ public:
 		auto& eventManager = world.GetEventManager();
 		m_windowResizeSubcription = eventManager.Subscribe(this, &Sandbox::OnWindowResize);
 		m_debugGUISubcription = eventManager.Subscribe(this, &Sandbox::OnDebugGUIEvent);
-		world.CreateGameObject<Box>(0.1f, 0.0f);
-		world.CreateGameObject<Box>(0.0f, 0.1f);
-		world.CreateGameObject<Mona::BasicPerspectiveCamera>();
+		world.CreateGameObject<Box>(0.4f, 0.0f);
+		m_rotatingBox = world.CreateGameObject<Box>(0.0f, 0.0f);
+		world.SetMainCamera(world.CreateGameObject<Mona::BasicPerspectiveCamera>());
+		world.GetInput().SetCursorType(Mona::Input::CursorType::Disabled);
 	}
 
 	virtual void UserShutDown(Mona::World& world) noexcept override {
@@ -46,7 +48,7 @@ public:
 	
 	void OnDebugGUIEvent(const Mona::DebugGUIEvent& event) {
 		ImGui::Begin("Testing Float Slider:");
-		ImGui::SliderFloat("SomeFloat", &somefloat, 0.0f, 10.0f);
+		ImGui::SliderFloat("BoxRotationSpeed", &(m_rotatingBox->m_rotationSpeed), 0.0f, 10.0f);
 		ImGui::End();
 	}
 
@@ -81,6 +83,7 @@ public:
 private:
 	Mona::SubscriptionHandle m_windowResizeSubcription;
 	Mona::SubscriptionHandle m_debugGUISubcription;
+	Mona::GameObjectHandle<Box> m_rotatingBox;
 	float somefloat = 0.0f;
 };
 int main()

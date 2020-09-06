@@ -54,7 +54,7 @@ namespace Mona {
 		BaseComponentManager::size_type GetComponentCount() const noexcept;
 
 		EventManager& GetEventManager() noexcept;
-		const Input& GetInput() const noexcept;
+		Input& GetInput() noexcept;
 		Window& GetWindow() noexcept;
 		void EndApplication() noexcept;
 
@@ -62,6 +62,9 @@ namespace Mona {
 		void ShutDown() noexcept;
 		void StartMainLoop() noexcept;
 		void Update(float timeStep) noexcept;
+
+		void SetMainCamera(const BaseGameObjectHandle& objectHandle) noexcept;
+		void SetMainCamera(const GameObject& gameObject) noexcept;
 
 	private:
 		template <typename ComponentType>
@@ -71,10 +74,14 @@ namespace Mona {
 		Input m_input;
 		Window m_window;
 		std::unique_ptr<Application> m_application;
+		bool m_shouldClose;
+
 		GameObjectManager m_objectManager;
 		std::array<std::unique_ptr<BaseComponentManager>, GetComponentTypeCount()> m_componentManagers;
+
 		Renderer m_renderer;
-		bool m_shouldClose;
+		InnerComponentHandle m_cameraHandle;
+		
 	};
 
 	

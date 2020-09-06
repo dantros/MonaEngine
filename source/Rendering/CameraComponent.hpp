@@ -7,7 +7,9 @@ namespace Mona {
 	class CameraComponent
 	{
 	public:
+		using dependencies = DependencyList<TransformComponent>;
 		static constexpr uint8_t componentIndex = GetComponentIndex(EComponentType::CameraComponent);
+		static constexpr std::string_view componentName = "CameraComponent";
 		
 		CameraComponent() {
 			tanHalfFov = glm::tan(glm::radians(fieldOfView / 2.0f));

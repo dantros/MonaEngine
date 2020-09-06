@@ -70,6 +70,9 @@ namespace Mona {
 		template <typename ComponentType>
 		auto& GetComponentManager() noexcept;
 
+		template <typename ComponentType, typename ...ComponentTypes>
+		bool CheckDependencies(const GameObject& gameObject, DependencyList<ComponentTypes...> dl) const;
+
 		EventManager m_eventManager;
 		Input m_input;
 		Window m_window;

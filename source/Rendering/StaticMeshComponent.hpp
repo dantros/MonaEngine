@@ -7,6 +7,8 @@ namespace Mona {
 	class StaticMeshComponent
 	{
 	public:
+		using dependencies = DependencyList<TransformComponent>;
+		static constexpr std::string_view componentName = "StaticMeshComponent";
 		static constexpr uint8_t componentIndex = GetComponentIndex(EComponentType::StaticMeshComponent);
 		MeshHandle Handle;
 	};

@@ -5,6 +5,7 @@
 #include "../Core/Common.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include <string_view>
 
 namespace Mona {
 	
@@ -22,13 +23,15 @@ namespace Mona {
 	{
 		return static_cast<uint8_t>(EComponentType::ComponentTypeCount);
 	}
-
+	template <typename ...ComponentTypes> struct DependencyList {};
 	class TransformComponent;
 	class StaticMeshComponent;
 	class CameraComponent;
 
 	class TransformComponent {
 	public:
+		using dependencies = DependencyList<>;
+		static constexpr std::string_view componentName = "TransformComponent";
 		static constexpr uint8_t componentIndex = GetComponentIndex(EComponentType::TransformComponent);
 		const glm::vec3& GetLocalTranslation() const {
 			return localTranslation;

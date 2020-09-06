@@ -19,9 +19,9 @@ namespace Mona {
 	ComponentHandle<ComponentType> World::AddComponent(GameObject& gameObject) noexcept {
 		static_assert(is_component<ComponentType>, "Template parameter is not a component");
 		MONA_ASSERT(m_objectManager.IsValid(gameObject.GetInnerObjectHandle()), "World Error: Trying to add component from invaled object handle");
-		//auto& go = m_objectManager.GetGameObjectReference(objectHandle);
 		MONA_ASSERT(!gameObject.HasComponent<ComponentType>(),
-			"Trying to add already present component");
+			"World Error: Trying to add already present component. ComponentType = {0}", ComponentType::componentName);
+		MONA_ASSERT(CheckDependencies<ComponentType>(gameObject, ComponentType::dependencies()), "World Error: Trying to add component with incomplete dependencies");
 		auto managerPtr = static_cast<ComponentManager<ComponentType>*>(m_componentManagers[ComponentType::componentIndex].get());
 		InnerComponentHandle componentHandle = managerPtr->AddComponent(&gameObject);
 		gameObject.AddInnerComponentHandle(ComponentType::componentIndex, componentHandle);
@@ -31,7 +31,7 @@ namespace Mona {
 	void World::RemoveComponent(const ComponentHandle<ComponentType>& handle) noexcept {
 		static_assert(is_component<ComponentType>, "Template parameter is not a component");
 		auto managerPtr = static_cast<ComponentManager<ComponentType>*>(m_componentManagers[ComponentType::componentIndex].get());
-		auto objectPtr = m_objectManager.GetGameObjectPointer(managerPtr->GetObjectHandle(handle.GetInnerHandle()));
+		auto objectPtr = m_objectManager.GetGameObjectPointer(managerPtr->GetOwner(handle.GetInnerHandle()));
 		managerPtr->RemoveComponent(handle.GetInnerHandle());
 		objectPtr->RemoveInnerComponentHandle(ComponentType::componentIndex);
 	}
@@ -40,7 +40,7 @@ namespace Mona {
 	ComponentHandle<ComponentType> World::GetComponentHandle(const GameObject& gameObject) const noexcept
 	{
 		static_assert(is_component<ComponentType>, "Template parameter is not a component");
-		MONA_ASSERT(gameObject.HasComponent<ComponentType>(), "World Error: Object doesnt have component");
+		MONA_ASSERT(gameObject.HasComponent<ComponentType>(), "World Error: Object doesnt have component of type : {0}", ComponentType::componentName);
 		auto managerPtr = static_cast<ComponentManager<ComponentType>*>(m_componentManagers[ComponentType::componentIndex].get());
 		return ComponentHandle<ComponentType>(gameObject.GetInnerComponentHandle<ComponentType>(), managerPtr);
 	}
@@ -65,5 +65,13 @@ namespace Mona {
 		return *static_cast<ComponentManager<ComponentType>*>(m_componentManagers[ComponentType::componentIndex].get());
 	}
 
+	template <typename ComponentType, typename ... ComponentTypes>
+	bool World::CheckDependencies(const GameObject& gameObject, DependencyList<ComponentTypes...> dl) const {
+		return ((gameObject.HasComponent<ComponentTypes>() ? 
+			true : 
+			(Log::GetLogger()->error("World Error: Component {0} depends on {1}, please add it first", ComponentType::componentName, ComponentTypes::componentName), false) ) 
+			&& ...);
+	
+	}
 }
 #endif

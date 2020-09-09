@@ -34,7 +34,8 @@ namespace Mona {
 	}
 
 	template <typename ComponentType>
-	InnerComponentHandle ComponentManager<ComponentType>::AddComponent(GameObject* gameObjectPointer) noexcept
+	template <typename ... Args>
+	InnerComponentHandle ComponentManager<ComponentType>::AddComponent(GameObject* gameObjectPointer, Args&& ... args) noexcept
 	{
 		MONA_ASSERT(m_components.size() < s_maxEntries, "ComponentManager Error: Cannot Add more components, max number reached.");
 		if (m_firstFreeIndex != s_maxEntries && m_freeIndicesCount > s_minFreeIndices)
@@ -47,7 +48,7 @@ namespace Mona {
 			auto handleIndex = m_firstFreeIndex;
 			m_componentOwners.emplace_back(gameObjectPointer);
 			m_handleEntryIndices.emplace_back(handleIndex);
-			m_components.emplace_back();
+			m_components.emplace_back(std::forward<Args>(args)...);
 			if (m_firstFreeIndex == m_lastFreeIndex)
 				m_firstFreeIndex = m_lastFreeIndex = s_maxEntries;
 			else 
@@ -63,7 +64,7 @@ namespace Mona {
 			m_handleEntries.emplace_back(static_cast<size_type>(m_components.size()), s_maxEntries, 0);
 			m_componentOwners.emplace_back(gameObjectPointer);
 			m_handleEntryIndices.emplace_back(static_cast<size_type>(m_handleEntries.size() - 1));
-			m_components.emplace_back();
+			m_components.emplace_back(std::forward<Args>(args)...);
 
 			return InnerComponentHandle(static_cast<size_type>(m_handleEntries.size() - 1), 0);
 		}

@@ -9,7 +9,7 @@ public:
 	}
 	void UserStartUp(Mona::World& world) noexcept override {
 		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
-		m_staticMesh = world.AddComponent<Mona::StaticMeshComponent>(*this);
+		m_staticMesh = world.AddComponent<Mona::StaticMeshComponent>(*this, Mona::ModelManager::PrimitiveType::Cube);
 	}
 	void UserUpdate(Mona::World& world, float timeStep) noexcept override {
 		m_transform->Translate(glm::vec3(m_speed, 0.0f, m_speed)*timeStep);
@@ -23,6 +23,28 @@ private:
 	
 };
 
+class Sphere : public Mona::GameObject {
+public:
+	Sphere(float speed, float rspeed) {
+		m_speed = speed;
+		m_rotationSpeed = rspeed;
+	}
+	void UserStartUp(Mona::World& world) noexcept override {
+		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
+		m_staticMesh = world.AddComponent<Mona::StaticMeshComponent>(*this, Mona::ModelManager::PrimitiveType::Sphere);
+	}
+	void UserUpdate(Mona::World& world, float timeStep) noexcept override {
+		m_transform->Translate(glm::vec3(m_speed, 0.0f, m_speed) * timeStep);
+		m_transform->Rotate(glm::vec3(0.0f, 0.0f, 1.0f), m_rotationSpeed * timeStep);
+	}
+	float m_rotationSpeed;
+private:
+	Mona::TransformHandle m_transform;
+	Mona::StaticMeshHandle m_staticMesh;
+	float m_speed;
+
+};
+
 class Sandbox : public Mona::Application
 {
 public:
@@ -33,7 +55,7 @@ public:
 		auto& eventManager = world.GetEventManager();
 		m_windowResizeSubcription = eventManager.Subscribe(this, &Sandbox::OnWindowResize);
 		m_debugGUISubcription = eventManager.Subscribe(this, &Sandbox::OnDebugGUIEvent);
-		world.CreateGameObject<Box>(0.4f, 0.0f);
+		world.CreateGameObject<Sphere>(0.4f, 0.0f);
 		m_rotatingBox = world.CreateGameObject<Box>(0.0f, 0.0f);
 		world.SetMainCamera(world.CreateGameObject<Mona::BasicPerspectiveCamera>());
 		world.GetInput().SetCursorType(Mona::Input::CursorType::Disabled);

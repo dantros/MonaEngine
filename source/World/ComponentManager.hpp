@@ -32,7 +32,8 @@ namespace Mona {
 		ComponentManager& operator=(const ComponentManager&) = delete;
 		virtual void StartUp(EventManager& eventManager, size_type expectedObjects = 0) noexcept override;
 		virtual void ShutDown(EventManager& eventManager) noexcept override;
-		InnerComponentHandle AddComponent(GameObject* gameObjectPointer) noexcept;
+		template <typename ...Args>
+		InnerComponentHandle AddComponent(GameObject* gameObjectPointer, Args&& ... args) noexcept;
 		virtual void RemoveComponent(const InnerComponentHandle& handle) noexcept override;
 		ComponentType* GetComponentPointer(const InnerComponentHandle& handle) noexcept;
 		const ComponentType* GetComponentPointer(const InnerComponentHandle& handle) const noexcept;

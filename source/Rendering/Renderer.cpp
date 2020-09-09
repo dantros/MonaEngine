@@ -6,6 +6,9 @@
 #include <GLFW/glfw3.h>
 #include <glm/gtc/type_ptr.hpp>
 #include "../Core/Log.hpp"
+#include "ShaderProgram.hpp"
+#include "ModelManager.hpp"
+#include "../Core/RootDirectory.hpp"
 void GLAPIENTRY MessageCallback(GLenum source,
 								GLenum type,
 								GLuint id,
@@ -31,129 +34,14 @@ namespace Mona{
 
 
 	void Renderer::StartUp(EventManager& eventManager) noexcept {
-		const char* vertex_shader_text =
-			"#version 450 core\n"
-			"layout(location = 3) uniform mat4 viewMatrix;\n"
-			"layout(location = 4) uniform mat4 projectionMatrix;\n"
-			"layout(location = 5) uniform mat4 modelMatrix;\n"
-			"out vec3 normal; \n"
-			"void main()\n"
-			"{\n"
-			"vec3[36] vertices = vec3[36]( \n"
-			"vec3(-0.5f, -0.5f, -0.5f),  \n"
-			"vec3( 0.5f, -0.5f, -0.5f),  \n"
-			"vec3( 0.5f,  0.5f, -0.5f),  \n"
-			"vec3( 0.5f,  0.5f, -0.5f),  \n"
-			"vec3(-0.5f,  0.5f, -0.5f),  \n"
-			"vec3(-0.5f, -0.5f, -0.5f),  \n"
-			"vec3(-0.5f, -0.5f,  0.5f),  \n"
-			"vec3( 0.5f, -0.5f,  0.5f),  \n"
-			"vec3( 0.5f,  0.5f,  0.5f),  \n"
-			"vec3( 0.5f,  0.5f,  0.5f),  \n"
-			"vec3(-0.5f,  0.5f,  0.5f),  \n"
-			"vec3(-0.5f, -0.5f,  0.5f),  \n"
-			"vec3(-0.5f,  0.5f,  0.5f),  \n"
-			"vec3(-0.5f,  0.5f, -0.5f),  \n"
-			"vec3(-0.5f, -0.5f, -0.5f),  \n"
-			"vec3(-0.5f, -0.5f, -0.5f),  \n"
-			"vec3(-0.5f, -0.5f,  0.5f),  \n"
-			"vec3(-0.5f,  0.5f,  0.5f),  \n"
-			"vec3( 0.5f,  0.5f,  0.5f),  \n"
-			"vec3( 0.5f,  0.5f, -0.5f),  \n"
-			"vec3( 0.5f, -0.5f, -0.5f),  \n"
-			"vec3( 0.5f, -0.5f, -0.5f),  \n"
-			"vec3( 0.5f, -0.5f,  0.5f),  \n"
-			"vec3( 0.5f,  0.5f,  0.5f),  \n"
-			"vec3(-0.5f, -0.5f, -0.5f),  \n"
-			"vec3( 0.5f, -0.5f, -0.5f),  \n"
-			"vec3( 0.5f, -0.5f,  0.5f),  \n"
-			"vec3( 0.5f, -0.5f,  0.5f),  \n"
-			"vec3(-0.5f, -0.5f,  0.5f),  \n"
-			"vec3(-0.5f, -0.5f, -0.5f),  \n"
-			"vec3(-0.5f,  0.5f, -0.5f),  \n"
-			"vec3( 0.5f,  0.5f, -0.5f),  \n"
-			"vec3( 0.5f,  0.5f,  0.5f),  \n"
-			"vec3( 0.5f,  0.5f,  0.5f),  \n"
-			"vec3(-0.5f,  0.5f,  0.5f),  \n"
-			"vec3(-0.5f,  0.5f, -0.5f));\n"
-			"vec3[36] normals =  vec3[36]( \n"
-			"vec3( 0.0f,  0.0f, -1.0f), \n"
-			"vec3( 0.0f,  0.0f, -1.0f), \n"
-			"vec3( 0.0f,  0.0f, -1.0f), \n"
-			"vec3( 0.0f,  0.0f, -1.0f), \n"
-			"vec3( 0.0f,  0.0f, -1.0f), \n"
-			"vec3( 0.0f,  0.0f, -1.0f), \n"
-			"vec3( 0.0f,  0.0f,  1.0f), \n"
-			"vec3( 0.0f,  0.0f,  1.0f), \n"
-			"vec3( 0.0f,  0.0f,  1.0f), \n"
-			"vec3( 0.0f,  0.0f,  1.0f), \n"
-			"vec3( 0.0f,  0.0f,  1.0f), \n"
-			"vec3( 0.0f,  0.0f,  1.0f), \n"
-			"vec3(-1.0f,  0.0f,  0.0f), \n"
-			"vec3(-1.0f,  0.0f,  0.0f), \n"
-			"vec3(-1.0f,  0.0f,  0.0f), \n"
-			"vec3(-1.0f,  0.0f,  0.0f), \n"
-			"vec3(-1.0f,  0.0f,  0.0f), \n"
-			"vec3(-1.0f,  0.0f,  0.0f), \n"
-			"vec3( 1.0f,  0.0f,  0.0f), \n"
-			"vec3( 1.0f,  0.0f,  0.0f), \n"
-			"vec3( 1.0f,  0.0f,  0.0f), \n"
-			"vec3( 1.0f,  0.0f,  0.0f), \n"
-			"vec3( 1.0f,  0.0f,  0.0f), \n"
-			"vec3( 1.0f,  0.0f,  0.0f), \n"
-			"vec3( 0.0f, -1.0f,  0.0f), \n"
-			"vec3( 0.0f, -1.0f,  0.0f), \n"
-			"vec3( 0.0f, -1.0f,  0.0f), \n"
-			"vec3( 0.0f, -1.0f,  0.0f), \n"
-			"vec3( 0.0f, -1.0f,  0.0f), \n"
-			"vec3( 0.0f, -1.0f,  0.0f), \n"
-			"vec3( 0.0f,  1.0f,  0.0f), \n"
-			"vec3( 0.0f,  1.0f,  0.0f), \n"
-			"vec3( 0.0f,  1.0f,  0.0f), \n"
-			"vec3( 0.0f,  1.0f,  0.0f), \n"
-			"vec3( 0.0f,  1.0f,  0.0f), \n"
-			"vec3( 0.0f,  1.0f,  0.0f)); \n"
-			"normal = mat3(transpose(inverse(modelMatrix))) * normals[gl_VertexID];"
-			"gl_Position = projectionMatrix * viewMatrix *modelMatrix * (vec4(1.5,1.0,1.0,1.0) * vec4(vertices[gl_VertexID],1.0)); \n"
-			
-			"}\n";
-
-
-		const char* fragment_shader_text =
-			"#version 450 core \n"
-			"out vec4 color;\n"
-			"in vec3 normal;\n"
-			"void main()\n"
-			"{\n"
-			" vec3 objectColor = vec3(0.2,0.2,0.8);"
-			" float ambient = 0.2f;"
-			" vec3 norm = normalize(normal);\n"
-			" vec3 lightDir = normalize(vec3(-1.0,1.0,-2.0));\n"
-			" float diffuse = max(dot(norm, -lightDir), 0.0); \n"
-			" vec3 result = (ambient + diffuse) * objectColor; \n"
-			" color = vec4(result, 1.0);\n"
-			"}\n";
-		GLuint vertex_buffer, vertex_shader, fragment_shader, program;
-		GLuint vao;
-		glCreateVertexArrays(1, &vao);
-		glBindVertexArray(vao);
-
-		vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-		glShaderSource(vertex_shader, 1, &vertex_shader_text, 0);
-		glCompileShader(vertex_shader);
-
-		fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-		glShaderSource(fragment_shader, 1, &fragment_shader_text, 0);
-		glCompileShader(fragment_shader);
-
-		program = glCreateProgram();
-		glAttachShader(program, vertex_shader);
-		glAttachShader(program, fragment_shader);
-		glLinkProgram(program);
-		glUseProgram(program);
+		ModelManager::GetInstance().StartUp();
+		ShaderProgram shader(SourcePath("Assets/Shaders/BasicVS.vs"),
+								SourcePath("Assets/Shaders/BasicPS.ps"));
+		shader.UseProgram();
 		m_onWindowResizeSubscription = eventManager.Subscribe(this, &Renderer::OnWindowResizeEvent);
 
 		glEnable(GL_DEPTH_TEST);
+		//glEnable(GL_CULL_FACE);
 		StartDebugConfiguration();
 		StartImGui();
 	}
@@ -203,13 +91,9 @@ namespace Mona{
 				ComponentManager<TransformComponent>& transformDataManager,
 				ComponentManager<CameraComponent>& cameraDataManager) noexcept 
 	{
-		//Add depth testing face culling in the future
+		
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		//Setting Scene Data
 
-		//TODO(BYRON) : This should be replace with getting cameraComponentfrom code.
-
-		//CameraComponent& camera = cameraDataManager[0];
 		glm::mat4 viewMatrix;
 		glm::mat4 projectionMatrix;
 		if (cameraDataManager.IsValid(cameraHandle)) {
@@ -234,9 +118,12 @@ namespace Mona{
 			StaticMeshComponent& staticMesh = staticMeshDataManager[i];
 			GameObject* owner = staticMeshDataManager.GetOwnerByIndex(i);
 			TransformComponent* transform = transformDataManager.GetComponentPointer(owner->GetInnerComponentHandle<TransformComponent>());
-			//Setting per Mesh Data
-			glUniformMatrix4fv(5,1,GL_FALSE,glm::value_ptr(transform->GetModelMatrix()));
-			glDrawArrays(GL_TRIANGLES, 0, 36);
+			auto& modelHandle = staticMesh.GetHandle();
+			glUniformMatrix4fv(5, 1, GL_FALSE, glm::value_ptr(transform->GetModelMatrix()));
+			glBindVertexArray(modelHandle.ID);
+			glUniform3fv(2, 1, glm::value_ptr(staticMesh.GetColor()));
+			glDrawElements(GL_TRIANGLES, modelHandle.count, GL_UNSIGNED_INT, 0);
+			
 		}
 		
 		

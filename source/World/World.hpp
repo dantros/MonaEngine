@@ -40,10 +40,10 @@ namespace Mona {
 		void DestroyGameObject(BaseGameObjectHandle& handle) noexcept;
 		void DestroyGameObject(GameObject& gameObject) noexcept;
 
-		template <typename ComponentType>
-		ComponentHandle<ComponentType> AddComponent(BaseGameObjectHandle& objectHandle) noexcept;
-		template <typename ComponentType>
-		ComponentHandle<ComponentType> AddComponent(GameObject& gameObject) noexcept;
+		template <typename ComponentType, typename ...Args>
+		ComponentHandle<ComponentType> AddComponent(BaseGameObjectHandle& objectHandle, Args&& ... args) noexcept;
+		template <typename ComponentType, typename ...Args>
+		ComponentHandle<ComponentType> AddComponent(GameObject& gameObject, Args&& ... args) noexcept;
 		template <typename ComponentType>
 		void RemoveComponent(const ComponentHandle<ComponentType>& handle) noexcept;
 		template <typename ComponentType>

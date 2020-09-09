@@ -2,15 +2,32 @@
 #ifndef STATICMESHCOMPONENT_HPP
 #define STATICMESHCOMPONENT_HPP
 #include "../World/Component.hpp"
+#include "ModelManager.hpp"
+#include <glm/glm.hpp>
 namespace Mona {
-	typedef uint32_t MeshHandle;
 	class StaticMeshComponent
 	{
-	public:
+	public: 
 		using dependencies = DependencyList<TransformComponent>;
 		static constexpr std::string_view componentName = "StaticMeshComponent";
 		static constexpr uint8_t componentIndex = GetComponentIndex(EComponentType::StaticMeshComponent);
-		MeshHandle Handle;
+		StaticMeshComponent(ModelManager::PrimitiveType type = ModelManager::PrimitiveType::Cube,
+			const glm::vec3 &c = glm::vec3(1.0f)) : handle(ModelManager::GetInstance().LoadModel(type)), color(c)
+		{}
+		ModelManager::ModelHandle& GetHandle() noexcept{
+			return handle;
+		}
+		const ModelManager::ModelHandle& GetHandle() const noexcept{
+			return handle;
+		}
+
+		const glm::vec3& GetColor() const noexcept {
+			return color;
+		}
+
+	private:
+		ModelManager::ModelHandle handle;
+		glm::vec3 color;
 	};
 }
 #endif

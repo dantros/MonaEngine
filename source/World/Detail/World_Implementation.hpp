@@ -11,19 +11,19 @@ namespace Mona {
 		return GameObjectHandle<ObjectType>(objectPointer->GetInnerObjectHandle(), objectPointer);
 	}
 
-	template <typename ComponentType>
-	ComponentHandle<ComponentType> World::AddComponent(BaseGameObjectHandle& objectHandle) noexcept {
-		return AddComponent<ComponentType>(*objectHandle);
+	template <typename ComponentType, typename ...Args>
+	ComponentHandle<ComponentType> World::AddComponent(BaseGameObjectHandle& objectHandle, Args&& ... args) noexcept {
+		return AddComponent<ComponentType>(*objectHandle, std::forward<Args>(args)...);
 	}
-	template <typename ComponentType>
-	ComponentHandle<ComponentType> World::AddComponent(GameObject& gameObject) noexcept {
+	template <typename ComponentType, typename ...Args>
+	ComponentHandle<ComponentType> World::AddComponent(GameObject& gameObject, Args&& ... args) noexcept {
 		static_assert(is_component<ComponentType>, "Template parameter is not a component");
 		MONA_ASSERT(m_objectManager.IsValid(gameObject.GetInnerObjectHandle()), "World Error: Trying to add component from invaled object handle");
 		MONA_ASSERT(!gameObject.HasComponent<ComponentType>(),
 			"World Error: Trying to add already present component. ComponentType = {0}", ComponentType::componentName);
 		MONA_ASSERT(CheckDependencies<ComponentType>(gameObject, ComponentType::dependencies()), "World Error: Trying to add component with incomplete dependencies");
 		auto managerPtr = static_cast<ComponentManager<ComponentType>*>(m_componentManagers[ComponentType::componentIndex].get());
-		InnerComponentHandle componentHandle = managerPtr->AddComponent(&gameObject);
+		InnerComponentHandle componentHandle = managerPtr->AddComponent(&gameObject, std::forward<Args>(args)...);
 		gameObject.AddInnerComponentHandle(ComponentType::componentIndex, componentHandle);
 		return ComponentHandle<ComponentType>(componentHandle, managerPtr);
 	}

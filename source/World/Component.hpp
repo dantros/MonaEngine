@@ -24,6 +24,7 @@ namespace Mona {
 		return static_cast<uint8_t>(EComponentType::ComponentTypeCount);
 	}
 	template <typename ...ComponentTypes> struct DependencyList {};
+
 	class TransformComponent;
 	class StaticMeshComponent;
 	class CameraComponent;
@@ -33,6 +34,14 @@ namespace Mona {
 		using dependencies = DependencyList<>;
 		static constexpr std::string_view componentName = "TransformComponent";
 		static constexpr uint8_t componentIndex = GetComponentIndex(EComponentType::TransformComponent);
+
+		TransformComponent(const glm::vec3& translation = glm::vec3(0.0f),
+			const glm::fquat& rotation = glm::fquat(1.0f, 0.0f, 0.0f, 0.0f),
+			const glm::vec3& scale = glm::vec3(1.0f)) :
+			localTranslation(translation),
+			localRotation(rotation),
+			localScale(scale) {}
+
 		const glm::vec3& GetLocalTranslation() const {
 			return localTranslation;
 		}
@@ -53,17 +62,14 @@ namespace Mona {
 		}
 		void Translate(glm::vec3 translation) {
 			localTranslation += translation;
-			//UpdateModelMatrix();
 		}
 
 		void Scale(glm::vec3 scale){
 			localScale += scale;
-			//UpdateModelMatrix();
 		}
 		
 		void Rotate(glm::vec3 axis, float angle){
 			localRotation = glm::rotate(localRotation, angle, axis);
-			//UpdateModelMatrix();
 		}
 
 		glm::vec3 GetUpVector() const {
@@ -79,19 +85,9 @@ namespace Mona {
 		}
 
 	private:
-		/*void UpdateModelMatrix()
-		{
-			glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), localTranslation);
-			glm::mat4 rotationMatrix = glm::toMat4(localRotation);
-			glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), localScale);
-
-			modelMatrix = translationMatrix*rotationMatrix*scaleMatrix;
-		}*/
-		glm::vec3 localTranslation = glm::vec3(0.0f);
-		glm::fquat localRotation = glm::fquat(1.0, 0.0, 0.0, 0.0);
-		glm::vec3 localScale = glm::vec3(1.0f);
-		//glm::mat4 modelMatrix = glm::mat4(1.0);
-		
+		glm::vec3 localTranslation;
+		glm::fquat localRotation;
+		glm::vec3 localScale;
 	};
 
 	template <typename ComponentType>

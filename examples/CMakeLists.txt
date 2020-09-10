@@ -7,5 +7,6 @@ function(Add_Example TARGETNAME FILENAME)
 
 endfunction(Add_Example)
 Add_Example(Example0_WindowInputOperations WindowInputExample.cpp)
+Add_Example(Example1_Breakout Breakout.cpp)
 
 

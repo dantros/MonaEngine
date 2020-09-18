@@ -11,7 +11,8 @@ namespace Mona {
 		m_window(), 
 		m_input(), 
 		m_application(),
-		m_shouldClose(false) {
+		m_shouldClose(false),
+		m_physicsCollisionSystem() {
 		m_componentManagers[TransformComponent::componentIndex].reset(new ComponentManager<TransformComponent>());
 		m_componentManagers[CameraComponent::componentIndex].reset(new ComponentManager<CameraComponent>());
 		m_componentManagers[StaticMeshComponent::componentIndex].reset(new ComponentManager<StaticMeshComponent>());

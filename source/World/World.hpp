@@ -13,6 +13,7 @@
 #include "../Rendering/CameraComponent.hpp"
 #include "../Rendering/StaticMeshComponent.hpp"
 #include "../Rendering/Renderer.hpp"
+#include "../PhysicsCollision/PhysicsCollisionSystem.hpp"
 #include <memory>
 #include <array>
 #include <string>
@@ -84,6 +85,8 @@ namespace Mona {
 
 		Renderer m_renderer;
 		InnerComponentHandle m_cameraHandle;
+
+		PhysicsCollisionSystem m_physicsCollisionSystem;
 		
 	};
 

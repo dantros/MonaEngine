@@ -26,6 +26,8 @@ set(MONA_HEADERS
 				Rendering/StaticMeshComponent.hpp
 				Rendering/ShaderProgram.hpp
 				Rendering/ModelManager.hpp
+				PhysicsCollision/PhysicsCollisionSystem.hpp
+				PhysicsCollision/PhysicsCollisionSystem.cpp
 				Utilities/BasicCameraControllers.hpp)
 set(MONA_SOURCES 
 				Core/Log.cpp
@@ -44,6 +46,9 @@ file(GLOB_RECURSE Shaders  "${CMAKE_SOURCE_DIR}/Assets/Shaders/*")
 source_group("Shaders" FILES ${Shaders})
 
 add_library(MonaEngine STATIC ${MONA_SOURCES} ${MONA_HEADERS} MonaEngine.hpp ${Shaders})
+if (MSVC)
+    target_compile_options(MonaEngine PUBLIC /wd5033)
+endif(MSVC)
 target_include_directories(MonaEngine PRIVATE ${THIRD_PARTY_INCLUDE_DIRECTORIES} MONA_INCLUDE_DIRECTORY)
 target_link_libraries(MonaEngine PRIVATE ${THIRD_PARTY_LIBRARIES})
 set_property(TARGET MonaEngine PROPERTY CXX_STANDARD 20)

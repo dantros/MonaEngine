@@ -6,6 +6,7 @@ function(Add_Example TARGETNAME FILENAME)
 	target_include_directories(${TARGETNAME} PRIVATE ${MONA_INCLUDE_DIRECTORY} ${THIRD_PARTY_INCLUDE_DIRECTORIES})
 
 endfunction(Add_Example)
+
 Add_Example(Example0_WindowInputOperations WindowInputExample.cpp)
 Add_Example(Example1_Breakout Breakout.cpp)
 

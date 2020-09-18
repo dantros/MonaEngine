@@ -4,7 +4,7 @@ public:
 	BasicCamera() = default;
 	~BasicCamera() = default;
 	virtual void UserStartUp(Mona::World& world) noexcept {
-		auto& transform = world.AddComponent<Mona::TransformComponent>(*this, glm::vec3(0.0f,-15.0f, 15.0f));
+		auto transform = world.AddComponent<Mona::TransformComponent>(*this, glm::vec3(0.0f,-15.0f, 15.0f));
 		transform->Rotate(glm::vec3(-1.0f, 0.0f, 0.0f), 0.5f);
 		world.AddComponent<Mona::CameraComponent>(*this);
 		world.SetMainCamera(*this);
@@ -55,8 +55,8 @@ public:
 			for (int j = -2; j < 3; j++)
 			{
 				float y = 1.5f * j;
-				auto& block = world.CreateGameObject<Block>();
-				auto& transform = world.AddComponent<Mona::TransformComponent>(block, glm::vec3( x, 15.0f + y, 0.0f));
+				auto block = world.CreateGameObject<Block>();
+				auto transform = world.AddComponent<Mona::TransformComponent>(block, glm::vec3( x, 15.0f + y, 0.0f));
 				transform->Scale(glm::vec3(1.0f, 0.2f, 0.2f));
 				world.AddComponent<Mona::StaticMeshComponent>(block, Mona::ModelManager::PrimitiveType::Cube);
 			}

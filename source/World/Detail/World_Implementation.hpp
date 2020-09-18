@@ -21,7 +21,7 @@ namespace Mona {
 		MONA_ASSERT(m_objectManager.IsValid(gameObject.GetInnerObjectHandle()), "World Error: Trying to add component from invaled object handle");
 		MONA_ASSERT(!gameObject.HasComponent<ComponentType>(),
 			"World Error: Trying to add already present component. ComponentType = {0}", ComponentType::componentName);
-		MONA_ASSERT(CheckDependencies<ComponentType>(gameObject, ComponentType::dependencies()), "World Error: Trying to add component with incomplete dependencies");
+		MONA_ASSERT(CheckDependencies<ComponentType>(gameObject, typename ComponentType::dependencies()), "World Error: Trying to add component with incomplete dependencies");
 		auto managerPtr = static_cast<ComponentManager<ComponentType>*>(m_componentManagers[ComponentType::componentIndex].get());
 		InnerComponentHandle componentHandle = managerPtr->AddComponent(&gameObject, std::forward<Args>(args)...);
 		gameObject.AddInnerComponentHandle(ComponentType::componentIndex, componentHandle);

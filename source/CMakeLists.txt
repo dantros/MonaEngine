@@ -28,6 +28,8 @@ set(MONA_HEADERS
 				Rendering/ModelManager.hpp
 				PhysicsCollision/PhysicsCollisionSystem.hpp
 				PhysicsCollision/PhysicsCollisionSystem.cpp
+				PhysicsCollision/CustomMotionState.hpp
+				PhysicsCollision/RigidBodyComponent.hpp
 				Utilities/BasicCameraControllers.hpp)
 set(MONA_SOURCES 
 				Core/Log.cpp

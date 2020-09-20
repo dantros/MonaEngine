@@ -7,26 +7,30 @@ namespace Mona {
 	class PhysicsCollisionSystem {
 	public:
 		PhysicsCollisionSystem() {
-			m_pCollisionConfiguration = new btDefaultCollisionConfiguration();
-			m_pDispatcher = new btCollisionDispatcher(m_pCollisionConfiguration);
-			m_pBroadphase = new btDbvtBroadphase();
-			m_pSolver = new btSequentialImpulseConstraintSolver();
-			m_pWorld = new btDiscreteDynamicsWorld(m_pDispatcher, m_pBroadphase, m_pSolver, m_pCollisionConfiguration);
+			m_collisionConfigurationPtr = new btDefaultCollisionConfiguration();
+			m_dispatcherPtr = new btCollisionDispatcher(m_collisionConfigurationPtr);
+			m_broadphasePtr = new btDbvtBroadphase();
+			m_solverPtr = new btSequentialImpulseConstraintSolver();
+			m_worldPtr = new btDiscreteDynamicsWorld(m_dispatcherPtr, m_broadphasePtr, m_solverPtr, m_collisionConfigurationPtr);
+			m_worldPtr->setGravity(btVector3(0.0f, 0.0f, -10.0f));
 		}
 		~PhysicsCollisionSystem() {
-			delete m_pWorld;
-			delete m_pSolver;
-			delete m_pBroadphase;
-			delete m_pDispatcher;
-			delete m_pCollisionConfiguration;
+			delete m_worldPtr;
+			delete m_solverPtr;
+			delete m_broadphasePtr;
+			delete m_dispatcherPtr;
+			delete m_collisionConfigurationPtr;
 
 		}
+		void StepSimulation(float timeStep) noexcept;
+		void AddRigidBody(btRigidBody* rbPtr) noexcept;
+		void ShutDown() noexcept;
 	private:
-		btBroadphaseInterface* m_pBroadphase;
-		btCollisionConfiguration* m_pCollisionConfiguration;
-		btCollisionDispatcher* m_pDispatcher;
-		btConstraintSolver* m_pSolver;
-		btDynamicsWorld* m_pWorld;
+		btBroadphaseInterface* m_broadphasePtr;
+		btCollisionConfiguration* m_collisionConfigurationPtr;
+		btCollisionDispatcher* m_dispatcherPtr;
+		btConstraintSolver* m_solverPtr;
+		btDynamicsWorld* m_worldPtr;
 
 	};
 }

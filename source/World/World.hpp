@@ -14,6 +14,7 @@
 #include "../Rendering/StaticMeshComponent.hpp"
 #include "../Rendering/Renderer.hpp"
 #include "../PhysicsCollision/PhysicsCollisionSystem.hpp"
+#include "../PhysicsCollision/RigidBodyComponent.hpp"
 #include <memory>
 #include <array>
 #include <string>

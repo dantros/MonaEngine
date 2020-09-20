@@ -17,8 +17,9 @@ public:
 	~Paddle() = default;
 	virtual void UserStartUp(Mona::World& world) noexcept {
 		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
-		m_transform->Scale(glm::vec3(1.5f, 0.2f, 0.2f));
+		m_transform->Scale(glm::vec3(4.5f, 1.0f, 1.0f));
 		world.AddComponent<Mona::StaticMeshComponent>(*this, Mona::ModelManager::PrimitiveType::Cube, glm::vec3(0.9f, 0.5f, 0.3f));
+		world.AddComponent<Mona::RigidBodyComponent>(*this, glm::vec3(4.5f/2.0f,0.5f,0.5f));
 	}
 
 	virtual void UserUpdate(Mona::World& world, float timeStep) noexcept {
@@ -51,13 +52,13 @@ public:
 		world.CreateGameObject<BasicCamera>();
 		world.CreateGameObject<Paddle>(5.0f);
 		for (int i = -2; i < 3; i++) {
-			float x = 2.5f * i;
+			float x = 4.0f * i;
 			for (int j = -2; j < 3; j++)
 			{
-				float y = 1.5f * j;
+				float y = 2.0f * j;
 				auto block = world.CreateGameObject<Block>();
 				auto transform = world.AddComponent<Mona::TransformComponent>(block, glm::vec3( x, 15.0f + y, 0.0f));
-				transform->Scale(glm::vec3(1.0f, 0.2f, 0.2f));
+				transform->Scale(glm::vec3(3.0f, 1.0f, 1.0f));
 				world.AddComponent<Mona::StaticMeshComponent>(block, Mona::ModelManager::PrimitiveType::Cube);
 			}
 		}

@@ -36,6 +36,7 @@ namespace Mona {
 	using TransformHandle = ComponentHandle<TransformComponent>;
 	using StaticMeshHandle = ComponentHandle<StaticMeshComponent>;
 	using CameraHandle = ComponentHandle<CameraComponent>;
+	using RigidBodyHandle = ComponentHandle<RigidBodyComponent>;
 
 	class BaseGameObjectHandle {
 	public:

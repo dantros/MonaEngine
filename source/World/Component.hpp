@@ -13,6 +13,7 @@ namespace Mona {
 		TransformComponent,
 		CameraComponent,
 		StaticMeshComponent,
+		RigidBodyComponent,
 		ComponentTypeCount
 	};
 
@@ -28,6 +29,7 @@ namespace Mona {
 	class TransformComponent;
 	class StaticMeshComponent;
 	class CameraComponent;
+	class RigidBodyComponent;
 
 	class TransformComponent {
 	public:
@@ -64,12 +66,24 @@ namespace Mona {
 			localTranslation += translation;
 		}
 
+		void SetTranslation(const glm::vec3 translation) {
+			localTranslation = translation;
+		}
+
 		void Scale(glm::vec3 scale){
-			localScale += scale;
+			localScale *= scale;
+		}
+
+		void SetScale(const glm::vec3& scale) {
+			localScale = scale;
 		}
 		
 		void Rotate(glm::vec3 axis, float angle){
 			localRotation = glm::rotate(localRotation, angle, axis);
+		}
+
+		void SetRotation(const glm::fquat& rotation) {
+			localRotation = rotation;
 		}
 
 		glm::vec3 GetUpVector() const {
@@ -91,7 +105,11 @@ namespace Mona {
 	};
 
 	template <typename ComponentType>
-	inline constexpr bool is_component = is_any<ComponentType, TransformComponent, CameraComponent, StaticMeshComponent>;
+	inline constexpr bool is_component = is_any<ComponentType,
+												TransformComponent,
+												CameraComponent,
+												StaticMeshComponent,
+												RigidBodyComponent>;
 
 }
 #endif

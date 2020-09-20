@@ -16,6 +16,7 @@ namespace Mona {
 		m_componentManagers[TransformComponent::componentIndex].reset(new ComponentManager<TransformComponent>());
 		m_componentManagers[CameraComponent::componentIndex].reset(new ComponentManager<CameraComponent>());
 		m_componentManagers[StaticMeshComponent::componentIndex].reset(new ComponentManager<StaticMeshComponent>());
+		m_componentManagers[RigidBodyComponent::componentIndex].reset(new ComponentManager<RigidBodyComponent>());
 	}
 	void World::StartUp(std::unique_ptr<Application> app) noexcept {
 		//m_eventManagerPointer = eventManagerPointer;
@@ -34,8 +35,10 @@ namespace Mona {
 	void World::ShutDown() noexcept {
 		m_application->UserShutDown(*this);
 		m_objectManager.ShutDown(*this);
+		m_physicsCollisionSystem.ShutDown();
 		for (auto& componentManager : m_componentManagers)
 			componentManager->ShutDown(m_eventManager);
+		
 		m_renderer.ShutDown(m_eventManager);
 		m_window.ShutDown();
 		m_input.ShutDown(m_eventManager);
@@ -101,6 +104,7 @@ namespace Mona {
 		ComponentManager<StaticMeshComponent> &staticMeshDataManager = GetComponentManager<StaticMeshComponent>();
 		ComponentManager<CameraComponent>& cameraDataManager = GetComponentManager<CameraComponent>();
 		m_input.Update();
+		m_physicsCollisionSystem.StepSimulation(timeStep);
 		m_objectManager.UpdateGameObjects(*this, timeStep);
 		m_application->UserUpdate(*this, timeStep);
 		m_renderer.Render(m_eventManager, m_cameraHandle, staticMeshDataManager, transformDataManager, cameraDataManager);

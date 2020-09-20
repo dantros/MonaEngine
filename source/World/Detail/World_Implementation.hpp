@@ -23,9 +23,21 @@ namespace Mona {
 			"World Error: Trying to add already present component. ComponentType = {0}", ComponentType::componentName);
 		MONA_ASSERT(CheckDependencies<ComponentType>(gameObject, typename ComponentType::dependencies()), "World Error: Trying to add component with incomplete dependencies");
 		auto managerPtr = static_cast<ComponentManager<ComponentType>*>(m_componentManagers[ComponentType::componentIndex].get());
-		InnerComponentHandle componentHandle = managerPtr->AddComponent(&gameObject, std::forward<Args>(args)...);
-		gameObject.AddInnerComponentHandle(ComponentType::componentIndex, componentHandle);
-		return ComponentHandle<ComponentType>(componentHandle, managerPtr);
+		if constexpr (std::is_same_v<ComponentType, RigidBodyComponent>) {
+			InnerComponentHandle transformHandle = gameObject.GetInnerComponentHandle<TransformComponent>();
+			InnerComponentHandle componentHandle = managerPtr->AddComponent(&gameObject, 
+				transformHandle,
+				&GetComponentManager<TransformComponent>(),
+				m_physicsCollisionSystem,
+				std::forward<Args>(args)...);
+			gameObject.AddInnerComponentHandle(ComponentType::componentIndex, componentHandle);
+			return ComponentHandle<ComponentType>(componentHandle, managerPtr);
+		}
+		else {
+			InnerComponentHandle componentHandle = managerPtr->AddComponent(&gameObject, std::forward<Args>(args)...);
+			gameObject.AddInnerComponentHandle(ComponentType::componentIndex, componentHandle);
+			return ComponentHandle<ComponentType>(componentHandle, managerPtr);
+		}
 	}
 	template <typename ComponentType>
 	void World::RemoveComponent(const ComponentHandle<ComponentType>& handle) noexcept {
@@ -73,5 +85,7 @@ namespace Mona {
 			&& ...);
 	
 	}
+
+
 }
 #endif

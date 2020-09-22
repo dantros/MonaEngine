@@ -25,6 +25,7 @@ namespace Mona {
 		void StepSimulation(float timeStep) noexcept;
 		void AddRigidBody(btRigidBody* rbPtr) noexcept;
 		void ShutDown() noexcept;
+		btDynamicsWorld* GetPhysicsWorldPtr() noexcept { return m_worldPtr; }
 	private:
 		btBroadphaseInterface* m_broadphasePtr;
 		btCollisionConfiguration* m_collisionConfigurationPtr;

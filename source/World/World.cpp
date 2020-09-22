@@ -17,6 +17,7 @@ namespace Mona {
 		m_componentManagers[CameraComponent::componentIndex].reset(new ComponentManager<CameraComponent>());
 		m_componentManagers[StaticMeshComponent::componentIndex].reset(new ComponentManager<StaticMeshComponent>());
 		m_componentManagers[RigidBodyComponent::componentIndex].reset(new ComponentManager<RigidBodyComponent>());
+		m_debugDrawingSystem.reset(new DebugDrawingSystem());
 	}
 	void World::StartUp(std::unique_ptr<Application> app) noexcept {
 		//m_eventManagerPointer = eventManagerPointer;
@@ -28,7 +29,8 @@ namespace Mona {
 		for (auto& componentManager : m_componentManagers)
 			componentManager->StartUp(m_eventManager, expectedObjects);
 		m_application = std::move(app);
-		m_renderer.StartUp(m_eventManager);
+		m_renderer.StartUp(m_eventManager, m_debugDrawingSystem.get());
+		m_debugDrawingSystem->StartUp(&m_physicsCollisionSystem);
 		m_application->StartUp(*this);
 	}
 

@@ -30,6 +30,10 @@ set(MONA_HEADERS
 				PhysicsCollision/PhysicsCollisionSystem.cpp
 				PhysicsCollision/CustomMotionState.hpp
 				PhysicsCollision/RigidBodyComponent.hpp
+				DebugDrawing/DebugDrawingSystem.hpp
+				DebugDrawing/DebugDrawingSystem.cpp
+				DebugDrawing/BulletDebugDraw.hpp
+				DebugDrawing/BulletDebugDraw.cpp
 				Utilities/BasicCameraControllers.hpp)
 set(MONA_SOURCES 
 				Core/Log.cpp

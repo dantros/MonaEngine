@@ -9,6 +9,11 @@ namespace Mona {
 	public:
 		ShaderProgram(const std::filesystem::path& vertexShaderPath,
 			const std::filesystem::path& pixelShaderPath) noexcept;
+		ShaderProgram() : m_programID(0) {}
+		ShaderProgram& operator=(ShaderProgram const &program) = delete;
+		ShaderProgram(ShaderProgram const& program) = delete;
+		ShaderProgram(ShaderProgram&& a) noexcept;
+		ShaderProgram& operator=(ShaderProgram&& a) noexcept; 
 
 		void UseProgram() const noexcept;
 		~ShaderProgram();

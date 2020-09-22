@@ -29,6 +29,25 @@ namespace Mona {
 	}
 
 
+
+
+	ShaderProgram::ShaderProgram(ShaderProgram&& a) noexcept : m_programID(a.m_programID) {
+		a.m_programID = 0;
+	}
+
+
+	ShaderProgram&  ShaderProgram::operator=(ShaderProgram&& a) noexcept
+	{
+		if (&a == this)
+			return *this;
+		if (m_programID)
+			glDeleteProgram(m_programID);
+		m_programID = a.m_programID;
+		a.m_programID = 0;
+		return *this;
+		
+	}
+
 	std::string ShaderProgram::LoadCode(const std::filesystem::path& shaderPath) const noexcept
 	{
 		std::ifstream shaderFile(shaderPath);
@@ -103,7 +122,8 @@ namespace Mona {
 
 	ShaderProgram::~ShaderProgram()
 	{
-		//glDeleteProgram(m_programID);
+		if(m_programID)
+			glDeleteProgram(m_programID);
 	}
 
 }

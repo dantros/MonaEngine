@@ -15,6 +15,7 @@
 #include "../Rendering/Renderer.hpp"
 #include "../PhysicsCollision/PhysicsCollisionSystem.hpp"
 #include "../PhysicsCollision/RigidBodyComponent.hpp"
+#include "../DebugDrawing/DebugDrawingSystem.hpp"
 #include <memory>
 #include <array>
 #include <string>
@@ -88,6 +89,8 @@ namespace Mona {
 		InnerComponentHandle m_cameraHandle;
 
 		PhysicsCollisionSystem m_physicsCollisionSystem;
+
+		std::unique_ptr<DebugDrawingSystem> m_debugDrawingSystem;
 		
 	};
 

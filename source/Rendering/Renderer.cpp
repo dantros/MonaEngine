@@ -6,21 +6,8 @@
 #include <GLFW/glfw3.h>
 #include <glm/gtc/type_ptr.hpp>
 #include "../Core/Log.hpp"
-#include "ShaderProgram.hpp"
 #include "ModelManager.hpp"
 #include "../Core/RootDirectory.hpp"
-void GLAPIENTRY MessageCallback(GLenum source,
-								GLenum type,
-								GLuint id,
-								GLenum severity,
-								GLsizei length,
-								const GLchar* message,
-								const void* userParam)
-{
-	MONA_LOG_ERROR("OpenGL Error: type = {0}, message = {1}",type,  message);
-		
-}
-
 
 namespace Mona{
 	template
@@ -33,17 +20,14 @@ namespace Mona{
 
 
 
-	void Renderer::StartUp(EventManager& eventManager) noexcept {
+	void Renderer::StartUp(EventManager& eventManager, DebugDrawingSystem* debugDrawingSystemPtr) noexcept {
 		ModelManager::GetInstance().StartUp();
-		ShaderProgram shader(SourcePath("Assets/Shaders/BasicVS.vs"),
-								SourcePath("Assets/Shaders/BasicPS.ps"));
-		shader.UseProgram();
+		m_shader = ShaderProgram(SourcePath("Assets/Shaders/BasicVS.vs"),
+			SourcePath("Assets/Shaders/BasicPS.ps"));
 		m_onWindowResizeSubscription = eventManager.Subscribe(this, &Renderer::OnWindowResizeEvent);
-
+		m_debugDrawingSystemPtr = debugDrawingSystemPtr;
 		glEnable(GL_DEPTH_TEST);
 		//glEnable(GL_CULL_FACE);
-		StartDebugConfiguration();
-		StartImGui();
 	}
 	void Renderer::ShutDown(EventManager& eventManager) noexcept {
 		eventManager.Unsubscribe(m_onWindowResizeSubscription);
@@ -54,37 +38,6 @@ namespace Mona{
 		glViewport(0, 0, event.width, event.height);
 	}
 
-	void Renderer::StartDebugConfiguration() noexcept {
-		glEnable(GL_DEBUG_OUTPUT);
-		glDebugMessageCallback(MessageCallback, 0);
-		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE);
-	}
-
-	void Renderer::StartImGui() noexcept {
-
-		IMGUI_CHECKVERSION();
-		ImGui::CreateContext();
-		ImGuiIO& io = ImGui::GetIO(); (void)io;
-		ImGui::StyleColorsDark();
-		ImGui_ImplGlfw_InitForOpenGL(glfwGetCurrentContext(), true);
-		ImGui_ImplOpenGL3_Init("#version 450");
-
-	}
-
-	void Renderer::RenderImGui(EventManager& eventManager) noexcept {
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
-		ImGui::NewFrame();
-		{
-			ImGui::Begin("FPS Counter:");
-			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-			ImGui::End();
-		}
-		eventManager.Publish(DebugGUIEvent());
-		ImGui::Render();
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-	}
-
 	void Renderer::Render(EventManager& eventManager,
 				InnerComponentHandle cameraHandle,
 				ComponentManager<StaticMeshComponent>& staticMeshDataManager,
@@ -93,7 +46,7 @@ namespace Mona{
 	{
 		
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+		m_shader.UseProgram();
 		glm::mat4 viewMatrix;
 		glm::mat4 projectionMatrix;
 		if (cameraDataManager.IsValid(cameraHandle)) {
@@ -126,8 +79,7 @@ namespace Mona{
 			
 		}
 		
-		
-		RenderImGui(eventManager);
+		m_debugDrawingSystemPtr->Draw(eventManager, viewMatrix, projectionMatrix);
 		
 	}
 }

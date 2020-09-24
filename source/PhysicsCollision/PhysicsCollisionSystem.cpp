@@ -19,4 +19,13 @@ namespace Mona {
 			m_worldPtr->removeCollisionObject(m_worldPtr->getCollisionObjectArray()[i]);
 		}
 	}
+
+	void PhysicsCollisionSystem::SetGravity(const glm::vec3& gravity) noexcept {
+		m_worldPtr->setGravity(btVector3(gravity.x, gravity.y, gravity.z));
+	}
+
+	glm::vec3 PhysicsCollisionSystem::GetGravity() const noexcept {
+		const btVector3& gravity = m_worldPtr->getGravity();
+		return glm::vec3(gravity.x(), gravity.y(), gravity.z());
+	}
 }

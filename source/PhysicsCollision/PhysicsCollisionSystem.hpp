@@ -13,7 +13,6 @@ namespace Mona {
 			m_broadphasePtr = new btDbvtBroadphase();
 			m_solverPtr = new btSequentialImpulseConstraintSolver();
 			m_worldPtr = new btDiscreteDynamicsWorld(m_dispatcherPtr, m_broadphasePtr, m_solverPtr, m_collisionConfigurationPtr);
-			m_worldPtr->setGravity(btVector3(0.0f, 0.0f, 0.0f));
 		}
 		~PhysicsCollisionSystem() {
 			delete m_worldPtr;
@@ -23,6 +22,8 @@ namespace Mona {
 			delete m_collisionConfigurationPtr;
 
 		}
+		void SetGravity(const glm::vec3& gravity) noexcept;
+		glm::vec3 GetGravity() const noexcept;
 		void StepSimulation(float timeStep) noexcept;
 		void AddRigidBody(RigidBodyComponent& component) noexcept;
 		void RemoveRigidBody(RigidBodyComponent& component) noexcept;

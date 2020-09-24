@@ -110,7 +110,66 @@ namespace Mona {
 			InitializeRigidBody(mass, rigidBodyType);
 		}
 
+		void SetLocalScaling(const glm::vec3 &scale) {
+			m_collisionShapePtr->setLocalScaling(btVector3(scale.x, scale.y, scale.z));
+		}
 
+		glm::vec3 GetLocalScaling() const {
+			const btVector3 &scaling = m_collisionShapePtr->getLocalScaling();
+			return glm::vec3(scaling.x(), scaling.y(), scaling.z());
+		}
+
+		void SetRestitution(float factor) {
+			m_rigidBodyPtr->setRestitution(btScalar(factor));
+		}
+
+		float GetRestitution() const {
+			return m_rigidBodyPtr->getRestitution();
+		}
+
+		void SetFriction(float factor) {
+			m_rigidBodyPtr->setFriction(btScalar(factor));
+		}
+
+		float GetFriction() const {
+			m_rigidBodyPtr->getFriction();
+		}
+
+		void SetLinearFactor(const glm::vec3& linearFactor) {
+			m_rigidBodyPtr->setLinearFactor(btVector3(linearFactor.x, linearFactor.y, linearFactor.z));
+		}
+
+		glm::vec3 GetLinearFactor() const {
+			const btVector3& linearFactor = m_rigidBodyPtr->getLinearFactor();
+			return glm::vec3(linearFactor.x(), linearFactor.y(), linearFactor.z());
+		}
+
+		void SetAngularFactor(const glm::vec3& angularFactor){
+			m_rigidBodyPtr->setAngularFactor(btVector3(angularFactor.x, angularFactor.y, angularFactor.z));
+		}
+
+		glm::vec3 GetAngularFactor() const {
+			const btVector3& angularFactor = m_rigidBodyPtr->getAngularFactor();
+			return glm::vec3(angularFactor.x(), angularFactor.y(), angularFactor.z());
+		}
+
+		void SetLinearVelocity(const glm::vec3& velocity) {
+			m_rigidBodyPtr->setLinearVelocity(btVector3(velocity.x, velocity.y, velocity.z));
+		}
+
+		glm::vec3 GetLinearVelocity() const {
+			const btVector3& linearVelocity = m_rigidBodyPtr->getLinearVelocity();
+			return glm::vec3(linearVelocity.x(), linearVelocity.y(), linearVelocity.z());
+		}
+
+		void SetAngularVelocity(const glm::vec3& velocity) {
+			m_rigidBodyPtr->setAngularVelocity(btVector3(velocity.x, velocity.y, velocity.z));
+		}
+
+		glm::vec3 GetAngularVelocity() const {
+			const btVector3& angularVelocity = m_rigidBodyPtr->getAngularVelocity();
+			return glm::vec3(angularVelocity.x(), angularVelocity.y(), angularVelocity.z());
+		}
 	private:
 		void InitializeRigidBody(float mass, RigidBodyType rigidBodyType)
 		{
@@ -130,7 +189,7 @@ namespace Mona {
 				btScalar btMass(mass);
 				btVector3 localInertia(0, 0, 0);
 				m_collisionShapePtr->calculateLocalInertia(btMass, localInertia);
-				btRigidBody::btRigidBodyConstructionInfo rbInfo(btScalar(0.0f), nullptr, m_collisionShapePtr.get(), localInertia);
+				btRigidBody::btRigidBodyConstructionInfo rbInfo(btMass, nullptr, m_collisionShapePtr.get(), localInertia);
 				m_rigidBodyPtr.reset(new btRigidBody(rbInfo));
 			}
 			

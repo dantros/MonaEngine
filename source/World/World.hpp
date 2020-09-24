@@ -69,6 +69,9 @@ namespace Mona {
 		void SetMainCamera(const BaseGameObjectHandle& objectHandle) noexcept;
 		void SetMainCamera(const GameObject& gameObject) noexcept;
 
+		void SetGravity(const glm::vec3& gravity);
+		glm::vec3 GetGravity() const;
+
 	private:
 		template <typename ComponentType>
 		auto& GetComponentManager() noexcept;

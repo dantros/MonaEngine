@@ -129,5 +129,12 @@ namespace Mona {
 
 	}
 
+	void World::SetGravity(const glm::vec3& gravity) {
+		m_physicsCollisionSystem.SetGravity(gravity);
+	}
+
+	glm::vec3 World::GetGravity() const {
+		return m_physicsCollisionSystem.GetGravity();
+	}
 }
 

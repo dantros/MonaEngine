@@ -2,6 +2,7 @@
 #ifndef PHYSICSCOLLISIONSYSTEM_HPP
 #define PHYSICSCOLLISIONSYSTEM_HPP
 #include <btBulletDynamicsCommon.h>
+#include "RigidBodyComponent.hpp"
 
 namespace Mona {
 	class PhysicsCollisionSystem {
@@ -12,7 +13,7 @@ namespace Mona {
 			m_broadphasePtr = new btDbvtBroadphase();
 			m_solverPtr = new btSequentialImpulseConstraintSolver();
 			m_worldPtr = new btDiscreteDynamicsWorld(m_dispatcherPtr, m_broadphasePtr, m_solverPtr, m_collisionConfigurationPtr);
-			m_worldPtr->setGravity(btVector3(0.0f, 0.0f, -10.0f));
+			m_worldPtr->setGravity(btVector3(0.0f, 0.0f, 0.0f));
 		}
 		~PhysicsCollisionSystem() {
 			delete m_worldPtr;
@@ -23,7 +24,8 @@ namespace Mona {
 
 		}
 		void StepSimulation(float timeStep) noexcept;
-		void AddRigidBody(btRigidBody* rbPtr) noexcept;
+		void AddRigidBody(RigidBodyComponent& component) noexcept;
+		void RemoveRigidBody(RigidBodyComponent& component) noexcept;
 		void ShutDown() noexcept;
 		btDynamicsWorld* GetPhysicsWorldPtr() noexcept { return m_worldPtr; }
 	private:

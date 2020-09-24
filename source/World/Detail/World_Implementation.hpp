@@ -2,6 +2,7 @@
 #ifndef WORLD_IMPLEMENTATION_HPP
 #define WORLD_IMPLEMENTATION_HPP
 #include "../UserHandleTypes.hpp"
+#include "../../PhysicsCollision/RigidBodyComponentPolicies.hpp"
 namespace Mona {
 	template <typename ObjectType, typename ...Args>
 	GameObjectHandle<ObjectType> World::CreateGameObject(Args&& ... args) noexcept
@@ -22,27 +23,16 @@ namespace Mona {
 		MONA_ASSERT(!gameObject.HasComponent<ComponentType>(),
 			"World Error: Trying to add already present component. ComponentType = {0}", ComponentType::componentName);
 		MONA_ASSERT(CheckDependencies<ComponentType>(gameObject, typename ComponentType::dependencies()), "World Error: Trying to add component with incomplete dependencies");
-		auto managerPtr = static_cast<ComponentManager<ComponentType>*>(m_componentManagers[ComponentType::componentIndex].get());
-		if constexpr (std::is_same_v<ComponentType, RigidBodyComponent>) {
-			InnerComponentHandle transformHandle = gameObject.GetInnerComponentHandle<TransformComponent>();
-			InnerComponentHandle componentHandle = managerPtr->AddComponent(&gameObject, 
-				transformHandle,
-				&GetComponentManager<TransformComponent>(),
-				m_physicsCollisionSystem,
-				std::forward<Args>(args)...);
-			gameObject.AddInnerComponentHandle(ComponentType::componentIndex, componentHandle);
-			return ComponentHandle<ComponentType>(componentHandle, managerPtr);
-		}
-		else {
-			InnerComponentHandle componentHandle = managerPtr->AddComponent(&gameObject, std::forward<Args>(args)...);
-			gameObject.AddInnerComponentHandle(ComponentType::componentIndex, componentHandle);
-			return ComponentHandle<ComponentType>(componentHandle, managerPtr);
-		}
+		auto managerPtr = static_cast<typename ComponentType::managerType*>(m_componentManagers[ComponentType::componentIndex].get());
+		InnerComponentHandle componentHandle = managerPtr->AddComponent(&gameObject, std::forward<Args>(args)...);
+		gameObject.AddInnerComponentHandle(ComponentType::componentIndex, componentHandle);
+		return ComponentHandle<ComponentType>(componentHandle, managerPtr);
+
 	}
 	template <typename ComponentType>
 	void World::RemoveComponent(const ComponentHandle<ComponentType>& handle) noexcept {
 		static_assert(is_component<ComponentType>, "Template parameter is not a component");
-		auto managerPtr = static_cast<ComponentManager<ComponentType>*>(m_componentManagers[ComponentType::componentIndex].get());
+		auto managerPtr = static_cast<typename ComponentType::managerType*>(m_componentManagers[ComponentType::componentIndex].get());
 		auto objectPtr = m_objectManager.GetGameObjectPointer(managerPtr->GetOwner(handle.GetInnerHandle()));
 		managerPtr->RemoveComponent(handle.GetInnerHandle());
 		objectPtr->RemoveInnerComponentHandle(ComponentType::componentIndex);
@@ -53,7 +43,7 @@ namespace Mona {
 	{
 		static_assert(is_component<ComponentType>, "Template parameter is not a component");
 		MONA_ASSERT(gameObject.HasComponent<ComponentType>(), "World Error: Object doesnt have component of type : {0}", ComponentType::componentName);
-		auto managerPtr = static_cast<ComponentManager<ComponentType>*>(m_componentManagers[ComponentType::componentIndex].get());
+		auto managerPtr = static_cast<typename ComponentType::managerType*>(m_componentManagers[ComponentType::componentIndex].get());
 		return ComponentHandle<ComponentType>(gameObject.GetInnerComponentHandle<ComponentType>(), managerPtr);
 	}
 
@@ -67,14 +57,14 @@ namespace Mona {
 	BaseComponentManager::size_type World::GetComponentCount() const noexcept
 	{
 		static_assert(is_component<ComponentType>, "Template parameter is not a component");
-		auto managerPtr = static_cast<ComponentManager<ComponentType>*>(m_componentManagers[ComponentType::componentIndex].get());
+		auto managerPtr = static_cast<typename ComponentType::managerType*>(m_componentManagers[ComponentType::componentIndex].get());
 		return managerPtr->GetCount();
 	}
 
 	template <typename ComponentType>
 	auto& World::GetComponentManager() noexcept {
 		static_assert(is_component<ComponentType>, "Template parameter is not a component");
-		return *static_cast<ComponentManager<ComponentType>*>(m_componentManagers[ComponentType::componentIndex].get());
+		return *static_cast<typename ComponentType::managerType*>(m_componentManagers[ComponentType::componentIndex].get());
 	}
 
 	template <typename ComponentType, typename ... ComponentTypes>

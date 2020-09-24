@@ -7,6 +7,7 @@ namespace Mona {
 	class CameraComponent
 	{
 	public:
+		using managerType = ComponentManager<CameraComponent>;
 		using dependencies = DependencyList<TransformComponent>;
 		static constexpr uint8_t componentIndex = GetComponentIndex(EComponentType::CameraComponent);
 		static constexpr std::string_view componentName = "CameraComponent";

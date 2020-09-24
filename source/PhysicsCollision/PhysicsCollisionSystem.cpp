@@ -6,8 +6,12 @@ namespace Mona {
 	
 	}
 
-	void PhysicsCollisionSystem::AddRigidBody(btRigidBody* rbPtr) noexcept {
-		m_worldPtr->addRigidBody(rbPtr);
+	void PhysicsCollisionSystem::AddRigidBody(RigidBodyComponent &rigidBody) noexcept {
+		m_worldPtr->addRigidBody(rigidBody.m_rigidBodyPtr.get());
+	}
+
+	void PhysicsCollisionSystem::RemoveRigidBody(RigidBodyComponent& rigidBody) noexcept {
+		m_worldPtr->removeRigidBody(rigidBody.m_rigidBodyPtr.get());
 	}
 
 	void PhysicsCollisionSystem::ShutDown() noexcept {

@@ -31,8 +31,20 @@ namespace Mona {
 	class CameraComponent;
 	class RigidBodyComponent;
 
+	template <typename ComponentType>
+	class DefaulPostAddPolicy;
+
+	template <typename ComponentType>
+	class DefaultPreRemovePolicy;
+
+	template <	typename ComponentType,
+				typename PostAddPolicy = DefaulPostAddPolicy<ComponentType>,
+				typename PreRemovePolicy = DefaultPreRemovePolicy<ComponentType>>
+	class ComponentManager; 
+
 	class TransformComponent {
 	public:
+		using managerType = ComponentManager<TransformComponent>;
 		using dependencies = DependencyList<>;
 		static constexpr std::string_view componentName = "TransformComponent";
 		static constexpr uint8_t componentIndex = GetComponentIndex(EComponentType::TransformComponent);

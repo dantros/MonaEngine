@@ -20,20 +20,18 @@ set(MONA_HEADERS
 				World/World.hpp
 				World/UserHandleTypes.hpp
 				World/Detail/World_Implementation.hpp
-				Rendering/ImGuiBuild.cpp
 				Rendering/Renderer.hpp
 				Rendering/CameraComponent.hpp
 				Rendering/StaticMeshComponent.hpp
 				Rendering/ShaderProgram.hpp
 				Rendering/ModelManager.hpp
 				PhysicsCollision/PhysicsCollisionSystem.hpp
-				PhysicsCollision/PhysicsCollisionSystem.cpp
 				PhysicsCollision/CustomMotionState.hpp
 				PhysicsCollision/RigidBodyComponent.hpp
+				PhysicsCollision/ShapeTypes.hpp
+				PhysicsCollision/RigidBodyComponentPolicies.hpp
 				DebugDrawing/DebugDrawingSystem.hpp
-				DebugDrawing/DebugDrawingSystem.cpp
 				DebugDrawing/BulletDebugDraw.hpp
-				DebugDrawing/BulletDebugDraw.cpp
 				Utilities/BasicCameraControllers.hpp)
 set(MONA_SOURCES 
 				Core/Log.cpp
@@ -47,7 +45,11 @@ set(MONA_SOURCES
 				World/World.cpp
 				Rendering/Renderer.cpp
 				Rendering/ShaderProgram.cpp
-				Rendering/ModelManager.cpp)
+				Rendering/ModelManager.cpp
+				PhysicsCollision/PhysicsCollisionSystem.cpp
+				DebugDrawing/ImGuiBuild.cpp
+				DebugDrawing/BulletDebugDraw.cpp
+				DebugDrawing/DebugDrawingSystem.cpp)
 file(GLOB_RECURSE Shaders  "${CMAKE_SOURCE_DIR}/Assets/Shaders/*")
 source_group("Shaders" FILES ${Shaders})
 

@@ -19,14 +19,15 @@ public:
 		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
 		m_transform->Scale(glm::vec3(4.5f, 1.0f, 1.0f));
 		world.AddComponent<Mona::StaticMeshComponent>(*this, Mona::ModelManager::PrimitiveType::Cube, glm::vec3(0.9f, 0.5f, 0.3f));
-		world.AddComponent<Mona::RigidBodyComponent>(*this, glm::vec3(4.5f/2.0f,0.5f,0.5f));
+		Mona::BoxShapeInformation boxInfo(glm::vec3(4.5f / 2.0f, 0.5f, 0.5f));
+		world.AddComponent<Mona::RigidBodyComponent>(*this, boxInfo, Mona::RigidBodyType::KinematicBody);
 	}
 
 	virtual void UserUpdate(Mona::World& world, float timeStep) noexcept {
 		auto& input = world.GetInput();
 		if (input.IsKeyPressed(MONA_KEY_A))
 		{
-			m_transform->Translate(glm::vec3(-m_paddleVelocity*timeStep, 0.0f,0.0f));
+			m_transform->Translate(glm::vec3(-m_paddleVelocity * timeStep, 0.0f, 0.0f));
 		}
 		else if (input.IsKeyPressed(MONA_KEY_D))
 		{
@@ -51,6 +52,8 @@ public:
 	virtual void UserStartUp(Mona::World & world) noexcept override {
 		world.CreateGameObject<BasicCamera>();
 		world.CreateGameObject<Paddle>(5.0f);
+		glm::vec3 blockScale(3.0f, 1.0f, 1.0f);
+		Mona::BoxShapeInformation boxInfo(blockScale / 2.0f);
 		for (int i = -2; i < 3; i++) {
 			float x = 4.0f * i;
 			for (int j = -2; j < 3; j++)
@@ -58,8 +61,9 @@ public:
 				float y = 2.0f * j;
 				auto block = world.CreateGameObject<Block>();
 				auto transform = world.AddComponent<Mona::TransformComponent>(block, glm::vec3( x, 15.0f + y, 0.0f));
-				transform->Scale(glm::vec3(3.0f, 1.0f, 1.0f));
+				transform->Scale(blockScale);
 				world.AddComponent<Mona::StaticMeshComponent>(block, Mona::ModelManager::PrimitiveType::Cube);
+				world.AddComponent<Mona::RigidBodyComponent>(block, boxInfo, Mona::RigidBodyType::StaticBody);
 			}
 		}
 

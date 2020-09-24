@@ -13,10 +13,16 @@ namespace Mona {
 		m_application(),
 		m_shouldClose(false),
 		m_physicsCollisionSystem() {
-		m_componentManagers[TransformComponent::componentIndex].reset(new ComponentManager<TransformComponent>());
+		ComponentManager<TransformComponent>* transformManagerPtr = new ComponentManager<TransformComponent>();
+		m_componentManagers[TransformComponent::componentIndex].reset(transformManagerPtr);
+
 		m_componentManagers[CameraComponent::componentIndex].reset(new ComponentManager<CameraComponent>());
 		m_componentManagers[StaticMeshComponent::componentIndex].reset(new ComponentManager<StaticMeshComponent>());
-		m_componentManagers[RigidBodyComponent::componentIndex].reset(new ComponentManager<RigidBodyComponent>());
+		ComponentManager<RigidBodyComponent, RigidBodyAddPolicy, RigidBodyRemovePolicy>* rigidBodyManagerPtr =
+			new ComponentManager<RigidBodyComponent, RigidBodyAddPolicy, RigidBodyRemovePolicy>(); 
+		rigidBodyManagerPtr->SetAddPolicy(RigidBodyAddPolicy(transformManagerPtr, &m_physicsCollisionSystem));
+		rigidBodyManagerPtr->SetRemovePolicy(RigidBodyRemovePolicy(&m_physicsCollisionSystem));
+		m_componentManagers[RigidBodyComponent::componentIndex].reset(rigidBodyManagerPtr);
 		m_debugDrawingSystem.reset(new DebugDrawingSystem());
 	}
 	void World::StartUp(std::unique_ptr<Application> app) noexcept {
@@ -102,9 +108,9 @@ namespace Mona {
 
 	void World::Update(float timeStep) noexcept
 	{
-		ComponentManager<TransformComponent> &transformDataManager = GetComponentManager<TransformComponent>();
-		ComponentManager<StaticMeshComponent> &staticMeshDataManager = GetComponentManager<StaticMeshComponent>();
-		ComponentManager<CameraComponent>& cameraDataManager = GetComponentManager<CameraComponent>();
+		auto &transformDataManager = GetComponentManager<TransformComponent>();
+		auto &staticMeshDataManager = GetComponentManager<StaticMeshComponent>();
+		auto &cameraDataManager = GetComponentManager<CameraComponent>();
 		m_input.Update();
 		m_physicsCollisionSystem.StepSimulation(timeStep);
 		m_objectManager.UpdateGameObjects(*this, timeStep);

@@ -152,16 +152,16 @@ namespace Mona {
 		for (unsigned int i = 0; i <= stackCount; i++)
 		{
 			stackAngle = PI / 2.0f - i * stackStep;
-			xy = radius * std::cos(stackAngle);             
-			z = radius * std::sin(stackAngle);
+			xy = std::cos(stackAngle);             
+			z = std::sin(stackAngle);
 			for (unsigned int j = 0; j <= sectorCount; j++)
 			{
 				sectorAngle = sectorStep * j;
 				x = xy * std::cos(sectorAngle);
 				y = xy * std::sin(sectorAngle);
-				vertices.push_back(x);
-				vertices.push_back(y);
-				vertices.push_back(z);
+				vertices.push_back(radius * x);
+				vertices.push_back(radius * y);
+				vertices.push_back(radius * z);
 				vertices.push_back(x);
 				vertices.push_back(y);
 				vertices.push_back(z);

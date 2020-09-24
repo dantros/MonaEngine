@@ -23,8 +23,22 @@ namespace Mona {
 		BaseComponentManager(const BaseComponentManager&) = delete;
 		BaseComponentManager& operator=(const BaseComponentManager&) = delete;
 	};
+	template <typename ComponentType>
+	class DefaultPreRemovePolicy {
+	public:
+		DefaultPreRemovePolicy() = default;
+		void Apply(ComponentType &component) noexcept {}
+	};
 
 	template <typename ComponentType>
+	class DefaulPostAddPolicy {
+	public:
+		DefaulPostAddPolicy() = default;
+		void Apply(GameObject* gameObjectPtr, ComponentType& component) noexcept {}
+	};
+
+
+	template <typename ComponentType, typename PostAddPolicy, typename PreRemovePolicy>
 	class ComponentManager : public BaseComponentManager {
 	public:
 		ComponentManager();
@@ -44,6 +58,9 @@ namespace Mona {
 		const ComponentType& operator[](size_type index) const noexcept;
 		bool IsValid(const InnerComponentHandle& handle) const noexcept;
 
+		void SetAddPolicy(const PostAddPolicy& policy) noexcept;
+		void SetRemovePolicy(const PreRemovePolicy& policy) noexcept;
+
 	private:
 		struct HandleEntry { 
 			HandleEntry(size_type i, size_type p, size_type g) : index(i), prevIndex(p), generation(g), active(true) {}
@@ -62,6 +79,9 @@ namespace Mona {
 		size_type m_firstFreeIndex;
 		size_type m_lastFreeIndex;
 		size_type m_freeIndicesCount;
+
+		PreRemovePolicy m_removePolicy;
+		PostAddPolicy m_addPolicy;
 	};
 
 }

@@ -23,22 +23,17 @@ namespace Mona {
 		BaseComponentManager(const BaseComponentManager&) = delete;
 		BaseComponentManager& operator=(const BaseComponentManager&) = delete;
 	};
-	template <typename ComponentType>
-	class DefaultPreRemovePolicy {
-	public:
-		DefaultPreRemovePolicy() = default;
-		void Apply(ComponentType &component) noexcept {}
-	};
 
 	template <typename ComponentType>
-	class DefaulPostAddPolicy {
+	class DefaultLifetimePolicy {
 	public:
-		DefaulPostAddPolicy() = default;
-		void Apply(GameObject* gameObjectPtr, ComponentType& component) noexcept {}
+		DefaultLifetimePolicy() = default;
+		void OnAddComponent(GameObject* gameObjectPtr, ComponentType& component) noexcept {}
+		void OnRemoveComponent(GameObject* gameObjectPtr, ComponentType& component) noexcept {}
 	};
 
 
-	template <typename ComponentType, typename PostAddPolicy, typename PreRemovePolicy>
+	template <typename ComponentType, typename LifetimePolicy>
 	class ComponentManager : public BaseComponentManager {
 	public:
 		ComponentManager();
@@ -58,8 +53,7 @@ namespace Mona {
 		const ComponentType& operator[](size_type index) const noexcept;
 		bool IsValid(const InnerComponentHandle& handle) const noexcept;
 
-		void SetAddPolicy(const PostAddPolicy& policy) noexcept;
-		void SetRemovePolicy(const PreRemovePolicy& policy) noexcept;
+		void SetLifetimePolicy(const LifetimePolicy& policy) noexcept;
 
 	private:
 		struct HandleEntry { 
@@ -80,8 +74,7 @@ namespace Mona {
 		size_type m_lastFreeIndex;
 		size_type m_freeIndicesCount;
 
-		PreRemovePolicy m_removePolicy;
-		PostAddPolicy m_addPolicy;
+		LifetimePolicy m_lifetimePolicy;
 	};
 
 }

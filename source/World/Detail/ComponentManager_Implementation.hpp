@@ -6,26 +6,27 @@
 
 namespace Mona {
 
-	template <typename ComponentType, typename PostAddPolicy, typename PreRemovePolicy>
-	ComponentManager<ComponentType, PostAddPolicy, PreRemovePolicy>::ComponentManager() : 
+	template <typename ComponentType, typename LifetimePolicy>
+	ComponentManager<ComponentType, LifetimePolicy>::ComponentManager() : 
 		BaseComponentManager(), 
 		m_firstFreeIndex(s_maxEntries),
 		m_lastFreeIndex(s_maxEntries),
 		m_freeIndicesCount(0)
 	{}
 
-	template <typename ComponentType, typename PostAddPolicy, typename PreRemovePolicy>
-	void ComponentManager<ComponentType, PostAddPolicy, PreRemovePolicy>::StartUp(EventManager& eventManager,size_type expectedObjects) noexcept {
+	template <typename ComponentType, typename LifetimePolicy>
+	void ComponentManager<ComponentType, LifetimePolicy>::StartUp(EventManager& eventManager,size_type expectedObjects) noexcept {
 		m_components.reserve(expectedObjects);
 		m_componentOwners.reserve(expectedObjects);
 		m_handleEntryIndices.reserve(expectedObjects);
 		m_handleEntries.reserve(expectedObjects);
 	}
 
-	template <typename ComponentType, typename PostAddPolicy, typename PreRemovePolicy>
-	void ComponentManager<ComponentType, PostAddPolicy, PreRemovePolicy>::ShutDown(EventManager& eventManager) noexcept {
-		for (auto& component : m_components) {
-			m_removePolicy.Apply(component);
+	template <typename ComponentType, typename LifetimePolicy>
+	void ComponentManager<ComponentType, LifetimePolicy>::ShutDown(EventManager& eventManager) noexcept {
+		for (decltype(m_components.size()) i = 0; i < m_components.size(); i++)
+		{
+			m_lifetimePolicy.OnRemoveComponent(m_componentOwners[i], m_components[i]);
 		}
 		m_components.clear();
 		m_componentOwners.clear();
@@ -36,9 +37,9 @@ namespace Mona {
 		m_freeIndicesCount = 0;
 	}
 
-	template <typename ComponentType, typename PostAddPolicy, typename PreRemovePolicy>
+	template <typename ComponentType, typename LifetimePolicy>
 	template <typename ... Args>
-	InnerComponentHandle ComponentManager<ComponentType, PostAddPolicy, PreRemovePolicy>::AddComponent(GameObject* gameObjectPointer, Args&& ... args) noexcept
+	InnerComponentHandle ComponentManager<ComponentType, LifetimePolicy>::AddComponent(GameObject* gameObjectPointer, Args&& ... args) noexcept
 	{
 		MONA_ASSERT(m_components.size() < s_maxEntries, "ComponentManager Error: Cannot Add more components, max number reached.");
 		if (m_firstFreeIndex != s_maxEntries && m_freeIndicesCount > s_minFreeIndices)
@@ -52,7 +53,7 @@ namespace Mona {
 			m_componentOwners.emplace_back(gameObjectPointer);
 			m_handleEntryIndices.emplace_back(handleIndex);
 			m_components.emplace_back(std::forward<Args>(args)...);
-			m_addPolicy.Apply(gameObjectPointer, m_components.back());
+			m_lifetimePolicy.OnAddComponent(gameObjectPointer, m_components.back());
 			if (m_firstFreeIndex == m_lastFreeIndex)
 				m_firstFreeIndex = m_lastFreeIndex = s_maxEntries;
 			else 
@@ -69,13 +70,13 @@ namespace Mona {
 			m_componentOwners.emplace_back(gameObjectPointer);
 			m_handleEntryIndices.emplace_back(static_cast<size_type>(m_handleEntries.size() - 1));
 			m_components.emplace_back(std::forward<Args>(args)...);
-			m_addPolicy.Apply(gameObjectPointer, m_components.back());
+			m_lifetimePolicy.OnAddComponent(gameObjectPointer, m_components.back());
 			return InnerComponentHandle(static_cast<size_type>(m_handleEntries.size() - 1), 0);
 		}
 	}
 
-	template <typename ComponentType, typename PostAddPolicy, typename PreRemovePolicy>
-	void ComponentManager<ComponentType, PostAddPolicy, PreRemovePolicy>::RemoveComponent(const InnerComponentHandle& handle) noexcept
+	template <typename ComponentType, typename LifetimePolicy>
+	void ComponentManager<ComponentType, LifetimePolicy>::RemoveComponent(const InnerComponentHandle& handle) noexcept
 	{
 		auto index = handle.m_index;
 		MONA_ASSERT(index < m_handleEntries.size(), "ComponentManager Error: handle index out of bounds");
@@ -89,7 +90,7 @@ namespace Mona {
 			m_handleEntryIndices[handleEntry.index] = m_handleEntryIndices.back();
 			m_handleEntries[m_handleEntryIndices.back()].index = handleEntry.index;
 		}
-		m_removePolicy.Apply(m_components.back());
+		m_lifetimePolicy.OnRemoveComponent(m_componentOwners.back(), m_components.back());
 		m_components.pop_back();
 		m_componentOwners.pop_back();
 		m_handleEntryIndices.pop_back();
@@ -106,8 +107,9 @@ namespace Mona {
 		++m_freeIndicesCount;
 		
 	}
-	template <typename ComponentType, typename PostAddPolicy, typename PreRemovePolicy>
-	ComponentType* ComponentManager<ComponentType, PostAddPolicy, PreRemovePolicy>::GetComponentPointer(const InnerComponentHandle& handle) noexcept
+
+	template <typename ComponentType, typename LifetimePolicy>
+	ComponentType* ComponentManager<ComponentType, LifetimePolicy>::GetComponentPointer(const InnerComponentHandle& handle) noexcept
 	{
 		auto index = handle.m_index;
 		MONA_ASSERT(index < m_handleEntries.size(), "ComponentManager Error: handle index out of range");
@@ -115,8 +117,8 @@ namespace Mona {
 		MONA_ASSERT(m_handleEntries[index].generation == handle.m_generation, "ComponentManager Error: handle with incorrect generation");
 		return &m_components[m_handleEntries[index].index];
 	}
-	template <typename ComponentType, typename PostAddPolicy, typename PreRemovePolicy>
-	const ComponentType* ComponentManager<ComponentType, PostAddPolicy, PreRemovePolicy>::GetComponentPointer(const InnerComponentHandle& handle) const noexcept
+	template <typename ComponentType, typename LifetimePolicy>
+	const ComponentType* ComponentManager<ComponentType, LifetimePolicy>::GetComponentPointer(const InnerComponentHandle& handle) const noexcept
 	{
 		auto index = handle.m_index;
 		MONA_ASSERT(index < m_handleEntries.size(), "ComponentManager Error: handle index out of range");
@@ -125,11 +127,11 @@ namespace Mona {
 		return &m_components[m_handleEntries[index].index];
 	}
 
-	template <typename ComponentType, typename PostAddPolicy, typename PreRemovePolicy>
-	typename ComponentManager<ComponentType, PostAddPolicy, PreRemovePolicy>::size_type ComponentManager<ComponentType, PostAddPolicy, PreRemovePolicy>::GetCount() const noexcept { return m_components.size(); }
+	template <typename ComponentType, typename LifetimePolicy>
+	typename ComponentManager<ComponentType, LifetimePolicy>::size_type ComponentManager<ComponentType, LifetimePolicy>::GetCount() const noexcept { return m_components.size(); }
 
-	template <typename ComponentType, typename PostAddPolicy, typename PreRemovePolicy>
-	GameObject* ComponentManager<ComponentType, PostAddPolicy, PreRemovePolicy>::GetOwner(const InnerComponentHandle& handle) const noexcept
+	template <typename ComponentType, typename LifetimePolicy>
+	GameObject* ComponentManager<ComponentType, LifetimePolicy>::GetOwner(const InnerComponentHandle& handle) const noexcept
 	{
 		auto index = handle.m_index;
 		MONA_ASSERT(index < m_handleEntries.size(), "ComponentManager Error: handle index out of range");
@@ -139,27 +141,27 @@ namespace Mona {
 	}
 
 
-	template <typename ComponentType, typename PostAddPolicy, typename PreRemovePolicy>
-	GameObject* ComponentManager<ComponentType, PostAddPolicy, PreRemovePolicy>::GetOwnerByIndex(size_type i) noexcept {
+	template <typename ComponentType, typename LifetimePolicy>
+	GameObject* ComponentManager<ComponentType, LifetimePolicy>::GetOwnerByIndex(size_type i) noexcept {
 		MONA_ASSERT(i < m_componentOwners.size(), "ComponentManager Error: owner index out of range");
 		return m_componentOwners[i];
 	}
-	template <typename ComponentType, typename PostAddPolicy, typename PreRemovePolicy>
-	ComponentType& ComponentManager<ComponentType, PostAddPolicy, PreRemovePolicy>::operator[](ComponentManager<ComponentType, PostAddPolicy, PreRemovePolicy>::size_type index) noexcept
+	template <typename ComponentType, typename LifetimePolicy>
+	ComponentType& ComponentManager<ComponentType, LifetimePolicy>::operator[](ComponentManager<ComponentType, LifetimePolicy>::size_type index) noexcept
 	{
 		MONA_ASSERT(index < m_components.size(), "ComponentManager Error: component index out of range");
 		return m_components[index];
 	}
 
-	template <typename ComponentType, typename PostAddPolicy, typename PreRemovePolicy>
-	const ComponentType& ComponentManager<ComponentType, PostAddPolicy, PreRemovePolicy>::operator[](ComponentManager<ComponentType, PostAddPolicy, PreRemovePolicy>::size_type  index) const noexcept
+	template <typename ComponentType, typename LifetimePolicy>
+	const ComponentType& ComponentManager<ComponentType, LifetimePolicy>::operator[](ComponentManager<ComponentType, LifetimePolicy>::size_type  index) const noexcept
 	{
 		MONA_ASSERT(index < m_components.size(), "ComponentManager Error: component index out of range");
 		return m_components[index];
 	}
 
-	template <typename ComponentType, typename PostAddPolicy, typename PreRemovePolicy>
-	bool ComponentManager<ComponentType, PostAddPolicy, PreRemovePolicy>::IsValid(const InnerComponentHandle& handle) const noexcept
+	template <typename ComponentType, typename LifetimePolicy>
+	bool ComponentManager<ComponentType, LifetimePolicy>::IsValid(const InnerComponentHandle& handle) const noexcept
 	{
 		const auto index = handle.m_index;
 		if (index >= m_handleEntries.size() ||
@@ -169,17 +171,12 @@ namespace Mona {
 		return true;
 	}
 
-	template <typename ComponentType, typename PostAddPolicy, typename PreRemovePolicy>
-	void ComponentManager<ComponentType, PostAddPolicy, PreRemovePolicy>::SetAddPolicy(const PostAddPolicy& policy) noexcept
+	template <typename ComponentType, typename LifetimePolicy>
+	void ComponentManager<ComponentType, LifetimePolicy>::SetLifetimePolicy(const LifetimePolicy& policy) noexcept
 	{
-		m_addPolicy = policy;
+		m_lifetimePolicy = policy;
 	}
 
-	template <typename ComponentType, typename PostAddPolicy, typename PreRemovePolicy>
-	void ComponentManager<ComponentType, PostAddPolicy, PreRemovePolicy>::SetRemovePolicy(const PreRemovePolicy& policy) noexcept
-	{
-		m_removePolicy = policy;
-	}
 
 
 }

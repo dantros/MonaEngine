@@ -15,6 +15,7 @@
 #include "../Rendering/Renderer.hpp"
 #include "../PhysicsCollision/PhysicsCollisionSystem.hpp"
 #include "../PhysicsCollision/RigidBodyComponent.hpp"
+#include "../PhysicsCollision/RigidBodyLifetimePolicy.hpp"
 #include "../DebugDrawing/DebugDrawingSystem.hpp"
 #include <memory>
 #include <array>

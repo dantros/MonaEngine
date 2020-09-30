@@ -18,10 +18,11 @@ namespace Mona {
 
 		m_componentManagers[CameraComponent::componentIndex].reset(new ComponentManager<CameraComponent>());
 		m_componentManagers[StaticMeshComponent::componentIndex].reset(new ComponentManager<StaticMeshComponent>());
-		ComponentManager<RigidBodyComponent, RigidBodyAddPolicy, RigidBodyRemovePolicy>* rigidBodyManagerPtr =
-			new ComponentManager<RigidBodyComponent, RigidBodyAddPolicy, RigidBodyRemovePolicy>(); 
-		rigidBodyManagerPtr->SetAddPolicy(RigidBodyAddPolicy(transformManagerPtr, &m_physicsCollisionSystem));
-		rigidBodyManagerPtr->SetRemovePolicy(RigidBodyRemovePolicy(&m_physicsCollisionSystem));
+
+		ComponentManager<RigidBodyComponent, RigidBodyLifetimePolicy>* rigidBodyManagerPtr =
+			new ComponentManager<RigidBodyComponent, RigidBodyLifetimePolicy>();
+		rigidBodyManagerPtr->SetLifetimePolicy(RigidBodyLifetimePolicy(transformManagerPtr, &m_physicsCollisionSystem));
+
 		m_componentManagers[RigidBodyComponent::componentIndex].reset(rigidBodyManagerPtr);
 		m_debugDrawingSystem.reset(new DebugDrawingSystem());
 	}

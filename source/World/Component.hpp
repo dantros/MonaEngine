@@ -32,14 +32,11 @@ namespace Mona {
 	class RigidBodyComponent;
 
 	template <typename ComponentType>
-	class DefaulPostAddPolicy;
+	class DefaultLifetimePolicy;
 
-	template <typename ComponentType>
-	class DefaultPreRemovePolicy;
 
 	template <	typename ComponentType,
-				typename PostAddPolicy = DefaulPostAddPolicy<ComponentType>,
-				typename PreRemovePolicy = DefaultPreRemovePolicy<ComponentType>>
+				typename LifetimePolicy = DefaultLifetimePolicy<ComponentType>>
 	class ComponentManager; 
 
 	class TransformComponent {

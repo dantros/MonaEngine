@@ -17,13 +17,13 @@ namespace Mona {
 	};
 
 
-	class RigidBodyRemovePolicy;
-	class RigidBodyAddPolicy;
+	class RigidBodyLifetimePolicy;
+
 	class RigidBodyComponent {
 		friend class PhysicsCollisionSystem;
-		friend class RigidBodyAddPolicy;
+		friend class RigidBodyLifetimePolicy;
 	public:
-		using managerType = ComponentManager<RigidBodyComponent, RigidBodyAddPolicy, RigidBodyRemovePolicy>;
+		using managerType = ComponentManager<RigidBodyComponent, RigidBodyLifetimePolicy>;
 		using dependencies = DependencyList<TransformComponent>;
 		static constexpr std::string_view componentName = "RigidBodyComponent";
 		static constexpr uint8_t componentIndex = GetComponentIndex(EComponentType::RigidBodyComponent);

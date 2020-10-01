@@ -54,8 +54,12 @@ namespace Mona {
 		ComponentHandle<ComponentType> GetComponentHandle(const BaseGameObjectHandle& objectHandle) const noexcept;
 		template <typename ComponentType>
 		ComponentHandle<ComponentType> GetComponentHandle(const GameObject& gameObject) const noexcept;
+		template <typename SiblingType, typename ComponentType>
+		ComponentHandle<SiblingType> GetSiblingComponentHandle(const ComponentHandle<ComponentType>& handle) noexcept;
 		template <typename ComponentType>
 		BaseComponentManager::size_type GetComponentCount() const noexcept;
+		template <typename ComponentType>
+		BaseGameObjectHandle GetOwner(const ComponentHandle<ComponentType>& handle) noexcept;
 
 		EventManager& GetEventManager() noexcept;
 		Input& GetInput() noexcept;

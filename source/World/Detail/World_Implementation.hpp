@@ -60,6 +60,25 @@ namespace Mona {
 		return managerPtr->GetCount();
 	}
 
+	template <typename SiblingType, typename ComponentType>
+	ComponentHandle<SiblingType> World::GetSiblingComponentHandle(const ComponentHandle<ComponentType>& handle) noexcept
+	{
+		static_assert(is_component<SiblingType>, "Template parameter is not a component");
+		static_assert(is_component<ComponentType>, "Template parameter is not a component");
+		auto managerPtr = static_cast<typename ComponentType::managerType*>(m_componentManagers[ComponentType::componentIndex].get());
+		auto siblingManagerPtr = static_cast<typename SiblingType::managerType*>(m_componentManagers[SiblingType::componentIndex].get());
+		GameObject* gameObject = managerPtr->GetOwner(handle.GetInnerHandle());
+		return  ComponentHandle<SiblingType>(gameObject->GetInnerComponentHandle<SiblingType>(), siblingManagerPtr);
+	}
+
+	template <typename ComponentType>
+	BaseGameObjectHandle World::GetOwner(const ComponentHandle<ComponentType>& handle) noexcept {
+		static_assert(is_component<ComponentType>, "Template parameter is not a component");
+		auto managerPtr = static_cast<typename ComponentType::managerType*>(m_componentManagers[ComponentType::componentIndex].get());
+		GameObject* gameObject = managerPtr->GetOwner(handle.GetInnerHandle());
+		return BaseGameObjectHandle(gameObject->GetInnerObjectHandle(), gameObject);
+	}
+
 	template <typename ComponentType>
 	auto& World::GetComponentManager() noexcept {
 		static_assert(is_component<ComponentType>, "Template parameter is not a component");

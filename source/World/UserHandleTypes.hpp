@@ -7,13 +7,22 @@
 //#include "ComponentManager.hpp"
 //#include "World.hpp"
 namespace Mona {
+	class BaseComponentHandle {
+	public:
+		BaseComponentHandle() : m_innerHandle() {}
+		BaseComponentHandle(InnerComponentHandle handle) : m_innerHandle(handle) {}
+		InnerComponentHandle GetInnerHandle() const noexcept { return m_innerHandle; }
+	protected:
+		InnerComponentHandle m_innerHandle;
+	};
+
 	template <typename ComponentType>
-	class ComponentHandle {
+	class ComponentHandle : public BaseComponentHandle{
 		static_assert(is_component<ComponentType>, "Cannot create handle of type that isn�t a component");
 	public:
 		static constexpr uint8_t componentIndex = ComponentType::componentIndex;
-		ComponentHandle() : m_innerHandle(), m_managerPointer(nullptr) {}
-		ComponentHandle(InnerComponentHandle handle, typename ComponentType::managerType* manager) : m_innerHandle(handle), m_managerPointer(manager) {}
+		ComponentHandle() : BaseComponentHandle(), m_managerPointer(nullptr) {}
+		ComponentHandle(InnerComponentHandle handle, typename ComponentType::managerType* manager) : BaseComponentHandle(handle), m_managerPointer(manager) {}
 		InnerComponentHandle GetInnerHandle() const noexcept { return m_innerHandle; }
 		bool IsValid() const noexcept {
 			if (m_managerPointer == nullptr)
@@ -30,7 +39,6 @@ namespace Mona {
 			return m_managerPointer->GetComponentPointer(m_innerHandle);
 		}
 	private:
-		InnerComponentHandle m_innerHandle;
 		typename ComponentType::managerType* m_managerPointer;
 	};
 	using TransformHandle = ComponentHandle<TransformComponent>;

@@ -2,6 +2,8 @@
 #ifndef PHYSICSCOLLISIONSYSTEM_HPP
 #define PHYSICSCOLLISIONSYSTEM_HPP
 #include <btBulletDynamicsCommon.h>
+#include <set>
+#include <utility>
 #include "RigidBodyComponent.hpp"
 
 namespace Mona {
@@ -30,11 +32,22 @@ namespace Mona {
 		void ShutDown() noexcept;
 		btDynamicsWorld* GetPhysicsWorldPtr() noexcept { return m_worldPtr; }
 	private:
+		void CheckForCollisionEvents();
+
+
+
 		btBroadphaseInterface* m_broadphasePtr;
 		btCollisionConfiguration* m_collisionConfigurationPtr;
 		btCollisionDispatcher* m_dispatcherPtr;
 		btConstraintSolver* m_solverPtr;
 		btDynamicsWorld* m_worldPtr;
+
+		using CollisionPair = std::pair<const btRigidBody*, const btRigidBody*>;
+		using CollisionSet = std::set<CollisionPair>;
+		CollisionSet m_previousCollisionSet;
+		
+
+
 
 	};
 }

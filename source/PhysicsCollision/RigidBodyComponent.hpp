@@ -170,6 +170,29 @@ namespace Mona {
 			const btVector3& angularVelocity = m_rigidBodyPtr->getAngularVelocity();
 			return glm::vec3(angularVelocity.x(), angularVelocity.y(), angularVelocity.z());
 		}
+
+		void SetDamping(float linearDamping, float angularDamping) {
+			m_rigidBodyPtr->setDamping(btScalar(linearDamping), btScalar(angularDamping));
+		}
+		float GetLinearDamping() const {
+			return m_rigidBodyPtr->getLinearDamping();
+		}
+		float GetAngularDamping() const {
+			return m_rigidBodyPtr->getAngularDamping();
+		}
+		void ApplyForce(const glm::vec3& force, const glm::vec3& rel_pos = glm::vec3(0.0f)) {
+			const btVector3& bulletForce = btVector3(force.x, force.y, force.z);
+			const btVector3& bulletPos = btVector3(rel_pos.x, rel_pos.y, rel_pos.z);
+			m_rigidBodyPtr->applyForce(bulletForce, bulletPos);
+		}
+		void ClearForces() {
+			m_rigidBodyPtr->clearForces();
+		}
+		glm::vec3 GetTotalForce() const {
+			const btVector3& totalForce = m_rigidBodyPtr->getTotalForce();
+			return glm::vec3(totalForce.x(), totalForce.y(), totalForce.z());
+		}
+
 	private:
 		void InitializeRigidBody(float mass, RigidBodyType rigidBodyType)
 		{

@@ -13,23 +13,20 @@ namespace Mona {
 		m_application(),
 		m_shouldClose(false),
 		m_physicsCollisionSystem() {
-		ComponentManager<TransformComponent>* transformManagerPtr = new ComponentManager<TransformComponent>();
-		m_componentManagers[TransformComponent::componentIndex].reset(transformManagerPtr);
-
+		
+		m_componentManagers[TransformComponent::componentIndex].reset(new ComponentManager<TransformComponent>());
 		m_componentManagers[CameraComponent::componentIndex].reset(new ComponentManager<CameraComponent>());
 		m_componentManagers[StaticMeshComponent::componentIndex].reset(new ComponentManager<StaticMeshComponent>());
-
-		ComponentManager<RigidBodyComponent, RigidBodyLifetimePolicy>* rigidBodyManagerPtr =
-			new ComponentManager<RigidBodyComponent, RigidBodyLifetimePolicy>();
-		rigidBodyManagerPtr->SetLifetimePolicy(RigidBodyLifetimePolicy(transformManagerPtr, &m_physicsCollisionSystem));
-
-		m_componentManagers[RigidBodyComponent::componentIndex].reset(rigidBodyManagerPtr);
+		m_componentManagers[RigidBodyComponent::componentIndex].reset(new ComponentManager<RigidBodyComponent, RigidBodyLifetimePolicy>());
 		m_debugDrawingSystem.reset(new DebugDrawingSystem());
+	
 	}
 	void World::StartUp(std::unique_ptr<Application> app) noexcept {
-		//m_eventManagerPointer = eventManagerPointer;
+		auto& transformDataManager = GetComponentManager<TransformComponent>();
+		auto& rigidBodyDataManager = GetComponentManager<RigidBodyComponent>();
 		auto& config = Config::GetInstance();
 		const GameObjectID expectedObjects = config.getValueOrDefault<int>("expected_number_of_gameobjects", 1000);
+
 		m_window.StartUp(m_eventManager);
 		m_input.StartUp(m_eventManager);
 		m_objectManager.StartUp(expectedObjects);
@@ -37,6 +34,7 @@ namespace Mona {
 			componentManager->StartUp(m_eventManager, expectedObjects);
 		m_application = std::move(app);
 		m_renderer.StartUp(m_eventManager, m_debugDrawingSystem.get());
+		m_physicsCollisionSystem.StartUp(transformDataManager, rigidBodyDataManager);
 		m_debugDrawingSystem->StartUp(&m_physicsCollisionSystem);
 		m_application->StartUp(*this);
 	}
@@ -112,8 +110,10 @@ namespace Mona {
 		auto &transformDataManager = GetComponentManager<TransformComponent>();
 		auto &staticMeshDataManager = GetComponentManager<StaticMeshComponent>();
 		auto &cameraDataManager = GetComponentManager<CameraComponent>();
+		auto& rigidBodyDataManager = GetComponentManager<RigidBodyComponent>();
 		m_input.Update();
 		m_physicsCollisionSystem.StepSimulation(timeStep);
+		m_physicsCollisionSystem.SubmitCollisionEvents(rigidBodyDataManager);
 		m_objectManager.UpdateGameObjects(*this, timeStep);
 		m_application->UserUpdate(*this, timeStep);
 		m_renderer.Render(m_eventManager, m_cameraHandle, staticMeshDataManager, transformDataManager, cameraDataManager);

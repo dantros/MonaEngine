@@ -28,8 +28,8 @@ namespace Mona {
 	class DefaultLifetimePolicy {
 	public:
 		DefaultLifetimePolicy() = default;
-		void OnAddComponent(GameObject* gameObjectPtr, ComponentType& component) noexcept {}
-		void OnRemoveComponent(GameObject* gameObjectPtr, ComponentType& component) noexcept {}
+		void OnAddComponent(GameObject* gameObjectPtr, ComponentType& component, const InnerComponentHandle& handle) noexcept {}
+		void OnRemoveComponent(GameObject* gameObjectPtr, ComponentType& component, const InnerComponentHandle& handle) noexcept {}
 	};
 
 

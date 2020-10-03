@@ -26,7 +26,8 @@ namespace Mona {
 	void ComponentManager<ComponentType, LifetimePolicy>::ShutDown(EventManager& eventManager) noexcept {
 		for (decltype(m_components.size()) i = 0; i < m_components.size(); i++)
 		{
-			m_lifetimePolicy.OnRemoveComponent(m_componentOwners[i], m_components[i]);
+			HandleEntry handleEntry = m_handleEntries[m_handleEntryIndices[i]];
+			m_lifetimePolicy.OnRemoveComponent(m_componentOwners[i], m_components[i], InnerComponentHandle(m_handleEntryIndices[i], handleEntry.generation));
 		}
 		m_components.clear();
 		m_componentOwners.clear();
@@ -53,7 +54,6 @@ namespace Mona {
 			m_componentOwners.emplace_back(gameObjectPointer);
 			m_handleEntryIndices.emplace_back(handleIndex);
 			m_components.emplace_back(std::forward<Args>(args)...);
-			m_lifetimePolicy.OnAddComponent(gameObjectPointer, m_components.back());
 			if (m_firstFreeIndex == m_lastFreeIndex)
 				m_firstFreeIndex = m_lastFreeIndex = s_maxEntries;
 			else 
@@ -63,15 +63,18 @@ namespace Mona {
 			handleEntry.index = static_cast<size_type>(m_components.size() - 1);
 			handleEntry.prevIndex = s_maxEntries;
 			--m_freeIndicesCount;
-			return InnerComponentHandle(handleIndex, handleEntry.generation);
+			InnerComponentHandle resultHandle = InnerComponentHandle(handleIndex, handleEntry.generation);
+			m_lifetimePolicy.OnAddComponent(gameObjectPointer, m_components.back(), resultHandle);
+			return resultHandle;
 		}
 		else {
 			m_handleEntries.emplace_back(static_cast<size_type>(m_components.size()), s_maxEntries, 0);
 			m_componentOwners.emplace_back(gameObjectPointer);
 			m_handleEntryIndices.emplace_back(static_cast<size_type>(m_handleEntries.size() - 1));
 			m_components.emplace_back(std::forward<Args>(args)...);
-			m_lifetimePolicy.OnAddComponent(gameObjectPointer, m_components.back());
-			return InnerComponentHandle(static_cast<size_type>(m_handleEntries.size() - 1), 0);
+			InnerComponentHandle resultHandle = InnerComponentHandle(static_cast<size_type>(m_handleEntries.size() - 1), 0);
+			m_lifetimePolicy.OnAddComponent(gameObjectPointer, m_components.back(), resultHandle);
+			return resultHandle;
 		}
 	}
 
@@ -90,7 +93,7 @@ namespace Mona {
 			m_handleEntryIndices[handleEntry.index] = m_handleEntryIndices.back();
 			m_handleEntries[m_handleEntryIndices.back()].index = handleEntry.index;
 		}
-		m_lifetimePolicy.OnRemoveComponent(m_componentOwners.back(), m_components.back());
+		m_lifetimePolicy.OnRemoveComponent(m_componentOwners.back(), m_components.back(), handle);
 		m_components.pop_back();
 		m_componentOwners.pop_back();
 		m_handleEntryIndices.pop_back();

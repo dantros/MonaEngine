@@ -31,6 +31,7 @@ public:
 		rb->SetFriction(0.0f);
 		rb->SetRestitution(1.0f);
 		
+		
 		auto ball = world.CreateGameObject<Ball>();
 		float ballRadius = 0.5f;
 		m_ballTransform = world.AddComponent<Mona::TransformComponent>(ball);
@@ -44,7 +45,6 @@ public:
 		m_ballRigidBody = world.AddComponent<Mona::RigidBodyComponent>(ball, sphereInfo, Mona::RigidBodyType::DynamicBody);
 		m_ballRigidBody->SetRestitution(1.0f);
 		m_ballRigidBody->SetFriction(0.0f);
-		
 	}
 
 	virtual void UserUpdate(Mona::World& world, float timeStep) noexcept {

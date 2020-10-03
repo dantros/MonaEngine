@@ -8,6 +8,7 @@
 #include "../World/ComponentManager.hpp"
 #include "../Core/Log.hpp"
 #include <memory>
+#include <functional>
 namespace Mona {
 
 	enum class RigidBodyType {

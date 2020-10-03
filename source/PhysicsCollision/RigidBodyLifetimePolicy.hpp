@@ -13,12 +13,15 @@ namespace Mona {
 		RigidBodyLifetimePolicy(ComponentManager<TransformComponent>* managerPtr, PhysicsCollisionSystem* physicsSystemPtr) :
 			m_transformManagerPtr(managerPtr), m_physicsCollisionSystemPtr(physicsSystemPtr) {}
 
-		void OnAddComponent(GameObject* gameObjectPtr, RigidBodyComponent& rigidBody) noexcept {
-			InnerComponentHandle handle = gameObjectPtr->GetInnerComponentHandle<TransformComponent>();
-			rigidBody.InitializeMotionState(handle, m_transformManagerPtr);
+		void OnAddComponent(GameObject* gameObjectPtr, RigidBodyComponent& rigidBody, const InnerComponentHandle& handle) noexcept {
+			InnerComponentHandle transformHandle = gameObjectPtr->GetInnerComponentHandle<TransformComponent>();
+			rigidBody.InitializeMotionState(transformHandle, m_transformManagerPtr);
+			btRigidBody* rb = rigidBody.m_rigidBodyPtr.get();
+			rb->setUserIndex(handle.m_index);
+			rb->setUserIndex2(handle.m_generation);
 			m_physicsCollisionSystemPtr->AddRigidBody(rigidBody);
 		}
-		void OnRemoveComponent(GameObject* gameObjectPtr, RigidBodyComponent& rigidBody) noexcept {
+		void OnRemoveComponent(GameObject* gameObjectPtr, RigidBodyComponent& rigidBody, const InnerComponentHandle &handle) noexcept {
 			m_physicsCollisionSystemPtr->RemoveRigidBody(rigidBody);
 		}
 	private:

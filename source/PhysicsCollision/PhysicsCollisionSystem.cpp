@@ -1,10 +1,9 @@
 #include "PhysicsCollisionSystem.hpp"
 #include <algorithm>
+#include "RigidBodyLifetimePolicy.hpp"
 namespace Mona {
 	void PhysicsCollisionSystem::StepSimulation(float timeStep) noexcept {
-		m_worldPtr->stepSimulation(timeStep);
-		CheckForCollisionEvents();
-	
+		m_worldPtr->stepSimulation(timeStep);	
 	}
 
 	void PhysicsCollisionSystem::AddRigidBody(RigidBodyComponent &rigidBody) noexcept {
@@ -13,6 +12,11 @@ namespace Mona {
 
 	void PhysicsCollisionSystem::RemoveRigidBody(RigidBodyComponent& rigidBody) noexcept {
 		m_worldPtr->removeRigidBody(rigidBody.m_rigidBodyPtr.get());
+	}
+
+	void PhysicsCollisionSystem::StartUp(typename TransformComponent::managerType& transformDataManager, typename RigidBodyComponent::managerType& rigidBodyDataManager) noexcept
+	{
+		rigidBodyDataManager.SetLifetimePolicy(RigidBodyLifetimePolicy(&transformDataManager, this));
 	}
 
 	void PhysicsCollisionSystem::ShutDown() noexcept {
@@ -29,8 +33,7 @@ namespace Mona {
 		const btVector3& gravity = m_worldPtr->getGravity();
 		return glm::vec3(gravity.x(), gravity.y(), gravity.z());
 	}
-
-	void PhysicsCollisionSystem::CheckForCollisionEvents()
+	void  PhysicsCollisionSystem::SubmitCollisionEvents(typename RigidBodyComponent::managerType& rigidBodyDatamanager) noexcept
 	{
 		CollisionSet currentCollisionSet;
 		auto manifoldNum = m_dispatcherPtr->getNumManifolds();
@@ -45,24 +48,37 @@ namespace Mona {
 				const btRigidBody* secondSortedBody = shouldSwap ? body0 : body1;
 				CollisionPair currentCollisionPair = std::make_pair(firstSortedBody, secondSortedBody);
 				currentCollisionSet.insert(currentCollisionPair);
-				
+				/*
 				if (m_previousCollisionSet.find(currentCollisionPair) == m_previousCollisionSet.end()) {
-					MONA_LOG_INFO("NEW COLLISION");
+					//MONA_LOG_INFO("NEW COLLISION");
+					
+					InnerComponentHandle rbhandle0 = InnerComponentHandle(firstSortedBody->getUserIndex(), firstSortedBody->getUserIndex2());
+					InnerComponentHandle rbHandle1 = InnerComponentHandle(secondSortedBody->getUserIndex(), secondSortedBody->getUserIndex2());
+					RigidBodyComponent* myRigidBody0 = rigidBodyDatamanager.GetComponentPointer(rbhandle0);
+					RigidBodyComponent* myRigidBody1 = rigidBodyDatamanager.GetComponentPointer(rbHandle1);
 					for (int i = 0; i < numContacts; i++)
 					{
 						const btManifoldPoint& point = manifoldPtr->getContactPoint(i);
 						const btVector3& normal = point.m_normalWorldOnB;
-						MONA_LOG_INFO("Normal first object =  ({0},{1},{2})", normal.x(), normal.y(), normal.z());
+						//MONA_LOG_INFO("Normal first object =  ({0},{1},{2})", normal.x(), normal.y(), normal.z());
 					}
-				}
+				}*/
 			}
 		}
 
-		CollisionSet deltaCollisionSet;
+		CollisionSet newCollisions;
+		std::set_difference(currentCollisionSet.begin(), currentCollisionSet.end(),
+							m_previousCollisionSet.begin(), m_previousCollisionSet.end(),
+							std::inserter(newCollisions, newCollisions.begin()));
+		for (auto& newCollision : newCollisions)
+		{
+			MONA_LOG_INFO("COLLISION Started");
+		}
+		CollisionSet removedCollisions;
 		std::set_difference(m_previousCollisionSet.begin(), m_previousCollisionSet.end(),
 							currentCollisionSet.begin(), currentCollisionSet.end(),
-							std::inserter(deltaCollisionSet, deltaCollisionSet.begin()));
-		for (auto& removedCollision : deltaCollisionSet)
+							std::inserter(removedCollisions, removedCollisions.begin()));
+		for (auto& removedCollision : removedCollisions)
 		{
 			MONA_LOG_INFO("COLLISION ENDED");
 		}

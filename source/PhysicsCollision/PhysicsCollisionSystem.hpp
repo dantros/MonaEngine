@@ -27,15 +27,14 @@ namespace Mona {
 		void SetGravity(const glm::vec3& gravity) noexcept;
 		glm::vec3 GetGravity() const noexcept;
 		void StepSimulation(float timeStep) noexcept;
+		void SubmitCollisionEvents(typename RigidBodyComponent::managerType& rigidBodyDatamanager) noexcept;
 		void AddRigidBody(RigidBodyComponent& component) noexcept;
 		void RemoveRigidBody(RigidBodyComponent& component) noexcept;
+		void StartUp(	typename TransformComponent::managerType& transformDataManager,
+						typename RigidBodyComponent::managerType& rigidBodyDataManager) noexcept;
 		void ShutDown() noexcept;
 		btDynamicsWorld* GetPhysicsWorldPtr() noexcept { return m_worldPtr; }
 	private:
-		void CheckForCollisionEvents();
-
-
-
 		btBroadphaseInterface* m_broadphasePtr;
 		btCollisionConfiguration* m_collisionConfigurationPtr;
 		btCollisionDispatcher* m_dispatcherPtr;

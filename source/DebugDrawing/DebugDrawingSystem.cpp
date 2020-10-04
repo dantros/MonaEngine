@@ -25,6 +25,8 @@ void GLAPIENTRY MessageCallback(GLenum source,
 }
 
 namespace Mona {
+
+
 	void DebugDrawingSystem::Draw(EventManager& eventManager, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) noexcept {
 
 		m_lineShader.UseProgram();

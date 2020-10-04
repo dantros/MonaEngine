@@ -2,7 +2,7 @@
 #ifndef CUSTOMMOTIONSTATE_HPP
 #define CUSTOMMOTIONSTATE_HPP
 #include <btBulletDynamicsCommon.h>
-#include "../World/Component.hpp"
+#include "../World/TransformComponent.hpp"
 #include "../World/ComponentManager.hpp"
 namespace Mona {
 	class CustomMotionState : public btMotionState {

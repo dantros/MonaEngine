@@ -3,7 +3,7 @@
 #define COMPONENTMANAGER_IMPLEMENTATION_HPP
 #include "../../Core/Log.hpp"
 #include "../../Event/EventManager.hpp"
-
+#include "../Event/Events.hpp"
 namespace Mona {
 
 	template <typename ComponentType, typename LifetimePolicy>

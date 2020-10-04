@@ -1,10 +1,11 @@
 #pragma once
 #ifndef STATICMESHCOMPONENT_HPP
 #define STATICMESHCOMPONENT_HPP
-#include "../World/Component.hpp"
+#include "../World/ComponentTypes.hpp"
 #include "ModelManager.hpp"
 #include <glm/glm.hpp>
 namespace Mona {
+	class TransformComponent;
 	class StaticMeshComponent
 	{
 	public:

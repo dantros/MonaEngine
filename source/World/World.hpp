@@ -4,8 +4,11 @@
 #include "GameObjectTypes.hpp"
 #include "GameObject.hpp"
 #include "GameObjectManager.hpp"
-#include "Component.hpp"
+#include "ComponentTypes.hpp"
+#include "TransformComponent.hpp"
 #include "ComponentManager.hpp"
+#include "ComponentHandle.hpp"
+#include "GameObjectHandle.hpp"
 #include "../Event/EventManager.hpp"
 #include "../Platform/Window.hpp"
 #include "../Platform/Input.hpp"
@@ -13,23 +16,14 @@
 #include "../Rendering/CameraComponent.hpp"
 #include "../Rendering/StaticMeshComponent.hpp"
 #include "../Rendering/Renderer.hpp"
-#include "../PhysicsCollision/PhysicsCollisionSystem.hpp"
 #include "../PhysicsCollision/RigidBodyComponent.hpp"
 #include "../PhysicsCollision/RigidBodyLifetimePolicy.hpp"
-#include "../DebugDrawing/DebugDrawingSystem.hpp"
 #include <memory>
 #include <array>
 #include <string>
 
 namespace Mona {
 
-
-	class BaseGameObjectHandle;
-	template <typename ObjectType>
-	class GameObjectHandle;
-	template <typename ComponentType>
-	class ComponentHandle;
-	
 
 	class World {
 	public:
@@ -38,7 +32,7 @@ namespace Mona {
 		World& operator=(const World& world) = delete;
 		
 		GameObjectManager::size_type GetGameObjectCount() const noexcept;
-		bool IsValid(const InnerGameObjectHandle& handle) const noexcept;
+		bool IsValid(const BaseGameObjectHandle& handle) const noexcept;
 		template <typename ObjectType, typename ...Args>
 		GameObjectHandle<ObjectType> CreateGameObject(Args&& ... args) noexcept;
 		void DestroyGameObject(BaseGameObjectHandle& handle) noexcept;

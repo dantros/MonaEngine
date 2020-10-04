@@ -1,7 +1,8 @@
 #include "World.hpp"
-#include "UserHandleTypes.hpp"
 #include "../Core/Config.hpp"
 #include "../Event/Events.hpp"
+#include "../DebugDrawing/DebugDrawingSystem.hpp"
+#include "../PhysicsCollision/PhysicsCollisionSystem.hpp"
 #include <chrono>
 namespace Mona {
 	
@@ -66,8 +67,8 @@ namespace Mona {
 		m_objectManager.DestroyGameObject(*this, gameObject.GetInnerObjectHandle());
 	}
 
-	bool World::IsValid(const InnerGameObjectHandle& handle) const noexcept {
-		return m_objectManager.IsValid(handle);
+	bool World::IsValid(const BaseGameObjectHandle& handle) const noexcept {
+		return m_objectManager.IsValid(handle->GetInnerObjectHandle());
 	}
 	GameObjectManager::size_type World::GetGameObjectCount() const noexcept
 	{

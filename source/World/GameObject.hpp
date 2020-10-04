@@ -1,11 +1,10 @@
 #pragma once
 #ifndef GAMEOBJECT_HPP
 #define GAMEOBJECT_HPP
-#include "../Core/Log.hpp"
 #include <limits>
 #include <unordered_map>
 #include "GameObjectTypes.hpp"
-#include "Component.hpp"
+#include "ComponentTypes.hpp"
 namespace Mona {
 	class World;
 	class GameObjectManager;
@@ -44,12 +43,14 @@ namespace Mona {
 		const EState GetState() const { return m_state; }
 		template <typename ComponentType>
 		bool HasComponent() const {
+			static_assert(is_component<ComponentType>, "Template parameter is not a component");
 			auto it = m_componentHandles.find(ComponentType::componentIndex);
 			return it != m_componentHandles.end();
 		}
 		InnerGameObjectHandle GetInnerObjectHandle() const noexcept { return m_objectHandle; }
 		template <typename ComponentType>
 		InnerComponentHandle GetInnerComponentHandle() const {
+			static_assert(is_component<ComponentType>, "Template parameter is not a component");
 			auto it = m_componentHandles.find(ComponentType::componentIndex);
 			if (it != m_componentHandles.end())
 				return it->second;

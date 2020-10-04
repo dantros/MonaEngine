@@ -2,13 +2,12 @@
 #ifndef COMPONENTMANAGER_HPP
 #define COMPONENTMANAGER_HPP
 #include "GameObjectTypes.hpp"
-#include "Component.hpp"
-#include "../Core/Log.hpp"
-#include "../Event/Events.hpp"
+#include "ComponentTypes.hpp"
 #include <vector>
 #include <unordered_map>
 #include <limits>
 namespace Mona {
+	class GameObject;
 	class EventManager;
 	class BaseComponentManager {
 	public:

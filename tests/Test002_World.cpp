@@ -3,7 +3,8 @@
 #include "Application.hpp"
 #include "World/GameObject.hpp"
 #include "World/World.hpp"
-#include "World/UserHandleTypes.hpp"
+#include "World/ComponentHandle.hpp"
+#include "World/GameObjectHandle.hpp"
 #include <memory>
 int globalStartUpCalls = 0;
 int globalDestructorCalls = 0;
@@ -104,11 +105,11 @@ int main(){
 	MONA_ASSERT(world.GetComponentCount<Mona::StaticMeshComponent>() == 0, "Incorrect component count");
 	MONA_ASSERT(world.GetComponentCount<Mona::CameraComponent>() == 0, "Incorrect component count");
 	MONA_ASSERT(world.GetGameObjectCount() == 1, "Incorrect game object count");
-	MONA_ASSERT(box.IsValid(world), "box should be valid");
+	MONA_ASSERT(world.IsValid(box), "box should be valid");
 	MONA_ASSERT(box->GetState() == Mona::GameObject::EState::PendingDestroy, "Incorrect Object State");
 	world.Update(1.0f);
 	MONA_ASSERT(world.GetGameObjectCount() == 0, "Incorrect game object count");
-	MONA_ASSERT(box.IsValid(world) == false, "box should be invalid");
+	MONA_ASSERT(world.IsValid(box) == false, "box should be invalid");
 	for (uint32_t i = 0; i < 2000; i++)
 	{
 		boxes[i] = world.CreateGameObject<MyBox>();

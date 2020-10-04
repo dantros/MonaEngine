@@ -14,11 +14,13 @@ set(MONA_HEADERS
 				World/GameObject.hpp
 				World/GameObjectManager.hpp
 				World/Detail/GameObjectManager_Implementation.hpp
-				World/Component.hpp
+				World/TransformComponent.hpp
+				World/ComponentTypes.hpp
 				World/ComponentManager.hpp
 				World/Detail/ComponentManager_Implementation.hpp
 				World/World.hpp
-				World/UserHandleTypes.hpp
+				World/ComponentHandle.hpp
+				World/GameObjectHandle.hpp
 				World/Detail/World_Implementation.hpp
 				Rendering/Renderer.hpp
 				Rendering/CameraComponent.hpp

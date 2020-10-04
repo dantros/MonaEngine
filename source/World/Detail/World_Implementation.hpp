@@ -1,7 +1,6 @@
 #pragma once
 #ifndef WORLD_IMPLEMENTATION_HPP
 #define WORLD_IMPLEMENTATION_HPP
-#include "../UserHandleTypes.hpp"
 namespace Mona {
 	template <typename ObjectType, typename ...Args>
 	GameObjectHandle<ObjectType> World::CreateGameObject(Args&& ... args) noexcept

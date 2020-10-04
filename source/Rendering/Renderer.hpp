@@ -3,7 +3,8 @@
 #define RENDERER_HPP
 #include "../Event/EventManager.hpp"
 #include "../World/ComponentManager.hpp"
-#include "../World/Component.hpp"
+#include "../World/ComponentTypes.hpp"
+#include "../World/TransformComponent.hpp"
 #include "StaticMeshComponent.hpp"
 #include "CameraComponent.hpp"
 #include "ShaderProgram.hpp"

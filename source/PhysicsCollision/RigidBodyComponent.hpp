@@ -4,7 +4,7 @@
 #include <btBulletDynamicsCommon.h>
 #include "CustomMotionState.hpp"
 #include "ShapeTypes.hpp"
-#include "../World/Component.hpp"
+#include "../World/ComponentTypes.hpp"
 #include "../World/ComponentManager.hpp"
 #include "../Core/Log.hpp"
 #include <memory>
@@ -19,7 +19,7 @@ namespace Mona {
 
 
 	class RigidBodyLifetimePolicy;
-
+	class TransformComponent;
 	class RigidBodyComponent {
 		friend class PhysicsCollisionSystem;
 		friend class RigidBodyLifetimePolicy;

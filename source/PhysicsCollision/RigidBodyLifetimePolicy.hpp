@@ -1,8 +1,8 @@
 #pragma once
 #ifndef RIGIDBODYLIFETIMEPOLICY_HPP
 #define RIGIDBODYLIFETIMEPOLICY_HPP
-#include "../World/Component.hpp"
 #include "../World/ComponentManager.hpp"
+#include "../World/TransformComponent.hpp"
 #include "PhysicsCollisionSystem.hpp"
 #include "RigidBodyComponent.hpp"
 namespace Mona {

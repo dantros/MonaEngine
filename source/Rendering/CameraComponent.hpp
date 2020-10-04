@@ -1,9 +1,10 @@
 #pragma once
 #ifndef CAMERACOMPONENT_HPP
 #define CAMERACOMPONENT_HPP
-#include "../World/Component.hpp"
+#include "../World/ComponentTypes.hpp"
 #include "../Core/Log.hpp"
 namespace Mona {
+	class TransformComponent;
 	class CameraComponent
 	{
 	public:

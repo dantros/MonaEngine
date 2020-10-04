@@ -32,6 +32,7 @@ set(MONA_HEADERS
 				PhysicsCollision/RigidBodyComponent.hpp
 				PhysicsCollision/ShapeTypes.hpp
 				PhysicsCollision/RigidBodyLifetimePolicy.hpp
+				PhysicsCollision/CollisionInformation.hpp
 				DebugDrawing/DebugDrawingSystem.hpp
 				DebugDrawing/BulletDebugDraw.hpp
 				Utilities/BasicCameraControllers.hpp)

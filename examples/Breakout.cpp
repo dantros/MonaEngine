@@ -30,7 +30,7 @@ public:
 		Mona::RigidBodyHandle rb = world.AddComponent<Mona::RigidBodyComponent>(*this, boxInfo, Mona::RigidBodyType::KinematicBody);
 		rb->SetFriction(0.0f);
 		rb->SetRestitution(1.0f);
-		
+		rb->SetStartCollisionCallback(this, &Paddle::OnStartCollision);
 		
 		auto ball = world.CreateGameObject<Ball>();
 		float ballRadius = 0.5f;
@@ -61,6 +61,18 @@ public:
 		if (input.IsMouseButtonPressed(MONA_MOUSE_BUTTON_1)) {
 			m_ballRigidBody->SetLinearVelocity(glm::vec3(0.0f,15.0f,0.0f));
 		}
+	}
+
+	void OnStartCollision(Mona::World &world, Mona::RigidBodyHandle& rb,bool isSwaped, Mona::CollisionInformation& colInfo) {
+		MONA_LOG_INFO("I'm a paddle with velocity {0}", m_paddleVelocity);
+		for (int i = 0; i < colInfo.GetNumContactPoints(); i++)
+		{
+			auto& point = colInfo.GetCollisionPoint(i);
+			float factor = isSwaped ? 1.0f : -1.0f;
+			MONA_LOG_INFO("Collision Normal {0} is = ({1},{2},{3})", i, factor * point.normalOnSecondBody.x, factor *point.normalOnSecondBody.y, factor*point.normalOnSecondBody.z);
+
+		}
+		world.DestroyGameObject(*this);
 	}
 private:
 	Mona::TransformHandle m_transform;

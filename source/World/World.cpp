@@ -114,7 +114,7 @@ namespace Mona {
 		auto& rigidBodyDataManager = GetComponentManager<RigidBodyComponent>();
 		m_input.Update();
 		m_physicsCollisionSystem.StepSimulation(timeStep);
-		m_physicsCollisionSystem.SubmitCollisionEvents(rigidBodyDataManager);
+		m_physicsCollisionSystem.SubmitCollisionEvents(*this, rigidBodyDataManager);
 		m_objectManager.UpdateGameObjects(*this, timeStep);
 		m_application->UserUpdate(*this, timeStep);
 		m_renderer.Render(m_eventManager, m_cameraHandle, staticMeshDataManager, transformDataManager, cameraDataManager);

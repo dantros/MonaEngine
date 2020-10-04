@@ -3,10 +3,11 @@
 #define PHYSICSCOLLISIONSYSTEM_HPP
 #include <btBulletDynamicsCommon.h>
 #include <set>
-#include <utility>
+#include <tuple>
 #include "RigidBodyComponent.hpp"
 
 namespace Mona {
+	class World;
 	class PhysicsCollisionSystem {
 	public:
 		PhysicsCollisionSystem() {
@@ -27,13 +28,23 @@ namespace Mona {
 		void SetGravity(const glm::vec3& gravity) noexcept;
 		glm::vec3 GetGravity() const noexcept;
 		void StepSimulation(float timeStep) noexcept;
-		void SubmitCollisionEvents(typename RigidBodyComponent::managerType& rigidBodyDatamanager) noexcept;
+		void SubmitCollisionEvents(World& world, typename RigidBodyComponent::managerType& rigidBodyDatamanager) noexcept;
 		void AddRigidBody(RigidBodyComponent& component) noexcept;
 		void RemoveRigidBody(RigidBodyComponent& component) noexcept;
 		void StartUp(	typename TransformComponent::managerType& transformDataManager,
 						typename RigidBodyComponent::managerType& rigidBodyDataManager) noexcept;
 		void ShutDown() noexcept;
 		btDynamicsWorld* GetPhysicsWorldPtr() noexcept { return m_worldPtr; }
+
+		using CollisionPair = std::tuple<const btRigidBody*, const btRigidBody*, bool, int>;
+		struct cmp {
+			bool operator()(const CollisionPair& lhs, const CollisionPair& rhs) const{
+				return (bool)(get<0>(lhs) < get<0>(rhs)) || (!(bool)(get<0>(rhs) < get<0>(lhs)) &&
+					((bool)(get<1>(rhs) < get<1>(lhs))))
+					;
+			}
+		};
+		using CollisionSet = std::set<CollisionPair, cmp>;
 	private:
 		btBroadphaseInterface* m_broadphasePtr;
 		btCollisionConfiguration* m_collisionConfigurationPtr;
@@ -41,8 +52,7 @@ namespace Mona {
 		btConstraintSolver* m_solverPtr;
 		btDynamicsWorld* m_worldPtr;
 
-		using CollisionPair = std::pair<const btRigidBody*, const btRigidBody*>;
-		using CollisionSet = std::set<CollisionPair>;
+
 		CollisionSet m_previousCollisionSet;
 		
 

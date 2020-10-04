@@ -4,8 +4,10 @@
 #include <btBulletDynamicsCommon.h>
 #include "CustomMotionState.hpp"
 #include "ShapeTypes.hpp"
-#include "../World/ComponentTypes.hpp"
+#include "CollisionInformation.hpp"
+#include "../World/ComponentHandle.hpp"
 #include "../World/ComponentManager.hpp"
+#include "../World/ComponentTypes.hpp"
 #include "../Core/Log.hpp"
 #include <memory>
 #include <functional>
@@ -20,6 +22,7 @@ namespace Mona {
 
 	class RigidBodyLifetimePolicy;
 	class TransformComponent;
+	class World;
 	class RigidBodyComponent {
 		friend class PhysicsCollisionSystem;
 		friend class RigidBodyLifetimePolicy;
@@ -28,6 +31,9 @@ namespace Mona {
 		using dependencies = DependencyList<TransformComponent>;
 		static constexpr std::string_view componentName = "RigidBodyComponent";
 		static constexpr uint8_t componentIndex = GetComponentIndex(EComponentType::RigidBodyComponent);
+
+		using StartCollisionCallback = std::function<void(World&, RigidBodyHandle&, bool, CollisionInformation&)>;
+		using EndCollisionCallback = std::function<void(RigidBodyHandle&)>;
 		RigidBodyComponent(	const BoxShapeInformation& boxInformation,
 							RigidBodyType rigidBodyType,
 							float mass = 1.0f)
@@ -193,7 +199,29 @@ namespace Mona {
 			const btVector3& totalForce = m_rigidBodyPtr->getTotalForce();
 			return glm::vec3(totalForce.x(), totalForce.y(), totalForce.z());
 		}
+		void SetStartCollisionCallback(StartCollisionCallback callback) {
+			m_onStartCollisionCallback = callback;
+		}
+		void SetEndCollisionCallback(EndCollisionCallback callback) {
+			m_onEndCollisionCallback = callback;
+		}
 
+		template <typename ObjectType>
+		void SetStartCollisionCallback(ObjectType* obj, void (ObjectType::* memberFunction)(World&, RigidBodyHandle&, bool, CollisionInformation&))
+		{
+			auto callback = [obj, memberFunction](World& w, RigidBodyHandle& rb, bool b, CollisionInformation&ci) { (obj->*memberFunction)(w, rb, b, ci); };
+			m_onStartCollisionCallback = callback;
+		}
+		bool HasStartCollisionCallback() const {
+			return (bool) m_onStartCollisionCallback;
+		}
+
+		bool HasEndCollisionCallback() const {
+			return (bool) m_onEndCollisionCallback;
+		}
+		void CallStartCollisionCallback(World& world, RigidBodyHandle& rb, bool isSwaped, CollisionInformation& information) {
+			m_onStartCollisionCallback(world, rb, isSwaped, information);
+		}
 	private:
 		void InitializeRigidBody(float mass, RigidBodyType rigidBodyType)
 		{
@@ -227,6 +255,8 @@ namespace Mona {
 		std::unique_ptr<CustomMotionState> m_motionStatePtr;
 		std::unique_ptr<btCollisionShape> m_collisionShapePtr;
 		std::unique_ptr<btRigidBody> m_rigidBodyPtr;
+		StartCollisionCallback m_onStartCollisionCallback;
+		EndCollisionCallback m_onEndCollisionCallback;
 
 
 	};

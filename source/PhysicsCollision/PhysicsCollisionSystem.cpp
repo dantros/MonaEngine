@@ -1,6 +1,9 @@
 #include "PhysicsCollisionSystem.hpp"
 #include <algorithm>
 #include "RigidBodyLifetimePolicy.hpp"
+#include <vector>
+#include "CollisionInformation.hpp"
+#include "../World/ComponentHandle.hpp"
 namespace Mona {
 	void PhysicsCollisionSystem::StepSimulation(float timeStep) noexcept {
 		m_worldPtr->stepSimulation(timeStep);	
@@ -33,9 +36,10 @@ namespace Mona {
 		const btVector3& gravity = m_worldPtr->getGravity();
 		return glm::vec3(gravity.x(), gravity.y(), gravity.z());
 	}
-	void  PhysicsCollisionSystem::SubmitCollisionEvents(typename RigidBodyComponent::managerType& rigidBodyDatamanager) noexcept
+	void  PhysicsCollisionSystem::SubmitCollisionEvents(World& world, typename RigidBodyComponent::managerType& rigidBodyDatamanager) noexcept
 	{
 		CollisionSet currentCollisionSet;
+		
 		auto manifoldNum = m_dispatcherPtr->getNumManifolds();
 		for (decltype(manifoldNum) i = 0; i < manifoldNum; i++) {
 			btPersistentManifold* manifoldPtr = m_dispatcherPtr->getManifoldByIndexInternal(i);
@@ -46,7 +50,7 @@ namespace Mona {
 				const bool shouldSwap = body0 > body1;
 				const btRigidBody* firstSortedBody = shouldSwap ? body1 : body0;
 				const btRigidBody* secondSortedBody = shouldSwap ? body0 : body1;
-				CollisionPair currentCollisionPair = std::make_pair(firstSortedBody, secondSortedBody);
+				CollisionPair currentCollisionPair = std::make_tuple(firstSortedBody, secondSortedBody, shouldSwap, i);
 				currentCollisionSet.insert(currentCollisionPair);
 				/*
 				if (m_previousCollisionSet.find(currentCollisionPair) == m_previousCollisionSet.end()) {
@@ -70,17 +74,48 @@ namespace Mona {
 		std::set_difference(currentCollisionSet.begin(), currentCollisionSet.end(),
 							m_previousCollisionSet.begin(), m_previousCollisionSet.end(),
 							std::inserter(newCollisions, newCollisions.begin()));
+
+		std::vector<std::tuple<RigidBodyHandle, RigidBodyHandle, bool, CollisionInformation>> newCollisionsInformation;
+		newCollisionsInformation.reserve(newCollisions.size());
 		for (auto& newCollision : newCollisions)
 		{
-			MONA_LOG_INFO("COLLISION Started");
+			auto& rb0 = get<0>(newCollision);
+			auto& rb1 = get<1>(newCollision);
+			InnerComponentHandle rbhandle0 = InnerComponentHandle(rb0->getUserIndex(), rb0->getUserIndex2());
+			InnerComponentHandle rbHandle1 = InnerComponentHandle(rb1->getUserIndex(), rb1->getUserIndex2());
+			newCollisionsInformation.emplace_back(std::make_tuple(	RigidBodyHandle(rbhandle0, &rigidBodyDatamanager),
+																	RigidBodyHandle(rbHandle1, &rigidBodyDatamanager),
+																	get<2>(newCollision),
+																	CollisionInformation(m_dispatcherPtr->getManifoldByIndexInternal(get<3>(newCollision)))));
 		}
+
+
+		for (auto& collisionInformation : newCollisionsInformation) {
+			auto& rb0 = get<0>(collisionInformation);
+			auto& rb1 = get<1>(collisionInformation);
+			auto& collisionInfo = get<3>(collisionInformation);
+			if (rb0->HasStartCollisionCallback()) {
+				rb0->CallStartCollisionCallback(world, rb1, get<2>(collisionInformation), collisionInfo);
+			}
+			if (rb1->HasStartCollisionCallback()) {
+				rb1->CallStartCollisionCallback(world, rb1, !get<2>(collisionInformation), collisionInfo);
+			}
+		}
+
 		CollisionSet removedCollisions;
 		std::set_difference(m_previousCollisionSet.begin(), m_previousCollisionSet.end(),
 							currentCollisionSet.begin(), currentCollisionSet.end(),
 							std::inserter(removedCollisions, removedCollisions.begin()));
+		std::vector <std::tuple<RigidBodyHandle, RigidBodyHandle>> removedCollisionInformation;
+
 		for (auto& removedCollision : removedCollisions)
 		{
-			MONA_LOG_INFO("COLLISION ENDED");
+			auto& rb0 = get<0>(removedCollision);
+			auto& rb1 = get<1>(removedCollision);
+			InnerComponentHandle rbhandle0 = InnerComponentHandle(rb0->getUserIndex(), rb0->getUserIndex2());
+			InnerComponentHandle rbHandle1 = InnerComponentHandle(rb1->getUserIndex(), rb1->getUserIndex2());
+			removedCollisionInformation.emplace_back(std::make_tuple(RigidBodyHandle(rbhandle0, &rigidBodyDatamanager),
+				RigidBodyHandle(rbHandle1, &rigidBodyDatamanager)));
 		}
 		m_previousCollisionSet = currentCollisionSet;
 

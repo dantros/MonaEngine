@@ -86,6 +86,7 @@ namespace Mona {
 		MONA_ASSERT(handle.m_generation == m_handleEntries[index].generation, "ComponentManager Error: Trying to delete from invalid handle");
 		MONA_ASSERT(m_handleEntries[index].active == true, "ComponentManager Error: Trying to delete inactive handle");
 		auto& handleEntry = m_handleEntries[index];
+		m_lifetimePolicy.OnRemoveComponent(m_componentOwners[handleEntry.index], m_components[handleEntry.index], handle);
 		if (handleEntry.index < m_components.size() - 1)
 		{
 			m_components[handleEntry.index] = std::move(m_components.back());
@@ -93,7 +94,7 @@ namespace Mona {
 			m_handleEntryIndices[handleEntry.index] = m_handleEntryIndices.back();
 			m_handleEntries[m_handleEntryIndices.back()].index = handleEntry.index;
 		}
-		m_lifetimePolicy.OnRemoveComponent(m_componentOwners.back(), m_components.back(), handle);
+		
 		m_components.pop_back();
 		m_componentOwners.pop_back();
 		m_handleEntryIndices.pop_back();

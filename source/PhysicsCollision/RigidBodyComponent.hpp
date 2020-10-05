@@ -33,7 +33,7 @@ namespace Mona {
 		static constexpr uint8_t componentIndex = GetComponentIndex(EComponentType::RigidBodyComponent);
 
 		using StartCollisionCallback = std::function<void(World&, RigidBodyHandle&, bool, CollisionInformation&)>;
-		using EndCollisionCallback = std::function<void(RigidBodyHandle&)>;
+		using EndCollisionCallback = std::function<void(World&, RigidBodyHandle&)>;
 		RigidBodyComponent(	const BoxShapeInformation& boxInformation,
 							RigidBodyType rigidBodyType,
 							float mass = 1.0f)
@@ -212,6 +212,13 @@ namespace Mona {
 			auto callback = [obj, memberFunction](World& w, RigidBodyHandle& rb, bool b, CollisionInformation&ci) { (obj->*memberFunction)(w, rb, b, ci); };
 			m_onStartCollisionCallback = callback;
 		}
+
+		template <typename ObjectType>
+		void SetEndCollisionCallback(ObjectType* obj, void (ObjectType::* memberFunction)(World&, RigidBodyHandle&)) {
+			auto callback = [obj, memberFunction](World& w, RigidBodyHandle& rb) { (obj->*memberFunction)(w, rb); };
+			m_onEndCollisionCallback = callback;
+
+		}
 		bool HasStartCollisionCallback() const {
 			return (bool) m_onStartCollisionCallback;
 		}
@@ -219,9 +226,15 @@ namespace Mona {
 		bool HasEndCollisionCallback() const {
 			return (bool) m_onEndCollisionCallback;
 		}
+
 		void CallStartCollisionCallback(World& world, RigidBodyHandle& rb, bool isSwaped, CollisionInformation& information) {
 			m_onStartCollisionCallback(world, rb, isSwaped, information);
 		}
+
+		void CallEndCollisionCallback(World& world, RigidBodyHandle& rb) {
+			m_onEndCollisionCallback(world, rb);
+		}
+
 	private:
 		void InitializeRigidBody(float mass, RigidBodyType rigidBodyType)
 		{
@@ -260,5 +273,7 @@ namespace Mona {
 
 
 	};
+
+	
 }
 #endif

@@ -12,6 +12,8 @@ namespace Mona
 		GameObjectDestroyedEvent,
 		AplicationEndEvent,
 		DebugGUIEvent,
+		StartCollisionEvent,
+		EndCollisionEvent,
 		EventTypeCount
 	};
 
@@ -67,13 +69,19 @@ namespace Mona
 		static constexpr uint8_t eventIndex = GetEventIndex(EEventType::DebugGUIEvent);
 	};
 
+
+	class StartCollisionEvent;
+	class EndCollisionEvent;
 	template <typename EventType>
 	inline constexpr bool is_event = is_any<EventType,
 											WindowResizeEvent,
 											MouseScrollEvent,
 											GameObjectDestroyedEvent,
 											ApplicationEndEvent,
-											DebugGUIEvent>;
+											DebugGUIEvent,
+											StartCollisionEvent,
+											EndCollisionEvent>;
+
 
 }
 #endif

@@ -28,6 +28,7 @@ set(MONA_HEADERS
 				Rendering/ShaderProgram.hpp
 				Rendering/ModelManager.hpp
 				PhysicsCollision/PhysicsCollisionSystem.hpp
+				PhysicsCollision/PhysicsCollisionEvents.hpp
 				PhysicsCollision/CustomMotionState.hpp
 				PhysicsCollision/RigidBodyComponent.hpp
 				PhysicsCollision/ShapeTypes.hpp

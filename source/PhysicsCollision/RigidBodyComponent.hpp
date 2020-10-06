@@ -34,18 +34,20 @@ namespace Mona {
 
 		using StartCollisionCallback = std::function<void(World&, RigidBodyHandle&, bool, CollisionInformation&)>;
 		using EndCollisionCallback = std::function<void(World&, RigidBodyHandle&)>;
-		RigidBodyComponent(	const BoxShapeInformation& boxInformation,
-							RigidBodyType rigidBodyType,
-							float mass = 1.0f)
+		RigidBodyComponent(const BoxShapeInformation& boxInformation,
+			RigidBodyType rigidBodyType,
+			float mass = 1.0f,
+			bool isTrigger = false)
 		{
 			const glm::vec3& halfExtents = boxInformation.m_boxHalfExtents;
 			m_collisionShapePtr.reset(new btBoxShape(btVector3(halfExtents.x, halfExtents.y, halfExtents.z)));
-			InitializeRigidBody(mass, rigidBodyType);
+			InitializeRigidBody(mass, rigidBodyType, isTrigger);
 
 		}
-		RigidBodyComponent(	const ConeShapeInformation& coneInformation,
-							RigidBodyType rigidBodyType,
-							float mass = 1.0f)
+		RigidBodyComponent(const ConeShapeInformation& coneInformation,
+			RigidBodyType rigidBodyType,
+			float mass = 1.0f,
+			bool isTrigger = false)
 		{
 			switch (coneInformation.m_alignment) {
 				case(ShapeAlignment::X) : {
@@ -61,21 +63,24 @@ namespace Mona {
 					break;
 				}
 			}
-			InitializeRigidBody(mass, rigidBodyType);
+			InitializeRigidBody(mass, rigidBodyType, isTrigger);
 		}
 
-		RigidBodyComponent(	const SphereShapeInformation& sphereInformation,
-							RigidBodyType rigidBodyType,
-							float mass = 1.0f) {
+		RigidBodyComponent(const SphereShapeInformation& sphereInformation,
+			RigidBodyType rigidBodyType,
+			float mass = 1.0f,
+			bool isTrigger = false) 
+		{
 			
 			m_collisionShapePtr.reset(new btSphereShape(sphereInformation.m_radius));
-			InitializeRigidBody(mass, rigidBodyType);
+			InitializeRigidBody(mass, rigidBodyType, isTrigger);
 
 		}
 
-		RigidBodyComponent(	const CapsuleShapeInformation& capsuleInformation,
-							RigidBodyType rigidBodyType,
-							float mass = 1.0f)
+		RigidBodyComponent(const CapsuleShapeInformation& capsuleInformation,
+			RigidBodyType rigidBodyType,
+			float mass = 1.0f,
+			bool isTrigger = false)
 		{
 			switch (capsuleInformation.m_alignment) {
 			case(ShapeAlignment::X): {
@@ -91,12 +96,13 @@ namespace Mona {
 				break;
 			}
 			}
-			InitializeRigidBody(mass, rigidBodyType);
+			InitializeRigidBody(mass, rigidBodyType, isTrigger);
 		}
 
-		RigidBodyComponent(	const CylinderShapeInformation& cylinderInformation,
-							RigidBodyType rigidBodyType,
-							float mass = 1.0f)
+		RigidBodyComponent(const CylinderShapeInformation& cylinderInformation,
+			RigidBodyType rigidBodyType,
+			float mass = 1.0f,
+			bool isTrigger = false)
 		{
 			const glm::vec3& halfExtents = cylinderInformation.m_cylinderHalfExtents;
 			const btVector3 btExtents(halfExtents.x, halfExtents.y, halfExtents.z);
@@ -114,7 +120,7 @@ namespace Mona {
 				break;
 			}
 			}
-			InitializeRigidBody(mass, rigidBodyType);
+			InitializeRigidBody(mass, rigidBodyType, isTrigger);
 		}
 
 		void SetLocalScaling(const glm::vec3 &scale) {
@@ -192,6 +198,11 @@ namespace Mona {
 			const btVector3& bulletPos = btVector3(rel_pos.x, rel_pos.y, rel_pos.z);
 			m_rigidBodyPtr->applyForce(bulletForce, bulletPos);
 		}
+
+		bool IsTrigger() const {
+			return m_rigidBodyPtr->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE;
+		}
+
 		void ClearForces() {
 			m_rigidBodyPtr->clearForces();
 		}
@@ -236,7 +247,7 @@ namespace Mona {
 		}
 
 	private:
-		void InitializeRigidBody(float mass, RigidBodyType rigidBodyType)
+		void InitializeRigidBody(float mass, RigidBodyType rigidBodyType, bool isTrigger)
 		{
 			if (rigidBodyType == RigidBodyType::StaticBody || 
 				rigidBodyType == RigidBodyType::KinematicBody ||
@@ -257,8 +268,12 @@ namespace Mona {
 				btRigidBody::btRigidBodyConstructionInfo rbInfo(btMass, nullptr, m_collisionShapePtr.get(), localInertia);
 				m_rigidBodyPtr.reset(new btRigidBody(rbInfo));
 			}
-			
-			
+
+			if(isTrigger){
+				int collisionFlags = m_rigidBodyPtr->getCollisionFlags();
+				collisionFlags |= btCollisionObject::CF_NO_CONTACT_RESPONSE;
+				m_rigidBodyPtr->setCollisionFlags(collisionFlags);
+			}
 		}
 
 		void InitializeMotionState(InnerComponentHandle transformHandle, ComponentManager<TransformComponent>* managerPtr) {

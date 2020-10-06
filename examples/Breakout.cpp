@@ -60,6 +60,8 @@ public:
 		if (input.IsMouseButtonPressed(MONA_MOUSE_BUTTON_1)) {
 			m_ballRigidBody->SetLinearVelocity(glm::vec3(0.0f,15.0f,0.0f));
 		}
+
+
 	}
 
 private:
@@ -109,7 +111,7 @@ public:
 				auto transform = world.AddComponent<Mona::TransformComponent>(block, glm::vec3( x, 15.0f + y, 0.0f));
 				transform->Scale(blockScale);
 				world.AddComponent<Mona::StaticMeshComponent>(block, Mona::ModelManager::PrimitiveType::Cube);
-				Mona::RigidBodyHandle rb =world.AddComponent<Mona::RigidBodyComponent>(block, boxInfo, Mona::RigidBodyType::StaticBody);
+				Mona::RigidBodyHandle rb =world.AddComponent<Mona::RigidBodyComponent>(block, boxInfo, Mona::RigidBodyType::StaticBody, 1.0f);
 				rb->SetRestitution(1.0f);
 				rb->SetFriction(0.0f);
 				auto callback = [block](Mona::World& world, Mona::RigidBodyHandle& otherRigidBody, bool isSwaped, Mona::CollisionInformation& colInfo) mutable {
@@ -136,12 +138,25 @@ public:
 		auto& eventManager = world.GetEventManager();
 		eventManager.Unsubscribe(m_collisionSubcription);
 	}
-	virtual void UserUpdate(Mona::World & world, float timeStep) noexcept override {}
+	virtual void UserUpdate(Mona::World & world, float timeStep) noexcept override {
+		auto& input = world.GetInput();
+		if (input.IsKeyPressed(MONA_KEY_U)) {
+			onlyOnce = false;
+			auto rayResult = world.ClosestHitRayTest(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 100.0f, 0.0f));
+			if (rayResult.HasHit())
+			{
+				auto object = world.GetOwner(rayResult.m_rigidBody);
+				world.DestroyGameObject(object);
+			}
+
+		}
+	}
 	void OnStartCollision(const Mona::StartCollisionEvent& event) {
 		MONA_LOG_INFO("AAA COLLISION IS STARTTTTTING...");
 	}
 private:
 	Mona::SubscriptionHandle m_collisionSubcription;
+	bool onlyOnce = true;
 };
 int main()
 {

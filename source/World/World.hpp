@@ -18,6 +18,7 @@
 #include "../Rendering/Renderer.hpp"
 #include "../PhysicsCollision/RigidBodyComponent.hpp"
 #include "../PhysicsCollision/RigidBodyLifetimePolicy.hpp"
+#include "../PhysicsCollision/RaycastResults.hpp"
 #include <memory>
 #include <array>
 #include <string>
@@ -70,6 +71,8 @@ namespace Mona {
 
 		void SetGravity(const glm::vec3& gravity);
 		glm::vec3 GetGravity() const;
+		ClosestHitRaycastResult ClosestHitRayTest(const glm::vec3& rayFrom, const glm::vec3& rayTo);
+		AllHitsRaycastResult AllHitsRayTest(const glm::vec3& rayFrom, const glm::vec3& rayTo);
 
 	private:
 		template <typename ComponentType>

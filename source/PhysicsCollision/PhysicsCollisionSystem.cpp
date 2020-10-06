@@ -123,4 +123,25 @@ namespace Mona {
 		m_previousCollisionSet = currentCollisionSet;
 
 	}
+
+	ClosestHitRaycastResult PhysicsCollisionSystem::ClosestHitRayTest(const glm::vec3& rayFrom,
+		const glm::vec3& rayTo,
+		typename RigidBodyComponent::managerType& rigidBodyDatamanager) const {
+		const btVector3 btFrom = btVector3(rayFrom.x, rayFrom.y, rayFrom.z);
+		const btVector3 btTo = btVector3(rayTo.x, rayTo.y, rayTo.z);
+		btCollisionWorld::ClosestRayResultCallback rayTest(btFrom, btTo);
+		m_worldPtr->rayTest(btFrom, btTo, rayTest);
+		return ClosestHitRaycastResult(rayTest, &rigidBodyDatamanager);
+
+	}
+
+	AllHitsRaycastResult PhysicsCollisionSystem::AllHitsRayTest(const glm::vec3& rayFrom,
+		const glm::vec3& rayTo,
+		typename RigidBodyComponent::managerType& rigidBodyDatamanager) const {
+		const btVector3 btFrom = btVector3(rayFrom.x, rayFrom.y, rayFrom.z);
+		const btVector3 btTo = btVector3(rayTo.x, rayTo.y, rayTo.z);
+		btCollisionWorld::AllHitsRayResultCallback rayTest(btFrom, btTo);
+		m_worldPtr->rayTest(btFrom, btTo, rayTest);
+		return AllHitsRaycastResult(rayTest, &rigidBodyDatamanager);
+	}
 }

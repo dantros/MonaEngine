@@ -33,6 +33,7 @@ set(MONA_HEADERS
 				PhysicsCollision/RigidBodyComponent.hpp
 				PhysicsCollision/ShapeTypes.hpp
 				PhysicsCollision/RigidBodyLifetimePolicy.hpp
+				PhysicsCollision/RaycastResults.hpp
 				PhysicsCollision/CollisionInformation.hpp
 				DebugDrawing/DebugDrawingSystem.hpp
 				DebugDrawing/BulletDebugDraw.hpp

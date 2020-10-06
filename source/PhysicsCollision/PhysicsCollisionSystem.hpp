@@ -5,6 +5,7 @@
 #include <set>
 #include <tuple>
 #include "RigidBodyComponent.hpp"
+#include "RaycastResults.hpp"
 
 namespace Mona {
 	class World;
@@ -27,6 +28,8 @@ namespace Mona {
 		}
 		void SetGravity(const glm::vec3& gravity) noexcept;
 		glm::vec3 GetGravity() const noexcept;
+		ClosestHitRaycastResult ClosestHitRayTest(const glm::vec3& rayFrom, const glm::vec3& rayTo, typename RigidBodyComponent::managerType& rigidBodyDatamanager) const;
+		AllHitsRaycastResult AllHitsRayTest(const glm::vec3& rayFrom, const glm::vec3& rayTo, typename RigidBodyComponent::managerType& rigidBodyDatamanager) const;
 		void StepSimulation(float timeStep) noexcept;
 		void SubmitCollisionEvents(World& world, typename RigidBodyComponent::managerType& rigidBodyDatamanager) noexcept;
 		void AddRigidBody(RigidBodyComponent& component) noexcept;

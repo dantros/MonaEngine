@@ -138,5 +138,15 @@ namespace Mona {
 	glm::vec3 World::GetGravity() const {
 		return m_physicsCollisionSystem.GetGravity();
 	}
+
+	ClosestHitRaycastResult World::ClosestHitRayTest(const glm::vec3& rayFrom, const glm::vec3& rayTo) {
+		auto& rigidBodyDataManager = GetComponentManager<RigidBodyComponent>();
+		return m_physicsCollisionSystem.ClosestHitRayTest(rayFrom, rayTo, rigidBodyDataManager);
+	}
+
+	AllHitsRaycastResult World::AllHitsRayTest(const glm::vec3& rayFrom, const glm::vec3& rayTo) {
+		auto& rigidBodyDataManager = GetComponentManager<RigidBodyComponent>();
+		return m_physicsCollisionSystem.AllHitsRayTest(rayFrom, rayTo, rigidBodyDataManager);
+	}
 }
 

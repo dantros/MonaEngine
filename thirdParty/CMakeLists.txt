@@ -16,5 +16,7 @@ add_subdirectory_with_folder("thirdParty" glad)
 add_subdirectory_with_folder("thirdParty" glfw-3.3.2)
 add_subdirectory_with_folder("thirdParty" imgui-1.78)
 add_subdirectory_with_folder("thirdParty" bullet3-2.88)
+add_subdirectory_with_folder("thirdParty" openal-soft)
+add_subdirectory_with_folder("thirdParty" dr_wav)
 
 

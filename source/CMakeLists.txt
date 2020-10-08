@@ -35,6 +35,9 @@ set(MONA_HEADERS
 				PhysicsCollision/RigidBodyLifetimePolicy.hpp
 				PhysicsCollision/RaycastResults.hpp
 				PhysicsCollision/CollisionInformation.hpp
+				Audio/AudioSystem.hpp
+				Audio/AudioMacros.hpp
+				Audio/AudioClip.hpp
 				DebugDrawing/DebugDrawingSystem.hpp
 				DebugDrawing/BulletDebugDraw.hpp
 				Utilities/BasicCameraControllers.hpp)
@@ -52,6 +55,8 @@ set(MONA_SOURCES
 				Rendering/ShaderProgram.cpp
 				Rendering/ModelManager.cpp
 				PhysicsCollision/PhysicsCollisionSystem.cpp
+				Audio/AudioSystem.cpp
+				Audio/AudioClip.cpp
 				DebugDrawing/ImGuiBuild.cpp
 				DebugDrawing/BulletDebugDraw.cpp
 				DebugDrawing/DebugDrawingSystem.cpp)

@@ -19,6 +19,7 @@
 #include "../PhysicsCollision/RigidBodyComponent.hpp"
 #include "../PhysicsCollision/RigidBodyLifetimePolicy.hpp"
 #include "../PhysicsCollision/RaycastResults.hpp"
+#include "../Audio/AudioSystem.hpp"
 #include <memory>
 #include <array>
 #include <string>
@@ -94,8 +95,11 @@ namespace Mona {
 		InnerComponentHandle m_cameraHandle;
 
 		PhysicsCollisionSystem m_physicsCollisionSystem;
+		
+		AudioSystem m_audioSystem;
 
 		std::unique_ptr<DebugDrawingSystem> m_debugDrawingSystem;
+
 		
 	};
 

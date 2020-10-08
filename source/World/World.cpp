@@ -36,6 +36,7 @@ namespace Mona {
 		m_application = std::move(app);
 		m_renderer.StartUp(m_eventManager, m_debugDrawingSystem.get());
 		m_physicsCollisionSystem.StartUp(transformDataManager, rigidBodyDataManager);
+		m_audioSystem.StartUp();
 		m_debugDrawingSystem->StartUp(&m_physicsCollisionSystem);
 		m_application->StartUp(*this);
 	}
@@ -43,10 +44,12 @@ namespace Mona {
 	void World::ShutDown() noexcept {
 		m_application->UserShutDown(*this);
 		m_objectManager.ShutDown(*this);
-		m_physicsCollisionSystem.ShutDown();
+		
 		for (auto& componentManager : m_componentManagers)
 			componentManager->ShutDown(m_eventManager);
-		
+
+		m_audioSystem.ShutDown();
+		m_physicsCollisionSystem.ShutDown();
 		m_renderer.ShutDown(m_eventManager);
 		m_window.ShutDown();
 		m_input.ShutDown(m_eventManager);

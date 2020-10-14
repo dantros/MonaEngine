@@ -39,7 +39,7 @@ namespace Mona{
 	}
 
 	void Renderer::Render(EventManager& eventManager,
-				InnerComponentHandle cameraHandle,
+				const InnerComponentHandle& cameraHandle,
 				ComponentManager<StaticMeshComponent>& staticMeshDataManager,
 				ComponentManager<TransformComponent>& transformDataManager,
 				ComponentManager<CameraComponent>& cameraDataManager) noexcept 
@@ -50,7 +50,7 @@ namespace Mona{
 		glm::mat4 viewMatrix;
 		glm::mat4 projectionMatrix;
 		if (cameraDataManager.IsValid(cameraHandle)) {
-			CameraComponent* camera = cameraDataManager.GetComponentPointer(cameraHandle);
+			const CameraComponent* camera = cameraDataManager.GetComponentPointer(cameraHandle);
 			GameObject* cameraOwner = cameraDataManager.GetOwner(cameraHandle);
 			TransformComponent* cameraTransform = transformDataManager.GetComponentPointer(cameraOwner->GetInnerComponentHandle<TransformComponent>());
 			viewMatrix = cameraTransform->GetViewMatrixFromTransform();

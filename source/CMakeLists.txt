@@ -38,6 +38,8 @@ set(MONA_HEADERS
 				Audio/AudioSystem.hpp
 				Audio/AudioMacros.hpp
 				Audio/AudioClip.hpp
+				Audio/AudioClipManager.hpp
+				Audio/AudioSource.hpp
 				DebugDrawing/DebugDrawingSystem.hpp
 				DebugDrawing/BulletDebugDraw.hpp
 				Utilities/BasicCameraControllers.hpp)
@@ -57,6 +59,8 @@ set(MONA_SOURCES
 				PhysicsCollision/PhysicsCollisionSystem.cpp
 				Audio/AudioSystem.cpp
 				Audio/AudioClip.cpp
+				Audio/AudioClipManager.cpp
+				Audio/AudioSource.cpp
 				DebugDrawing/ImGuiBuild.cpp
 				DebugDrawing/BulletDebugDraw.cpp
 				DebugDrawing/DebugDrawingSystem.cpp)

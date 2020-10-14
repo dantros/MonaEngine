@@ -57,7 +57,8 @@ public:
 		m_debugGUISubcription = eventManager.Subscribe(this, &Sandbox::OnDebugGUIEvent);
 		world.CreateGameObject<Sphere>(0.4f, 0.0f);
 		m_rotatingBox = world.CreateGameObject<Box>(0.0f, 0.0f);
-		world.SetMainCamera(world.CreateGameObject<Mona::BasicPerspectiveCamera>());
+		auto camera = world.CreateGameObject<Mona::BasicPerspectiveCamera>();
+		world.SetMainCamera(world.GetComponentHandle<Mona::CameraComponent>(camera));
 		world.GetInput().SetCursorType(Mona::Input::CursorType::Disabled);
 	}
 

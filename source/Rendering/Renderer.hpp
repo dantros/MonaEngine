@@ -2,7 +2,6 @@
 #ifndef RENDERER_HPP
 #define RENDERER_HPP
 #include "../Event/EventManager.hpp"
-#include "../World/ComponentManager.hpp"
 #include "../World/ComponentTypes.hpp"
 #include "../World/TransformComponent.hpp"
 #include "StaticMeshComponent.hpp"
@@ -20,7 +19,7 @@ namespace Mona {
 		Renderer() = default;
 		void StartUp(EventManager& eventManager, DebugDrawingSystem* debugDrawingSystemPtr) noexcept;
 		void Render(EventManager& eventManager,
-					InnerComponentHandle cameraHandle,
+					const InnerComponentHandle &cameraHandle,
 					ComponentManager<StaticMeshComponent> &staticMeshDataManager,
 					ComponentManager<TransformComponent> &transformDataManager,
 					ComponentManager<CameraComponent> &cameraDataManager) noexcept;

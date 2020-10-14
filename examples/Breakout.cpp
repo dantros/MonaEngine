@@ -6,8 +6,8 @@ public:
 	virtual void UserStartUp(Mona::World& world) noexcept {
 		auto transform = world.AddComponent<Mona::TransformComponent>(*this, glm::vec3(0.0f,-15.0f, 15.0f));
 		transform->Rotate(glm::vec3(-1.0f, 0.0f, 0.0f), 0.5f);
-		world.AddComponent<Mona::CameraComponent>(*this);
-		world.SetMainCamera(*this);
+		world.SetMainCamera(world.AddComponent<Mona::CameraComponent>(*this));
+		world.SetAudioListenerTransform(transform);
 	}
 };
 class Ball : public::Mona::GameObject {
@@ -21,7 +21,8 @@ public:
 	Paddle(float velocity) : m_paddleVelocity(velocity) {}
 	~Paddle() = default;
 	virtual void UserStartUp(Mona::World& world) noexcept {
-		MONA_LOG_INFO("sdfsdfds");
+		auto testSound = world.LoadAudioClip(Mona::SourcePath("Assets/AudioFiles/footsteps.wav"));
+		world.PlayAudioClip2D(testSound);
 		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
 		glm::vec3 paddleScale(2.0f, 0.5f, 0.5f);
 		m_transform->Scale(paddleScale);
@@ -59,6 +60,7 @@ public:
 
 		if (input.IsMouseButtonPressed(MONA_MOUSE_BUTTON_1)) {
 			m_ballRigidBody->SetLinearVelocity(glm::vec3(0.0f,15.0f,0.0f));
+			
 		}
 
 
@@ -101,6 +103,7 @@ public:
 		world.CreateGameObject<BasicCamera>();
 		world.CreateGameObject<Paddle>(20.0f);
 		glm::vec3 blockScale(1.0f, 0.5f, 0.5f);
+		
 		Mona::BoxShapeInformation boxInfo(blockScale);
 		for (int i = -2; i < 3; i++) {
 			float x = 4.0f * i;

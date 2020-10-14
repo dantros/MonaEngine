@@ -48,6 +48,8 @@ namespace Mona {
 		for (auto& componentManager : m_componentManagers)
 			componentManager->ShutDown(m_eventManager);
 
+		m_audioSystem.ClearSources();
+		m_audioClipManager.ShutDown();
 		m_audioSystem.ShutDown();
 		m_physicsCollisionSystem.ShutDown();
 		m_renderer.ShutDown(m_eventManager);
@@ -120,20 +122,30 @@ namespace Mona {
 		m_physicsCollisionSystem.SubmitCollisionEvents(*this, rigidBodyDataManager);
 		m_objectManager.UpdateGameObjects(*this, timeStep);
 		m_application->UserUpdate(*this, timeStep);
+		m_audioClipManager.CleanUnusedAudioClips();
+		m_audioSystem.Update(m_audoListenerTransformHandle, timeStep, transformDataManager);
 		m_renderer.Render(m_eventManager, m_cameraHandle, staticMeshDataManager, transformDataManager, cameraDataManager);
 		m_window.Update();
 	}
 
-	void World::SetMainCamera(const BaseGameObjectHandle& objectHandle) noexcept {
-		SetMainCamera(*objectHandle);
-	}
-
-	void World::SetMainCamera(const GameObject& gameObject) noexcept {
-		MONA_ASSERT(gameObject.HasComponent<CameraComponent>(), "Given GameObject doesn't have a camera component");
-		m_cameraHandle = gameObject.GetInnerComponentHandle<CameraComponent>();
+	void World::SetMainCamera(const ComponentHandle<CameraComponent>& cameraHandle) noexcept {
+		m_cameraHandle = cameraHandle.GetInnerHandle();
 
 	}
 
+	ComponentHandle<CameraComponent> World::GetMainCameraComponent() noexcept {
+		auto& cameraDataManager = GetComponentManager<CameraComponent>();
+		return ComponentHandle<CameraComponent>(m_cameraHandle, &cameraDataManager);
+	}
+
+	void World::SetAudioListenerTransform(const ComponentHandle<TransformComponent>& transformHandle) noexcept{
+		m_audoListenerTransformHandle = transformHandle.GetInnerHandle();
+	}
+
+	ComponentHandle<TransformComponent> World::GetAudioListenerTransform() noexcept {
+		auto& transformDataManager = GetComponentManager<TransformComponent>();
+		return ComponentHandle<TransformComponent>(m_audoListenerTransformHandle, &transformDataManager);
+	}
 	void World::SetGravity(const glm::vec3& gravity) {
 		m_physicsCollisionSystem.SetGravity(gravity);
 	}
@@ -150,6 +162,28 @@ namespace Mona {
 	AllHitsRaycastResult World::AllHitsRayTest(const glm::vec3& rayFrom, const glm::vec3& rayTo) {
 		auto& rigidBodyDataManager = GetComponentManager<RigidBodyComponent>();
 		return m_physicsCollisionSystem.AllHitsRayTest(rayFrom, rayTo, rigidBodyDataManager);
+	}
+
+	std::shared_ptr<AudioClip> World::LoadAudioClip(const std::filesystem::path& filePath) noexcept {
+		return m_audioClipManager.LoadAudioClip(filePath);
+	}
+
+	void World::PlayAudioClip3D(std::shared_ptr<AudioClip> audioClip,
+		const glm::vec3& position /* = glm::vec3(0.0f) */,
+		float volume /* = 1.0f */,
+		float pitch /* = 1.0f */,
+		float radius /* = 1000.0f */,
+		AudioSourcePriority priority /* = AudioSourcePriority::SoundPriorityMedium */)
+	{
+		m_audioSystem.PlayAudioClip3D(audioClip, position, volume, pitch, radius, priority);
+	}
+
+	void World::PlayAudioClip2D(std::shared_ptr<AudioClip> audioClip,
+		float volume /* = 1.0f */,
+		float pitch /* = 1.0f */,
+		AudioSourcePriority priority /* = AudioSourcePriority::SoundPriorityMedium */)
+	{
+		m_audioSystem.PlayAudioClip2D(audioClip, volume, pitch, priority);
 	}
 }
 

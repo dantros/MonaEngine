@@ -20,8 +20,10 @@
 #include "../PhysicsCollision/RigidBodyLifetimePolicy.hpp"
 #include "../PhysicsCollision/RaycastResults.hpp"
 #include "../Audio/AudioSystem.hpp"
+#include "../Audio/AudioClipManager.hpp"
 #include <memory>
 #include <array>
+#include <filesystem>
 #include <string>
 
 namespace Mona {
@@ -67,13 +69,28 @@ namespace Mona {
 		void StartMainLoop() noexcept;
 		void Update(float timeStep) noexcept;
 
-		void SetMainCamera(const BaseGameObjectHandle& objectHandle) noexcept;
-		void SetMainCamera(const GameObject& gameObject) noexcept;
+		void SetMainCamera(const ComponentHandle<CameraComponent>& cameraHandle) noexcept;
+		ComponentHandle<CameraComponent> GetMainCameraComponent() noexcept;
 
 		void SetGravity(const glm::vec3& gravity);
 		glm::vec3 GetGravity() const;
 		ClosestHitRaycastResult ClosestHitRayTest(const glm::vec3& rayFrom, const glm::vec3& rayTo);
 		AllHitsRaycastResult AllHitsRayTest(const glm::vec3& rayFrom, const glm::vec3& rayTo);
+
+		std::shared_ptr<AudioClip> LoadAudioClip(const std::filesystem::path& filePath) noexcept;
+		void SetAudioListenerTransform(const ComponentHandle<TransformComponent>& transformHandle) noexcept;
+		ComponentHandle<TransformComponent> GetAudioListenerTransform() noexcept;
+		void PlayAudioClip3D(std::shared_ptr<AudioClip> audioClip,
+			const glm::vec3& position = glm::vec3(0.0f),
+			float volume = 1.0f,
+			float pitch = 1.0f,
+			float radius = 1000.0f,
+			AudioSourcePriority priority = AudioSourcePriority::SoundPriorityMedium
+		);
+		void PlayAudioClip2D(std::shared_ptr<AudioClip> audioClip,
+			float volume = 1.0f,
+			float pitch = 1.0f,
+			AudioSourcePriority priority = AudioSourcePriority::SoundPriorityMedium);
 
 	private:
 		template <typename ComponentType>
@@ -97,6 +114,8 @@ namespace Mona {
 		PhysicsCollisionSystem m_physicsCollisionSystem;
 		
 		AudioSystem m_audioSystem;
+		AudioClipManager m_audioClipManager;
+		InnerComponentHandle m_audoListenerTransformHandle;
 
 		std::unique_ptr<DebugDrawingSystem> m_debugDrawingSystem;
 

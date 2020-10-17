@@ -8,6 +8,9 @@ public:
 		transform->Rotate(glm::vec3(-1.0f, 0.0f, 0.0f), 0.5f);
 		world.SetMainCamera(world.AddComponent<Mona::CameraComponent>(*this));
 		world.SetAudioListenerTransform(transform);
+		auto audioClipPtr = world.LoadAudioClip(Mona::SourcePath("Assets/AudioFiles/music.wav"));
+		auto audioSource = world.AddComponent<Mona::AudioSourceComponent>(*this, audioClipPtr);
+		audioSource->SetIsLooping(true);
 	}
 };
 class Ball : public::Mona::GameObject {
@@ -21,8 +24,6 @@ public:
 	Paddle(float velocity) : m_paddleVelocity(velocity) {}
 	~Paddle() = default;
 	virtual void UserStartUp(Mona::World& world) noexcept {
-		auto testSound = world.LoadAudioClip(Mona::SourcePath("Assets/AudioFiles/footsteps.wav"));
-		world.PlayAudioClip2D(testSound);
 		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
 		glm::vec3 paddleScale(2.0f, 0.5f, 0.5f);
 		m_transform->Scale(paddleScale);
@@ -32,6 +33,7 @@ public:
 		rb->SetFriction(0.0f);
 		rb->SetRestitution(1.0f);
 		
+		m_ballBounceSound = world.LoadAudioClip(Mona::SourcePath("Assets/AudioFiles/ballBounce.wav"));
 		auto ball = world.CreateGameObject<Ball>();
 		float ballRadius = 0.5f;
 		m_ballTransform = world.AddComponent<Mona::TransformComponent>(ball);
@@ -45,6 +47,10 @@ public:
 		m_ballRigidBody = world.AddComponent<Mona::RigidBodyComponent>(ball, sphereInfo, Mona::RigidBodyType::DynamicBody);
 		m_ballRigidBody->SetRestitution(1.0f);
 		m_ballRigidBody->SetFriction(0.0f);
+		auto callback = [ballTransform = m_ballTransform, ballSound = m_ballBounceSound](Mona::World& world, Mona::RigidBodyHandle& otherRigidBody, bool isSwaped, Mona::CollisionInformation& colInfo) mutable {
+			world.PlayAudioClip3D(ballSound, ballTransform->GetLocalTranslation(),0.3f);
+		};
+		m_ballRigidBody->SetStartCollisionCallback(callback);
 	}
 
 	virtual void UserUpdate(Mona::World& world, float timeStep) noexcept {
@@ -70,6 +76,7 @@ private:
 	Mona::TransformHandle m_transform;
 	Mona::TransformHandle m_ballTransform;
 	Mona::RigidBodyHandle m_ballRigidBody;
+	std::shared_ptr<Mona::AudioClip> m_ballBounceSound;
 	float m_paddleVelocity;
 };
 
@@ -103,7 +110,7 @@ public:
 		world.CreateGameObject<BasicCamera>();
 		world.CreateGameObject<Paddle>(20.0f);
 		glm::vec3 blockScale(1.0f, 0.5f, 0.5f);
-		
+		m_blockBreakingSound = world.LoadAudioClip(Mona::SourcePath("Assets/AudioFiles/boxBreaking.wav"));
 		Mona::BoxShapeInformation boxInfo(blockScale);
 		for (int i = -2; i < 3; i++) {
 			float x = 4.0f * i;
@@ -117,8 +124,9 @@ public:
 				Mona::RigidBodyHandle rb =world.AddComponent<Mona::RigidBodyComponent>(block, boxInfo, Mona::RigidBodyType::StaticBody, 1.0f);
 				rb->SetRestitution(1.0f);
 				rb->SetFriction(0.0f);
-				auto callback = [block](Mona::World& world, Mona::RigidBodyHandle& otherRigidBody, bool isSwaped, Mona::CollisionInformation& colInfo) mutable {
-						world.DestroyGameObject(block);
+				auto callback = [block, blockTransform = transform, blockSound = m_blockBreakingSound](Mona::World& world, Mona::RigidBodyHandle& otherRigidBody, bool isSwaped, Mona::CollisionInformation& colInfo) mutable {
+					world.PlayAudioClip3D(blockSound, blockTransform->GetLocalTranslation(), 1.0f, 1.0f,35.0f);
+					world.DestroyGameObject(block);
 				};
 
 				rb->SetStartCollisionCallback(callback);
@@ -155,10 +163,13 @@ public:
 		}
 	}
 	void OnStartCollision(const Mona::StartCollisionEvent& event) {
+
 		MONA_LOG_INFO("AAA COLLISION IS STARTTTTTING...");
 	}
+	std::shared_ptr<Mona::AudioClip> m_blockBreakingSound;
 private:
 	Mona::SubscriptionHandle m_collisionSubcription;
+	
 	bool onlyOnce = true;
 };
 int main()

@@ -43,6 +43,7 @@ namespace Mona {
 	using StaticMeshHandle = ComponentHandle<StaticMeshComponent>;
 	using CameraHandle = ComponentHandle<CameraComponent>;
 	using RigidBodyHandle = ComponentHandle<RigidBodyComponent>;
+	using AudioSourceHandle = ComponentHandle<AudioSourceComponent>;
 
 
 

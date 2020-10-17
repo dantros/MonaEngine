@@ -9,6 +9,7 @@ namespace Mona {
 		CameraComponent,
 		StaticMeshComponent,
 		RigidBodyComponent,
+		AudioSourceComponent,
 		ComponentTypeCount
 	};
 
@@ -25,6 +26,7 @@ namespace Mona {
 	class StaticMeshComponent;
 	class CameraComponent;
 	class RigidBodyComponent;
+	class AudioSourceComponent;
 
 	template <typename ComponentType>
 	class DefaultLifetimePolicy;
@@ -39,7 +41,8 @@ namespace Mona {
 		TransformComponent,
 		CameraComponent,
 		StaticMeshComponent,
-		RigidBodyComponent>;
+		RigidBodyComponent,
+		AudioSourceComponent>;
 
 }
 #endif

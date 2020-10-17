@@ -32,6 +32,8 @@ namespace Mona {
 			float volume,
 			float pitch,
 			AudioSourcePriority priority);
+		float GetMasterVolume() const noexcept;
+		void SetMasterVolume(float volume) noexcept;
 		
 	private:
 		void UpdateListener(const glm::vec3& position, const glm::vec3& frontVector, const glm::vec3& upVector);
@@ -56,6 +58,7 @@ namespace Mona {
 		uint32_t m_firstFreeOpenALSourceIndex;
 		uint32_t m_channels;
 		std::vector<FreeAudioSource> m_freeAudioSources;
+		float m_masterVolume;
 		//AudioClip* m_audioClip = nullptr;
 		//ALuint m_source;
 	};

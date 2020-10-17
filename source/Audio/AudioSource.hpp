@@ -29,7 +29,7 @@ namespace Mona {
 			uint32_t m_sourceIndex;
 			OpenALSource(ALuint source = 0, uint32_t index = 0) : m_sourceID(source), m_sourceIndex(index) {}
 		};
-		std::optional<OpenALSource> m_openALsource ;
+		std::optional<OpenALSource> m_openALsource;
 		std::shared_ptr<AudioClip> m_audioClip;
 		float m_volume;
 		float m_pitch;
@@ -75,43 +75,6 @@ namespace Mona {
 	private:
 		glm::vec3 m_position;
 	};
-	/*
-	class AudioSource {
-		friend class AudioSystem;
-	public:
-		AudioSource() = default;
-		std::shared_ptr<AudioClip> GetAudioClip() const noexcept{ return m_audioClip; }
-		void PlayAudioClip(const std::shared_ptr<AudioClip>& audioClip) noexcept;
-		AudioSourcePriority GetSourcePriority() const noexcept { return m_priority; }
-		void SetSourcePriority(AudioSourcePriority priority) noexcept{ m_priority = priority; }
-		SourceType GetSourceType() const noexcept { return m_type; }
-		void SetSourceType(SourceType type) noexcept { m_type = type; }
-		float GetVolume() const noexcept { return m_volume; }
-		void SetVolume(float volume) noexcept;
-		float GetRadius() const noexcept { return m_radius; }
-		void SetRadius(float radius) noexcept;
-		float GetPitch() const noexcept { return m_pitch; }
-		void SetPitch(float pitch) noexcept;
-		bool IsLooping() const noexcept { return m_isLooping; }
-		void SetIsLooping(bool looping) noexcept;
-		float GetTimeLeft() const noexcept{ return m_timeLeft; }
-	private:
-		std::shared_ptr<AudioClip> m_audioClip = nullptr;
-		AudioSourcePriority m_priority = AudioSourcePriority::SoundPriorityMedium;
-		SourceType m_type = SourceType::Source3D;
-		float m_volume = 1.0f;
-		float m_radius = 1000.0f;
-		float m_pitch = 1.0f;
-		float m_timeLeft = 0.0f;
-		bool m_isLooping = false;
-		//bool m_shouldDetachSource = false;
-		struct OpenALSource {
-			ALuint m_sourceID;
-			uint32_t m_sourceIndex;
-		};
-
-		std::optional<OpenALSource> m_openALsource = std::nullopt;
 	
-	};*/
 }
 #endif

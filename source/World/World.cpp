@@ -15,10 +15,11 @@ namespace Mona {
 		m_shouldClose(false),
 		m_physicsCollisionSystem() {
 		
-		m_componentManagers[TransformComponent::componentIndex].reset(new ComponentManager<TransformComponent>());
-		m_componentManagers[CameraComponent::componentIndex].reset(new ComponentManager<CameraComponent>());
-		m_componentManagers[StaticMeshComponent::componentIndex].reset(new ComponentManager<StaticMeshComponent>());
-		m_componentManagers[RigidBodyComponent::componentIndex].reset(new ComponentManager<RigidBodyComponent, RigidBodyLifetimePolicy>());
+		m_componentManagers[TransformComponent::componentIndex].reset(new TransformComponent::managerType());
+		m_componentManagers[CameraComponent::componentIndex].reset(new CameraComponent::managerType());
+		m_componentManagers[StaticMeshComponent::componentIndex].reset(new StaticMeshComponent::managerType());
+		m_componentManagers[RigidBodyComponent::componentIndex].reset(new RigidBodyComponent::managerType());
+		m_componentManagers[AudioSourceComponent::componentIndex].reset(new AudioSourceComponent::managerType());
 		m_debugDrawingSystem.reset(new DebugDrawingSystem());
 	
 	}
@@ -184,6 +185,14 @@ namespace Mona {
 		AudioSourcePriority priority /* = AudioSourcePriority::SoundPriorityMedium */)
 	{
 		m_audioSystem.PlayAudioClip2D(audioClip, volume, pitch, priority);
+	}
+
+	float World::GetMasterVolume() const noexcept {
+		return m_audioSystem.GetMasterVolume();
+	}
+
+	void World::SetMasterVolume(float volume) noexcept {
+		m_audioSystem.SetMasterVolume(volume);
 	}
 }
 

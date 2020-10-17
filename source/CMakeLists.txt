@@ -40,6 +40,7 @@ set(MONA_HEADERS
 				Audio/AudioClip.hpp
 				Audio/AudioClipManager.hpp
 				Audio/AudioSource.hpp
+				Audio/AudioSourceComponent.hpp
 				DebugDrawing/DebugDrawingSystem.hpp
 				DebugDrawing/BulletDebugDraw.hpp
 				Utilities/BasicCameraControllers.hpp)
@@ -61,6 +62,7 @@ set(MONA_SOURCES
 				Audio/AudioClip.cpp
 				Audio/AudioClipManager.cpp
 				Audio/AudioSource.cpp
+				Audio/AudioSourceComponent.cpp
 				DebugDrawing/ImGuiBuild.cpp
 				DebugDrawing/BulletDebugDraw.cpp
 				DebugDrawing/DebugDrawingSystem.cpp)

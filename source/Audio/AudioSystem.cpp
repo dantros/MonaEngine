@@ -20,6 +20,8 @@ namespace Mona {
 		}
 
 		ALCALL(alDistanceModel(AL_LINEAR_DISTANCE_CLAMPED));
+		m_masterVolume = 1.0f;
+		ALCALL(alListenerf(AL_GAIN, m_masterVolume));
 		m_channels = channels;
 		m_openALSources.reserve(channels);
 		for (unsigned int i = 0; i < channels; i++) {
@@ -254,4 +256,14 @@ namespace Mona {
 			}
 		}
 	}
+
+	float AudioSystem::GetMasterVolume() const noexcept {
+		return m_masterVolume;
+	}
+
+	void AudioSystem::SetMasterVolume(float volume) noexcept {
+		m_masterVolume = std::clamp(volume, 0.0f, 1.0f);
+		ALCALL(alListenerf(AL_GAIN, m_masterVolume));
+	}
+
 }

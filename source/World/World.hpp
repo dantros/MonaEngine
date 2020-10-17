@@ -21,6 +21,7 @@
 #include "../PhysicsCollision/RaycastResults.hpp"
 #include "../Audio/AudioSystem.hpp"
 #include "../Audio/AudioClipManager.hpp"
+#include "../Audio/AudioSourceComponent.hpp"
 #include <memory>
 #include <array>
 #include <filesystem>
@@ -91,6 +92,8 @@ namespace Mona {
 			float volume = 1.0f,
 			float pitch = 1.0f,
 			AudioSourcePriority priority = AudioSourcePriority::SoundPriorityMedium);
+		float GetMasterVolume() const noexcept;
+		void SetMasterVolume(float volume) noexcept;
 
 	private:
 		template <typename ComponentType>

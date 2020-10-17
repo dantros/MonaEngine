@@ -8,7 +8,7 @@ namespace Mona {
 	class AudioClip {
 	public:
 		friend class AudioClipManager;
-		AudioClip(const std::string& audioFilePath);
+		
 		AudioClip(const AudioClip&) = delete;
 		AudioClip& operator=(const AudioClip&) = delete;
 		ALuint GetBufferID() const { return m_alBufferID; }
@@ -17,6 +17,7 @@ namespace Mona {
 		uint32_t GetSampleRate() const { return m_sampleRate; }
 		~AudioClip();
 	private:
+		AudioClip(const std::string& audioFilePath);
 		void DeleteOpenALBuffer();
 		
 		uint32_t m_sampleRate;

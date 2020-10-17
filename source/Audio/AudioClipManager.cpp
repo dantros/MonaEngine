@@ -6,9 +6,10 @@ namespace Mona {
 		auto& it = m_audioClipMap.find(stringPath);
 		if (it != m_audioClipMap.end())
 			return it->second.lock();
-		std::shared_ptr<AudioClip> audioClip = std::make_shared<AudioClip>(stringPath);
-		m_audioClipMap.insert({ stringPath, std::weak_ptr(audioClip) });
-		return audioClip;
+		AudioClip* audioClipPtr = new AudioClip(stringPath);
+		std::shared_ptr<AudioClip> audioClipSharedPtr(audioClipPtr);
+		m_audioClipMap.insert({ stringPath, std::weak_ptr(audioClipSharedPtr) });
+		return audioClipSharedPtr;
 
 	}
 

@@ -64,28 +64,28 @@ namespace Mona {
 		newCollisionsInformation.reserve(newCollisions.size());
 		for (auto& newCollision : newCollisions)
 		{
-			auto& rb0 = get<0>(newCollision);
-			auto& rb1 = get<1>(newCollision);
+			auto& rb0 = std::get<0>(newCollision);
+			auto& rb1 = std::get<1>(newCollision);
 			InnerComponentHandle rbhandle0 = InnerComponentHandle(rb0->getUserIndex(), rb0->getUserIndex2());
 			InnerComponentHandle rbHandle1 = InnerComponentHandle(rb1->getUserIndex(), rb1->getUserIndex2());
 			newCollisionsInformation.emplace_back(std::make_tuple(	RigidBodyHandle(rbhandle0, &rigidBodyDatamanager),
 																	RigidBodyHandle(rbHandle1, &rigidBodyDatamanager),
-																	get<2>(newCollision),
-																	CollisionInformation(m_dispatcherPtr->getManifoldByIndexInternal(get<3>(newCollision)))));
+																	std::get<2>(newCollision),
+																	CollisionInformation(m_dispatcherPtr->getManifoldByIndexInternal(std::get<3>(newCollision)))));
 		}
 
 		
 		for (auto& collisionInformation : newCollisionsInformation) {
-			auto& rb0 = get<0>(collisionInformation);
-			auto& rb1 = get<1>(collisionInformation);
-			auto& collisionInfo = get<3>(collisionInformation);
+			auto& rb0 = std::get<0>(collisionInformation);
+			auto& rb1 = std::get<1>(collisionInformation);
+			auto& collisionInfo = std::get<3>(collisionInformation);
 			if (rb0.IsValid() && rb0->HasStartCollisionCallback()) {
-				rb0->CallStartCollisionCallback(world, rb1, get<2>(collisionInformation), collisionInfo);
+				rb0->CallStartCollisionCallback(world, rb1, std::get<2>(collisionInformation), collisionInfo);
 			}
 			if (rb1.IsValid() && rb1->HasStartCollisionCallback()) {
-				rb1->CallStartCollisionCallback(world, rb1, !get<2>(collisionInformation), collisionInfo);
+				rb1->CallStartCollisionCallback(world, rb1, !std::get<2>(collisionInformation), collisionInfo);
 			}
-			eventManager.Publish(StartCollisionEvent(rb0,rb1, get<2>(collisionInformation), collisionInfo));
+			eventManager.Publish(StartCollisionEvent(rb0,rb1, std::get<2>(collisionInformation), collisionInfo));
 		}
 
 		CollisionSet removedCollisions;
@@ -96,8 +96,8 @@ namespace Mona {
 
 		for (auto& removedCollision : removedCollisions)
 		{
-			auto& rb0 = get<0>(removedCollision);
-			auto& rb1 = get<1>(removedCollision);
+			auto& rb0 = std::get<0>(removedCollision);
+			auto& rb1 = std::get<1>(removedCollision);
 			InnerComponentHandle rbhandle0 = InnerComponentHandle(rb0->getUserIndex(), rb0->getUserIndex2());
 			InnerComponentHandle rbHandle1 = InnerComponentHandle(rb1->getUserIndex(), rb1->getUserIndex2());
 			removedCollisionInformation.emplace_back(std::make_tuple(RigidBodyHandle(rbhandle0, &rigidBodyDatamanager),
@@ -105,8 +105,8 @@ namespace Mona {
 		}
 
 		for (auto& collisionInformation : removedCollisionInformation) {
-			auto& rb0 = get<0>(collisionInformation);
-			auto& rb1 = get<1>(collisionInformation);
+			auto& rb0 = std::get<0>(collisionInformation);
+			auto& rb1 = std::get<1>(collisionInformation);
 			if (rb0.IsValid() && rb0->HasEndCollisionCallback()) {
 				rb0->CallEndCollisionCallback(world, rb1);
 			}

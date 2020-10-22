@@ -24,19 +24,12 @@ namespace Mona {
 	};
 
 	struct AudioSource {
+		friend class  AudioSystem;
 		struct OpenALSource {
 			ALuint m_sourceID;
 			uint32_t m_sourceIndex;
 			OpenALSource(ALuint source = 0, uint32_t index = 0) : m_sourceID(source), m_sourceIndex(index) {}
 		};
-		std::optional<OpenALSource> m_openALsource;
-		std::shared_ptr<AudioClip> m_audioClip;
-		float m_volume;
-		float m_pitch;
-		float m_radius;
-		float m_timeLeft;
-		AudioSourcePriority m_priority;
-		SourceType m_sourceType;
 		AudioSource(std::shared_ptr<AudioClip> audioClip,
 			float volume,
 			float pitch,
@@ -57,6 +50,16 @@ namespace Mona {
 				m_timeLeft = m_audioClip->GetTotalTime();
 			}
 		}
+		protected:
+		std::optional<OpenALSource> m_openALsource;
+		std::shared_ptr<AudioClip> m_audioClip;
+		float m_volume;
+		float m_pitch;
+		float m_radius;
+		float m_timeLeft;
+		AudioSourcePriority m_priority;
+		SourceType m_sourceType;
+		
 	};
 
 	class FreeAudioSource : public AudioSource {

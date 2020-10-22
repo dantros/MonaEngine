@@ -91,20 +91,11 @@ public:
 	Breakout() = default;
 	~Breakout() = default;
 	virtual void UserStartUp(Mona::World & world) noexcept override {
-		auto& eventManager = world.GetEventManager();
-		m_collisionSubcription = eventManager.Subscribe(this, &Breakout::OnStartCollision);
 		world.SetGravity(glm::vec3(0.0f,0.0f,0.0f));
 		world.CreateGameObject<BasicCamera>();
 		world.CreateGameObject<Paddle>(20.0f);
 		glm::vec3 blockScale(1.0f, 0.5f, 0.5f);
 		m_blockBreakingSound = world.LoadAudioClip(Mona::SourcePath("Assets/AudioFiles/boxBreaking.wav"));
-		auto testSound = world.CreateGameObject<Mona::GameObject>();
-		world.AddComponent<Mona::TransformComponent>(testSound);
-		auto testSoundComponent = world.AddComponent<Mona::AudioSourceComponent>(testSound);
-		testSoundComponent->SetAudioClip(m_blockBreakingSound);
-		testSoundComponent->SetIsLooping(true);
-		testSoundComponent->SetVolume(0.3f);
-		//testSoundComponent->Play();
 
 		Mona::BoxShapeInformation boxInfo(blockScale);
 		for (int i = -2; i < 3; i++) {
@@ -141,29 +132,11 @@ public:
 	}
 
 	virtual void UserShutDown(Mona::World& world) noexcept override {
-		auto& eventManager = world.GetEventManager();
-		eventManager.Unsubscribe(m_collisionSubcription);
 	}
 	virtual void UserUpdate(Mona::World & world, float timeStep) noexcept override {
-		auto& input = world.GetInput();
-		if (input.IsKeyPressed(MONA_KEY_U)) {
-			onlyOnce = false;
-			auto rayResult = world.ClosestHitRayTest(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 100.0f, 0.0f));
-			if (rayResult.HasHit())
-			{
-				auto object = world.GetOwner(rayResult.m_rigidBody);
-				world.DestroyGameObject(object);
-			}
-
-		}
-	}
-	void OnStartCollision(const Mona::StartCollisionEvent& event) {
-
-		MONA_LOG_INFO("AAA COLLISION IS STARTTTTTING...");
 	}
 	std::shared_ptr<Mona::AudioClip> m_blockBreakingSound;
 private:
-	Mona::SubscriptionHandle m_collisionSubcription;
 	
 	bool onlyOnce = true;
 };

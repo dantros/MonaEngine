@@ -45,19 +45,28 @@ namespace Mona {
 
 	void World::ShutDown() noexcept {
 		m_application->UserShutDown(*this);
+		MONA_LOG_INFO("ShuttingDown objectManager");
 		m_objectManager.ShutDown(*this);
-		
+		MONA_LOG_INFO("ShuttingDown ComponentsManager");
 		for (auto& componentManager : m_componentManagers)
 			componentManager->ShutDown(m_eventManager);
-
+		MONA_LOG_INFO("ClearingAudioSources");
 		m_audioSystem.ClearSources();
+		MONA_LOG_INFO("ShuttingDown clipManager");
 		m_audioClipManager.ShutDown();
+		MONA_LOG_INFO("ShuttingDown audioSystem");
 		m_audioSystem.ShutDown();
+		MONA_LOG_INFO("ShuttingDown physicsSystem");
 		m_physicsCollisionSystem.ShutDown();
+		MONA_LOG_INFO("ShuttingDown renderer");
 		m_renderer.ShutDown(m_eventManager);
+		MONA_LOG_INFO("ShuttingDown window");
 		m_window.ShutDown();
+		MONA_LOG_INFO("ShuttingDown input");
 		m_input.ShutDown(m_eventManager);
+		MONA_LOG_INFO("ShuttingDown eventmanager");
 		m_eventManager.ShutDown();
+		MONA_LOG_INFO("end");
 
 	}
 
@@ -106,7 +115,6 @@ namespace Mona {
 			const auto frameTime = newTime - startTime;
 			startTime = newTime;
 			float timeStep = std::chrono::duration_cast<std::chrono::duration<float>>(frameTime).count();
-			float ms = std::chrono::duration_cast<std::chrono::duration<float, std::milli>>(frameTime).count();
 			Update(timeStep);
 		}
 		m_eventManager.Publish(ApplicationEndEvent());
@@ -123,7 +131,7 @@ namespace Mona {
 		m_input.Update();
 		m_physicsCollisionSystem.StepSimulation(timeStep);
 		m_physicsCollisionSystem.SubmitCollisionEvents(*this, m_eventManager, rigidBodyDataManager);
-		m_objectManager.UpdateGameObjects(*this, timeStep);
+		m_objectManager.UpdateGameObjects(*this, m_eventManager, timeStep);
 		m_application->UserUpdate(*this, timeStep);
 		m_audioClipManager.CleanUnusedAudioClips();
 		m_audioSystem.Update(m_audoListenerTransformHandle, timeStep, transformDataManager, audioSourceDataManager);

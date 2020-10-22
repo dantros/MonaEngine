@@ -15,7 +15,7 @@ namespace Mona {
 	struct InnerComponentHandle;
 	class AudioSystem {
 	public:
-		void StartUp(unsigned int channels = 2) noexcept;
+		void StartUp(unsigned int channels = 32) noexcept;
 		void ShutDown() noexcept;
 		void Update(const InnerComponentHandle &audioListenerTransformHandle,
 			float timeStep,

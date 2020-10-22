@@ -7,6 +7,7 @@
 #include <unordered_map>
 namespace Mona {
 	class World;
+	class EventManager;
 	class GameObjectManager
 	{
 	public:
@@ -25,10 +26,10 @@ namespace Mona {
 		bool IsValid(const InnerGameObjectHandle& handle) const noexcept;
 
 
-		void UpdateGameObjects(World& world, float timeStep) noexcept;
+		void UpdateGameObjects(World& world, EventManager& eventManager, float timeStep) noexcept;
 	private:
 		
-		void ImmediateDestroyGameObject(World& world, const InnerGameObjectHandle& handle) noexcept;
+		void ImmediateDestroyGameObject(World& world, EventManager& eventManager, const InnerGameObjectHandle& handle) noexcept;
 		constexpr static size_type s_maxEntries = std::numeric_limits<size_type>::max();
 		constexpr static size_type s_minFreeIndices = 1024;
 		struct HandleEntry {

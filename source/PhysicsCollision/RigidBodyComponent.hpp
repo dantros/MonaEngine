@@ -145,7 +145,7 @@ namespace Mona {
 		}
 
 		float GetFriction() const {
-			m_rigidBodyPtr->getFriction();
+			return m_rigidBodyPtr->getFriction();
 		}
 
 		void SetLinearFactor(const glm::vec3& linearFactor) {

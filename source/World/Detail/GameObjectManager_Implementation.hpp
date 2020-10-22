@@ -2,6 +2,7 @@
 #ifndef GAMEOBJECTMANAGER_IMPLEMENTATION_HPP
 #define GAMEOBJECTMANAGER_IMPLEMENTATION_HPP
 #include <utility>
+#include "../../Core/Log.hpp"
 namespace Mona {
 
 	template <typename ObjectType, typename ...Args>

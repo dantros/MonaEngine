@@ -5,7 +5,7 @@
 #include "../World/ComponentManager.hpp"
 #include "AudioMacros.hpp"
 #include "AudioSourceComponentLifetimePolicy.hpp"
-
+#include <stdio.h>
 namespace Mona {
 	void AudioSystem::StartUp(unsigned int channels) noexcept {
 		MONA_ASSERT(channels > 0, "AudioSystem Error: please request more than zero channels");

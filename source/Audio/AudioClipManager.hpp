@@ -9,7 +9,7 @@
 namespace Mona {
 	class AudioClipManager {
 	public:
-		using AudioClipMap = std::unordered_map<std::string, std::weak_ptr<AudioClip>>;
+		using AudioClipMap = std::unordered_map<std::string, std::shared_ptr<AudioClip>>;
 		AudioClipManager() = default;
 		std::shared_ptr<AudioClip> LoadAudioClip(const std::filesystem::path& filePath) noexcept;
 		void CleanUnusedAudioClips() noexcept;

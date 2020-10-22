@@ -1,12 +1,11 @@
 #include "PhysicsCollisionSystem.hpp"
-#include <algorithm>
 #include "RigidBodyLifetimePolicy.hpp"
+#include <algorithm>
 #include <vector>
 #include "CollisionInformation.hpp"
 #include "../PhysicsCollision/PhysicsCollisionEvents.hpp"
 #include "../World/ComponentHandle.hpp"
 #include "../Event/EventManager.hpp"
-#include "../World/World.hpp"
 namespace Mona {
 	void PhysicsCollisionSystem::StepSimulation(float timeStep) noexcept {
 		m_worldPtr->stepSimulation(timeStep);	
@@ -18,11 +17,6 @@ namespace Mona {
 
 	void PhysicsCollisionSystem::RemoveRigidBody(RigidBodyComponent& rigidBody) noexcept {
 		m_worldPtr->removeRigidBody(rigidBody.m_rigidBodyPtr.get());
-	}
-
-	void PhysicsCollisionSystem::StartUp(typename TransformComponent::managerType& transformDataManager, typename RigidBodyComponent::managerType& rigidBodyDataManager) noexcept
-	{
-		rigidBodyDataManager.SetLifetimePolicy(RigidBodyLifetimePolicy(&transformDataManager, this));
 	}
 
 	void PhysicsCollisionSystem::ShutDown() noexcept {
@@ -39,7 +33,9 @@ namespace Mona {
 		const btVector3& gravity = m_worldPtr->getGravity();
 		return glm::vec3(gravity.x(), gravity.y(), gravity.z());
 	}
-	void  PhysicsCollisionSystem::SubmitCollisionEvents(World& world, typename RigidBodyComponent::managerType& rigidBodyDatamanager) noexcept
+	void  PhysicsCollisionSystem::SubmitCollisionEvents(World& world,
+		EventManager& eventManager,
+		typename RigidBodyComponent::managerType& rigidBodyDatamanager) noexcept
 	{
 		CollisionSet currentCollisionSet;
 		
@@ -58,7 +54,6 @@ namespace Mona {
 			}
 		}
 
-		auto& eventManager = world.GetEventManager();
 		CollisionSet newCollisions;
 		std::set_difference(currentCollisionSet.begin(), currentCollisionSet.end(),
 							m_previousCollisionSet.begin(), m_previousCollisionSet.end(),
@@ -127,6 +122,7 @@ namespace Mona {
 	ClosestHitRaycastResult PhysicsCollisionSystem::ClosestHitRayTest(const glm::vec3& rayFrom,
 		const glm::vec3& rayTo,
 		typename RigidBodyComponent::managerType& rigidBodyDatamanager) const {
+
 		const btVector3 btFrom = btVector3(rayFrom.x, rayFrom.y, rayFrom.z);
 		const btVector3 btTo = btVector3(rayTo.x, rayTo.y, rayTo.z);
 		btCollisionWorld::ClosestRayResultCallback rayTest(btFrom, btTo);
@@ -138,6 +134,7 @@ namespace Mona {
 	AllHitsRaycastResult PhysicsCollisionSystem::AllHitsRayTest(const glm::vec3& rayFrom,
 		const glm::vec3& rayTo,
 		typename RigidBodyComponent::managerType& rigidBodyDatamanager) const {
+
 		const btVector3 btFrom = btVector3(rayFrom.x, rayFrom.y, rayFrom.z);
 		const btVector3 btTo = btVector3(rayTo.x, rayTo.y, rayTo.z);
 		btCollisionWorld::AllHitsRayResultCallback rayTest(btFrom, btTo);

@@ -176,6 +176,18 @@ namespace Mona {
 	}
 
 	template <typename ComponentType, typename LifetimePolicy>
+	void ComponentManager<ComponentType, LifetimePolicy>::SwapComponents(size_type first, size_type second) noexcept {
+		MONA_ASSERT(first < m_components.size(), "ComponentManager Error: component index out of range");
+		MONA_ASSERT(second < m_components.size(), "ComponentManager Error: component index out of range");
+		if (first == second) return;
+		m_handleEntries[m_handleEntryIndices[first]].index = second;
+		m_handleEntries[m_handleEntryIndices[second]].index = first;
+		std::swap(m_handleEntryIndices[first], m_handleEntryIndices[second]);
+		std::swap(m_componentOwners[first], m_componentOwners[second]);
+		std::swap(m_components[first], m_components[second]);
+	}
+
+	template <typename ComponentType, typename LifetimePolicy>
 	void ComponentManager<ComponentType, LifetimePolicy>::SetLifetimePolicy(const LifetimePolicy& policy) noexcept
 	{
 		m_lifetimePolicy = policy;

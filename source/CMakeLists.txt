@@ -41,6 +41,7 @@ set(MONA_HEADERS
 				Audio/AudioClipManager.hpp
 				Audio/AudioSource.hpp
 				Audio/AudioSourceComponent.hpp
+				Audio/AudioSourceComponentLifetimePolicy.hpp
 				DebugDrawing/DebugDrawingSystem.hpp
 				DebugDrawing/BulletDebugDraw.hpp
 				Utilities/BasicCameraControllers.hpp)

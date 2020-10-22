@@ -22,6 +22,7 @@
 #include "../Audio/AudioSystem.hpp"
 #include "../Audio/AudioClipManager.hpp"
 #include "../Audio/AudioSourceComponent.hpp"
+#include "../Audio/AudioSourceComponentLifetimePolicy.hpp"
 #include <memory>
 #include <array>
 #include <filesystem>

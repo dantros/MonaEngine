@@ -10,7 +10,7 @@ namespace Mona {
 	class RigidBodyLifetimePolicy {
 	public:
 		RigidBodyLifetimePolicy() = default;
-		RigidBodyLifetimePolicy(ComponentManager<TransformComponent>* managerPtr, PhysicsCollisionSystem* physicsSystemPtr) :
+		RigidBodyLifetimePolicy(typename TransformComponent::managerType* managerPtr, PhysicsCollisionSystem* physicsSystemPtr) :
 			m_transformManagerPtr(managerPtr), m_physicsCollisionSystemPtr(physicsSystemPtr) {}
 
 		void OnAddComponent(GameObject* gameObjectPtr, RigidBodyComponent& rigidBody, const InnerComponentHandle& handle) noexcept {
@@ -25,7 +25,7 @@ namespace Mona {
 			m_physicsCollisionSystemPtr->RemoveRigidBody(rigidBody);
 		}
 	private:
-		ComponentManager<TransformComponent>* m_transformManagerPtr = nullptr;
+		typename TransformComponent::managerType* m_transformManagerPtr = nullptr;
 		PhysicsCollisionSystem* m_physicsCollisionSystemPtr = nullptr;
 	};
 }

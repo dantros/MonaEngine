@@ -26,9 +26,11 @@ namespace Mona {
 	void World::StartUp(std::unique_ptr<Application> app) noexcept {
 		auto& transformDataManager = GetComponentManager<TransformComponent>();
 		auto& rigidBodyDataManager = GetComponentManager<RigidBodyComponent>();
+		auto& audioSourceDataManager = GetComponentManager<AudioSourceComponent>();
 		auto& config = Config::GetInstance();
 		const GameObjectID expectedObjects = config.getValueOrDefault<int>("expected_number_of_gameobjects", 1000);
-
+		rigidBodyDataManager.SetLifetimePolicy(RigidBodyLifetimePolicy(&transformDataManager, &m_physicsCollisionSystem));
+		audioSourceDataManager.SetLifetimePolicy(AudioSourceComponentLifetimePolicy(&m_audioSystem));
 		m_window.StartUp(m_eventManager);
 		m_input.StartUp(m_eventManager);
 		m_objectManager.StartUp(expectedObjects);
@@ -36,7 +38,6 @@ namespace Mona {
 			componentManager->StartUp(m_eventManager, expectedObjects);
 		m_application = std::move(app);
 		m_renderer.StartUp(m_eventManager, m_debugDrawingSystem.get());
-		m_physicsCollisionSystem.StartUp(transformDataManager, rigidBodyDataManager);
 		m_audioSystem.StartUp();
 		m_debugDrawingSystem->StartUp(&m_physicsCollisionSystem);
 		m_application->StartUp(*this);
@@ -118,13 +119,14 @@ namespace Mona {
 		auto &staticMeshDataManager = GetComponentManager<StaticMeshComponent>();
 		auto &cameraDataManager = GetComponentManager<CameraComponent>();
 		auto& rigidBodyDataManager = GetComponentManager<RigidBodyComponent>();
+		auto& audioSourceDataManager = GetComponentManager<AudioSourceComponent>();
 		m_input.Update();
 		m_physicsCollisionSystem.StepSimulation(timeStep);
-		m_physicsCollisionSystem.SubmitCollisionEvents(*this, rigidBodyDataManager);
+		m_physicsCollisionSystem.SubmitCollisionEvents(*this, m_eventManager, rigidBodyDataManager);
 		m_objectManager.UpdateGameObjects(*this, timeStep);
 		m_application->UserUpdate(*this, timeStep);
 		m_audioClipManager.CleanUnusedAudioClips();
-		m_audioSystem.Update(m_audoListenerTransformHandle, timeStep, transformDataManager);
+		m_audioSystem.Update(m_audoListenerTransformHandle, timeStep, transformDataManager, audioSourceDataManager);
 		m_renderer.Render(m_eventManager, m_cameraHandle, staticMeshDataManager, transformDataManager, cameraDataManager);
 		m_window.Update();
 	}

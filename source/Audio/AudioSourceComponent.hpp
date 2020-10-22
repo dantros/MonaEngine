@@ -14,15 +14,16 @@ namespace Mona {
 		Playing,
 		Paused
 	};
-	
+	class AudioSourceComponentLifetimePolicy;
 	class AudioSourceComponent : public AudioSource {
 	public:
-		using managerType = ComponentManager<AudioSourceComponent>;
+		using managerType = ComponentManager<AudioSourceComponent, AudioSourceComponentLifetimePolicy>;
 		using dependencies = DependencyList<TransformComponent>;
 		static constexpr std::string_view componentName = "AudioSourceComponent";
 		static constexpr uint8_t componentIndex = GetComponentIndex(EComponentType::AudioSourceComponent);
 
 		friend class AudioSystem;
+		friend class AudioSourceComponentLifetimePolicy;
 		AudioSourceComponent(std::shared_ptr<AudioClip> audioClip = nullptr,
 			float volume = 1.0f,
 			float pitch = 1.0f,

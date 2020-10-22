@@ -11,14 +11,11 @@ public:
 		auto audioClipPtr = world.LoadAudioClip(Mona::SourcePath("Assets/AudioFiles/music.wav"));
 		auto audioSource = world.AddComponent<Mona::AudioSourceComponent>(*this, audioClipPtr);
 		audioSource->SetIsLooping(true);
+		audioSource->SetVolume(0.3f);
+		audioSource->Play();
 	}
 };
-class Ball : public::Mona::GameObject {
-public:
-	Ball() = default;
-	~Ball() = default;
 
-};
 class Paddle : public Mona::GameObject {
 public:
 	Paddle(float velocity) : m_paddleVelocity(velocity) {}
@@ -34,7 +31,7 @@ public:
 		rb->SetRestitution(1.0f);
 		
 		m_ballBounceSound = world.LoadAudioClip(Mona::SourcePath("Assets/AudioFiles/ballBounce.wav"));
-		auto ball = world.CreateGameObject<Ball>();
+		auto ball = world.CreateGameObject<Mona::GameObject>();
 		float ballRadius = 0.5f;
 		m_ballTransform = world.AddComponent<Mona::TransformComponent>(ball);
 		m_ballTransform->SetRotation(m_transform->GetLocalRotation());
@@ -80,18 +77,8 @@ private:
 	float m_paddleVelocity;
 };
 
-class Block : public Mona::GameObject {
-public:
-	Block() = default;
-	~Block() = default;
-};
 
-class Wall : public Mona::GameObject {
-public:
-	Wall() = default;
-	~Wall() = default;
-};
-void InitializeWall(Mona::World &world, Mona::GameObjectHandle<Wall>& wall, const glm::vec3& position, const glm::vec3& scale) {
+void InitializeWall(Mona::World &world, Mona::GameObjectHandle<Mona::GameObject>& wall, const glm::vec3& position, const glm::vec3& scale) {
 	world.AddComponent<Mona::TransformComponent>(wall, position, glm::fquat(1.0f, 0.0f, 0.0f, 0.0f), scale);
 	world.AddComponent<Mona::StaticMeshComponent>(wall, Mona::ModelManager::PrimitiveType::Cube, glm::vec3(0.15f));
 	Mona::BoxShapeInformation wallShape(scale);
@@ -111,21 +98,29 @@ public:
 		world.CreateGameObject<Paddle>(20.0f);
 		glm::vec3 blockScale(1.0f, 0.5f, 0.5f);
 		m_blockBreakingSound = world.LoadAudioClip(Mona::SourcePath("Assets/AudioFiles/boxBreaking.wav"));
+		auto testSound = world.CreateGameObject<Mona::GameObject>();
+		world.AddComponent<Mona::TransformComponent>(testSound);
+		auto testSoundComponent = world.AddComponent<Mona::AudioSourceComponent>(testSound);
+		testSoundComponent->SetAudioClip(m_blockBreakingSound);
+		testSoundComponent->SetIsLooping(true);
+		testSoundComponent->SetVolume(0.3f);
+		//testSoundComponent->Play();
+
 		Mona::BoxShapeInformation boxInfo(blockScale);
 		for (int i = -2; i < 3; i++) {
 			float x = 4.0f * i;
 			for (int j = -2; j < 3; j++)
 			{
 				float y = 2.0f * j;
-				auto block = world.CreateGameObject<Block>();
+				auto block = world.CreateGameObject<Mona::GameObject>();
 				auto transform = world.AddComponent<Mona::TransformComponent>(block, glm::vec3( x, 15.0f + y, 0.0f));
 				transform->Scale(blockScale);
 				world.AddComponent<Mona::StaticMeshComponent>(block, Mona::ModelManager::PrimitiveType::Cube);
 				Mona::RigidBodyHandle rb =world.AddComponent<Mona::RigidBodyComponent>(block, boxInfo, Mona::RigidBodyType::StaticBody, 1.0f);
 				rb->SetRestitution(1.0f);
 				rb->SetFriction(0.0f);
-				auto callback = [block, blockTransform = transform, blockSound = m_blockBreakingSound](Mona::World& world, Mona::RigidBodyHandle& otherRigidBody, bool isSwaped, Mona::CollisionInformation& colInfo) mutable {
-					world.PlayAudioClip3D(blockSound, blockTransform->GetLocalTranslation(), 1.0f, 1.0f,35.0f);
+				auto callback = [block, blockSound = m_blockBreakingSound](Mona::World& world, Mona::RigidBodyHandle& otherRigidBody, bool isSwaped, Mona::CollisionInformation& colInfo) mutable {
+					world.PlayAudioClip2D(blockSound, 1.0f, 1.0f);
 					world.DestroyGameObject(block);
 				};
 
@@ -133,14 +128,14 @@ public:
 				
 			}
 		}
-		auto upperWall = world.CreateGameObject<Wall>();
+		auto upperWall = world.CreateGameObject<Mona::GameObject>();
 		InitializeWall(world, upperWall, glm::vec3(0.0f, 26.0f, 0.0f), glm::vec3(18.0f, 1.0f, 1.0f));
 
 		glm::vec3 sideWallScale(1.0f, 27.0f, 1.0f);
 		float sideWallOffset = 19.0f;
-		auto leftWall = world.CreateGameObject<Wall>();
+		auto leftWall = world.CreateGameObject<Mona::GameObject>();
 		InitializeWall(world, leftWall, glm::vec3(-sideWallOffset, 0.0f, 0.0f), sideWallScale);
-		auto rightWall = world.CreateGameObject<Wall>();
+		auto rightWall = world.CreateGameObject<Mona::GameObject>();
 		InitializeWall(world, rightWall, glm::vec3(sideWallOffset, 0.0f, 0.0f), sideWallScale);
 
 	}

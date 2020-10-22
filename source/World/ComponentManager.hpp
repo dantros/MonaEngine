@@ -51,6 +51,7 @@ namespace Mona {
 		ComponentType& operator[](size_type index) noexcept;
 		const ComponentType& operator[](size_type index) const noexcept;
 		bool IsValid(const InnerComponentHandle& handle) const noexcept;
+		void SwapComponents(size_type first, size_type second) noexcept;
 
 		void SetLifetimePolicy(const LifetimePolicy& policy) noexcept;
 

@@ -10,11 +10,11 @@
 namespace Mona {
 	class AudioClip;
 	enum class AudioSourcePriority : uint8_t {
-		SoundPriorityVerylow,
-		SoundPriorityLow,
-		SoundPriorityMedium,
-		SoundPriorityHigh,
 		SoundPriorityVeryHigh,
+		SoundPriorityHigh,
+		SoundPriorityMedium,
+		SoundPriorityLow,
+		SoundPriorityVeryLow,
 		PriorityCount
 	};
 

@@ -39,6 +39,17 @@ namespace Mona {
 			MONA_LOG_INFO("AudioSourceComponent warning: Trying to play source with no audioClip.");
 			return;
 		}
+		if (m_sourceState == AudioSourceState::Playing) {
+			m_timeLeft = m_audioClip->GetTotalTime();
+		}
+		else {
+			m_sourceState = AudioSourceState::Playing;
+		}
+		
+		if (m_openALsource) {
+			const OpenALSource& alSource = m_openALsource.value();
+			ALCALL(alSourcePlay(alSource.m_sourceID));
+		}
 		
 	}
 

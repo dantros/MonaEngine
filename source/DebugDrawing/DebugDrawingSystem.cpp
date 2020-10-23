@@ -73,5 +73,12 @@ namespace Mona {
 		ImGui_ImplGlfw_InitForOpenGL(glfwGetCurrentContext(), true);
 		ImGui_ImplOpenGL3_Init("#version 450");
 	}
+
+	void DebugDrawingSystem::ShutDown() noexcept {
+		ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+	}
 }
+
 #endif

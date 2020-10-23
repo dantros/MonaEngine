@@ -14,6 +14,7 @@ namespace Mona {
 		DebugDrawingSystem() = default;
 		void StartUp(PhysicsCollisionSystem* physicsSystemPtr)  noexcept {}
 		void Draw(EventManager& eventManager, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) noexcept {}
+		void ShutDown() noexcept{}
 	};
 }
 #else
@@ -27,6 +28,7 @@ namespace Mona {
 		DebugDrawingSystem() = default;
 		void StartUp(PhysicsCollisionSystem* physicsSystemPtr)  noexcept;
 		void Draw(EventManager& eventManager, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) noexcept;
+		void ShutDown() noexcept;
 	private:
 		btDynamicsWorld* m_physicsWorldPtr = nullptr;
 		std::unique_ptr<BulletDebugDraw> m_bulletDebugDrawPtr;

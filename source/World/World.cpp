@@ -45,28 +45,18 @@ namespace Mona {
 
 	void World::ShutDown() noexcept {
 		m_application->UserShutDown(*this);
-		MONA_LOG_INFO("ShuttingDown objectManager");
 		m_objectManager.ShutDown(*this);
-		MONA_LOG_INFO("ShuttingDown ComponentsManager");
 		for (auto& componentManager : m_componentManagers)
 			componentManager->ShutDown(m_eventManager);
-		MONA_LOG_INFO("ClearingAudioSources");
 		m_audioSystem.ClearSources();
-		MONA_LOG_INFO("ShuttingDown clipManager");
 		m_audioClipManager.ShutDown();
-		MONA_LOG_INFO("ShuttingDown audioSystem");
 		m_audioSystem.ShutDown();
-		MONA_LOG_INFO("ShuttingDown physicsSystem");
 		m_physicsCollisionSystem.ShutDown();
-		MONA_LOG_INFO("ShuttingDown renderer");
 		m_renderer.ShutDown(m_eventManager);
-		MONA_LOG_INFO("ShuttingDown window");
+		m_debugDrawingSystem->ShutDown();
 		m_window.ShutDown();
-		MONA_LOG_INFO("ShuttingDown input");
 		m_input.ShutDown(m_eventManager);
-		MONA_LOG_INFO("ShuttingDown eventmanager");
 		m_eventManager.ShutDown();
-		MONA_LOG_INFO("end");
 
 	}
 

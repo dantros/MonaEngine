@@ -73,7 +73,7 @@ namespace Mona {
 		{
 			MONA_ASSERT(m_windowHandle != nullptr, "Calling Window::ShutDown for the second time or without calling Window::Startup first.");
 			glfwDestroyWindow(m_windowHandle);
-			glfwTerminate();
+			//glfwTerminate();
 		}
 		void Update() noexcept
 		{

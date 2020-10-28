@@ -1,8 +1,13 @@
 #include "ModelManager.hpp"
-#include <glad/glad.h>
+
 #include <vector>
 #include <cmath>
 #include <glm/gtc/constants.hpp>
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+#include "../Core/Log.hpp"
+#include <glad/glad.h>
 namespace Mona {
 
 
@@ -34,6 +39,9 @@ namespace Mona {
 	}
 
 	void ModelManager::StartUp() noexcept {
+		Assimp::Importer importer;
+
+		MONA_LOG_INFO("Testing Assimp : {0}", importer.IsExtensionSupported("OBJ")?"true" : "false");
 		float vertices[] = {
 	   -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f,
 		1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f,

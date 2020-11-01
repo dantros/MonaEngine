@@ -16,6 +16,7 @@
 #include "../Rendering/CameraComponent.hpp"
 #include "../Rendering/StaticMeshComponent.hpp"
 #include "../Rendering/Renderer.hpp"
+#include "../Rendering/MeshManager.hpp"
 #include "../PhysicsCollision/RigidBodyComponent.hpp"
 #include "../PhysicsCollision/RigidBodyLifetimePolicy.hpp"
 #include "../PhysicsCollision/RaycastResults.hpp"
@@ -73,6 +74,8 @@ namespace Mona {
 
 		void SetMainCamera(const ComponentHandle<CameraComponent>& cameraHandle) noexcept;
 		ComponentHandle<CameraComponent> GetMainCameraComponent() noexcept;
+		std::shared_ptr<Mesh> LoadMesh(MeshManager::PrimitiveType type) noexcept;
+		std::shared_ptr<Mesh> LoadMesh(const std::filesystem::path& filePath) noexcept;
 
 		void SetGravity(const glm::vec3& gravity);
 		glm::vec3 GetGravity() const;
@@ -113,6 +116,7 @@ namespace Mona {
 		std::array<std::unique_ptr<BaseComponentManager>, GetComponentTypeCount()> m_componentManagers;
 
 		Renderer m_renderer;
+		MeshManager m_meshManager;
 		InnerComponentHandle m_cameraHandle;
 
 		PhysicsCollisionSystem m_physicsCollisionSystem;

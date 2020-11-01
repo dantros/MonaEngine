@@ -24,7 +24,7 @@ public:
 		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
 		glm::vec3 paddleScale(2.0f, 0.5f, 0.5f);
 		m_transform->Scale(paddleScale);
-		world.AddComponent<Mona::StaticMeshComponent>(*this, Mona::ModelManager::PrimitiveType::Cube, glm::vec3(0.9f, 0.5f, 0.3f));
+		world.AddComponent<Mona::StaticMeshComponent>(*this, world.LoadMesh(Mona::MeshManager::PrimitiveType::Cube), glm::vec3(0.9f, 0.5f, 0.3f));
 		Mona::BoxShapeInformation boxInfo(paddleScale);
 		Mona::RigidBodyHandle rb = world.AddComponent<Mona::RigidBodyComponent>(*this, boxInfo, Mona::RigidBodyType::KinematicBody);
 		rb->SetFriction(0.0f);
@@ -37,8 +37,7 @@ public:
 		m_ballTransform->SetRotation(m_transform->GetLocalRotation());
 		m_ballTransform->SetTranslation(m_transform->GetLocalTranslation() + glm::vec3(0.0f, 2.0f, 0.0f));
 		m_ballTransform->SetScale(glm::vec3(ballRadius));
-		
-		world.AddComponent<Mona::StaticMeshComponent>(ball, Mona::ModelManager::PrimitiveType::Sphere, glm::vec3(0.3f, 0.3f, 0.85f));
+		world.AddComponent<Mona::StaticMeshComponent>(ball, world.LoadMesh(Mona::MeshManager::PrimitiveType::Sphere), glm::vec3(0.3f, 0.3f, 0.85f));
 		
 		Mona::SphereShapeInformation sphereInfo(ballRadius);
 		m_ballRigidBody = world.AddComponent<Mona::RigidBodyComponent>(ball, sphereInfo, Mona::RigidBodyType::DynamicBody);
@@ -80,7 +79,7 @@ private:
 
 void InitializeWall(Mona::World &world, Mona::GameObjectHandle<Mona::GameObject>& wall, const glm::vec3& position, const glm::vec3& scale) {
 	world.AddComponent<Mona::TransformComponent>(wall, position, glm::fquat(1.0f, 0.0f, 0.0f, 0.0f), scale);
-	world.AddComponent<Mona::StaticMeshComponent>(wall, Mona::ModelManager::PrimitiveType::Cube, glm::vec3(0.15f));
+	world.AddComponent<Mona::StaticMeshComponent>(wall, world.LoadMesh(Mona::MeshManager::PrimitiveType::Cube), glm::vec3(0.15f));
 	Mona::BoxShapeInformation wallShape(scale);
 	Mona::RigidBodyHandle rb = world.AddComponent<Mona::RigidBodyComponent>(wall, wallShape, Mona::RigidBodyType::StaticBody);
 	rb->SetRestitution(1.0f);
@@ -106,7 +105,7 @@ public:
 				auto block = world.CreateGameObject<Mona::GameObject>();
 				auto transform = world.AddComponent<Mona::TransformComponent>(block, glm::vec3( x, 15.0f + y, 0.0f));
 				transform->Scale(blockScale);
-				world.AddComponent<Mona::StaticMeshComponent>(block, Mona::ModelManager::PrimitiveType::Cube);
+				world.AddComponent<Mona::StaticMeshComponent>(block, world.LoadMesh(Mona::MeshManager::PrimitiveType::Cube));
 				Mona::RigidBodyHandle rb =world.AddComponent<Mona::RigidBodyComponent>(block, boxInfo, Mona::RigidBodyType::StaticBody, 1.0f);
 				rb->SetRestitution(1.0f);
 				rb->SetFriction(0.0f);

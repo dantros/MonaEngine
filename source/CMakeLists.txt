@@ -26,7 +26,8 @@ set(MONA_HEADERS
 				Rendering/CameraComponent.hpp
 				Rendering/StaticMeshComponent.hpp
 				Rendering/ShaderProgram.hpp
-				Rendering/ModelManager.hpp
+				Rendering/MeshManager.hpp
+				Rendering/Mesh.hpp
 				PhysicsCollision/PhysicsCollisionSystem.hpp
 				PhysicsCollision/PhysicsCollisionEvents.hpp
 				PhysicsCollision/CustomMotionState.hpp
@@ -57,7 +58,7 @@ set(MONA_SOURCES
 				World/World.cpp
 				Rendering/Renderer.cpp
 				Rendering/ShaderProgram.cpp
-				Rendering/ModelManager.cpp
+				Rendering/MeshManager.cpp
 				PhysicsCollision/PhysicsCollisionSystem.cpp
 				Audio/AudioSystem.cpp
 				Audio/AudioClip.cpp

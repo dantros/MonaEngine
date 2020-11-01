@@ -9,7 +9,9 @@ public:
 	}
 	void UserStartUp(Mona::World& world) noexcept override {
 		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
-		m_staticMesh = world.AddComponent<Mona::StaticMeshComponent>(*this, Mona::ModelManager::PrimitiveType::Cube);
+		m_transform->Scale(glm::vec3(1.0f / 200.0f));
+		std::shared_ptr<Mona::Mesh> testModel = world.LoadMesh(Mona::SourcePath("Assets/Models/BrickBlock.fbx"));
+		m_staticMesh = world.AddComponent<Mona::StaticMeshComponent>(*this, testModel);
 	}
 	void UserUpdate(Mona::World& world, float timeStep) noexcept override {
 		m_transform->Translate(glm::vec3(m_speed, 0.0f, m_speed)*timeStep);
@@ -31,7 +33,8 @@ public:
 	}
 	void UserStartUp(Mona::World& world) noexcept override {
 		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
-		m_staticMesh = world.AddComponent<Mona::StaticMeshComponent>(*this, Mona::ModelManager::PrimitiveType::Sphere);
+		
+		m_staticMesh = world.AddComponent<Mona::StaticMeshComponent>(*this, world.LoadMesh(Mona::MeshManager::PrimitiveType::Sphere));
 	}
 	void UserUpdate(Mona::World& world, float timeStep) noexcept override {
 		m_transform->Translate(glm::vec3(m_speed, 0.0f, m_speed) * timeStep);
@@ -55,7 +58,7 @@ public:
 		auto& eventManager = world.GetEventManager();
 		m_windowResizeSubcription = eventManager.Subscribe(this, &Sandbox::OnWindowResize);
 		m_debugGUISubcription = eventManager.Subscribe(this, &Sandbox::OnDebugGUIEvent);
-		world.CreateGameObject<Sphere>(0.4f, 0.0f);
+		world.CreateGameObject<Sphere>(0.0f, 0.0f);
 		m_rotatingBox = world.CreateGameObject<Box>(0.0f, 0.0f);
 		auto camera = world.CreateGameObject<Mona::BasicPerspectiveCamera>();
 		world.SetMainCamera(world.GetComponentHandle<Mona::CameraComponent>(camera));

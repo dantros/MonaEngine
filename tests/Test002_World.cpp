@@ -32,7 +32,7 @@ public:
 	virtual void UserStartUp(Mona::World& world) noexcept override{
 		globalStartUpCalls += 1;
 		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
-		m_mesh = world.AddComponent<Mona::StaticMeshComponent>(*this);
+		m_mesh = world.AddComponent<Mona::StaticMeshComponent>(*this, world.LoadMesh(""));
 		m_camera = world.AddComponent<Mona::CameraComponent>(*this);
 	};
 	glm::vec3 GetTranslation() const {

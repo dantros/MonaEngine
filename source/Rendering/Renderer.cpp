@@ -6,7 +6,7 @@
 #include <GLFW/glfw3.h>
 #include <glm/gtc/type_ptr.hpp>
 #include "../Core/Log.hpp"
-#include "ModelManager.hpp"
+#include "Mesh.hpp"
 #include "../Core/RootDirectory.hpp"
 
 namespace Mona{
@@ -21,7 +21,6 @@ namespace Mona{
 
 
 	void Renderer::StartUp(EventManager& eventManager, DebugDrawingSystem* debugDrawingSystemPtr) noexcept {
-		ModelManager::GetInstance().StartUp();
 		m_shader = ShaderProgram(SourcePath("Assets/Shaders/BasicVS.vs"),
 			SourcePath("Assets/Shaders/BasicPS.ps"));
 		m_onWindowResizeSubscription = eventManager.Subscribe(this, &Renderer::OnWindowResizeEvent);
@@ -71,11 +70,10 @@ namespace Mona{
 			StaticMeshComponent& staticMesh = staticMeshDataManager[i];
 			GameObject* owner = staticMeshDataManager.GetOwnerByIndex(i);
 			TransformComponent* transform = transformDataManager.GetComponentPointer(owner->GetInnerComponentHandle<TransformComponent>());
-			auto& modelHandle = staticMesh.GetHandle();
 			glUniformMatrix4fv(5, 1, GL_FALSE, glm::value_ptr(transform->GetModelMatrix()));
-			glBindVertexArray(modelHandle.ID);
+			glBindVertexArray(staticMesh.GetMeshVAOID());
 			glUniform3fv(2, 1, glm::value_ptr(staticMesh.GetColor()));
-			glDrawElements(GL_TRIANGLES, modelHandle.count, GL_UNSIGNED_INT, 0);
+			glDrawElements(GL_TRIANGLES, staticMesh.GetMeshIndexCount(), GL_UNSIGNED_INT, 0);
 			
 		}
 		

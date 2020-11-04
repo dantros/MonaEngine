@@ -11,7 +11,7 @@ public:
 		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
 		m_transform->Scale(glm::vec3(1.0f / 200.0f));
 		std::shared_ptr<Mona::Mesh> testModel = world.LoadMesh(Mona::SourcePath("Assets/Models/BrickBlock.fbx"));
-		m_staticMesh = world.AddComponent<Mona::StaticMeshComponent>(*this, testModel);
+		m_staticMesh = world.AddComponent<Mona::StaticMeshComponent>(*this, testModel, world.CreateMaterial(Mona::MaterialType::FlatColor));
 	}
 	void UserUpdate(Mona::World& world, float timeStep) noexcept override {
 		m_transform->Translate(glm::vec3(m_speed, 0.0f, m_speed)*timeStep);
@@ -34,7 +34,7 @@ public:
 	void UserStartUp(Mona::World& world) noexcept override {
 		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
 		
-		m_staticMesh = world.AddComponent<Mona::StaticMeshComponent>(*this, world.LoadMesh(Mona::MeshManager::PrimitiveType::Sphere));
+		m_staticMesh = world.AddComponent<Mona::StaticMeshComponent>(*this, world.LoadMesh(Mona::MeshManager::PrimitiveType::Sphere), world.CreateMaterial(Mona::MaterialType::FlatColor));
 	}
 	void UserUpdate(Mona::World& world, float timeStep) noexcept override {
 		m_transform->Translate(glm::vec3(m_speed, 0.0f, m_speed) * timeStep);

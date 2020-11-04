@@ -3,6 +3,7 @@
 #include "../Event/Events.hpp"
 #include "../DebugDrawing/DebugDrawingSystem.hpp"
 #include "../PhysicsCollision/PhysicsCollisionSystem.hpp"
+#include "../Rendering/Material.hpp"
 #include <chrono>
 namespace Mona {
 	
@@ -150,6 +151,10 @@ namespace Mona {
 	std::shared_ptr<Mesh> World::LoadMesh(const std::filesystem::path& filePath) noexcept {
 		return m_meshManager.LoadMesh(filePath);
 	}
+	std::shared_ptr<Material> World::CreateMaterial(MaterialType type) noexcept {
+		return m_renderer.CreateMaterial(type);
+	}
+
 	void World::SetAudioListenerTransform(const ComponentHandle<TransformComponent>& transformHandle) noexcept{
 		m_audoListenerTransformHandle = transformHandle.GetInnerHandle();
 	}
@@ -205,5 +210,7 @@ namespace Mona {
 	void World::SetMasterVolume(float volume) noexcept {
 		m_audioSystem.SetMasterVolume(volume);
 	}
+
+
 }
 

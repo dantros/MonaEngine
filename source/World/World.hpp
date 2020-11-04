@@ -31,7 +31,7 @@
 
 namespace Mona {
 
-
+	class Material;
 	class World {
 	public:
 		World();
@@ -76,6 +76,7 @@ namespace Mona {
 		ComponentHandle<CameraComponent> GetMainCameraComponent() noexcept;
 		std::shared_ptr<Mesh> LoadMesh(MeshManager::PrimitiveType type) noexcept;
 		std::shared_ptr<Mesh> LoadMesh(const std::filesystem::path& filePath) noexcept;
+		std::shared_ptr<Material> CreateMaterial(MaterialType type) noexcept;
 
 		void SetGravity(const glm::vec3& gravity);
 		glm::vec3 GetGravity() const;

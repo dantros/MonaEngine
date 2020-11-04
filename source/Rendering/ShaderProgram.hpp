@@ -4,9 +4,15 @@
 #include <cstdint>
 #include <filesystem>
 #include <string>
+#include <glm/glm.hpp>
 namespace Mona {
 	class ShaderProgram {
 	public:
+		static constexpr int FlatColorShaderLocation = 2;
+		static constexpr int PerspectiveMatrixShaderLocation = 3;
+		static constexpr int ViewMatrixShaderLocation = 4;
+		static constexpr int ModelMatrixShaderLocation = 5;
+
 		ShaderProgram(const std::filesystem::path& vertexShaderPath,
 			const std::filesystem::path& pixelShaderPath) noexcept;
 		ShaderProgram() : m_programID(0) {}
@@ -14,8 +20,7 @@ namespace Mona {
 		ShaderProgram(ShaderProgram const& program) = delete;
 		ShaderProgram(ShaderProgram&& a) noexcept;
 		ShaderProgram& operator=(ShaderProgram&& a) noexcept; 
-
-		void UseProgram() const noexcept;
+		uint32_t GetProgramID() const noexcept { return m_programID; }
 		~ShaderProgram();
 
 	private:

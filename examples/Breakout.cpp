@@ -1,4 +1,5 @@
 #include "MonaEngine.hpp"
+#include "Rendering/FlatColorMaterial.hpp"
 class BasicCamera : public Mona::GameObject {
 public:
 	BasicCamera() = default;
@@ -24,7 +25,9 @@ public:
 		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
 		glm::vec3 paddleScale(2.0f, 0.5f, 0.5f);
 		m_transform->Scale(paddleScale);
-		world.AddComponent<Mona::StaticMeshComponent>(*this, world.LoadMesh(Mona::MeshManager::PrimitiveType::Cube), glm::vec3(0.9f, 0.5f, 0.3f));
+		auto paddleMaterial = std::static_pointer_cast<Mona::FlatColorMaterial>(world.CreateMaterial(Mona::MaterialType::FlatColor));
+		paddleMaterial->SetColor(glm::vec3(0.3f, 0.3f, 0.75f));
+		world.AddComponent<Mona::StaticMeshComponent>(*this, world.LoadMesh(Mona::MeshManager::PrimitiveType::Cube), paddleMaterial);
 		Mona::BoxShapeInformation boxInfo(paddleScale);
 		Mona::RigidBodyHandle rb = world.AddComponent<Mona::RigidBodyComponent>(*this, boxInfo, Mona::RigidBodyType::KinematicBody);
 		rb->SetFriction(0.0f);
@@ -37,7 +40,9 @@ public:
 		m_ballTransform->SetRotation(m_transform->GetLocalRotation());
 		m_ballTransform->SetTranslation(m_transform->GetLocalTranslation() + glm::vec3(0.0f, 2.0f, 0.0f));
 		m_ballTransform->SetScale(glm::vec3(ballRadius));
-		world.AddComponent<Mona::StaticMeshComponent>(ball, world.LoadMesh(Mona::MeshManager::PrimitiveType::Sphere), glm::vec3(0.3f, 0.3f, 0.85f));
+		auto ballMaterial = std::static_pointer_cast<Mona::FlatColorMaterial>(world.CreateMaterial(Mona::MaterialType::FlatColor));
+		ballMaterial->SetColor(glm::vec3(0.75f, 0.3f, 0.3f));
+		world.AddComponent<Mona::StaticMeshComponent>(ball, world.LoadMesh(Mona::MeshManager::PrimitiveType::Sphere), ballMaterial);
 		
 		Mona::SphereShapeInformation sphereInfo(ballRadius);
 		m_ballRigidBody = world.AddComponent<Mona::RigidBodyComponent>(ball, sphereInfo, Mona::RigidBodyType::DynamicBody);
@@ -77,9 +82,13 @@ private:
 };
 
 
-void InitializeWall(Mona::World &world, Mona::GameObjectHandle<Mona::GameObject>& wall, const glm::vec3& position, const glm::vec3& scale) {
+void InitializeWall(Mona::World &world,
+	Mona::GameObjectHandle<Mona::GameObject>& wall,
+	const glm::vec3& position,
+	const glm::vec3& scale,
+	std::shared_ptr<Mona::Material> wallMaterial) {
 	world.AddComponent<Mona::TransformComponent>(wall, position, glm::fquat(1.0f, 0.0f, 0.0f, 0.0f), scale);
-	world.AddComponent<Mona::StaticMeshComponent>(wall, world.LoadMesh(Mona::MeshManager::PrimitiveType::Cube), glm::vec3(0.15f));
+	world.AddComponent<Mona::StaticMeshComponent>(wall, world.LoadMesh(Mona::MeshManager::PrimitiveType::Cube), wallMaterial);
 	Mona::BoxShapeInformation wallShape(scale);
 	Mona::RigidBodyHandle rb = world.AddComponent<Mona::RigidBodyComponent>(wall, wallShape, Mona::RigidBodyType::StaticBody);
 	rb->SetRestitution(1.0f);
@@ -97,6 +106,7 @@ public:
 		m_blockBreakingSound = world.LoadAudioClip(Mona::SourcePath("Assets/AudioFiles/boxBreaking.wav"));
 
 		Mona::BoxShapeInformation boxInfo(blockScale);
+		auto blockMaterial = world.CreateMaterial(Mona::MaterialType::FlatColor);
 		for (int i = -2; i < 3; i++) {
 			float x = 4.0f * i;
 			for (int j = -2; j < 3; j++)
@@ -105,7 +115,7 @@ public:
 				auto block = world.CreateGameObject<Mona::GameObject>();
 				auto transform = world.AddComponent<Mona::TransformComponent>(block, glm::vec3( x, 15.0f + y, 0.0f));
 				transform->Scale(blockScale);
-				world.AddComponent<Mona::StaticMeshComponent>(block, world.LoadMesh(Mona::MeshManager::PrimitiveType::Cube));
+				world.AddComponent<Mona::StaticMeshComponent>(block, world.LoadMesh(Mona::MeshManager::PrimitiveType::Cube), blockMaterial);
 				Mona::RigidBodyHandle rb =world.AddComponent<Mona::RigidBodyComponent>(block, boxInfo, Mona::RigidBodyType::StaticBody, 1.0f);
 				rb->SetRestitution(1.0f);
 				rb->SetFriction(0.0f);
@@ -118,15 +128,17 @@ public:
 				
 			}
 		}
+		auto wallMaterial = std::static_pointer_cast<Mona::FlatColorMaterial>(world.CreateMaterial(Mona::MaterialType::FlatColor));
+		wallMaterial->SetColor(glm::vec3(0.15f, 0.15f, 0.15f));
 		auto upperWall = world.CreateGameObject<Mona::GameObject>();
-		InitializeWall(world, upperWall, glm::vec3(0.0f, 26.0f, 0.0f), glm::vec3(18.0f, 1.0f, 1.0f));
+		InitializeWall(world, upperWall, glm::vec3(0.0f, 26.0f, 0.0f), glm::vec3(18.0f, 1.0f, 1.0f), wallMaterial);
 
 		glm::vec3 sideWallScale(1.0f, 27.0f, 1.0f);
 		float sideWallOffset = 19.0f;
 		auto leftWall = world.CreateGameObject<Mona::GameObject>();
-		InitializeWall(world, leftWall, glm::vec3(-sideWallOffset, 0.0f, 0.0f), sideWallScale);
+		InitializeWall(world, leftWall, glm::vec3(-sideWallOffset, 0.0f, 0.0f), sideWallScale, wallMaterial);
 		auto rightWall = world.CreateGameObject<Mona::GameObject>();
-		InitializeWall(world, rightWall, glm::vec3(sideWallOffset, 0.0f, 0.0f), sideWallScale);
+		InitializeWall(world, rightWall, glm::vec3(sideWallOffset, 0.0f, 0.0f), sideWallScale, wallMaterial);
 
 	}
 

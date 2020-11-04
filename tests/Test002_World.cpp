@@ -32,8 +32,8 @@ public:
 	virtual void UserStartUp(Mona::World& world) noexcept override{
 		globalStartUpCalls += 1;
 		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
-		m_mesh = world.AddComponent<Mona::StaticMeshComponent>(*this, world.LoadMesh(""));
 		m_camera = world.AddComponent<Mona::CameraComponent>(*this);
+		world.SetMainCamera(m_camera);
 	};
 	glm::vec3 GetTranslation() const {
 		return m_transform->GetLocalTranslation();
@@ -43,7 +43,6 @@ public:
 	}
 private:
 	Mona::TransformHandle m_transform;
-	Mona::StaticMeshHandle m_mesh;
 	Mona::CameraHandle m_camera;
 };
 class SpawnInShutDown : public Mona::GameObject {
@@ -92,7 +91,6 @@ int main(){
 	world.StartUp(std::unique_ptr<Mona::Application>(new Sandbox()));
 	Mona::GameObjectHandle<MyBox> box = world.CreateGameObject<MyBox>();
 	MONA_ASSERT(world.GetComponentCount<Mona::TransformComponent>() == 1, "Incorrect component count");
-	MONA_ASSERT(world.GetComponentCount<Mona::StaticMeshComponent>() == 1, "Incorrect component count");
 	MONA_ASSERT(world.GetComponentCount<Mona::CameraComponent>() == 1, "Incorrect component count");
 	MONA_ASSERT(world.GetGameObjectCount() == 1, "Incorrect game object count");
 	MONA_ASSERT(globalStartUpCalls == 1, "Incorrect number of startUp calls");
@@ -102,7 +100,6 @@ int main(){
 	MONA_ASSERT(box->GetTranslation() == glm::vec3(20.0f), "Incorrect box translation");
 	world.DestroyGameObject(box);
 	MONA_ASSERT(world.GetComponentCount<Mona::TransformComponent>() == 0, "Incorrect component count");
-	MONA_ASSERT(world.GetComponentCount<Mona::StaticMeshComponent>() == 0, "Incorrect component count");
 	MONA_ASSERT(world.GetComponentCount<Mona::CameraComponent>() == 0, "Incorrect component count");
 	MONA_ASSERT(world.GetGameObjectCount() == 1, "Incorrect game object count");
 	MONA_ASSERT(world.IsValid(box), "box should be valid");
@@ -121,7 +118,6 @@ int main(){
 		world.Update(1.0f);
 	}
 	MONA_ASSERT(world.GetComponentCount<Mona::TransformComponent>() == 2000, "Incorrect component count");
-	MONA_ASSERT(world.GetComponentCount<Mona::StaticMeshComponent>() == 2000, "Incorrect component count");
 	MONA_ASSERT(world.GetComponentCount<Mona::CameraComponent>() == 2000, "Incorrect component count");
 	MONA_ASSERT(globalStartUpCalls == 2001, "Incorrect number of startUp calls");
 	MONA_ASSERT(globalUpdateCalls == (2 + 2000*100), "Incorrect number of Update calls");

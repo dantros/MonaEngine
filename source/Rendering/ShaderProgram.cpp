@@ -3,6 +3,7 @@
 #include <glad/glad.h>
 #include <sstream>
 #include <fstream>
+#include <glm/gtc/type_ptr.hpp>
 namespace Mona {
 
 
@@ -115,10 +116,7 @@ namespace Mona {
 		m_programID = program;
 	}
 
-	void ShaderProgram::UseProgram() const noexcept{
-		MONA_ASSERT(m_programID, "Shader Error: Trying to use invalid shader");
-		glUseProgram(m_programID);
-	}
+
 
 	ShaderProgram::~ShaderProgram()
 	{

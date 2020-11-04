@@ -28,6 +28,9 @@ set(MONA_HEADERS
 				Rendering/ShaderProgram.hpp
 				Rendering/MeshManager.hpp
 				Rendering/Mesh.hpp
+				Rendering/Material.hpp
+				Rendering/FlatColorMaterial.hpp
+				Rendering/TextureMaterial.hpp
 				PhysicsCollision/PhysicsCollisionSystem.hpp
 				PhysicsCollision/PhysicsCollisionEvents.hpp
 				PhysicsCollision/CustomMotionState.hpp

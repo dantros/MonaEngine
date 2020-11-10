@@ -30,6 +30,8 @@ set(MONA_HEADERS
 				Rendering/Mesh.hpp
 				Rendering/Material.hpp
 				Rendering/FlatColorMaterial.hpp
+				Rendering/Texture.hpp
+				Rendering/TextureManager.hpp
 				Rendering/TextureMaterial.hpp
 				PhysicsCollision/PhysicsCollisionSystem.hpp
 				PhysicsCollision/PhysicsCollisionEvents.hpp
@@ -62,6 +64,8 @@ set(MONA_SOURCES
 				Rendering/Renderer.cpp
 				Rendering/ShaderProgram.cpp
 				Rendering/MeshManager.cpp
+				Rendering/Texture.cpp
+				Rendering/TextureManager.cpp
 				PhysicsCollision/PhysicsCollisionSystem.cpp
 				Audio/AudioSystem.cpp
 				Audio/AudioClip.cpp

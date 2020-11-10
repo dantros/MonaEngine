@@ -1,4 +1,5 @@
 #include "MeshManager.hpp"
+#include <cstdint>
 #include <vector>
 #include <stack>
 #include <cmath>
@@ -68,7 +69,7 @@ namespace Mona {
 		}
 
 		Assimp::Importer importer;
-		const aiScene* scene = importer.ReadFile(stringPath, aiProcess_Triangulate | aiProcess_GenSmoothNormals);
+		const aiScene* scene = importer.ReadFile(stringPath, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs);
 		if (!scene) {
 			MONA_LOG_ERROR("MeshManager Error: Failed to open file with path {0}", stringPath);
 			MONA_LOG_INFO("Loading default model");
@@ -83,7 +84,7 @@ namespace Mona {
 			numFaces += scene->mMeshes[i]->mNumFaces;
 		}
 
-		vertices.reserve(numVertices * 6);
+		vertices.reserve(numVertices * 8);
 		faces.reserve(numFaces);
 
 
@@ -111,6 +112,15 @@ namespace Mona {
 					vertices.push_back(normal.x);
 					vertices.push_back(normal.y);
 					vertices.push_back(normal.z);
+					if (meshOBJ->mTextureCoords[0]) {
+						vertices.push_back(meshOBJ->mTextureCoords[0][i].x);
+						vertices.push_back(meshOBJ->mTextureCoords[0][i].y);
+					}
+					else {
+						vertices.push_back(0.0f);
+						vertices.push_back(0.0f);
+					}
+
 				}
 
 				for (uint32_t i = 0; i < meshOBJ->mNumFaces; i++) {
@@ -142,10 +152,13 @@ namespace Mona {
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, modelIBO);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<unsigned int>(faces.size()) * sizeof(unsigned int), faces.data(), GL_STATIC_DRAW);
 		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-		auto sharedPtr = std::make_shared<Mesh>(modelVAO, modelVBO, modelIBO, static_cast<uint32_t>(faces.size()));
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+		Mesh* meshPtr = new Mesh(modelVAO, modelVBO, modelIBO, static_cast<uint32_t>(faces.size()));
+		std::shared_ptr<Mesh> sharedPtr = std::shared_ptr<Mesh>(meshPtr);
 		m_meshMap.insert({ stringPath, sharedPtr });
 		return sharedPtr;
 
@@ -220,7 +233,8 @@ namespace Mona {
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 		glEnableVertexAttribArray(1);
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-		auto sharedPtr = std::make_shared<Mesh>(sphereVAO, sphereVBO, sphereIBO, static_cast<uint32_t>(indices.size()));
+		Mesh* meshPtr = new Mesh(sphereVAO, sphereVBO, sphereIBO, static_cast<uint32_t>(indices.size()));
+		std::shared_ptr<Mesh> sharedPtr = std::shared_ptr<Mesh>(meshPtr);
 		m_meshMap.insert({ "Sphere", sharedPtr });
 		return sharedPtr;
 	}
@@ -291,7 +305,8 @@ namespace Mona {
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 		glEnableVertexAttribArray(1);
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-		auto sharedPtr = std::make_shared<Mesh>(cubeVAO, cubeVBO, cubeIBO, 36);
+		Mesh* meshPtr = new Mesh(cubeVAO, cubeVBO, cubeIBO, 36);
+		std::shared_ptr<Mesh> sharedPtr = std::shared_ptr<Mesh>(meshPtr);
 		m_meshMap.insert({ "Cube", sharedPtr });
 		return sharedPtr;
 	
@@ -326,7 +341,8 @@ namespace Mona {
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 		glEnableVertexAttribArray(1);
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-		auto sharedPtr = std::make_shared<Mesh>(planeVAO, planeVBO, planeIBO, 6);
+		Mesh* meshPtr = new Mesh(planeVAO, planeVBO, planeIBO, 6);
+		std::shared_ptr<Mesh> sharedPtr = std::shared_ptr<Mesh>(meshPtr);
 		m_meshMap.insert({ "Plane", sharedPtr });
 		return sharedPtr;
 	}

@@ -1,7 +1,6 @@
 #pragma once
 #ifndef MESHMANAGER_HPP
 #define MESHMANAGER_HPP
-#include <cstdint>
 #include <memory>
 #include <filesystem>
 #include <unordered_map>

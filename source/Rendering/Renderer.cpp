@@ -10,6 +10,7 @@
 #include "../DebugDrawing/DebugDrawingSystem.hpp"
 #include "Mesh.hpp"
 #include "FlatColorMaterial.hpp"
+#include "TextureMaterial.hpp"
 
 namespace Mona{
 	template
@@ -24,6 +25,7 @@ namespace Mona{
 
 	void Renderer::StartUp(EventManager& eventManager, DebugDrawingSystem* debugDrawingSystemPtr) noexcept {
 		m_shaders.emplace_back(SourcePath("Assets/Shaders/BasicVS.vs"), SourcePath("Assets/Shaders/BasicPS.ps"));
+		m_shaders.emplace_back(SourcePath("Assets/Shaders/TexturedModel.vs"), SourcePath("Assets/Shaders/TexturedModel.ps"));
 		m_onWindowResizeSubscription = eventManager.Subscribe(this, &Renderer::OnWindowResizeEvent);
 		m_debugDrawingSystemPtr = debugDrawingSystemPtr;
 		glEnable(GL_DEPTH_TEST);
@@ -91,7 +93,7 @@ namespace Mona{
 			return std::make_shared<FlatColorMaterial>(m_shaders[0].GetProgramID());
 			break;
 		case Mona::MaterialType::Textured:
-			return std::make_shared<FlatColorMaterial>(m_shaders[0].GetProgramID());
+			return std::make_shared<TextureMaterial>(m_shaders[1].GetProgramID());
 			break;
 		default:
 			return nullptr;

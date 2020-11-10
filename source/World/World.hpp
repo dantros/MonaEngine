@@ -17,6 +17,7 @@
 #include "../Rendering/StaticMeshComponent.hpp"
 #include "../Rendering/Renderer.hpp"
 #include "../Rendering/MeshManager.hpp"
+#include "../Rendering/TextureManager.hpp"
 #include "../PhysicsCollision/RigidBodyComponent.hpp"
 #include "../PhysicsCollision/RigidBodyLifetimePolicy.hpp"
 #include "../PhysicsCollision/RaycastResults.hpp"
@@ -76,7 +77,14 @@ namespace Mona {
 		ComponentHandle<CameraComponent> GetMainCameraComponent() noexcept;
 		std::shared_ptr<Mesh> LoadMesh(MeshManager::PrimitiveType type) noexcept;
 		std::shared_ptr<Mesh> LoadMesh(const std::filesystem::path& filePath) noexcept;
+		std::shared_ptr<Texture> LoadTexture(const std::filesystem::path& filePath,
+			TextureMagnificationFilter magFilter = TextureMagnificationFilter::Linear,
+			TextureMinificationFilter minFilter = TextureMinificationFilter::LinearMipmapLinear,
+			WrapMode sWrapMode = WrapMode::Repeat,
+			WrapMode tWrapMode = WrapMode::Repeat,
+			bool genMipmaps = false) noexcept;
 		std::shared_ptr<Material> CreateMaterial(MaterialType type) noexcept;
+
 
 		void SetGravity(const glm::vec3& gravity);
 		glm::vec3 GetGravity() const;
@@ -118,6 +126,7 @@ namespace Mona {
 
 		Renderer m_renderer;
 		MeshManager m_meshManager;
+		TextureManager m_textureManager;
 		InnerComponentHandle m_cameraHandle;
 
 		PhysicsCollisionSystem m_physicsCollisionSystem;

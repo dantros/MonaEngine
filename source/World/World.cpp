@@ -15,7 +15,8 @@ namespace Mona {
 		m_application(),
 		m_shouldClose(false),
 		m_physicsCollisionSystem(),
-		m_meshManager()
+		m_meshManager(),
+		m_textureManager()
 	{
 		
 		m_componentManagers[TransformComponent::componentIndex].reset(new TransformComponent::managerType());
@@ -56,6 +57,7 @@ namespace Mona {
 		m_audioSystem.ShutDown();
 		m_physicsCollisionSystem.ShutDown();
 		m_meshManager.ShutDown();
+		m_textureManager.ShutDown();
 		m_renderer.ShutDown(m_eventManager);
 		m_debugDrawingSystem->ShutDown();
 		m_window.ShutDown();
@@ -129,6 +131,7 @@ namespace Mona {
 		m_application->UserUpdate(*this, timeStep);
 		m_audioClipManager.CleanUnusedAudioClips();
 		m_meshManager.CleanUnusedMeshes();
+		m_textureManager.CleanUnusedTextures();
 		m_audioSystem.Update(m_audoListenerTransformHandle, timeStep, transformDataManager, audioSourceDataManager);
 		m_renderer.Render(m_eventManager, m_cameraHandle, staticMeshDataManager, transformDataManager, cameraDataManager);
 		m_window.Update();
@@ -150,6 +153,17 @@ namespace Mona {
 
 	std::shared_ptr<Mesh> World::LoadMesh(const std::filesystem::path& filePath) noexcept {
 		return m_meshManager.LoadMesh(filePath);
+	}
+
+	std::shared_ptr<Texture> World::LoadTexture(const std::filesystem::path& filePath,
+		TextureMagnificationFilter magFilter,
+		TextureMinificationFilter minFilter,
+		WrapMode sWrapMode,
+		WrapMode tWrapMode,
+		bool genMipmaps) noexcept 
+	{
+
+		return m_textureManager.LoadTexture(filePath, magFilter, minFilter, sWrapMode, tWrapMode, genMipmaps);
 	}
 	std::shared_ptr<Material> World::CreateMaterial(MaterialType type) noexcept {
 		return m_renderer.CreateMaterial(type);

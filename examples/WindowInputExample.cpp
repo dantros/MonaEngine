@@ -1,5 +1,6 @@
 #include "MonaEngine.hpp"
 #include "Utilities/BasicCameraControllers.hpp"
+#include "Rendering/TextureMaterial.hpp"
 #include <imgui.h>
 class Box : public Mona::GameObject {
 public:
@@ -9,9 +10,12 @@ public:
 	}
 	void UserStartUp(Mona::World& world) noexcept override {
 		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
-		m_transform->Scale(glm::vec3(1.0f / 200.0f));
-		std::shared_ptr<Mona::Mesh> testModel = world.LoadMesh(Mona::SourcePath("Assets/Models/BrickBlock.fbx"));
-		m_staticMesh = world.AddComponent<Mona::StaticMeshComponent>(*this, testModel, world.CreateMaterial(Mona::MaterialType::FlatColor));
+		//m_transform->Scale(glm::vec3(1.0f / 200.0f));
+		std::shared_ptr<Mona::Mesh> testModel = world.LoadMesh(Mona::SourcePath("Assets/Models/BackpackOBJ/backpack.obj"));
+		std::shared_ptr<Mona::TextureMaterial> testMaterial = std::static_pointer_cast<Mona::TextureMaterial>(world.CreateMaterial(Mona::MaterialType::Textured));
+		std::shared_ptr<Mona::Texture> testTexture = world.LoadTexture(Mona::SourcePath("Assets/Models/BackpackOBJ/diffuse.jpg"));
+		testMaterial->SetDiffuseTexture(testTexture);
+		m_staticMesh = world.AddComponent<Mona::StaticMeshComponent>(*this, testModel, testMaterial);
 	}
 	void UserUpdate(Mona::World& world, float timeStep) noexcept override {
 		m_transform->Translate(glm::vec3(m_speed, 0.0f, m_speed)*timeStep);

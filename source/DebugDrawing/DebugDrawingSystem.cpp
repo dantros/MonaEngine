@@ -30,8 +30,8 @@ namespace Mona {
 	void DebugDrawingSystem::Draw(EventManager& eventManager, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) noexcept {
 
 		glUseProgram(m_lineShader.GetProgramID());
-		glUniformMatrix4fv(3, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-		glUniformMatrix4fv(4, 1, GL_FALSE, glm::value_ptr(viewMatrix));
+		glUniformMatrix4fv(0, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+		glUniformMatrix4fv(1, 1, GL_FALSE, glm::value_ptr(viewMatrix));
 		m_physicsWorldPtr->debugDrawWorld();
 
 

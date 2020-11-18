@@ -7,15 +7,21 @@
 #include "RigidBodyComponent.hpp"
 #include "../World/ComponentHandle.hpp"
 namespace Mona {
+	/*
+	* La clase ClosestHitRaycastResult representa el resultado de una consulta de raycast que busca la colisión mas cercana.
+	*/
 	class ClosestHitRaycastResult {
 	public:
 		ClosestHitRaycastResult(const btCollisionWorld::ClosestRayResultCallback& btRaycastResult, typename RigidBodyComponent::managerType* rigidBodyDatamanager) {
+			//El principal trabajo de este constructor es transformar el resultado de una consulta de Bullet a un formato interno
 			m_rayFrom = glm::vec3(btRaycastResult.m_rayFromWorld.x(), btRaycastResult.m_rayFromWorld.y(), btRaycastResult.m_rayFromWorld.z());
 			m_rayTo = glm::vec3(btRaycastResult.m_rayToWorld.x(), btRaycastResult.m_rayToWorld.y(), btRaycastResult.m_rayToWorld.z());
 			m_hitPosition = glm::vec3(btRaycastResult.m_hitPointWorld.x(), btRaycastResult.m_hitPointWorld.y(), btRaycastResult.m_hitPointWorld.z());
 			m_hitNormal = glm::vec3(btRaycastResult.m_hitNormalWorld.x(), btRaycastResult.m_hitNormalWorld.y(), btRaycastResult.m_hitNormalWorld.z());
 			m_hasHit = btRaycastResult.hasHit();
 			if (btRaycastResult.hasHit()) {
+				//Bullet permite usar dos indices por cada collisionObject (UserIndex/UserIndex2), con estos
+				//podemos recuperar la instancia de RigidBodyComponent asociada al collisionObject de bullet
 				InnerComponentHandle rbInnerHandle = InnerComponentHandle(btRaycastResult.m_collisionObject->getUserIndex(), btRaycastResult.m_collisionObject->getUserIndex2());
 				m_rigidBody = RigidBodyHandle(rbInnerHandle, rigidBodyDatamanager);
 			}
@@ -33,9 +39,13 @@ namespace Mona {
 		RigidBodyHandle m_rigidBody;
 	};
 
+	/*
+	* La clase AllHitsRaycastResult representa el resultado de una consulta de raycast que busca todas las colisiones que intersectaron el rayo consultado.
+	*/
 	class AllHitsRaycastResult {
 	public:
 		AllHitsRaycastResult(const btCollisionWorld::AllHitsRayResultCallback& btRaycastResult, typename RigidBodyComponent::managerType* rigidBodyDatamanager) {
+			//El principal trabajo de este constructor es transformar el resultado de una consulta de Bullet a un formato interno
 			m_rayFrom = glm::vec3(btRaycastResult.m_rayFromWorld.x(), btRaycastResult.m_rayFromWorld.y(), btRaycastResult.m_rayFromWorld.z());
 			m_rayTo = glm::vec3(btRaycastResult.m_rayToWorld.x(), btRaycastResult.m_rayToWorld.y(), btRaycastResult.m_rayToWorld.z());
 			auto& hitPositions = btRaycastResult.m_hitPointWorld;
@@ -58,6 +68,8 @@ namespace Mona {
 			}
 
 			for (int i = 0; i < collisionObjects.size(); i++) {
+				//Bullet permite usar dos indices por cada collisionObject (UserIndex/UserIndex2), con estos
+				//podemos recuperar la instancia de RigidBodyComponent asociada al collisionObject de bullet
 				const auto& collisionObject = collisionObjects[i];
 				InnerComponentHandle rbInnerHandle = InnerComponentHandle(btRaycastResult.m_collisionObject->getUserIndex(), btRaycastResult.m_collisionObject->getUserIndex2());
 				m_rigidBodies.emplace_back(rbInnerHandle, rigidBodyDatamanager);

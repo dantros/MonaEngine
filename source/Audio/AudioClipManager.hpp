@@ -7,12 +7,27 @@
 #include <string>
 #include "AudioClip.hpp"
 namespace Mona {
+	/*
+	* Clase responsable de la creación y administración de instancias de AudioClips
+	*/
 	class AudioClipManager {
 	public:
 		using AudioClipMap = std::unordered_map<std::string, std::shared_ptr<AudioClip>>;
 		AudioClipManager() = default;
+		/*
+		* Crea o obtiene una instancia de AudioClip asociada al archivo ubicado en filePath.
+		* Si ya se cargo un AudioClip con la misma ubicación el proceso de construccion de la instancia
+		* de AudioClip sera omitida y se entregara un puntero a una instancia previamente creada.
+		*/
 		std::shared_ptr<AudioClip> LoadAudioClip(const std::filesystem::path& filePath) noexcept;
+		/*
+		* Limpia o elimina las instancias de AudioCLips que solo estan siendo referenciadas por esta clase
+		*/
 		void CleanUnusedAudioClips() noexcept;
+		/*
+		* Este metodo es llamado al momento que el motor se esta preparando para ser cerrado. Y se encarga de
+		* liberar todos los recursos de OpenAL asoaciados a cada una de las instancias de AudioClip cargadas.
+		*/
 		void ShutDown() noexcept;
 	private:
 		AudioClipMap m_audioClipMap;

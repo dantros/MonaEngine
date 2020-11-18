@@ -72,6 +72,7 @@ namespace Mona {
 
 	void World::DestroyGameObject(GameObject& gameObject) noexcept {
 		auto& innerComponentHandles = gameObject.m_componentHandles;
+		//Es necesario remover primero todas las componentes antes de destruir el GameObject
 		for (auto& it : innerComponentHandles) {
 			m_componentManagers[it.first]->RemoveComponent(it.second);
 		}
@@ -151,8 +152,8 @@ namespace Mona {
 		return m_meshManager.LoadMesh(type);
 	}
 
-	std::shared_ptr<Mesh> World::LoadMesh(const std::filesystem::path& filePath) noexcept {
-		return m_meshManager.LoadMesh(filePath);
+	std::shared_ptr<Mesh> World::LoadMesh(const std::filesystem::path& filePath, bool flipUVs) noexcept {
+		return m_meshManager.LoadMesh(filePath, flipUVs);
 	}
 
 	std::shared_ptr<Texture> World::LoadTexture(const std::filesystem::path& filePath,

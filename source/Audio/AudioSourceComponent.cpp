@@ -81,6 +81,21 @@ namespace Mona {
 		m_sourceState = AudioSourceState::Paused;
 	}
 
+	void AudioSourceComponent::SetSourceType(SourceType type) noexcept {
+		m_sourceType = type;
+		if (m_openALsource)
+		{
+			const OpenALSource& alSource = m_openALsource.value();
+			if (m_sourceType == SourceType::Source2D) {
+				ALCALL(alSourcei(alSource.m_sourceID, AL_SOURCE_RELATIVE, AL_TRUE));
+				ALCALL(alSource3f(alSource.m_sourceID, AL_POSITION, 0.0f, 0.0f, 0.0f));
+			}
+			else {
+				ALCALL(alSourcei(alSource.m_sourceID, AL_SOURCE_RELATIVE, AL_FALSE));
+			}
+		}
+
+	}
 	void AudioSourceComponent::SetVolume(float volume) noexcept {
 		m_volume = std::clamp(volume, 0.0f, 1.0f);
 		if (m_openALsource) {

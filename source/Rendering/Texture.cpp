@@ -105,7 +105,7 @@ namespace Mona {
 	{
 
 		int width, height, channels;
-		stbi_set_flip_vertically_on_load(true);
+		//Se carga los datos de la imagen usando stb
 		stbi_uc* data = stbi_load(stringFilePath.c_str(), &width, &height, &channels, 0);
 		if (!data) {
 			MONA_LOG_ERROR("Texture Error: Failed to load texture from {0} file.", stringFilePath);
@@ -130,6 +130,8 @@ namespace Mona {
 			stbi_image_free(data);
 			return;
 		}
+
+		//Se pasa los datos de CPU a GPU usando OpenGL
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_ID);
 		glTextureStorage2D(m_ID, 1, internalFormat, width, height);
 		glTextureParameteri(m_ID, GL_TEXTURE_WRAP_S, WrapEnumToOpenGLEnum(sWrapMode));

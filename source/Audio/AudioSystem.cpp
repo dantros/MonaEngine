@@ -9,7 +9,9 @@
 namespace Mona {
 	void AudioSystem::StartUp(unsigned int channels) noexcept {
 		MONA_ASSERT(channels > 0, "AudioSystem Error: please request more than zero channels");
+		//Creación de una instancia de ALCdevice y ALCcontext, y posterior chequeo.
 		m_audioDevice = alcOpenDevice(nullptr);
+
 		if (!m_audioDevice) {
 			MONA_LOG_ERROR("AudioSystem Error: Failed to open audio device.");
 			return;
@@ -23,6 +25,8 @@ namespace Mona {
 		ALCALL(alDistanceModel(AL_LINEAR_DISTANCE_CLAMPED));
 		m_masterVolume = 1.0f;
 		ALCALL(alListenerf(AL_GAIN, m_masterVolume));
+
+		//Se crean una fuente de OpenAL por cada canal solicitado
 		m_channels = channels;
 		m_openALSources.reserve(channels);
 		for (unsigned int i = 0; i < channels; i++) {
@@ -35,7 +39,6 @@ namespace Mona {
 	}
 
 	void AudioSystem::ShutDown() noexcept {
-
 		alcMakeContextCurrent(NULL);
 		alcDestroyContext(m_audioContext);
 		alcCloseDevice(m_audioDevice);
@@ -46,6 +49,7 @@ namespace Mona {
 		const TransformComponent::managerType& transformDataManager,
 		AudioSourceComponent::managerType& audioDataManager) noexcept {
 
+		//Actualización de la posición del receptor de OpenAL. Usando una instancia de TransformComponent señalada por el usuario
 		glm::vec3 listenerPosition = glm::vec3(0.0f);
 		if (transformDataManager.IsValid(audioListenerTransformHandle)) {
 			const TransformComponent* listenerTransform = transformDataManager.GetComponentPointer(audioListenerTransformHandle);
@@ -53,32 +57,48 @@ namespace Mona {
 			UpdateListener(listenerPosition, listenerTransform->GetFrontVector(), listenerTransform->GetUpVector());
 		}
 		else {
+			//En caso de que el usuario no haya asignada ninguna instancia valida de TransformCOmponent como posición del receptor
+			//este es ubicado en la posición (0,0,0)
 			UpdateListener(listenerPosition, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		}
 
+		//Se remueven las fuentes libres que ya terminaron de reproducir su clip de audio
 		RemoveCompletedFreeAudioSources();
+
+		//Ambos tipos de fuentes avanzan sus timers en timeStep segundos
 		UpdateFreeAudioSourcesTimers(timeStep);
 		UpdateAudioSourceComponentsTimers(timeStep, audioDataManager);
 
+		//Comienza la asignación de fuentes de OpenAL a las fuentes del motor.
 		if (m_freeAudioSources.size() + audioDataManager.GetCount() <= m_openALSources.size()) {
+			//Si la suma de fuentes libres y fuentes ligadas a GameObjects es menor que la cantidad de fuentes de OpenAL disponibles
+			//Asignamos recursos a todas.
 			AssignOpenALSourceToFreeAudioSources(m_freeAudioSources.begin(), m_freeAudioSources.end());
 			AssignOpenALSourceToAudioSourceComponents(audioDataManager, transformDataManager, 0, audioDataManager.GetCount());
 		}
 		else {
+
+			//Remover recursos de OpenAL de fuentes libres 3D fuera  de rango y obtener iterador a la primera que quedo fuera
 			auto firstOutFreeSource = PartitionAndRemoveOpenALSourceFromFreeAudioSources(listenerPosition);
+			//Remover recursos de OpenAL de fuentes 3D fuera de rango o que terminaron de reproducir su audio clip
+			// y obtener iterador a la primera que quedo fuera
 			uint32_t firstOutAudioComponent = PartitionAndRemoveOpenALSourceFromAudioSourceComponents(audioDataManager, 
 				transformDataManager, listenerPosition);
+
+
 			if (std::distance(m_freeAudioSources.begin(), firstOutFreeSource) + firstOutAudioComponent <= m_openALSources.size()) {
+				//Si descontando las fuentes recien descartadas los recursos de OpenAL son sufientes estos son asignados.
 				AssignOpenALSourceToFreeAudioSources(m_freeAudioSources.begin(), firstOutFreeSource);
 				AssignOpenALSourceToAudioSourceComponents(audioDataManager, transformDataManager, 0, firstOutAudioComponent);
 			}
 			else {
-
+				//Dado que aun los recursos de openAL no son suficientes para la cantidad de fuentes, se procede a ordenarlas por prioridad
 				uint32_t countFreeSources[static_cast<unsigned int>(AudioSourcePriority::PriorityCount)] = {};
 				uint32_t countAudioComponents[static_cast<unsigned int>(AudioSourcePriority::PriorityCount)] = {};
 				SortFreeAudioSourcesByPriority(firstOutFreeSource, countFreeSources);
 				SortAudioSourceComponentsByPriority(audioDataManager, firstOutAudioComponent, countAudioComponents);
 
+				//Una vez ordenadas tanto las fuentes libres como las unidas como componentes se procede a otorgar y quitar los recursos de OpenAL a estas
 				uint32_t firstToRemoveFreeSource = 0;
 				uint32_t firstToRemoveSourceComponent = 0;
 				uint32_t sourceCount = m_openALSources.size();
@@ -114,6 +134,7 @@ namespace Mona {
 	}
 
 	void AudioSystem::SetMasterVolume(float volume) noexcept {
+		//Para que el cambio de volumen sea global se le cambia esta propiedad al unico receptor
 		m_masterVolume = std::clamp(volume, 0.0f, 1.0f);
 		ALCALL(alListenerf(AL_GAIN, m_masterVolume));
 	}
@@ -173,11 +194,13 @@ namespace Mona {
 	}
 
 	void AudioSystem::RemoveCompletedFreeAudioSources() {
+		//Se particiona el arregle de fuentes libres dejando al final las fuentes que terminaron de reproducir su audio clip (timeLeft <0)
 		auto beginRemove = std::partition(m_freeAudioSources.begin(), m_freeAudioSources.end(),
 			[](const FreeAudioSource& audioSource) {
 				return audioSource.m_timeLeft > 0.0f;
 			});
 
+		//Se remueven los recursos asignados a las fuentes previo a su elimination.
 		for (auto it = beginRemove; it != m_freeAudioSources.end(); it++) {
 			if (it->m_openALsource) {
 				AudioSource::OpenALSource openALSource = it->m_openALsource.value();
@@ -186,10 +209,12 @@ namespace Mona {
 				FreeOpenALSource(openALSource.m_sourceIndex);
 			}
 		}
+
 		m_freeAudioSources.resize(std::distance(m_freeAudioSources.begin(), beginRemove));
 	}
 
 	void AudioSystem::UpdateFreeAudioSourcesTimers(float timeStep) {
+		//Se actualiza el timer de toas las fuentes libres en timeStep segundos ponderados por el tono de la fuente.
 		for (auto& freeAudioSource : m_freeAudioSources) {
 			freeAudioSource.m_timeLeft -= timeStep * freeAudioSource.m_pitch;
 		}
@@ -197,6 +222,8 @@ namespace Mona {
 
 	void AudioSystem::UpdateAudioSourceComponentsTimers(float timeStep, AudioSourceComponent::managerType& audioDataManager)
 	{
+		//El proceso de actualizar las fuentes de audio usadas como componentes es un poco mas complejo.
+		//Ya que estas pueden estar en repetición, en pausa o detenidas.
 		for (uint32_t i = 0; i < audioDataManager.GetCount(); i++) {
 			auto& audioComponent = audioDataManager[i];
 			if (audioComponent.m_sourceState == AudioSourceState::Paused || audioComponent.m_sourceState == AudioSourceState::Stopped) continue;
@@ -268,17 +295,21 @@ namespace Mona {
 	void AudioSystem::AssignOpenALSourceToFreeAudioSources(std::vector<FreeAudioSource>::iterator begin, std::vector<FreeAudioSource>::iterator end)
 	{
 		for (auto it = begin; it != end; it++) {
+			//Solo se asignan recursos si esta fuente no tiene uno asignado
 			if (!it->m_openALsource) {
 				auto unusedOpenALSource = GetNextFreeSource();
 				it->m_openALsource = unusedOpenALSource;
+				//Se actualiza los datos de la fuente de OpenAL con los datos nuevos 
 				if (it->m_sourceType == SourceType::Source2D) {
 					ALCALL(alSourcei(unusedOpenALSource.m_sourceID, AL_SOURCE_RELATIVE, AL_TRUE));
 					ALCALL(alSource3f(unusedOpenALSource.m_sourceID, AL_POSITION, 0.0f, 0.0f, 0.0f));
 				}
 				else {
 					const glm::vec3& position = it->m_position;
+					ALCALL(alSourcei(unusedOpenALSource.m_sourceID, AL_SOURCE_RELATIVE, AL_FALSE));
 					ALCALL(alSource3f(unusedOpenALSource.m_sourceID, AL_POSITION, position.x, position.y, position.z));
 				}
+
 				ALCALL(alSourcei(unusedOpenALSource.m_sourceID, AL_LOOPING, AL_FALSE));
 				ALCALL(alSourcef(unusedOpenALSource.m_sourceID, AL_PITCH, it->m_pitch));
 				ALCALL(alSourcef(unusedOpenALSource.m_sourceID, AL_GAIN, it->m_volume));
@@ -299,12 +330,17 @@ namespace Mona {
 	{
 		for (uint32_t i = firstIndex; i < lastIndex; i++) {
 			AudioSourceComponent& audioSource = audioDataManager[i];
+			//Solo se asignan recursos si esta fuente no tiene uno asignado
 			if (!audioSource.m_openALsource) {
 				auto unusedOpenALSource = GetNextFreeSource();
 				audioSource.m_openALsource = unusedOpenALSource;
 				if (audioSource.m_sourceType == SourceType::Source2D) {
+					//En caso de que la fuente sea 2D se le asigna una posición relativa de (0.0,0.0,0.0)
 					ALCALL(alSourcei(unusedOpenALSource.m_sourceID, AL_SOURCE_RELATIVE, AL_TRUE));
 					ALCALL(alSource3f(unusedOpenALSource.m_sourceID, AL_POSITION, 0.0f, 0.0f, 0.0f));
+				}
+				else {
+					ALCALL(alSourcei(unusedOpenALSource.m_sourceID, AL_SOURCE_RELATIVE, AL_FALSE));
 				}
 				ALCALL(alSourcei(unusedOpenALSource.m_sourceID, AL_LOOPING, audioSource.m_isLooping));
 				ALCALL(alSourcef(unusedOpenALSource.m_sourceID, AL_PITCH, audioSource.m_pitch));
@@ -318,11 +354,13 @@ namespace Mona {
 				}
 
 			}
-			const TransformComponent* transform = transformDataManager.GetComponentPointer(audioSource.m_transformHandle);
-			const glm::vec3& position = transform->GetLocalTranslation();
-			ALCALL(alSource3f(audioSource.m_openALsource.value().m_sourceID, AL_POSITION, position.x, position.y, position.z));
-
-
+			if (audioSource.m_sourceType == SourceType::Source3D)
+			{
+				//Si la fuente es 3D se actualizan las posiciones
+				const TransformComponent* transform = transformDataManager.GetComponentPointer(audioSource.m_transformHandle);
+				const glm::vec3& position = transform->GetLocalTranslation();
+				ALCALL(alSource3f(audioSource.m_openALsource.value().m_sourceID, AL_POSITION, position.x, position.y, position.z));
+			}
 		}
 	}
 	void AudioSystem::RemoveOpenALSourceFromFreeAudioSources(std::vector<FreeAudioSource>::iterator begin, std::vector<FreeAudioSource>::iterator end)
@@ -358,6 +396,9 @@ namespace Mona {
 	void AudioSystem::SortFreeAudioSourcesByPriority(std::vector<FreeAudioSource>::iterator end,
 		uint32_t (&outCount)[static_cast<unsigned int>(AudioSourcePriority::PriorityCount)])
 	{
+		//La lista se ordena usando una implementación inplace de count sort
+		// La implementación esta basada en el mensaje de Sebastian Mestre en la siguiente pregunta en stackoverflow
+		// https://stackoverflow.com/questions/30547452/is-stdsort-the-best-choice-to-do-in-place-sort-for-a-huge-array-with-limited-i
 		unsigned int counts[static_cast<unsigned int>(AudioSourcePriority::PriorityCount)] = {};
 		unsigned int offsetCounts[static_cast<unsigned int>(AudioSourcePriority::PriorityCount)] = {};
 
@@ -386,6 +427,9 @@ namespace Mona {
 		uint32_t lastIndex,
 		uint32_t(&outCount)[static_cast<unsigned int>(AudioSourcePriority::PriorityCount)]) {
 
+		//La lista se ordena usando una implementación inplace de count sort
+		// La implementación esta basada en el mensaje de Sebastian Mestre en la siguiente pregunta en stackoverflow
+		// https://stackoverflow.com/questions/30547452/is-stdsort-the-best-choice-to-do-in-place-sort-for-a-huge-array-with-limited-i
 		unsigned int counts[static_cast<unsigned int>(AudioSourcePriority::PriorityCount)] = {};
 		unsigned int offsetCounts[static_cast<unsigned int>(AudioSourcePriority::PriorityCount)] = {};
 		for (uint32_t i = 0; i < lastIndex; i++) {
@@ -428,6 +472,8 @@ namespace Mona {
 
 	AudioSource::OpenALSource AudioSystem::GetNextFreeSource()
 	{
+		//Dado que m_firstFreeOpenALSourceIndex siempre tiene el indice con la primera fuente de OpenAL libre
+		//basta con retornar la fuente en dicho indice y luego actualizar como corresponde el valor de m_firstFreeOpenALSourceIndex
 		MONA_ASSERT(m_firstFreeOpenALSourceIndex != m_channels, "AudioSystem Error: Not enough openal sources available");
 		auto& entry = m_openALSources[m_firstFreeOpenALSourceIndex];
 		uint32_t index = m_firstFreeOpenALSourceIndex;

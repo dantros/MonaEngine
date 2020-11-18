@@ -70,7 +70,6 @@ set(MONA_SOURCES
 				Audio/AudioSystem.cpp
 				Audio/AudioClip.cpp
 				Audio/AudioClipManager.cpp
-				Audio/AudioSource.cpp
 				Audio/AudioSourceComponent.cpp
 				DebugDrawing/ImGuiBuild.cpp
 				DebugDrawing/BulletDebugDraw.cpp

@@ -15,11 +15,12 @@ namespace Mona {
 			Sphere,
 			PrimitiveCount
 		};
+
 		using MeshMap = std::unordered_map<std::string, std::shared_ptr<Mesh>>;
 		MeshManager(MeshManager const&) = delete;
 		MeshManager& operator=(MeshManager const&) = delete;
 		std::shared_ptr<Mesh> LoadMesh(PrimitiveType type) noexcept;
-		std::shared_ptr<Mesh> LoadMesh(const std::filesystem::path& filePath) noexcept;
+		std::shared_ptr<Mesh> LoadMesh(const std::filesystem::path& filePath, bool flipUvs = false) noexcept;
 		void CleanUnusedMeshes() noexcept;
 		void ShutDown() noexcept;
 		MeshManager() = default;

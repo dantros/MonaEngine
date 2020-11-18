@@ -12,17 +12,19 @@ namespace Mona {
 	{
 		
 		m_programID = 0;
+		//Se carga un string con todo el codigo de ambos shaders
 		std::string vertexShaderCode = LoadCode(vertexShaderPath);
 		std::string pixelShaderCode = LoadCode(pixelShaderPath);
 
 		if (vertexShaderCode.length() == 0 || pixelShaderCode.length() == 0)
 			return;
-
+		//Intento de Compilar ambos shaders
 		unsigned int vertex = CompileShader(vertexShaderCode, vertexShaderPath, GL_VERTEX_SHADER);
 		unsigned int pixel = CompileShader(pixelShaderCode, pixelShaderPath, GL_FRAGMENT_SHADER);
 		
 		if (vertex && pixel)
 		{
+			//En caso de exito linkeamos el programa
 			LinkProgram(vertex, pixel);
 		}
 
@@ -72,6 +74,7 @@ namespace Mona {
 		glCompileShader(shader);
 		GLint isCompiled = 0;
 		glGetShaderiv(shader, GL_COMPILE_STATUS, &isCompiled);
+		//Chequeo de errores de compilación
 		if (isCompiled == GL_FALSE)
 		{
 			GLint maxLength = 0;
@@ -96,6 +99,7 @@ namespace Mona {
 		glLinkProgram(program);
 		GLint isLinked = 0;
 		glGetProgramiv(program, GL_LINK_STATUS, (int*)&isLinked);
+		//Chequeo de error de linkeo
 		if (isLinked == GL_FALSE)
 		{
 			GLint maxLength = 0;

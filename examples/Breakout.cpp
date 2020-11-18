@@ -33,6 +33,7 @@ public:
 		rb->SetFriction(0.0f);
 		rb->SetRestitution(1.0f);
 		
+		
 		m_ballBounceSound = world.LoadAudioClip(Mona::SourcePath("Assets/AudioFiles/ballBounce.wav"));
 		auto ball = world.CreateGameObject<Mona::GameObject>();
 		float ballRadius = 0.5f;

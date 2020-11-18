@@ -61,24 +61,35 @@ namespace Mona {
 		}
 	}
 
-	std::shared_ptr<Mesh> MeshManager::LoadMesh(const std::filesystem::path& filePath) noexcept {
+	std::shared_ptr<Mesh> MeshManager::LoadMesh(const std::filesystem::path& filePath, bool flipUVs) noexcept {
 		const std::string& stringPath = filePath.string();
+		//En caso de que ya exista una entrada en el mapa de mallas con el mismo path, entonces se retorna inmediatamente
+		//dicha malla.
 		auto it = m_meshMap.find(stringPath);
 		if (it != m_meshMap.end()) {
 			return it->second;
 		}
 
+		//En caso contrario comienza el proceso de importación
+		//El primer caso consiste en cargar la escena del archivo ubicada en filepath usando assimp
 		Assimp::Importer importer;
-		const aiScene* scene = importer.ReadFile(stringPath, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs);
+		unsigned int postProcessFlags = flipUVs ? aiProcess_FlipUVs : 0;
+		postProcessFlags |= aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_GenUVCoords | aiProcess_TransformUVCoords;
+		const aiScene* scene = importer.ReadFile(stringPath, postProcessFlags);
 		if (!scene) {
+			//En caso de fallar la carga se envia un mensaje de error y se carga un cubo.
 			MONA_LOG_ERROR("MeshManager Error: Failed to open file with path {0}", stringPath);
 			MONA_LOG_INFO("Loading default model");
-			return LoadCube();
+			return LoadMesh(PrimitiveType::Cube);
 		}
+
+		//Comienzo del proceso de pasar desde la escena de assimp a un formato interno
 		std::vector<float> vertices;
 		std::vector<unsigned int> faces;
 		size_t numVertices = 0;
 		size_t numFaces = 0;
+		//El primer paso consiste en contar el numero de vertices y caras totales
+		//de esta manera se puede reservar memoria inmediatamente evitando realocación de memoria
 		for (uint32_t i = 0; i < scene->mNumMeshes; i++) {
 			numVertices += scene->mMeshes[i]->mNumVertices;
 			numFaces += scene->mMeshes[i]->mNumFaces;
@@ -88,8 +99,10 @@ namespace Mona {
 		faces.reserve(numFaces);
 
 
+		//El grafo de la escena se reccorre usando DFS (Depth Search First) usando dos stacks.
 		std::stack<const aiNode*> sceneNodes;
 		std::stack<aiMatrix4x4> sceneTransforms;
+		//Luego pusheamos información asociada a la raiz del grafo
 		sceneNodes.push(scene->mRootNode);
 		sceneTransforms.push(scene->mRootNode->mTransformation);
 		unsigned int offset = 0;
@@ -98,6 +111,9 @@ namespace Mona {
 			const aiNode* currentNode = sceneNodes.top();
 			const auto& currentTransform = sceneTransforms.top();
 			auto currentInvTranspose = currentTransform;
+			//Las normales transforman distinto que las posiciones
+			//Por eso es necesario invertir la matrix y luego trasponerla
+			//Ver: https://www.scratchapixel.com/lessons/mathematics-physics-for-computer-graphics/geometry/transforming-normals
 			currentInvTranspose.Inverse().Transpose();
 			sceneNodes.pop();
 			sceneTransforms.pop();
@@ -106,12 +122,15 @@ namespace Mona {
 				for (uint32_t i = 0; i < meshOBJ->mNumVertices; i++) {
 					const aiVector3D position = currentTransform * meshOBJ->mVertices[i];
 					const aiVector3D normal = currentInvTranspose * meshOBJ->mNormals[i];
+					//Posiciones
 					vertices.push_back(position.x);
 					vertices.push_back(position.y);
 					vertices.push_back(position.z);
+					//Normales
 					vertices.push_back(normal.x);
 					vertices.push_back(normal.y);
 					vertices.push_back(normal.z);
+					//UVs
 					if (meshOBJ->mTextureCoords[0]) {
 						vertices.push_back(meshOBJ->mTextureCoords[0][i].x);
 						vertices.push_back(meshOBJ->mTextureCoords[0][i].y);
@@ -136,11 +155,13 @@ namespace Mona {
 			}
 			
 			for (uint32_t j = 0; j < currentNode->mNumChildren; j++) {
+				//Pusheamos los hijos y acumulamos la matrix de transformación
 				sceneNodes.push(currentNode->mChildren[j]);
 				sceneTransforms.push(currentTransform * currentNode->mChildren[j]->mTransformation);
 			}
 		}
 		
+		//Comienza el paso de los datos en CPU a GPU usando OpenGL
 		unsigned int modelVBO, modelIBO, modelVAO;
 		glGenVertexArrays(1, &modelVAO);
 		glBindVertexArray(modelVAO);
@@ -151,6 +172,8 @@ namespace Mona {
 		glBufferData(GL_ARRAY_BUFFER, static_cast<unsigned int>(vertices.size()) * sizeof(float), vertices.data(), GL_STATIC_DRAW);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, modelIBO);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<unsigned int>(faces.size()) * sizeof(unsigned int), faces.data(), GL_STATIC_DRAW);
+		//Un vertice de la malla se ve como
+		// v = {pos_x, pos_y, pos_z, normal_x, normal_y, normal_z, uv_u, uv_v}
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 		glEnableVertexAttribArray(1);
@@ -159,12 +182,18 @@ namespace Mona {
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 		Mesh* meshPtr = new Mesh(modelVAO, modelVBO, modelIBO, static_cast<uint32_t>(faces.size()));
 		std::shared_ptr<Mesh> sharedPtr = std::shared_ptr<Mesh>(meshPtr);
+		//Antes de retornar la malla recien cargada, insertamos esta al mapa para que cargas futuras sean mucho mas rapidas.
 		m_meshMap.insert({ stringPath, sharedPtr });
 		return sharedPtr;
 
 	}
 
 	std::shared_ptr<Mesh> MeshManager::LoadSphere() noexcept {
+		//Esta implementación de la creacion procedural de la malla de una esfera
+		//esta basada en: http://www.songho.ca/opengl/gl_sphere.html
+
+		//Cada vertice debe tener la forma
+		// v = {pos_x, pos_y, pos_z, normal_x, normal_y, normal_z, uv_u, uv_v}
 		std::vector<float> vertices;
 		std::vector<unsigned int> indices;
 		unsigned int stackCount = 16;
@@ -199,8 +228,8 @@ namespace Mona {
 		unsigned int k1, k2;
 		for (unsigned int i = 0; i < stackCount; ++i)
 		{
-			k1 = i * (sectorCount + 1);     // beginning of current stack
-			k2 = k1 + sectorCount + 1;      // beginning of next stack
+			k1 = i * (sectorCount + 1);    
+			k2 = k1 + sectorCount + 1;   
 
 			for (unsigned int j = 0; j < sectorCount; ++j, ++k1, ++k2)
 			{
@@ -240,6 +269,8 @@ namespace Mona {
 	}
 
 	std::shared_ptr<Mesh> MeshManager::LoadCube() noexcept {
+		// Cada vertice tiene la siguiente forma
+		// v = {pos_x, pos_y, pos_z, normal_x, normal_y, normal_z, uv_u, uv_v}
 		float vertices[] = {
 	   -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f,
 		1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f,
@@ -313,6 +344,8 @@ namespace Mona {
 	}
 
 	std::shared_ptr<Mesh> MeshManager::LoadPlane() noexcept {
+		// Cada vertice tiene la siguiente forma
+		// v = {pos_x, pos_y, pos_z, normal_x, normal_y, normal_z, uv_u, uv_v}
 		float planeVertices[] = {
 		-1.0f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
 		1.0f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,

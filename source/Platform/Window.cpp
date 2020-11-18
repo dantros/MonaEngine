@@ -30,8 +30,8 @@ namespace Mona {
 			const int glVersionMajor = config.getValueOrDefault<int>("OpenGL_major_version", 4);
 			const int glVersionMinor = config.getValueOrDefault<int>("OpenGL_minor_version", 5);
 			auto windowTitle = config.getValueOrDefault<std::string>("windowTitle", "Default Title");
-			int windowWidth = config.getValueOrDefault<int>("windowWidth", 800);
-			int windowHeight = config.getValueOrDefault<int>("windowHeight", 800);
+			int windowWidth = config.getValueOrDefault<int>("windowWidth", 1440);
+			int windowHeight = config.getValueOrDefault<int>("windowHeight", 810);
 			bool fullScreen = config.getValueOrDefault<bool>("fullscreen", false);
 			glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, glVersionMajor);
 			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, glVersionMinor);
@@ -48,6 +48,8 @@ namespace Mona {
 			glfwGetWindowPos(m_windowHandle, &m_oldWindowPos[0], &m_oldWindowPos[1]);
 			m_data.eventManager = &eventManager;
 			glfwSetWindowUserPointer(m_windowHandle, &m_data);
+			
+			//
 			glfwSetFramebufferSizeCallback(m_windowHandle, [](GLFWwindow* window, int width, int height)
 				{
 					WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);

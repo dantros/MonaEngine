@@ -24,6 +24,7 @@ namespace Mona {
 
 	template <typename ComponentType, typename LifetimePolicy>
 	void ComponentManager<ComponentType, LifetimePolicy>::ShutDown(EventManager& eventManager) noexcept {
+		//Antes de limpiar las componentes es necesario llamar OnRemoveComponent por temas de liberación de recursos por ejemplo
 		for (decltype(m_components.size()) i = 0; i < m_components.size(); i++)
 		{
 			HandleEntry handleEntry = m_handleEntries[m_handleEntryIndices[i]];
@@ -43,6 +44,7 @@ namespace Mona {
 	InnerComponentHandle ComponentManager<ComponentType, LifetimePolicy>::AddComponent(GameObject* gameObjectPointer, Args&& ... args) noexcept
 	{
 		MONA_ASSERT(m_components.size() < s_maxEntries, "ComponentManager Error: Cannot Add more components, max number reached.");
+		//Si hay una entrada libre en el arreglo de HandleEntry y en cantidad son mayores que s_minFreeIndices entonces se reusa una
 		if (m_firstFreeIndex != s_maxEntries && m_freeIndicesCount > s_minFreeIndices)
 		{
 			auto& handleEntry = m_handleEntries[m_firstFreeIndex];
@@ -53,11 +55,14 @@ namespace Mona {
 			auto handleIndex = m_firstFreeIndex;
 			m_componentOwners.emplace_back(gameObjectPointer);
 			m_handleEntryIndices.emplace_back(handleIndex);
+			//Se agrega la componente al final del arreglo usando perfect forwarding para evitar copias innecesarias.
 			m_components.emplace_back(std::forward<Args>(args)...);
+			//Se actualiza la estructura de datos para mantener consistencia
 			if (m_firstFreeIndex == m_lastFreeIndex)
 				m_firstFreeIndex = m_lastFreeIndex = s_maxEntries;
 			else 
 				m_firstFreeIndex = handleEntry.index;
+
 			handleEntry.generation += 1;
 			handleEntry.active = true;
 			handleEntry.index = static_cast<size_type>(m_components.size() - 1);
@@ -68,6 +73,8 @@ namespace Mona {
 			return resultHandle;
 		}
 		else {
+			//En caso de que no hayan entradas libres o estas sean menor que s_minFreeIndices
+			//Simplemente agregamos una entrada al final
 			m_handleEntries.emplace_back(static_cast<size_type>(m_components.size()), s_maxEntries, 0);
 			m_componentOwners.emplace_back(gameObjectPointer);
 			m_handleEntryIndices.emplace_back(static_cast<size_type>(m_handleEntries.size() - 1));
@@ -87,6 +94,8 @@ namespace Mona {
 		MONA_ASSERT(m_handleEntries[index].active == true, "ComponentManager Error: Trying to delete inactive handle");
 		auto& handleEntry = m_handleEntries[index];
 		m_lifetimePolicy.OnRemoveComponent(m_componentOwners[handleEntry.index], m_components[handleEntry.index], handle);
+		//Si la componente a eliminar no es la ultima, las intercambiamos entre estas (la ultima y la que se eliminara)
+		//Asi en ambos casos la componente a eliminar quedara al final del arreglo => eliminación rapida
 		if (handleEntry.index < m_components.size() - 1)
 		{
 			m_components[handleEntry.index] = std::move(m_components.back());
@@ -95,10 +104,12 @@ namespace Mona {
 			m_handleEntries[m_handleEntryIndices.back()].index = handleEntry.index;
 		}
 		
+		//Se Elimina el ultimo elemento
 		m_components.pop_back();
 		m_componentOwners.pop_back();
 		m_handleEntryIndices.pop_back();
 
+		//Se Actualiza el resto de la estrutura de datos para mantener consistencia
 		if (m_lastFreeIndex != s_maxEntries)
 			m_handleEntries[m_lastFreeIndex].index = index;
 		else 

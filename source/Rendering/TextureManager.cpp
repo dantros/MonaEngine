@@ -9,10 +9,12 @@ namespace Mona {
 	{
 		const std::string stringPath = filePath.string();
 		auto it = m_textureMap.find(stringPath);
+		//Solo pasar a crear la textura si no existe una entrada en el mapa con el mismo path
 		if (it != m_textureMap.end())
 			return it->second;
 		Texture* texturePtr = new Texture(stringPath, magFilter, minFilter, sWrapMode, tWrapMode, genMipmaps);
 		std::shared_ptr<Texture> textureSharedPtr = std::shared_ptr<Texture>(texturePtr);
+		//Antes de retornar la texture se inserta una entrada al mapa 
 		m_textureMap.insert({ stringPath, textureSharedPtr });
 		return textureSharedPtr;
 	}

@@ -9,6 +9,12 @@
 #include  <algorithm>
 namespace Mona {
 	class AudioClip;
+
+	/*
+	* Enumerador que representa la prioridad que tiene una fuente de sonido. En presencia de escazes
+	* de recursos de OpenAL, es decir, cuando existen mas sonidos intentando ser repreducidos simultaneamente
+	* que recursos para reproducirlos se le otorgaran primero estos primero a las fuentes de audio con mayor prioridad
+	*/
 	enum class AudioSourcePriority : uint8_t {
 		SoundPriorityVeryHigh,
 		SoundPriorityHigh,
@@ -18,11 +24,21 @@ namespace Mona {
 		PriorityCount
 	};
 
+	/*
+	* Enumerador que representa los tipos de fuentes de sonido. Las fuentes 2D se escuchan de igual manera independiente
+	* de la posición/velocidad relativa de la fuente y el receptor, en cambio, las fuentes 3D si se ven afectadas por estas
+	* variables.
+	*/
 	enum class SourceType : uint8_t{
 		Source2D,
 		Source3D
 	};
 
+	/*
+	* El motor cuenta con 2 clases de Fuentes de sonido FreeSources y AudioSourceComponents, cuya principal diferencia es 
+	* que FreeSources no estan relacionadas o unidas a ningun GameObject. Esta clase, AudioSource, es la clase base de ambas fuentes de
+	* sonido.
+	*/
 	struct AudioSource {
 		friend class  AudioSystem;
 		struct OpenALSource {
@@ -62,6 +78,10 @@ namespace Mona {
 		
 	};
 
+	/*
+	* Clase que representa fuentes de Audio libres, es decir, que no estan unidas a un GameObject. En Caso de ser fuentes de audio 3D
+	* al momento de construccion se le puede asigna una posicion constante.
+	*/
 	class FreeAudioSource : public AudioSource {
 	public:
 		friend class  AudioSystem;

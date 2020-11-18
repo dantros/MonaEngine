@@ -76,7 +76,7 @@ namespace Mona {
 		void SetMainCamera(const ComponentHandle<CameraComponent>& cameraHandle) noexcept;
 		ComponentHandle<CameraComponent> GetMainCameraComponent() noexcept;
 		std::shared_ptr<Mesh> LoadMesh(MeshManager::PrimitiveType type) noexcept;
-		std::shared_ptr<Mesh> LoadMesh(const std::filesystem::path& filePath) noexcept;
+		std::shared_ptr<Mesh> LoadMesh(const std::filesystem::path& filePath, bool FlipUVs = false) noexcept;
 		std::shared_ptr<Texture> LoadTexture(const std::filesystem::path& filePath,
 			TextureMagnificationFilter magFilter = TextureMagnificationFilter::Linear,
 			TextureMinificationFilter minFilter = TextureMinificationFilter::LinearMipmapLinear,

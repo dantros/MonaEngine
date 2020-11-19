@@ -9,6 +9,9 @@
 #include "Platform/KeyCodes.hpp"
 #include "Application.hpp"
 #include "World/World.hpp"
+#include "Audio/AudioClipManager.hpp"
+#include "Rendering/MeshManager.hpp"
+#include "Rendering/TextureManager.hpp"
 #include <memory>
 
 #endif

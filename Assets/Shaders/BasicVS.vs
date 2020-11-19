@@ -1,15 +1,16 @@
 #version 450 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNormal;
-layout(location = 0) uniform mat4 projectionMatrix;
-layout(location = 1) uniform mat4 viewMatrix;
-layout(location = 2) uniform mat4 modelMatrix;
+layout(location = 0) uniform mat4 mvpMatrix;
+layout(location = 1) uniform mat4 modelInverseTransposeMatrix;
+//layout(location = 1) uniform mat4 viewMatrix;
+//layout(location = 2) uniform mat4 modelMatrix;
 
 out vec3 normal;
 
 void main()
 {
-	normal = mat3(transpose(inverse(modelMatrix))) * aNormal;
-	gl_Position = projectionMatrix * viewMatrix *modelMatrix * vec4(aPos,1.0);
+	normal = mat3(modelInverseTransposeMatrix) * aNormal;
+	gl_Position = mvpMatrix * vec4(aPos,1.0);
 
 }

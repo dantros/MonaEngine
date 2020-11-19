@@ -8,6 +8,7 @@
 namespace Mona {
 	class TextureManager {
 	public:
+		friend class World;
 		using TextureMap = std::unordered_map<std::string, std::shared_ptr<Texture>>;
 		TextureManager(TextureManager const&) = delete;
 		TextureManager& operator=(TextureManager const&) = delete;
@@ -18,9 +19,13 @@ namespace Mona {
 			WrapMode tWrapMode = WrapMode::Repeat,
 			bool genMipmaps = false) noexcept;
 		void CleanUnusedTextures() noexcept;
+		static TextureManager& GetInstance() noexcept {
+			static TextureManager instance;
+			return instance;
+		}
+	private:
 		void ShutDown() noexcept;
 		TextureManager() = default;
-	private:
 		TextureMap m_textureMap;
 	};
 }

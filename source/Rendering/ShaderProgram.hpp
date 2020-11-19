@@ -8,9 +8,10 @@
 namespace Mona {
 	class ShaderProgram {
 	public:
-		static constexpr int PerspectiveMatrixShaderLocation = 0;
-		static constexpr int ViewMatrixShaderLocation = 1;
-		static constexpr int ModelMatrixShaderLocation = 2;
+		static constexpr int MvpMatrixShaderLocation = 0;
+		static constexpr int ModelInverseTransposeMatrixShaderLocation = 1;
+		//static constexpr int ViewMatrixShaderLocation = 1;
+		//static constexpr int ModelMatrixShaderLocation = 2;
 		static constexpr int FlatColorShaderLocation = 3;
 		static constexpr int DiffuseTextureUnit = 3;
 		static constexpr int DiffuseTextureSamplerShaderLocation = 3;

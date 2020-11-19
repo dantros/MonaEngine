@@ -11,9 +11,11 @@ public:
 	void UserStartUp(Mona::World& world) noexcept override {
 		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
 		//m_transform->Scale(glm::vec3(1.0f / 200.0f));
-		std::shared_ptr<Mona::Mesh> testModel = world.LoadMesh(Mona::SourcePath("Assets/Models/BackpackOBJ/backpack.obj"));
+		auto& meshManager = Mona::MeshManager::GetInstance();
+		auto& textureManager = Mona::TextureManager::GetInstance();
+		std::shared_ptr<Mona::Mesh> testModel = meshManager.LoadMesh(Mona::SourcePath("Assets/Models/BackpackOBJ/backpack.obj"));
 		std::shared_ptr<Mona::TextureMaterial> testMaterial = std::static_pointer_cast<Mona::TextureMaterial>(world.CreateMaterial(Mona::MaterialType::Textured));
-		std::shared_ptr<Mona::Texture> testTexture = world.LoadTexture(Mona::SourcePath("Assets/Models/BackpackOBJ/diffuse.jpg"));
+		std::shared_ptr<Mona::Texture> testTexture = textureManager.LoadTexture(Mona::SourcePath("Assets/Models/BackpackOBJ/diffuse.jpg"));
 		testMaterial->SetDiffuseTexture(testTexture);
 		m_staticMesh = world.AddComponent<Mona::StaticMeshComponent>(*this, testModel, testMaterial);
 	}
@@ -38,9 +40,11 @@ public:
 	void UserStartUp(Mona::World& world) noexcept override {
 		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
 		m_transform->Translate(glm::vec3(0.0f, 0.0f, 4.0f));
-		std::shared_ptr<Mona::Mesh> model = world.LoadMesh(Mona::SourcePath("Assets/Models/DrakePistolOBJ/drakefire_pistol_low.obj"), true);
+		auto& meshManager = Mona::MeshManager::GetInstance();
+		auto& textureManager = Mona::TextureManager::GetInstance();
+		std::shared_ptr<Mona::Mesh> model = meshManager.LoadMesh(Mona::SourcePath("Assets/Models/DrakePistolOBJ/drakefire_pistol_low.obj"), true);
 		std::shared_ptr<Mona::TextureMaterial> material = std::static_pointer_cast<Mona::TextureMaterial>(world.CreateMaterial(Mona::MaterialType::Textured));
-		std::shared_ptr<Mona::Texture> texture = world.LoadTexture(Mona::SourcePath("Assets/Models/DrakePistolOBJ/base_albedo.jpg"));
+		std::shared_ptr<Mona::Texture> texture = textureManager.LoadTexture(Mona::SourcePath("Assets/Models/DrakePistolOBJ/base_albedo.jpg"));
 		material->SetDiffuseTexture(texture);
 		m_staticMesh = world.AddComponent<Mona::StaticMeshComponent>(*this, model, material);
 		//m_staticMesh = world.AddComponent<Mona::StaticMeshComponent>(*this, world.LoadMesh(Mona::MeshManager::PrimitiveType::Sphere), world.CreateMaterial(Mona::MaterialType::FlatColor));

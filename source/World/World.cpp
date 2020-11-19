@@ -2,8 +2,11 @@
 #include "../Core/Config.hpp"
 #include "../Event/Events.hpp"
 #include "../DebugDrawing/DebugDrawingSystem.hpp"
+#include "../Audio/AudioClipManager.hpp"
 #include "../PhysicsCollision/PhysicsCollisionSystem.hpp"
 #include "../Rendering/Material.hpp"
+#include "../Rendering/MeshManager.hpp"
+#include "../Rendering/TextureManager.hpp"
 #include <chrono>
 namespace Mona {
 	
@@ -14,9 +17,7 @@ namespace Mona {
 		m_input(), 
 		m_application(),
 		m_shouldClose(false),
-		m_physicsCollisionSystem(),
-		m_meshManager(),
-		m_textureManager()
+		m_physicsCollisionSystem()
 	{
 		
 		m_componentManagers[TransformComponent::componentIndex].reset(new TransformComponent::managerType());
@@ -53,11 +54,11 @@ namespace Mona {
 		for (auto& componentManager : m_componentManagers)
 			componentManager->ShutDown(m_eventManager);
 		m_audioSystem.ClearSources();
-		m_audioClipManager.ShutDown();
+		AudioClipManager::GetInstance().ShutDown();
 		m_audioSystem.ShutDown();
 		m_physicsCollisionSystem.ShutDown();
-		m_meshManager.ShutDown();
-		m_textureManager.ShutDown();
+		MeshManager::GetInstance().ShutDown();
+		TextureManager::GetInstance().ShutDown();
 		m_renderer.ShutDown(m_eventManager);
 		m_debugDrawingSystem->ShutDown();
 		m_window.ShutDown();
@@ -130,9 +131,6 @@ namespace Mona {
 		m_physicsCollisionSystem.SubmitCollisionEvents(*this, m_eventManager, rigidBodyDataManager);
 		m_objectManager.UpdateGameObjects(*this, m_eventManager, timeStep);
 		m_application->UserUpdate(*this, timeStep);
-		m_audioClipManager.CleanUnusedAudioClips();
-		m_meshManager.CleanUnusedMeshes();
-		m_textureManager.CleanUnusedTextures();
 		m_audioSystem.Update(m_audoListenerTransformHandle, timeStep, transformDataManager, audioSourceDataManager);
 		m_renderer.Render(m_eventManager, m_cameraHandle, staticMeshDataManager, transformDataManager, cameraDataManager);
 		m_window.Update();
@@ -147,25 +145,7 @@ namespace Mona {
 		auto& cameraDataManager = GetComponentManager<CameraComponent>();
 		return ComponentHandle<CameraComponent>(m_cameraHandle, &cameraDataManager);
 	}
-
-	std::shared_ptr<Mesh> World::LoadMesh(MeshManager::PrimitiveType type) noexcept {
-		return m_meshManager.LoadMesh(type);
-	}
-
-	std::shared_ptr<Mesh> World::LoadMesh(const std::filesystem::path& filePath, bool flipUVs) noexcept {
-		return m_meshManager.LoadMesh(filePath, flipUVs);
-	}
-
-	std::shared_ptr<Texture> World::LoadTexture(const std::filesystem::path& filePath,
-		TextureMagnificationFilter magFilter,
-		TextureMinificationFilter minFilter,
-		WrapMode sWrapMode,
-		WrapMode tWrapMode,
-		bool genMipmaps) noexcept 
-	{
-
-		return m_textureManager.LoadTexture(filePath, magFilter, minFilter, sWrapMode, tWrapMode, genMipmaps);
-	}
+	
 	std::shared_ptr<Material> World::CreateMaterial(MaterialType type) noexcept {
 		return m_renderer.CreateMaterial(type);
 	}
@@ -194,10 +174,6 @@ namespace Mona {
 	AllHitsRaycastResult World::AllHitsRayTest(const glm::vec3& rayFrom, const glm::vec3& rayTo) {
 		auto& rigidBodyDataManager = GetComponentManager<RigidBodyComponent>();
 		return m_physicsCollisionSystem.AllHitsRayTest(rayFrom, rayTo, rigidBodyDataManager);
-	}
-
-	std::shared_ptr<AudioClip> World::LoadAudioClip(const std::filesystem::path& filePath) noexcept {
-		return m_audioClipManager.LoadAudioClip(filePath);
 	}
 
 	void World::PlayAudioClip3D(std::shared_ptr<AudioClip> audioClip,

@@ -16,13 +16,10 @@
 #include "../Rendering/CameraComponent.hpp"
 #include "../Rendering/StaticMeshComponent.hpp"
 #include "../Rendering/Renderer.hpp"
-#include "../Rendering/MeshManager.hpp"
-#include "../Rendering/TextureManager.hpp"
 #include "../PhysicsCollision/RigidBodyComponent.hpp"
 #include "../PhysicsCollision/RigidBodyLifetimePolicy.hpp"
 #include "../PhysicsCollision/RaycastResults.hpp"
 #include "../Audio/AudioSystem.hpp"
-#include "../Audio/AudioClipManager.hpp"
 #include "../Audio/AudioSourceComponent.hpp"
 #include "../Audio/AudioSourceComponentLifetimePolicy.hpp"
 #include <memory>
@@ -75,14 +72,6 @@ namespace Mona {
 
 		void SetMainCamera(const ComponentHandle<CameraComponent>& cameraHandle) noexcept;
 		ComponentHandle<CameraComponent> GetMainCameraComponent() noexcept;
-		std::shared_ptr<Mesh> LoadMesh(MeshManager::PrimitiveType type) noexcept;
-		std::shared_ptr<Mesh> LoadMesh(const std::filesystem::path& filePath, bool FlipUVs = false) noexcept;
-		std::shared_ptr<Texture> LoadTexture(const std::filesystem::path& filePath,
-			TextureMagnificationFilter magFilter = TextureMagnificationFilter::Linear,
-			TextureMinificationFilter minFilter = TextureMinificationFilter::LinearMipmapLinear,
-			WrapMode sWrapMode = WrapMode::Repeat,
-			WrapMode tWrapMode = WrapMode::Repeat,
-			bool genMipmaps = false) noexcept;
 		std::shared_ptr<Material> CreateMaterial(MaterialType type) noexcept;
 
 
@@ -91,7 +80,7 @@ namespace Mona {
 		ClosestHitRaycastResult ClosestHitRayTest(const glm::vec3& rayFrom, const glm::vec3& rayTo);
 		AllHitsRaycastResult AllHitsRayTest(const glm::vec3& rayFrom, const glm::vec3& rayTo);
 
-		std::shared_ptr<AudioClip> LoadAudioClip(const std::filesystem::path& filePath) noexcept;
+
 		void SetAudioListenerTransform(const ComponentHandle<TransformComponent>& transformHandle) noexcept;
 		ComponentHandle<TransformComponent> GetAudioListenerTransform() noexcept;
 		void PlayAudioClip3D(std::shared_ptr<AudioClip> audioClip,
@@ -125,14 +114,11 @@ namespace Mona {
 		std::array<std::unique_ptr<BaseComponentManager>, GetComponentTypeCount()> m_componentManagers;
 
 		Renderer m_renderer;
-		MeshManager m_meshManager;
-		TextureManager m_textureManager;
 		InnerComponentHandle m_cameraHandle;
 
 		PhysicsCollisionSystem m_physicsCollisionSystem;
 		
 		AudioSystem m_audioSystem;
-		AudioClipManager m_audioClipManager;
 		InnerComponentHandle m_audoListenerTransformHandle;
 
 		std::unique_ptr<DebugDrawingSystem> m_debugDrawingSystem;

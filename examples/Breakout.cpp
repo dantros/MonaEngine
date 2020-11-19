@@ -9,7 +9,8 @@ public:
 		transform->Rotate(glm::vec3(-1.0f, 0.0f, 0.0f), 0.5f);
 		world.SetMainCamera(world.AddComponent<Mona::CameraComponent>(*this));
 		world.SetAudioListenerTransform(transform);
-		auto audioClipPtr = world.LoadAudioClip(Mona::SourcePath("Assets/AudioFiles/music.wav"));
+		auto& audioClipManager = Mona::AudioClipManager::GetInstance();
+		auto audioClipPtr = audioClipManager.LoadAudioClip(Mona::SourcePath("Assets/AudioFiles/music.wav"));
 		auto audioSource = world.AddComponent<Mona::AudioSourceComponent>(*this, audioClipPtr);
 		audioSource->SetIsLooping(true);
 		audioSource->SetVolume(0.3f);
@@ -27,14 +28,15 @@ public:
 		m_transform->Scale(paddleScale);
 		auto paddleMaterial = std::static_pointer_cast<Mona::FlatColorMaterial>(world.CreateMaterial(Mona::MaterialType::FlatColor));
 		paddleMaterial->SetColor(glm::vec3(0.3f, 0.3f, 0.75f));
-		world.AddComponent<Mona::StaticMeshComponent>(*this, world.LoadMesh(Mona::MeshManager::PrimitiveType::Cube), paddleMaterial);
+		auto& meshManager = Mona::MeshManager::GetInstance();
+		world.AddComponent<Mona::StaticMeshComponent>(*this, meshManager.LoadMesh(Mona::MeshManager::PrimitiveType::Cube), paddleMaterial);
 		Mona::BoxShapeInformation boxInfo(paddleScale);
 		Mona::RigidBodyHandle rb = world.AddComponent<Mona::RigidBodyComponent>(*this, boxInfo, Mona::RigidBodyType::KinematicBody);
 		rb->SetFriction(0.0f);
 		rb->SetRestitution(1.0f);
 		
-		
-		m_ballBounceSound = world.LoadAudioClip(Mona::SourcePath("Assets/AudioFiles/ballBounce.wav"));
+		auto& audioClipManager = Mona::AudioClipManager::GetInstance();
+		m_ballBounceSound = audioClipManager.LoadAudioClip(Mona::SourcePath("Assets/AudioFiles/ballBounce.wav"));
 		auto ball = world.CreateGameObject<Mona::GameObject>();
 		float ballRadius = 0.5f;
 		m_ballTransform = world.AddComponent<Mona::TransformComponent>(ball);
@@ -43,7 +45,7 @@ public:
 		m_ballTransform->SetScale(glm::vec3(ballRadius));
 		auto ballMaterial = std::static_pointer_cast<Mona::FlatColorMaterial>(world.CreateMaterial(Mona::MaterialType::FlatColor));
 		ballMaterial->SetColor(glm::vec3(0.75f, 0.3f, 0.3f));
-		world.AddComponent<Mona::StaticMeshComponent>(ball, world.LoadMesh(Mona::MeshManager::PrimitiveType::Sphere), ballMaterial);
+		world.AddComponent<Mona::StaticMeshComponent>(ball, meshManager.LoadMesh(Mona::MeshManager::PrimitiveType::Sphere), ballMaterial);
 		
 		Mona::SphereShapeInformation sphereInfo(ballRadius);
 		m_ballRigidBody = world.AddComponent<Mona::RigidBodyComponent>(ball, sphereInfo, Mona::RigidBodyType::DynamicBody);
@@ -88,8 +90,9 @@ void InitializeWall(Mona::World &world,
 	const glm::vec3& position,
 	const glm::vec3& scale,
 	std::shared_ptr<Mona::Material> wallMaterial) {
+	auto& meshManager = Mona::MeshManager::GetInstance();
 	world.AddComponent<Mona::TransformComponent>(wall, position, glm::fquat(1.0f, 0.0f, 0.0f, 0.0f), scale);
-	world.AddComponent<Mona::StaticMeshComponent>(wall, world.LoadMesh(Mona::MeshManager::PrimitiveType::Cube), wallMaterial);
+	world.AddComponent<Mona::StaticMeshComponent>(wall, meshManager.LoadMesh(Mona::MeshManager::PrimitiveType::Cube), wallMaterial);
 	Mona::BoxShapeInformation wallShape(scale);
 	Mona::RigidBodyHandle rb = world.AddComponent<Mona::RigidBodyComponent>(wall, wallShape, Mona::RigidBodyType::StaticBody);
 	rb->SetRestitution(1.0f);
@@ -104,8 +107,9 @@ public:
 		world.CreateGameObject<BasicCamera>();
 		world.CreateGameObject<Paddle>(20.0f);
 		glm::vec3 blockScale(1.0f, 0.5f, 0.5f);
-		m_blockBreakingSound = world.LoadAudioClip(Mona::SourcePath("Assets/AudioFiles/boxBreaking.wav"));
-
+		auto& audioClipManager = Mona::AudioClipManager::GetInstance();
+		m_blockBreakingSound = audioClipManager.LoadAudioClip(Mona::SourcePath("Assets/AudioFiles/boxBreaking.wav"));
+		auto& meshManager = Mona::MeshManager::GetInstance();
 		Mona::BoxShapeInformation boxInfo(blockScale);
 		auto blockMaterial = world.CreateMaterial(Mona::MaterialType::FlatColor);
 		for (int i = -2; i < 3; i++) {
@@ -116,7 +120,7 @@ public:
 				auto block = world.CreateGameObject<Mona::GameObject>();
 				auto transform = world.AddComponent<Mona::TransformComponent>(block, glm::vec3( x, 15.0f + y, 0.0f));
 				transform->Scale(blockScale);
-				world.AddComponent<Mona::StaticMeshComponent>(block, world.LoadMesh(Mona::MeshManager::PrimitiveType::Cube), blockMaterial);
+				world.AddComponent<Mona::StaticMeshComponent>(block, meshManager.LoadMesh(Mona::MeshManager::PrimitiveType::Cube), blockMaterial);
 				Mona::RigidBodyHandle rb =world.AddComponent<Mona::RigidBodyComponent>(block, boxInfo, Mona::RigidBodyType::StaticBody, 1.0f);
 				rb->SetRestitution(1.0f);
 				rb->SetFriction(0.0f);

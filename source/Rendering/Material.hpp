@@ -17,9 +17,10 @@ namespace Mona {
 		virtual ~Material() = default;
 		void SetUniforms(const glm::mat4& perspectiveMatrix, const glm::mat4& viewMatrix, const glm::mat4& modelMatrix) {
 			glUseProgram(m_shaderID);
-			glUniformMatrix4fv(ShaderProgram::PerspectiveMatrixShaderLocation, 1, GL_FALSE, glm::value_ptr(perspectiveMatrix));
-			glUniformMatrix4fv(ShaderProgram::ViewMatrixShaderLocation, 1, GL_FALSE, glm::value_ptr(viewMatrix));
-			glUniformMatrix4fv(ShaderProgram::ModelMatrixShaderLocation, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+			const glm::mat4 mvpMatrix = perspectiveMatrix * viewMatrix * modelMatrix;
+			const glm::mat4 modelInverseTransposeMatrix = glm::transpose(glm::inverse(modelMatrix));
+			glUniformMatrix4fv(ShaderProgram::MvpMatrixShaderLocation, 1, GL_FALSE, glm::value_ptr(mvpMatrix));
+			glUniformMatrix4fv(ShaderProgram::ModelInverseTransposeMatrixShaderLocation, 1, GL_FALSE, glm::value_ptr(modelInverseTransposeMatrix));
 			SetMaterialUniforms();
 		}
 		virtual void SetMaterialUniforms() = 0;

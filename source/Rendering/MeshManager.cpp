@@ -221,6 +221,10 @@ namespace Mona {
 				vertices.push_back(x);
 				vertices.push_back(y);
 				vertices.push_back(z);
+				float u = (float)j / (float) sectorCount;
+				float v = (float)i / (float) stackCount;
+				vertices.push_back(u);
+				vertices.push_back(v);
 			}
 
 		}
@@ -259,9 +263,11 @@ namespace Mona {
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sphereIBO);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<unsigned int>(indices.size()) * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
 		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 		Mesh* meshPtr = new Mesh(sphereVAO, sphereVBO, sphereIBO, static_cast<uint32_t>(indices.size()));
 		std::shared_ptr<Mesh> sharedPtr = std::shared_ptr<Mesh>(meshPtr);
 		m_meshMap.insert({ "Sphere", sharedPtr });
@@ -272,47 +278,47 @@ namespace Mona {
 		// Cada vertice tiene la siguiente forma
 		// v = {pos_x, pos_y, pos_z, normal_x, normal_y, normal_z, uv_u, uv_v}
 		float vertices[] = {
-	   -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f,
-		1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f,
-		1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f,
-		1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f,
-	   -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f,
-	   -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f,
+	   -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f,
+		1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f,
+		1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f,
+		1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f,
+	   -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f,
+	   -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f,
 
-	   -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f,
-		1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f,
-		1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f,
-		1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f,
-	   -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f,
-	   -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f,
+	   -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,  0.0f,
+		1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,  0.0f,
+		1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,  1.0f,
+		1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,  1.0f,
+	   -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,  1.0f,
+	   -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,  0.0f,
 
-	   -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f,
-	   -1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f,
-	   -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f,
-	   -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f,
-	   -1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f,
-	   -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f,
+	   -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f,  0.0f,
+	   -1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 1.0f,  1.0f,
+	   -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f,  1.0f,
+	   -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f,  1.0f,
+	   -1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 0.0f,  0.0f,
+	   -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f,  0.0f,
 
-		1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f,
-		1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f,
-		1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,
-		1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,
-		1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,
-		1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f,
+		1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f,  0.0f,
+		1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 1.0f,  1.0f,
+		1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f,  1.0f,
+		1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f,  1.0f,
+		1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 0.0f,  0.0f,
+		1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f,  0.0f,
 
-	   -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f,
-		1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f,
-		1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f,
-		1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f,
-	   -1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f,
-	   -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f,
+	   -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f,  1.0f,
+		1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 1.0f,  1.0f,
+		1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f,  0.0f,
+		1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f,  0.0f,
+	   -1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 0.0f,  0.0f,
+	   -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f,  1.0f,
 
-	   -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f,
-		1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f,
-		1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-		1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-	   -1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-	   -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f
+	   -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f,  1.0f,
+		1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 1.0f,  1.0f,
+		1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 1.0f,  0.0f,
+		1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 1.0f,  0.0f,
+	   -1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f,  0.0f,
+	   -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f,  1.0f
 		};
 		unsigned int indices[] = {
 			0,1,2,3,4,5,
@@ -333,9 +339,11 @@ namespace Mona {
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeIBO);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 		Mesh* meshPtr = new Mesh(cubeVAO, cubeVBO, cubeIBO, 36);
 		std::shared_ptr<Mesh> sharedPtr = std::shared_ptr<Mesh>(meshPtr);
 		m_meshMap.insert({ "Cube", sharedPtr });
@@ -347,12 +355,12 @@ namespace Mona {
 		// Cada vertice tiene la siguiente forma
 		// v = {pos_x, pos_y, pos_z, normal_x, normal_y, normal_z, uv_u, uv_v}
 		float planeVertices[] = {
-		-1.0f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-		1.0f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-		1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-		1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-		-1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-		-1.0f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+		-1.0f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f,
+		1.0f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f,
+		1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f,
+		1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f,
+		-1.0f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f,
+		-1.0f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f
 		};
 
 		unsigned int planeIndices[] =
@@ -371,9 +379,11 @@ namespace Mona {
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, planeIBO);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(planeIndices), planeIndices, GL_STATIC_DRAW);
 		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 		Mesh* meshPtr = new Mesh(planeVAO, planeVBO, planeIBO, 6);
 		std::shared_ptr<Mesh> sharedPtr = std::shared_ptr<Mesh>(meshPtr);
 		m_meshMap.insert({ "Plane", sharedPtr });

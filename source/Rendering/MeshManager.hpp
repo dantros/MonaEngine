@@ -9,6 +9,7 @@ namespace Mona {
 	class Mesh;
 	class MeshManager {
 	public:
+		friend class World;
 		enum class PrimitiveType {
 			Plane,
 			Cube,
@@ -22,9 +23,13 @@ namespace Mona {
 		std::shared_ptr<Mesh> LoadMesh(PrimitiveType type) noexcept;
 		std::shared_ptr<Mesh> LoadMesh(const std::filesystem::path& filePath, bool flipUvs = false) noexcept;
 		void CleanUnusedMeshes() noexcept;
-		void ShutDown() noexcept;
-		MeshManager() = default;
+		static MeshManager& GetInstance() noexcept{
+			static MeshManager instance;
+			return instance;
+		}
 	private:
+		MeshManager() = default;
+		void ShutDown() noexcept;
 		std::shared_ptr<Mesh> LoadSphere() noexcept;
 		std::shared_ptr<Mesh> LoadCube() noexcept;
 		std::shared_ptr<Mesh> LoadPlane() noexcept;

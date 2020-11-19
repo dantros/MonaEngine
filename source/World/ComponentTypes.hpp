@@ -10,6 +10,9 @@ namespace Mona {
 		StaticMeshComponent,
 		RigidBodyComponent,
 		AudioSourceComponent,
+		DirectionalLightComponent,
+		SpotLightComponent,
+		PointLightComponent,
 		ComponentTypeCount
 	};
 
@@ -27,6 +30,9 @@ namespace Mona {
 	class CameraComponent;
 	class RigidBodyComponent;
 	class AudioSourceComponent;
+	class DirectionalLightComponent;
+	class SpotLightComponent;
+	class PointLightComponent;
 
 	template <typename ComponentType>
 	class DefaultLifetimePolicy;
@@ -42,7 +48,10 @@ namespace Mona {
 		CameraComponent,
 		StaticMeshComponent,
 		RigidBodyComponent,
-		AudioSourceComponent>;
+		AudioSourceComponent,
+		DirectionalLightComponent,
+		SpotLightComponent,
+		PointLightComponent>;
 
 }
 #endif

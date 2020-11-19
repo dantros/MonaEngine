@@ -39,6 +39,7 @@ public:
 	}
 	void UserStartUp(Mona::World& world) noexcept override {
 		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
+		world.AddComponent<Mona::DirectionalLightComponent>(*this);
 		m_transform->Translate(glm::vec3(0.0f, 0.0f, 4.0f));
 		auto& meshManager = Mona::MeshManager::GetInstance();
 		auto& textureManager = Mona::TextureManager::GetInstance();
@@ -47,7 +48,6 @@ public:
 		std::shared_ptr<Mona::Texture> texture = textureManager.LoadTexture(Mona::SourcePath("Assets/Models/DrakePistolOBJ/base_albedo.jpg"));
 		material->SetDiffuseTexture(texture);
 		m_staticMesh = world.AddComponent<Mona::StaticMeshComponent>(*this, model, material);
-		//m_staticMesh = world.AddComponent<Mona::StaticMeshComponent>(*this, world.LoadMesh(Mona::MeshManager::PrimitiveType::Sphere), world.CreateMaterial(Mona::MaterialType::FlatColor));
 	}
 	void UserUpdate(Mona::World& world, float timeStep) noexcept override {
 		m_transform->Translate(glm::vec3(m_speed, 0.0f, m_speed) * timeStep);

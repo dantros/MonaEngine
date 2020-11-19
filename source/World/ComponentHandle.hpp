@@ -44,6 +44,9 @@ namespace Mona {
 	using CameraHandle = ComponentHandle<CameraComponent>;
 	using RigidBodyHandle = ComponentHandle<RigidBodyComponent>;
 	using AudioSourceHandle = ComponentHandle<AudioSourceComponent>;
+	using DirectionalLightHandle = ComponentHandle<DirectionalLightComponent>;
+	using SpotLightHandle = ComponentHandle<SpotLightComponent>;
+	using PointLightHandle = ComponentHandle<PointLightComponent>;
 
 
 

@@ -25,6 +25,9 @@ namespace Mona {
 		m_componentManagers[StaticMeshComponent::componentIndex].reset(new StaticMeshComponent::managerType());
 		m_componentManagers[RigidBodyComponent::componentIndex].reset(new RigidBodyComponent::managerType());
 		m_componentManagers[AudioSourceComponent::componentIndex].reset(new AudioSourceComponent::managerType());
+		m_componentManagers[DirectionalLightComponent::componentIndex].reset(new DirectionalLightComponent::managerType());
+		m_componentManagers[SpotLightComponent::componentIndex].reset(new SpotLightComponent::managerType());
+		m_componentManagers[PointLightComponent::componentIndex].reset(new PointLightComponent::managerType());
 		m_debugDrawingSystem.reset(new DebugDrawingSystem());
 	
 	}

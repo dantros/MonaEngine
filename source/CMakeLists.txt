@@ -33,6 +33,9 @@ set(MONA_HEADERS
 				Rendering/Texture.hpp
 				Rendering/TextureManager.hpp
 				Rendering/TextureMaterial.hpp
+				Rendering/DirectionalLightComponent.hpp
+				Rendering/SpotLightComponent.hpp
+				Rendering/PointLightComponent.hpp
 				PhysicsCollision/PhysicsCollisionSystem.hpp
 				PhysicsCollision/PhysicsCollisionEvents.hpp
 				PhysicsCollision/CustomMotionState.hpp

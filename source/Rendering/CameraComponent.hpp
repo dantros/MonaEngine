@@ -2,7 +2,7 @@
 #ifndef CAMERACOMPONENT_HPP
 #define CAMERACOMPONENT_HPP
 #include "../World/ComponentTypes.hpp"
-#include "../Core/Log.hpp"
+#include <string_view>
 namespace Mona {
 	class TransformComponent;
 	class CameraComponent

@@ -15,6 +15,8 @@ public:
 		audioSource->SetIsLooping(true);
 		audioSource->SetVolume(0.3f);
 		audioSource->Play();
+	
+		world.AddComponent<Mona::DirectionalLightComponent>(*this, glm::vec3(1.0f));
 	}
 };
 
@@ -104,6 +106,7 @@ public:
 	~Breakout() = default;
 	virtual void UserStartUp(Mona::World & world) noexcept override {
 		world.SetGravity(glm::vec3(0.0f,0.0f,0.0f));
+		world.GetAmbientLightColorIntensity(glm::vec3(0.3f));
 		world.CreateGameObject<BasicCamera>();
 		world.CreateGameObject<Paddle>(20.0f);
 		glm::vec3 blockScale(1.0f, 0.5f, 0.5f);

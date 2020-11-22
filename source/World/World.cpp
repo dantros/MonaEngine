@@ -17,7 +17,8 @@ namespace Mona {
 		m_input(), 
 		m_application(),
 		m_shouldClose(false),
-		m_physicsCollisionSystem()
+		m_physicsCollisionSystem(),
+		m_ambientLightColorIntensity(glm::vec3(0.1f))
 	{
 		
 		m_componentManagers[TransformComponent::componentIndex].reset(new TransformComponent::managerType());
@@ -129,13 +130,24 @@ namespace Mona {
 		auto &cameraDataManager = GetComponentManager<CameraComponent>();
 		auto& rigidBodyDataManager = GetComponentManager<RigidBodyComponent>();
 		auto& audioSourceDataManager = GetComponentManager<AudioSourceComponent>();
+		auto& directionalLightDataManager = GetComponentManager<DirectionalLightComponent>();
+		auto& spotLightDataManager = GetComponentManager<SpotLightComponent>();
+		auto& pointLightDataManager = GetComponentManager<PointLightComponent>();
 		m_input.Update();
 		m_physicsCollisionSystem.StepSimulation(timeStep);
 		m_physicsCollisionSystem.SubmitCollisionEvents(*this, m_eventManager, rigidBodyDataManager);
 		m_objectManager.UpdateGameObjects(*this, m_eventManager, timeStep);
 		m_application->UserUpdate(*this, timeStep);
 		m_audioSystem.Update(m_audoListenerTransformHandle, timeStep, transformDataManager, audioSourceDataManager);
-		m_renderer.Render(m_eventManager, m_cameraHandle, staticMeshDataManager, transformDataManager, cameraDataManager);
+		m_renderer.Render(m_eventManager,
+			m_cameraHandle,
+			m_ambientLightColorIntensity,
+			staticMeshDataManager,
+			transformDataManager,
+			cameraDataManager,
+			directionalLightDataManager,
+			spotLightDataManager,
+			pointLightDataManager);
 		m_window.Update();
 	}
 

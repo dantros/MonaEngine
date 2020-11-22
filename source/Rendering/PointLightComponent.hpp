@@ -19,17 +19,14 @@ namespace Mona {
 		PointLightComponent(const glm::vec3& color = glm::vec3(1.0f),
 			float maxRadius = 10.0f,
 			const glm::fquat& direction = glm::fquat(1.0f, 0.0f, 0.0f, 0.0f)) :
-			m_maxRadius(maxRadius), m_lightColor(color), m_lightDirection(direction) {};
+			m_maxRadius(maxRadius), m_lightColor(color) {};
 		const glm::vec3& GetLightColor() const { return m_lightColor; }
 		void SetLightColor(const glm::vec3& color) { m_lightColor = color; }
-		const glm::fquat& GetLightDirection() const { return m_lightDirection; }
-		void SetLightDirection(const glm::fquat& direction) { m_lightDirection = direction; }
 		float GetMaxRadius() const { return m_maxRadius; }
 		void SetMaxRadius(float radius) { m_maxRadius = radius; }
 
 	private:
 		glm::vec3 m_lightColor;
-		glm::fquat m_lightDirection;
 		float m_maxRadius;
 	};
 }

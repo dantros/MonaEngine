@@ -39,7 +39,6 @@ public:
 	}
 	void UserStartUp(Mona::World& world) noexcept override {
 		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
-		world.AddComponent<Mona::DirectionalLightComponent>(*this);
 		m_transform->Translate(glm::vec3(0.0f, 0.0f, 4.0f));
 		auto& meshManager = Mona::MeshManager::GetInstance();
 		auto& textureManager = Mona::TextureManager::GetInstance();
@@ -74,6 +73,7 @@ public:
 		world.CreateGameObject<Sphere>(0.0f, 0.0f);
 		m_rotatingBox = world.CreateGameObject<Box>(0.0f, 0.0f);
 		auto camera = world.CreateGameObject<Mona::BasicPerspectiveCamera>();
+		world.AddComponent<Mona::SpotLightComponent>(camera, glm::vec3(10.0f), 10.0f);
 		world.SetMainCamera(world.GetComponentHandle<Mona::CameraComponent>(camera));
 		world.GetInput().SetCursorType(Mona::Input::CursorType::Disabled);
 	}

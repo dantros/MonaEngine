@@ -1,0 +1,14 @@
+#version 450 core 
+layout (location = 3) uniform sampler2D unlitColorTexture;
+
+out vec4 color;
+
+in vec2 texCoord;
+
+
+void main()
+{
+	vec3 unlitColor = texture(unlitColorTexture, texCoord).rgb;
+	color = vec4(unlitColor, 1.0);
+
+}

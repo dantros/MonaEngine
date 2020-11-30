@@ -29,10 +29,14 @@ set(MONA_HEADERS
 				Rendering/MeshManager.hpp
 				Rendering/Mesh.hpp
 				Rendering/Material.hpp
-				Rendering/FlatColorMaterial.hpp
 				Rendering/Texture.hpp
 				Rendering/TextureManager.hpp
-				Rendering/TextureMaterial.hpp
+				Rendering/UnlitFlatMaterial.hpp
+				Rendering/UnlitTexturedMaterial.hpp
+				Rendering/DiffuseFlatMaterial.hpp
+				Rendering/DiffuseTexturedMaterial.hpp
+				Rendering/PBRTexturedMaterial.hpp
+				Rendering/PBRFlatMaterial.hpp
 				Rendering/DirectionalLightComponent.hpp
 				Rendering/SpotLightComponent.hpp
 				Rendering/PointLightComponent.hpp

@@ -20,8 +20,8 @@ namespace Mona {
 
 	void BulletDebugDraw::drawLine(const btVector3& from, const btVector3& to, const btVector3& color) {
 		glBindVertexArray(VAO);
-		glUniform3f(1, from.x(), from.y(), from.z());
-		glUniform3f(2, to.x(), to.y(), to.z());
+		glUniform3f(2, from.x(), from.y(), from.z());
+		glUniform3f(3, to.x(), to.y(), to.z());
 		glUniform3f(5, color.x(), color.y(), color.z());
 		glDrawArrays(GL_LINES, 0, 2);
 

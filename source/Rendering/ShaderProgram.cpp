@@ -1,9 +1,11 @@
 #include "ShaderProgram.hpp"
+#include "Renderer.hpp"
 #include "../Core/Log.hpp"
 #include <glad/glad.h>
 #include <sstream>
 #include <fstream>
 #include <glm/gtc/type_ptr.hpp>
+
 namespace Mona {
 
 
@@ -15,6 +17,10 @@ namespace Mona {
 		//Se carga un string con todo el codigo de ambos shaders
 		std::string vertexShaderCode = LoadCode(vertexShaderPath);
 		std::string pixelShaderCode = LoadCode(pixelShaderPath);
+
+		//Remplazo de constantes
+		PreProcessCode(vertexShaderCode);
+		PreProcessCode(pixelShaderCode);
 
 		if (vertexShaderCode.length() == 0 || pixelShaderCode.length() == 0)
 			return;
@@ -120,7 +126,27 @@ namespace Mona {
 		m_programID = program;
 	}
 
+	void ShaderProgram::PreProcessCode(std::string& code)
+	{
+		struct ShaderConstant {
+			std::string key;
+			std::string value;
+		};
+		std::array<ShaderConstant,3> constants = {{
+			{"${MAX_DIRECTIONAL_LIGHTS}", std::to_string(Renderer::NUM_HALF_MAX_DIRECTIONAL_LIGHTS * 2)},
+			{"${MAX_SPOT_LIGHTS}", std::to_string(Renderer::NUM_HALF_MAX_SPOT_LIGHTS * 2)} ,
+			{"${MAX_POINT_LIGHTS}", std::to_string(Renderer::NUM_HALF_MAX_POINT_LIGHTS * 2)}}};
+		
+		for (ShaderConstant& c : constants) {
+			size_t pos = 0;
+			while ((pos = code.find(c.key, pos)) != std::string::npos) 
+			{
+				code.replace(pos, c.key.length(), c.value);
+				pos += c.value.length();
+			}
+		}
 
+	}
 
 	ShaderProgram::~ShaderProgram()
 	{

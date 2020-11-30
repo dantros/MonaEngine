@@ -74,8 +74,8 @@ namespace Mona {
 		void Update(float timeStep) noexcept;
 
 		void SetMainCamera(const ComponentHandle<CameraComponent>& cameraHandle) noexcept;
-		const glm::vec3& GetAmbientLightColorIntensity() const { return m_ambientLightColorIntensity; }
-		void GetAmbientLightColorIntensity(const glm::vec3& colorIntensity) { m_ambientLightColorIntensity = colorIntensity; }
+		const glm::vec3& GetAmbientLight() const { return m_ambientLight; }
+		void SetAmbientLight(const glm::vec3& light) { m_ambientLight = light; }
 		ComponentHandle<CameraComponent> GetMainCameraComponent() noexcept;
 		std::shared_ptr<Material> CreateMaterial(MaterialType type) noexcept;
 
@@ -120,7 +120,7 @@ namespace Mona {
 
 		Renderer m_renderer;
 		InnerComponentHandle m_cameraHandle;
-		glm::vec3 m_ambientLightColorIntensity;
+		glm::vec3 m_ambientLight;
 
 		PhysicsCollisionSystem m_physicsCollisionSystem;
 		

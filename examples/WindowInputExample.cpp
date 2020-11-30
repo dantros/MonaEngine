@@ -1,6 +1,6 @@
 #include "MonaEngine.hpp"
 #include "Utilities/BasicCameraControllers.hpp"
-#include "Rendering/TextureMaterial.hpp"
+#include "Rendering/PBRTexturedMaterial.hpp"
 #include <imgui.h>
 class Box : public Mona::GameObject {
 public:
@@ -10,14 +10,22 @@ public:
 	}
 	void UserStartUp(Mona::World& world) noexcept override {
 		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
-		//m_transform->Scale(glm::vec3(1.0f / 200.0f));
+		m_transform->Scale(glm::vec3(1.0f / 20000.0f));
 		auto& meshManager = Mona::MeshManager::GetInstance();
 		auto& textureManager = Mona::TextureManager::GetInstance();
-		std::shared_ptr<Mona::Mesh> testModel = meshManager.LoadMesh(Mona::SourcePath("Assets/Models/BackpackOBJ/backpack.obj"));
-		std::shared_ptr<Mona::TextureMaterial> testMaterial = std::static_pointer_cast<Mona::TextureMaterial>(world.CreateMaterial(Mona::MaterialType::Textured));
-		std::shared_ptr<Mona::Texture> testTexture = textureManager.LoadTexture(Mona::SourcePath("Assets/Models/BackpackOBJ/diffuse.jpg"));
-		testMaterial->SetDiffuseTexture(testTexture);
-		m_staticMesh = world.AddComponent<Mona::StaticMeshComponent>(*this, testModel, testMaterial);
+		std::shared_ptr<Mona::Mesh> model = meshManager.LoadMesh(Mona::SourcePath("Assets/Models/BackpackFBX/Survival_BackPack_2.fbx"), true);
+		std::shared_ptr<Mona::PBRTexturedMaterial> material = std::static_pointer_cast<Mona::PBRTexturedMaterial>(world.CreateMaterial(Mona::MaterialType::PBRTextured));
+		std::shared_ptr<Mona::Texture> albedo = textureManager.LoadTexture(Mona::SourcePath("Assets/Models/BackpackFBX/1001_albedo.jpg"));
+		std::shared_ptr<Mona::Texture> normalMap = textureManager.LoadTexture(Mona::SourcePath("Assets/Models/BackpackFBX/1001_normal.png"));
+		std::shared_ptr<Mona::Texture> metallic = textureManager.LoadTexture(Mona::SourcePath("Assets/Models/BackpackFBX/1001_metallic.jpg"));
+		std::shared_ptr<Mona::Texture> roughness = textureManager.LoadTexture(Mona::SourcePath("Assets/Models/BackpackFBX/1001_roughness.jpg"));
+		std::shared_ptr<Mona::Texture> ambientOcclusion = textureManager.LoadTexture(Mona::SourcePath("Assets/Models/BackpackFBX/1001_AO.jpg"));
+		material->SetAlbedoTexture(albedo);
+		material->SetNormalMapTexture(normalMap);
+		material->SetMetallicTexture(metallic);
+		material->SetRoughnessTexture(roughness);
+		material->SetAmbientOcclusionTexture(ambientOcclusion);
+		m_staticMesh = world.AddComponent<Mona::StaticMeshComponent>(*this, model, material);
 	}
 	void UserUpdate(Mona::World& world, float timeStep) noexcept override {
 		m_transform->Translate(glm::vec3(m_speed, 0.0f, m_speed)*timeStep);
@@ -42,11 +50,21 @@ public:
 		m_transform->Translate(glm::vec3(0.0f, 0.0f, 4.0f));
 		auto& meshManager = Mona::MeshManager::GetInstance();
 		auto& textureManager = Mona::TextureManager::GetInstance();
-		std::shared_ptr<Mona::Mesh> model = meshManager.LoadMesh(Mona::SourcePath("Assets/Models/DrakePistolOBJ/drakefire_pistol_low.obj"), true);
-		std::shared_ptr<Mona::TextureMaterial> material = std::static_pointer_cast<Mona::TextureMaterial>(world.CreateMaterial(Mona::MaterialType::Textured));
-		std::shared_ptr<Mona::Texture> texture = textureManager.LoadTexture(Mona::SourcePath("Assets/Models/DrakePistolOBJ/base_albedo.jpg"));
-		material->SetDiffuseTexture(texture);
+		std::shared_ptr<Mona::Mesh> model = meshManager.LoadMesh(Mona::SourcePath("Assets/Models/DrakePistolOBJ/drakefire_pistol_low.obj"),true);
+		std::shared_ptr<Mona::PBRTexturedMaterial> material = std::static_pointer_cast<Mona::PBRTexturedMaterial>(world.CreateMaterial(Mona::MaterialType::PBRTextured));
+		std::shared_ptr<Mona::Texture> albedo = textureManager.LoadTexture(Mona::SourcePath("Assets/Models/DrakePistolOBJ/base_albedo.jpg"));
+		std::shared_ptr<Mona::Texture> normalMap = textureManager.LoadTexture(Mona::SourcePath("Assets/Models/DrakePistolOBJ/base_normal.jpg"));
+		std::shared_ptr<Mona::Texture> metallic = textureManager.LoadTexture(Mona::SourcePath("Assets/Models/DrakePistolOBJ/base_metallic.jpg"));
+		std::shared_ptr<Mona::Texture> roughness = textureManager.LoadTexture(Mona::SourcePath("Assets/Models/DrakePistolOBJ/base_roughness.jpg"));
+		std::shared_ptr<Mona::Texture> ambientOcclusion = textureManager.LoadTexture(Mona::SourcePath("Assets/Models/DrakePistolOBJ/base_AO.jpg"));
+		material->SetAlbedoTexture(albedo);
+		material->SetNormalMapTexture(normalMap);
+		material->SetMetallicTexture(metallic);
+		material->SetRoughnessTexture(roughness);
+		material->SetAmbientOcclusionTexture(ambientOcclusion);
 		m_staticMesh = world.AddComponent<Mona::StaticMeshComponent>(*this, model, material);
+
+
 	}
 	void UserUpdate(Mona::World& world, float timeStep) noexcept override {
 		m_transform->Translate(glm::vec3(m_speed, 0.0f, m_speed) * timeStep);
@@ -60,6 +78,15 @@ private:
 
 };
 
+void AddDirectionalLight(Mona::World& world, const glm::vec3& axis, float lightIntensity, float angle)
+{
+	auto light = world.CreateGameObject<Mona::GameObject>();
+	auto transform = world.AddComponent<Mona::TransformComponent>(light);
+	transform->Rotate(axis, angle);
+	world.AddComponent<Mona::DirectionalLightComponent>(light, lightIntensity * glm::vec3(1.0f));
+
+}
+
 class Sandbox : public Mona::Application
 {
 public:
@@ -67,15 +94,31 @@ public:
 	~Sandbox() = default;
 	virtual void UserStartUp(Mona::World &world) noexcept override{
 		MONA_LOG_INFO("Starting User App: Sandbox");
+		world.SetAmbientLight(glm::vec3(0.03f));
 		auto& eventManager = world.GetEventManager();
 		m_windowResizeSubcription = eventManager.Subscribe(this, &Sandbox::OnWindowResize);
 		m_debugGUISubcription = eventManager.Subscribe(this, &Sandbox::OnDebugGUIEvent);
 		world.CreateGameObject<Sphere>(0.0f, 0.0f);
 		m_rotatingBox = world.CreateGameObject<Box>(0.0f, 0.0f);
 		auto camera = world.CreateGameObject<Mona::BasicPerspectiveCamera>();
-		world.AddComponent<Mona::SpotLightComponent>(camera, glm::vec3(10.0f), 10.0f);
+		world.AddComponent<Mona::SpotLightComponent>(camera, glm::vec3(10.0f), 15.0f, glm::radians(25.0f), glm::radians(37.0f));
+		
 		world.SetMainCamera(world.GetComponentHandle<Mona::CameraComponent>(camera));
 		world.GetInput().SetCursorType(Mona::Input::CursorType::Disabled);
+
+		AddDirectionalLight(world, glm::vec3(1.0f, 0.0f, 0.0f), 10.0f, glm::radians(-45.0f));
+		AddDirectionalLight(world, glm::vec3(1.0f, 0.0f, 0.0f), 10.0f, glm::radians(-135.0f));
+
+		/*
+		auto& meshManager = Mona::MeshManager::GetInstance();
+		auto& textureManager = Mona::TextureManager::GetInstance();
+		std::shared_ptr<Mona::Mesh> planeModel = meshManager.LoadMesh(Mona::MeshManager::PrimitiveType::Plane);
+		std::shared_ptr<Mona::PBRTexturedMaterial> planeMaterial = std::static_pointer_cast<Mona::PBRTexturedMaterial>(world.CreateMaterial(Mona::MaterialType::PBRTextured));
+		std::shared_ptr<Mona::Texture> planeTexture = textureManager.LoadTexture(Mona::SourcePath("Assets/Textures/brickwall.jpg"));
+		std::shared_ptr<Mona::Texture> planeNormalMap = textureManager.LoadTexture(Mona::SourcePath("Assets/Textures/brickwall_normal.jpg"));
+		planeMaterial->SetDiffuseTexture(planeTexture);
+		planeMaterial->SetNormalMapTexture(planeNormalMap);
+		world.AddComponent<Mona::StaticMeshComponent>(plane, planeModel, planeMaterial);*/
 	}
 
 	virtual void UserShutDown(Mona::World& world) noexcept override {

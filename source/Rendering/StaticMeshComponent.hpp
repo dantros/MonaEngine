@@ -33,6 +33,11 @@ namespace Mona {
 		std::shared_ptr<Material> GetMaterial() const noexcept {
 			return m_materialPtr;
 		}
+
+		void SetMaterial(std::shared_ptr<Material> material) noexcept {
+			MONA_ASSERT(material != nullptr, "StaticMeshComponent Error: Material cannot be null.");
+			m_materialPtr = material;
+		}
 		
 
 	private:

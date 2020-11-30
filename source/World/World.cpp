@@ -18,7 +18,7 @@ namespace Mona {
 		m_application(),
 		m_shouldClose(false),
 		m_physicsCollisionSystem(),
-		m_ambientLightColorIntensity(glm::vec3(0.1f))
+		m_ambientLight(glm::vec3(0.1f))
 	{
 		
 		m_componentManagers[TransformComponent::componentIndex].reset(new TransformComponent::managerType());
@@ -141,7 +141,7 @@ namespace Mona {
 		m_audioSystem.Update(m_audoListenerTransformHandle, timeStep, transformDataManager, audioSourceDataManager);
 		m_renderer.Render(m_eventManager,
 			m_cameraHandle,
-			m_ambientLightColorIntensity,
+			m_ambientLight,
 			staticMeshDataManager,
 			transformDataManager,
 			cameraDataManager,

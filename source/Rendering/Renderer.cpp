@@ -10,8 +10,12 @@
 #include "../Core/RootDirectory.hpp"
 #include "../DebugDrawing/DebugDrawingSystem.hpp"
 #include "Mesh.hpp"
-#include "FlatColorMaterial.hpp"
-#include "TextureMaterial.hpp"
+#include "UnlitFlatMaterial.hpp"
+#include "UnlitTexturedMaterial.hpp"
+#include "DiffuseFlatMaterial.hpp"
+#include "DiffuseTexturedMaterial.hpp"
+#include "PBRFlatMaterial.hpp"
+#include "PBRTexturedMaterial.hpp"
 
 namespace Mona{
 	template
@@ -27,8 +31,12 @@ namespace Mona{
 	void Renderer::StartUp(EventManager& eventManager, DebugDrawingSystem* debugDrawingSystemPtr) noexcept {
 	
 		//Construcción de todos los shaders que soporta el motor.
-		m_shaders.emplace_back(SourcePath("Assets/Shaders/BasicVS.vs"), SourcePath("Assets/Shaders/BasicPS.ps"));
-		m_shaders.emplace_back(SourcePath("Assets/Shaders/TexturedModel.vs"), SourcePath("Assets/Shaders/TexturedModel.ps"));
+		m_shaders.emplace_back(SourcePath("Assets/Shaders/UnlitFlat.vs"), SourcePath("Assets/Shaders/UnlitFlat.ps"));
+		m_shaders.emplace_back(SourcePath("Assets/Shaders/UnlitTextured.vs"), SourcePath("Assets/Shaders/UnlitTextured.ps"));
+		m_shaders.emplace_back(SourcePath("Assets/Shaders/DiffuseFlat.vs"), SourcePath("Assets/Shaders/DiffuseFlat.ps"));
+		m_shaders.emplace_back(SourcePath("Assets/Shaders/DiffuseTextured.vs"), SourcePath("Assets/Shaders/DiffuseTextured.ps"));
+		m_shaders.emplace_back(SourcePath("Assets/Shaders/PBRFlat.vs"), SourcePath("Assets/Shaders/PBRFlat.ps"));
+		m_shaders.emplace_back(SourcePath("Assets/Shaders/PBRTextured.vs"), SourcePath("Assets/Shaders/PBRTextured.ps"));
 		
 		//El sistema de rendering debe subscribirse al cambio de resolución de la ventana para actulizar la resolución
 		//del framebuffer al que OpenGL renderiza.
@@ -55,7 +63,7 @@ namespace Mona{
 
 	void Renderer::Render(EventManager& eventManager,
 		const InnerComponentHandle& cameraHandle,
-		const glm::vec3& ambientLightColorIntensity,
+		const glm::vec3& ambientLight,
 		StaticMeshComponent::managerType& staticMeshDataManager,
 		TransformComponent::managerType& transformDataManager,
 		CameraComponent::managerType& cameraDataManager,
@@ -66,8 +74,7 @@ namespace Mona{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glm::mat4 viewMatrix;
 		glm::mat4 projectionMatrix;
-		glm::vec3 spotLightPosition = glm::vec3(0.f);
-		glm::vec3 spotLightDirection = glm::vec3(0.0f, -1.0f, 0.0f);
+		glm::vec3 cameraPosition = glm::vec3(0.0f);
 		if (cameraDataManager.IsValid(cameraHandle)) {
 			//Si el usuario configuro la camara principal configuramos apartir de esta la matrix de vista y projección
 			//viewMatrix y projectionMatrix respectivamente
@@ -76,8 +83,7 @@ namespace Mona{
 			TransformComponent* cameraTransform = transformDataManager.GetComponentPointer(cameraOwner->GetInnerComponentHandle<TransformComponent>());
 			viewMatrix = cameraTransform->GetViewMatrixFromTransform();
 			projectionMatrix = camera->GetProjectionMatrix();
-			spotLightPosition = cameraTransform->GetLocalTranslation();
-			spotLightDirection = cameraTransform->GetFrontVector();
+			cameraPosition = cameraTransform->GetLocalTranslation();
 		}
 		else {
 			//En caso de que el usuario no haya configurado una cama principal usamos valores predeterminador para ambas matrices
@@ -90,7 +96,7 @@ namespace Mona{
 
 
 		Lights lights;
-		lights.ambientLightColorIntensity = ambientLightColorIntensity;
+		lights.ambientLight = ambientLight;
 		uint32_t directionalLightsCount = std::min(static_cast<uint32_t>(NUM_HALF_MAX_DIRECTIONAL_LIGHTS * 2), directionalLightDataManager.GetCount());
 		lights.directionalLightsCount = static_cast<int>(directionalLightsCount);
 		for (uint32_t i = 0; i < directionalLightsCount; i++) {
@@ -125,27 +131,6 @@ namespace Mona{
 			lights.pointLights[i].position = lightTransform->GetLocalTranslation();
 			lights.pointLights[i].maxRadius = pointLight.GetMaxRadius();
 		}
-		/*
-		
-		lights.directionalLights[0].colorIntensity = glm::vec3(0.0f);
-		lights.directionalLights[0].direction = glm::normalize(glm::vec3(-1.0f, 1.0f, -2.0f));
-		lights.directionalLights[1].colorIntensity = glm::vec3(0.2f);
-		lights.directionalLights[1].direction = glm::normalize(glm::vec3(-1.0f, -1.0f, -2.0f));
-		lights.directionalLightsCount = 2;
-		lights.pointLights[0].colorIntensity = glm::vec3(0.0f);
-		lights.pointLights[0].position = glm::vec3(0.0f,0.0f, -7.0f);
-		lights.pointLights[0].maxRadius = 5.0f;
-		lights.pointLights[1].colorIntensity = glm::vec3(0.0f);
-		lights.pointLights[1].position = glm::vec3(-3.0f, -3.0f, 7.0f);
-		lights.pointLights[1].maxRadius = 200.0f;
-		lights.pointLightsCount = 2;
-		lights.spotLights[0].colorIntensity = glm::vec3(10.f);
-		lights.spotLights[0].direction = spotLightDirection;
-		lights.spotLights[0].position = spotLightPosition;
-		lights.spotLights[0].cosPenumbraAngle = glm::cos(glm::radians(20.0f));
-		lights.spotLights[0].cosUmbraAngle = glm::cos(glm::radians(25.0f));
-		lights.spotLights[0].maxRadius = 10.0f;
-		lights.spotLightsCount = 1;*/
 
 		glBindBuffer(GL_UNIFORM_BUFFER, m_lightDataUBO);
 		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(Lights), &lights);
@@ -161,7 +146,7 @@ namespace Mona{
 			TransformComponent* transform = transformDataManager.GetComponentPointer(owner->GetInnerComponentHandle<TransformComponent>());
 			//Configuración de la malla a ser renderizada y las uniformes asociadas a su material.
 			glBindVertexArray(staticMesh.GetMeshVAOID());
-			staticMesh.m_materialPtr->SetUniforms(projectionMatrix, viewMatrix, transform->GetModelMatrix());
+			staticMesh.m_materialPtr->SetUniforms(projectionMatrix, viewMatrix, transform->GetModelMatrix(), cameraPosition);
 			glDrawElements(GL_TRIANGLES, staticMesh.GetMeshIndexCount(), GL_UNSIGNED_INT, 0);
 			
 		}
@@ -175,11 +160,23 @@ namespace Mona{
 
 		switch (type)
 		{
-		case Mona::MaterialType::FlatColor:
-			return std::make_shared<FlatColorMaterial>(m_shaders[0].GetProgramID());
+		case Mona::MaterialType::UnlitFlat:
+			return std::make_shared<UnlitFlatMaterial>(m_shaders[0].GetProgramID());
 			break;
-		case Mona::MaterialType::Textured:
-			return std::make_shared<TextureMaterial>(m_shaders[1].GetProgramID());
+		case Mona::MaterialType::UnlitTextured:
+			return std::make_shared<UnlitTexturedMaterial>(m_shaders[1].GetProgramID());
+			break;
+		case Mona::MaterialType::DiffuseFlat:
+			return std::make_shared<DiffuseFlatMaterial>(m_shaders[2].GetProgramID());
+			break;
+		case Mona::MaterialType::DiffuseTextured:
+			return std::make_shared<DiffuseTexturedMaterial>(m_shaders[3].GetProgramID());
+			break;
+		case Mona::MaterialType::PBRFlat:
+			return std::make_shared<PBRFlatMaterial>(m_shaders[4].GetProgramID());
+			break;
+		case Mona::MaterialType::PBRTextured:
+			return std::make_shared<PBRTexturedMaterial>(m_shaders[5].GetProgramID());
 			break;
 		default:
 			return nullptr;

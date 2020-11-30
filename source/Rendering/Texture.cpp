@@ -114,7 +114,12 @@ namespace Mona {
 		}
 		GLenum internalFormat = 0;
 		GLenum dataFormat = 0;
-		if (channels == 4)
+		if (channels == 1)
+		{
+			internalFormat = GL_R8;
+			dataFormat = GL_RED;
+		}
+		else if (channels == 4)
 		{
 			internalFormat = GL_RGBA8;
 			dataFormat = GL_RGBA;

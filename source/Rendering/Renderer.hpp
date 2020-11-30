@@ -28,7 +28,7 @@ namespace Mona {
 		void StartUp(EventManager& eventManager, DebugDrawingSystem* debugDrawingSystemPtr) noexcept;
 		void Render(EventManager& eventManager,
 					const InnerComponentHandle& cameraHandle,
-					const glm::vec3& ambientLightColorIntensity,
+					const glm::vec3& ambientLight,
 					StaticMeshComponent::managerType& staticMeshDataManager,
 					TransformComponent::managerType &transformDataManager,
 					CameraComponent::managerType &cameraDataManager,
@@ -67,7 +67,7 @@ namespace Mona {
 			SpotLight spotLights[2 * NUM_HALF_MAX_SPOT_LIGHTS];
 			PointLight pointLights[2 * NUM_HALF_MAX_POINT_LIGHTS]; 
 			DirectionalLight directionalLights[2 * NUM_HALF_MAX_DIRECTIONAL_LIGHTS]; 
-			glm::vec3 ambientLightColorIntensity; 
+			glm::vec3 ambientLight; 
 			int spotLightsCount; 
 			int pointLightsCount; 
 			int directionalLightsCount; 

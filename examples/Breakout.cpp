@@ -1,5 +1,5 @@
 #include "MonaEngine.hpp"
-#include "Rendering/FlatColorMaterial.hpp"
+#include "Rendering/DiffuseFlatMaterial.hpp"
 class BasicCamera : public Mona::GameObject {
 public:
 	BasicCamera() = default;
@@ -28,8 +28,8 @@ public:
 		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
 		glm::vec3 paddleScale(2.0f, 0.5f, 0.5f);
 		m_transform->Scale(paddleScale);
-		auto paddleMaterial = std::static_pointer_cast<Mona::FlatColorMaterial>(world.CreateMaterial(Mona::MaterialType::FlatColor));
-		paddleMaterial->SetColor(glm::vec3(0.3f, 0.3f, 0.75f));
+		auto paddleMaterial = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseFlat));
+		paddleMaterial->SetDiffuseColor(glm::vec3(0.3f, 0.3f, 0.75f));
 		auto& meshManager = Mona::MeshManager::GetInstance();
 		world.AddComponent<Mona::StaticMeshComponent>(*this, meshManager.LoadMesh(Mona::MeshManager::PrimitiveType::Cube), paddleMaterial);
 		Mona::BoxShapeInformation boxInfo(paddleScale);
@@ -45,8 +45,8 @@ public:
 		m_ballTransform->SetRotation(m_transform->GetLocalRotation());
 		m_ballTransform->SetTranslation(m_transform->GetLocalTranslation() + glm::vec3(0.0f, 2.0f, 0.0f));
 		m_ballTransform->SetScale(glm::vec3(ballRadius));
-		auto ballMaterial = std::static_pointer_cast<Mona::FlatColorMaterial>(world.CreateMaterial(Mona::MaterialType::FlatColor));
-		ballMaterial->SetColor(glm::vec3(0.75f, 0.3f, 0.3f));
+		auto ballMaterial = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseFlat));
+		ballMaterial->SetDiffuseColor(glm::vec3(0.75f, 0.3f, 0.3f));
 		world.AddComponent<Mona::StaticMeshComponent>(ball, meshManager.LoadMesh(Mona::MeshManager::PrimitiveType::Sphere), ballMaterial);
 		
 		Mona::SphereShapeInformation sphereInfo(ballRadius);
@@ -106,7 +106,7 @@ public:
 	~Breakout() = default;
 	virtual void UserStartUp(Mona::World & world) noexcept override {
 		world.SetGravity(glm::vec3(0.0f,0.0f,0.0f));
-		world.GetAmbientLightColorIntensity(glm::vec3(0.3f));
+		world.SetAmbientLight(glm::vec3(0.3f));
 		world.CreateGameObject<BasicCamera>();
 		world.CreateGameObject<Paddle>(20.0f);
 		glm::vec3 blockScale(1.0f, 0.5f, 0.5f);
@@ -114,7 +114,7 @@ public:
 		m_blockBreakingSound = audioClipManager.LoadAudioClip(Mona::SourcePath("Assets/AudioFiles/boxBreaking.wav"));
 		auto& meshManager = Mona::MeshManager::GetInstance();
 		Mona::BoxShapeInformation boxInfo(blockScale);
-		auto blockMaterial = world.CreateMaterial(Mona::MaterialType::FlatColor);
+		auto blockMaterial = world.CreateMaterial(Mona::MaterialType::DiffuseFlat);
 		for (int i = -2; i < 3; i++) {
 			float x = 4.0f * i;
 			for (int j = -2; j < 3; j++)
@@ -136,8 +136,8 @@ public:
 				
 			}
 		}
-		auto wallMaterial = std::static_pointer_cast<Mona::FlatColorMaterial>(world.CreateMaterial(Mona::MaterialType::FlatColor));
-		wallMaterial->SetColor(glm::vec3(0.15f, 0.15f, 0.15f));
+		auto wallMaterial = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseFlat));
+		wallMaterial->SetDiffuseColor(glm::vec3(0.15f, 0.15f, 0.15f));
 		auto upperWall = world.CreateGameObject<Mona::GameObject>();
 		InitializeWall(world, upperWall, glm::vec3(0.0f, 26.0f, 0.0f), glm::vec3(18.0f, 1.0f, 1.0f), wallMaterial);
 

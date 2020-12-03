@@ -1,6 +1,6 @@
 #pragma once
-#ifndef TEXTUREMATERIAL_HPP
-#define TEXTUREMATERIAL_HPP
+#ifndef DIFFUSETEXTUREDMATERIAL_HPP
+#define DIFFUSETEXTUREDMATERIAL_HPP
 #include <memory>
 #include "../Core/Log.hpp"
 #include "Texture.hpp"

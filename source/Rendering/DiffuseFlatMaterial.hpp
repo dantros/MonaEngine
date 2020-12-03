@@ -1,6 +1,6 @@
 #pragma once
-#ifndef FLATCOLORMATERIAL_HPP
-#define FLATCOLORMATERIAL_HPP
+#ifndef DIFFUSEFLATMATERIAL_HPP
+#define DIFFUSEFLATMATERIAL_HPP
 #include "Material.hpp"
 #include <glm/glm.hpp>
 namespace Mona {

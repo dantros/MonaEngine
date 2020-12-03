@@ -16,9 +16,12 @@ namespace Mona {
 			glm::vec2 res = world.GetWindow().GetWindowDimensions();
 			screenPos = glm::vec2(1 / res.x, 1 / res.y) * glm::vec2(input.GetMousePosition());
         }
+		void SetActive(bool active) { m_active = active; }
         virtual void UserUpdate(World& world, float timeStep) noexcept override
         {
-            auto& input = world.GetInput();
+			auto& input = world.GetInput();
+			if(m_active) {
+            
 			if (input.IsKeyPressed(MONA_KEY_A)) {
 				glm::vec3 right = m_transform->GetRightVector();
 				m_transform->Translate(-m_cameraSpeed * timeStep * right);
@@ -43,12 +46,12 @@ namespace Mona {
 			else if (input.IsKeyPressed(MONA_KEY_Q)) {
 				m_transform->Rotate(glm::vec3(0.0f, 1.0f, 0.0f), -m_rollSpeed * timeStep);
 			}
-
+			}
 			
 			glm::vec2 res = world.GetWindow().GetWindowDimensions();
 			glm::vec2 newScreenPos = glm::vec2(1/res.x, 1/res.y) * glm::vec2(input.GetMousePosition());
 			glm::vec2 delta = newScreenPos - screenPos;
-			if (glm::length2(delta) != 0.0f)
+			if (glm::length2(delta) != 0.0f && m_active)
 			{
 				float amountX = delta.x * m_rotationSpeed;
 				float amountY = delta.y * m_rotationSpeed;
@@ -59,6 +62,7 @@ namespace Mona {
 		
         }
     private:
+		bool m_active = true;
 		float m_cameraSpeed = 2.0f;
 		float m_rollSpeed = 1.5f;
 		float m_rotationSpeed = 1.5f;

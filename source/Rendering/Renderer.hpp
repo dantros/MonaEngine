@@ -5,6 +5,7 @@
 #include "../Event/EventManager.hpp"
 #include "../World/ComponentTypes.hpp"
 #include "../World/TransformComponent.hpp"
+#include "../Animation/SkeletalMeshComponent.hpp"
 #include "StaticMeshComponent.hpp"
 #include "CameraComponent.hpp"
 #include "ShaderProgram.hpp"
@@ -30,6 +31,7 @@ namespace Mona {
 					const InnerComponentHandle& cameraHandle,
 					const glm::vec3& ambientLight,
 					StaticMeshComponent::managerType& staticMeshDataManager,
+					SkeletalMeshComponent::managerType& skeletalMeshDataManager,
 					TransformComponent::managerType &transformDataManager,
 					CameraComponent::managerType &cameraDataManager,
 					DirectionalLightComponent::managerType &directionalLightDataManager,

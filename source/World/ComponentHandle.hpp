@@ -47,6 +47,7 @@ namespace Mona {
 	using DirectionalLightHandle = ComponentHandle<DirectionalLightComponent>;
 	using SpotLightHandle = ComponentHandle<SpotLightComponent>;
 	using PointLightHandle = ComponentHandle<PointLightComponent>;
+	using SkeletalMeshHandle = ComponentHandle<SkeletalMeshComponent>;
 
 
 

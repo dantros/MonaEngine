@@ -15,6 +15,7 @@ namespace Mona {
 		PBRTextured,
 		MaterialTypeCount
 	};
+
 	class Material {
 	public:
 		Material(uint32_t shaderID) : m_shaderID(shaderID) {}

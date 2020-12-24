@@ -3,7 +3,25 @@
 #include "Rendering/PBRTexturedMaterial.hpp"
 #include "Rendering/UnlitTexturedMaterial.hpp"
 #include "Rendering/DiffuseTexturedMaterial.hpp"
+#include "Rendering/DiffuseFlatMaterial.hpp"
 #include <imgui.h>
+class AnimatedMesh : public Mona::GameObject {
+public:
+	AnimatedMesh() = default;
+	void UserStartUp(Mona::World& world) noexcept override {
+		
+		auto transform = world.AddComponent<Mona::TransformComponent>(*this);
+		transform->SetScale(glm::vec3(0.05f));
+		transform->Translate(glm::vec3(3.0f));
+		std::shared_ptr<Mona::DiffuseFlatMaterial> material = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(world.CreateMaterial(Mona::MaterialType::MaterialTypeCount));
+		material->SetDiffuseColor(0.1f * glm::vec3(0.3f, 0.75f, 0.1f));
+		auto& meshManager = Mona::MeshManager::GetInstance();
+		auto [newModel, skeleton] = meshManager.LoadMeshWithSkeleton(Mona::SourcePath("Assets/Idle.fbx"));
+		auto animation = meshManager.LoadAnimationClip(Mona::SourcePath("Assets/Idle.fbx"), skeleton);
+		world.AddComponent<Mona::SkeletalMeshComponent>(*this, newModel, skeleton, animation, material);
+	}
+
+};
 class Box : public Mona::GameObject {
 public:
 	Box(float speed, float rspeed) {
@@ -12,7 +30,7 @@ public:
 	}
 	void UserStartUp(Mona::World& world) noexcept override {
 		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
-		m_transform->Scale(glm::vec3(1.0f / 20000.0f));
+		m_transform->Scale(glm::vec3(1.0f / 200.0f));
 		auto& meshManager = Mona::MeshManager::GetInstance();
 		auto& textureManager = Mona::TextureManager::GetInstance();
 		std::shared_ptr<Mona::Mesh> model = meshManager.LoadMesh(Mona::SourcePath("Assets/Models/BackpackFBX/Survival_BackPack_2.fbx"), true);
@@ -132,12 +150,21 @@ public:
 		m_rotatingBox = world.CreateGameObject<Box>(0.0f, 0.0f);
 		m_camera = world.CreateGameObject<Mona::BasicPerspectiveCamera>();
 		world.AddComponent<Mona::SpotLightComponent>(m_camera, glm::vec3(12.0f), 15.0f, glm::radians(25.0f), glm::radians(37.0f));
-		
+		world.CreateGameObject<AnimatedMesh>();
 		world.SetMainCamera(world.GetComponentHandle<Mona::CameraComponent>(m_camera));
 		world.GetInput().SetCursorType(Mona::Input::CursorType::Disabled);
 
 		AddDirectionalLight(world, glm::vec3(1.0f, 0.0f, 0.0f), 10.0f, glm::radians(-45.0f));
 		AddDirectionalLight(world, glm::vec3(1.0f, 0.0f, 0.0f), 10.0f, glm::radians(-135.0f));
+
+		auto sphere = world.CreateGameObject<Mona::GameObject>();
+		auto sphereTransform = world.AddComponent<Mona::TransformComponent>(sphere);
+		sphereTransform->Scale(glm::vec3(0.1f));
+		sphereTransform->Translate(glm::vec3(3.0f,3.0f,3.0f));
+		world.AddComponent<Mona::StaticMeshComponent>(sphere,
+			Mona::MeshManager::GetInstance().LoadMesh(Mona::MeshManager::PrimitiveType::Cube),
+			world.CreateMaterial(Mona::MaterialType::UnlitFlat)
+			);
 
 		/*
 		auto& meshManager = Mona::MeshManager::GetInstance();

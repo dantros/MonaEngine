@@ -13,6 +13,7 @@ namespace Mona {
 		DirectionalLightComponent,
 		SpotLightComponent,
 		PointLightComponent,
+		SkeletalMeshComponent,
 		ComponentTypeCount
 	};
 
@@ -33,7 +34,7 @@ namespace Mona {
 	class DirectionalLightComponent;
 	class SpotLightComponent;
 	class PointLightComponent;
-
+	class SkeletalMeshComponent;
 	template <typename ComponentType>
 	class DefaultLifetimePolicy;
 
@@ -51,7 +52,8 @@ namespace Mona {
 		AudioSourceComponent,
 		DirectionalLightComponent,
 		SpotLightComponent,
-		PointLightComponent>;
+		PointLightComponent,
+		SkeletalMeshComponent>;
 
 }
 #endif

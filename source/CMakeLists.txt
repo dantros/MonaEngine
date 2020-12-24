@@ -40,6 +40,10 @@ set(MONA_HEADERS
 				Rendering/DirectionalLightComponent.hpp
 				Rendering/SpotLightComponent.hpp
 				Rendering/PointLightComponent.hpp
+				Animation/JointPose.hpp
+				Animation/AnimationClip.hpp
+				Animation/Skeleton.hpp
+				Animation/SkeletalMeshComponent.hpp
 				PhysicsCollision/PhysicsCollisionSystem.hpp
 				PhysicsCollision/PhysicsCollisionEvents.hpp
 				PhysicsCollision/CustomMotionState.hpp

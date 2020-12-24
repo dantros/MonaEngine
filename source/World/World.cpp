@@ -29,6 +29,7 @@ namespace Mona {
 		m_componentManagers[DirectionalLightComponent::componentIndex].reset(new DirectionalLightComponent::managerType());
 		m_componentManagers[SpotLightComponent::componentIndex].reset(new SpotLightComponent::managerType());
 		m_componentManagers[PointLightComponent::componentIndex].reset(new PointLightComponent::managerType());
+		m_componentManagers[SkeletalMeshComponent::componentIndex].reset(new SkeletalMeshComponent::managerType());
 		m_debugDrawingSystem.reset(new DebugDrawingSystem());
 	
 	}
@@ -133,9 +134,16 @@ namespace Mona {
 		auto& directionalLightDataManager = GetComponentManager<DirectionalLightComponent>();
 		auto& spotLightDataManager = GetComponentManager<SpotLightComponent>();
 		auto& pointLightDataManager = GetComponentManager<PointLightComponent>();
+		auto& skeletalMeshDataManager = GetComponentManager<SkeletalMeshComponent>();
 		m_input.Update();
 		m_physicsCollisionSystem.StepSimulation(timeStep);
 		m_physicsCollisionSystem.SubmitCollisionEvents(*this, m_eventManager, rigidBodyDataManager);
+		for (uint32_t i = 0; i < skeletalMeshDataManager.GetCount(); i++) {
+			SkeletalMeshComponent& skeletalMesh = skeletalMeshDataManager[i];
+			GameObject* owner = skeletalMeshDataManager.GetOwnerByIndex(i);
+			TransformComponent* transform = transformDataManager.GetComponentPointer(owner->GetInnerComponentHandle<TransformComponent>());
+			skeletalMesh.Update(transform->GetModelMatrix(), timeStep);
+		}
 		m_objectManager.UpdateGameObjects(*this, m_eventManager, timeStep);
 		m_application->UserUpdate(*this, timeStep);
 		m_audioSystem.Update(m_audoListenerTransformHandle, timeStep, transformDataManager, audioSourceDataManager);
@@ -143,6 +151,7 @@ namespace Mona {
 			m_cameraHandle,
 			m_ambientLight,
 			staticMeshDataManager,
+			skeletalMeshDataManager,
 			transformDataManager,
 			cameraDataManager,
 			directionalLightDataManager,

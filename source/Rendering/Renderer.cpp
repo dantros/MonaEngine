@@ -37,6 +37,7 @@ namespace Mona{
 		m_shaders.emplace_back(SourcePath("Assets/Shaders/DiffuseTextured.vs"), SourcePath("Assets/Shaders/DiffuseTextured.ps"));
 		m_shaders.emplace_back(SourcePath("Assets/Shaders/PBRFlat.vs"), SourcePath("Assets/Shaders/PBRFlat.ps"));
 		m_shaders.emplace_back(SourcePath("Assets/Shaders/PBRTextured.vs"), SourcePath("Assets/Shaders/PBRTextured.ps"));
+		m_shaders.emplace_back(SourcePath("Assets/Shaders/AnimTest.vs"), SourcePath("Assets/Shaders/DiffuseFlat.ps"));
 		
 		//El sistema de rendering debe subscribirse al cambio de resolución de la ventana para actulizar la resolución
 		//del framebuffer al que OpenGL renderiza.
@@ -65,6 +66,7 @@ namespace Mona{
 		const InnerComponentHandle& cameraHandle,
 		const glm::vec3& ambientLight,
 		StaticMeshComponent::managerType& staticMeshDataManager,
+		SkeletalMeshComponent::managerType& skeletalMeshDataManager,
 		TransformComponent::managerType& transformDataManager,
 		CameraComponent::managerType& cameraDataManager,
 		DirectionalLightComponent::managerType& directionalLightDataManager,
@@ -151,6 +153,19 @@ namespace Mona{
 			
 		}
 		
+		for (decltype(skeletalMeshDataManager.GetCount()) i = 0;
+			i < skeletalMeshDataManager.GetCount();
+			i++)
+		{
+			SkeletalMeshComponent& skeletalMesh = skeletalMeshDataManager[i];
+			GameObject* owner = skeletalMeshDataManager.GetOwnerByIndex(i);
+			TransformComponent* transform = transformDataManager.GetComponentPointer(owner->GetInnerComponentHandle<TransformComponent>());
+			glBindVertexArray(skeletalMesh.GetMeshVAOID());
+			skeletalMesh.m_materialPtr->SetUniforms(projectionMatrix, viewMatrix, transform->GetModelMatrix(), cameraPosition);
+			const auto& matrixPallete = skeletalMesh.GetMatrixPalette();
+			glUniformMatrix4fv(10, matrixPallete.size(), GL_FALSE, (GLfloat*) matrixPallete.data());
+			glDrawElements(GL_TRIANGLES, skeletalMesh.GetMeshIndexCount(), GL_UNSIGNED_INT, 0);
+		}
 		//En no Debub build este llamado es vacio, en caso contrario se renderiza información de debug
 		m_debugDrawingSystemPtr->Draw(eventManager, viewMatrix, projectionMatrix);
 		
@@ -177,6 +192,9 @@ namespace Mona{
 			break;
 		case Mona::MaterialType::PBRTextured:
 			return std::make_shared<PBRTexturedMaterial>(m_shaders[5].GetProgramID());
+			break;
+		case Mona::MaterialType::MaterialTypeCount:
+			return std::make_shared<DiffuseFlatMaterial>(m_shaders[6].GetProgramID());
 			break;
 		default:
 			return nullptr;

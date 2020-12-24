@@ -25,6 +25,7 @@
 #include "../Audio/AudioSystem.hpp"
 #include "../Audio/AudioSourceComponent.hpp"
 #include "../Audio/AudioSourceComponentLifetimePolicy.hpp"
+#include "../Animation/SkeletalMeshComponent.hpp"
 #include <memory>
 #include <array>
 #include <filesystem>

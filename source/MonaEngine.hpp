@@ -12,6 +12,8 @@
 #include "Audio/AudioClipManager.hpp"
 #include "Rendering/MeshManager.hpp"
 #include "Rendering/TextureManager.hpp"
+#include "Animation/SkeletonManager.hpp"
+#include "Animation/AnimationClipManager.hpp"
 #include <memory>
 
 #endif

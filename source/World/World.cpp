@@ -7,6 +7,8 @@
 #include "../Rendering/Material.hpp"
 #include "../Rendering/MeshManager.hpp"
 #include "../Rendering/TextureManager.hpp"
+#include "../Animation/SkeletonManager.hpp"
+#include "../Animation/AnimationClipManager.hpp"
 #include <chrono>
 namespace Mona {
 	
@@ -64,6 +66,8 @@ namespace Mona {
 		m_physicsCollisionSystem.ShutDown();
 		MeshManager::GetInstance().ShutDown();
 		TextureManager::GetInstance().ShutDown();
+		SkeletonManager::GetInstance().ShutDown();
+		AnimationClipManager::GetInstance().ShutDown();
 		m_renderer.ShutDown(m_eventManager);
 		m_debugDrawingSystem->ShutDown();
 		m_window.ShutDown();

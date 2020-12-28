@@ -16,9 +16,13 @@ public:
 		std::shared_ptr<Mona::DiffuseFlatMaterial> material = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(world.CreateMaterial(Mona::MaterialType::MaterialTypeCount));
 		material->SetDiffuseColor(0.1f * glm::vec3(0.3f, 0.75f, 0.1f));
 		auto& meshManager = Mona::MeshManager::GetInstance();
-		auto [newModel, skeleton] = meshManager.LoadMeshWithSkeleton(Mona::SourcePath("Assets/Idle.fbx"));
-		auto animation = meshManager.LoadAnimationClip(Mona::SourcePath("Assets/Idle.fbx"), skeleton);
-		world.AddComponent<Mona::SkeletalMeshComponent>(*this, newModel, skeleton, animation, material);
+		auto& skeletonManager = Mona::SkeletonManager::GetInstance();
+		auto& animationManager = Mona::AnimationClipManager::GetInstance();
+		auto skeleton = skeletonManager.LoadSkeleton(Mona::SourcePath("Assets/Idle.fbx"));
+		auto skinnedMesh = meshManager.LoadSkinnedMesh(skeleton, Mona::SourcePath("Assets/Idle.fbx"));
+		//auto [newModel, skeleton] = meshManager.LoadMeshWithSkeleton(Mona::SourcePath("Assets/Idle.fbx"));
+		auto animation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Idle.fbx"), skeleton);
+		world.AddComponent<Mona::SkeletalMeshComponent>(*this, skinnedMesh, animation, material);
 	}
 
 };

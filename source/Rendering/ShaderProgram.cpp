@@ -132,10 +132,11 @@ namespace Mona {
 			std::string key;
 			std::string value;
 		};
-		std::array<ShaderConstant,3> constants = {{
+		std::array<ShaderConstant,4> constants = {{
 			{"${MAX_DIRECTIONAL_LIGHTS}", std::to_string(Renderer::NUM_HALF_MAX_DIRECTIONAL_LIGHTS * 2)},
 			{"${MAX_SPOT_LIGHTS}", std::to_string(Renderer::NUM_HALF_MAX_SPOT_LIGHTS * 2)} ,
-			{"${MAX_POINT_LIGHTS}", std::to_string(Renderer::NUM_HALF_MAX_POINT_LIGHTS * 2)}}};
+			{"${MAX_POINT_LIGHTS}", std::to_string(Renderer::NUM_HALF_MAX_POINT_LIGHTS * 2)},
+			{"${MAX_BONES}", std::to_string(Renderer::NUM_MAX_BONES)}} };
 		
 		for (ShaderConstant& c : constants) {
 			size_t pos = 0;

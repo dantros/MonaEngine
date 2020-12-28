@@ -10,7 +10,7 @@ layout(location = 0) uniform mat4 mvpMatrix;
 layout(location = 1) uniform mat4 modelMatrix;
 layout(location = 2) uniform mat4 modelInverseTransposeMatrix;
 
-layout(location = 10) uniform mat4 boneTransforms[75];
+layout(location = 10) uniform mat4 boneTransforms[${MAX_BONES}];
 
 out vec3 normal;
 out vec3 worldPos;

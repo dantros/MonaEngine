@@ -34,6 +34,7 @@ namespace Mona {
 		static constexpr int MaterialTintShaderLocation = 4;
 		static constexpr int LightsUniformBlockBinding = 0;
 		static constexpr int CameraPositionShaderLocation = 9;
+		static constexpr int BoneTransformShaderLocation = 10;
 
 
 		ShaderProgram(const std::filesystem::path& vertexShaderPath,

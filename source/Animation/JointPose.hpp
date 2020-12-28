@@ -33,8 +33,8 @@ namespace Mona {
 
 
 	};
-	/*
-	JointPose operator*(const JointPose& lhs, const JointPose& rhs) {
+	
+	inline JointPose operator*(const JointPose& lhs, const JointPose& rhs) {
 		JointPose out;
 		out.m_scale = lhs.m_scale * rhs.m_scale;
 		out.m_rotation = lhs.m_rotation * rhs.m_rotation;
@@ -43,7 +43,7 @@ namespace Mona {
 		return out;
 	}
 
-	JointPose inverse(const JointPose& pose) {
+	inline JointPose inverse(const JointPose& pose) {
 		JointPose inv;
 		
 		inv.m_scale.x = glm::abs(pose.m_scale.x) < glm::epsilon<float>() ? 0.0f : 1.0f / pose.m_scale.x;
@@ -55,13 +55,19 @@ namespace Mona {
 		return inv;
 	}
 
-	JointPose mix(const JointPose& lhs, const JointPose& rhs, float t) {
+	inline JointPose mix(const JointPose& lhs, const JointPose& rhs, float t) {
 
 		return JointPose(glm::slerp(lhs.m_rotation, rhs.m_rotation, t),
 			glm::mix(lhs.m_translation, rhs.m_translation, t),
 			glm::mix(lhs.m_scale, rhs.m_scale, t));
 	}
-	*/
+
+	inline glm::mat4 JointPoseToMat4(const JointPose& pose) {
+		const glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), pose.m_translation);
+		const glm::mat4 rotationMatrix = glm::toMat4(pose.m_rotation);
+		const glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), pose.m_scale);
+		return translationMatrix * rotationMatrix * scaleMatrix;
+	}
 	
 }
 #endif

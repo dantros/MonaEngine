@@ -2,6 +2,7 @@
 #ifndef RENDERER_HPP
 #define RENDERER_HPP
 #include <vector>
+#include <glm/glm.hpp>
 #include "../Event/EventManager.hpp"
 #include "../World/ComponentTypes.hpp"
 #include "../World/TransformComponent.hpp"
@@ -25,6 +26,7 @@ namespace Mona {
 		static constexpr int NUM_HALF_MAX_DIRECTIONAL_LIGHTS = 1;
 		static constexpr int NUM_HALF_MAX_POINT_LIGHTS = 3;
 		static constexpr int NUM_HALF_MAX_SPOT_LIGHTS = 3;
+		static constexpr int NUM_MAX_BONES = 75;
 		Renderer() = default;
 		void StartUp(EventManager& eventManager, DebugDrawingSystem* debugDrawingSystemPtr) noexcept;
 		void Render(EventManager& eventManager,
@@ -75,6 +77,7 @@ namespace Mona {
 			int directionalLightsCount; 
 		};
 		std::vector<ShaderProgram> m_shaders;
+		std::vector<glm::mat4> m_currentMatrixPalette;
 		SubscriptionHandle m_onWindowResizeSubscription;
 		DebugDrawingSystem* m_debugDrawingSystemPtr = nullptr;
 		unsigned int m_lightDataUBO = 0;

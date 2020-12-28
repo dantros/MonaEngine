@@ -8,12 +8,13 @@
 #include <glm/glm.hpp>
 #include <math.h>
 #include <algorithm>
+#include "../Core/Log.hpp"
 #include "JointPose.hpp"
 #include "Skeleton.hpp"
 namespace Mona {
 	class AnimationClip {
 	public:
-
+		friend class AnimationClipManager;
 		using jointIndex = uint32_t;
 		struct AnimationTrack {
 			std::vector<glm::vec3> positions;
@@ -22,15 +23,15 @@ namespace Mona {
 			std::vector<float> positionTimeStamps;
 			std::vector<float> rotationTimeStamps;
 			std::vector<float> scaleTimeStamps;
-			
+
 		};
-		using PoseSample = std::vector<std::pair<unsigned int, JointPose>>;
+	private:
 		AnimationClip(std::vector<AnimationTrack>&& animationTracks,
-			std::vector<std::string> &&trackNames,
+			std::vector<std::string>&& trackNames,
 			std::shared_ptr<Skeleton> skeletonPtr,
 			float duration,
 			float ticksPerSecond) :
-			m_animationTracks(std::move(animationTracks)), 
+			m_animationTracks(std::move(animationTracks)),
 			m_trackNames(std::move(trackNames)),
 			m_skeletonPtr(nullptr),
 			m_duration(duration),
@@ -39,6 +40,7 @@ namespace Mona {
 			m_jointIndices.resize(m_trackNames.size());
 			SetSkeleton(skeletonPtr);
 		}
+
 		void SetSkeleton(std::shared_ptr<Skeleton> skeletonPtr) {
 			if (!skeletonPtr || skeletonPtr == m_skeletonPtr)
 			{
@@ -46,14 +48,30 @@ namespace Mona {
 			}
 			for (uint32_t i = 0; i < m_trackNames.size(); i++) {
 				const std::string& name = m_trackNames[i];
-				//checkproblem with track with no joint
-				int32_t jointIndex = skeletonPtr->GetJointIndex(name);
-				m_jointIndices[i] = static_cast<uint32_t>(jointIndex);
+				int32_t signIndex = skeletonPtr->GetJointIndex(name);
+				MONA_ASSERT(signIndex >= 0, "AnimationClip Error: Given skeleton incompatible with importing animation");
+				uint32_t jointIndex = static_cast<uint32_t>(signIndex);
+				m_jointIndices[i] = jointIndex;
 			}
 			m_skeletonPtr = skeletonPtr;
 		}
-
-		void Sample(std::vector<glm::mat4>& outMatrixPalette, float time) {
+		float GetSamplingTime(float time) const {
+			if (m_isLooping)
+				return std::fmod(time, m_duration);
+			return std::clamp(time, 0.0f, m_duration);
+		}
+		std::pair<uint32_t, float> GetTimeFraction(const std::vector<float>& timeStamps, float time) const {
+			uint32_t sample = 0;
+			while (time >= timeStamps[sample]) {
+				sample++;
+			}
+			float start = timeStamps[sample - 1];
+			float end = timeStamps[sample];
+			float frac = (time - start) / (end - start);
+			return { sample, frac };
+		}
+	public:
+		void Sample(std::vector<JointPose>& outPose, float time) {
 			float newTime = GetSamplingTime(time);
 			for (uint32_t i = 0; i < m_animationTracks.size(); i++)
 			{
@@ -94,30 +112,12 @@ namespace Mona {
 				else {
 					localScale = animationTrack.scales[0];
 				}
-				JointPose pose(localRotation, localPosition, localScale);
-				const glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), pose.m_translation);
-				const glm::mat4 rotationMatrix = glm::toMat4(pose.m_rotation);
-				const glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), pose.m_scale);
-				outMatrixPalette[jointIndex] = translationMatrix * rotationMatrix * scaleMatrix;
+
+				outPose[jointIndex] = JointPose(localRotation, localPosition, localScale);
 
 			}
 		}
 	private:
-		float GetSamplingTime(float time) const{
-			if (m_isLooping)
-				return std::fmod(time, m_duration);
-			return std::clamp(time, 0.0f,m_duration);
-		}
-		std::pair<uint32_t, float> GetTimeFraction(const std::vector<float>& timeStamps, float time) const {
-			uint32_t sample = 0;
-			while (time >= timeStamps[sample]) {
-				sample++;
-			}
-			float start = timeStamps[sample - 1];
-			float end = timeStamps[sample];
-			float frac = (time - start) / (end - start);
-			return { sample, frac};
-		}
 		std::vector<AnimationTrack> m_animationTracks;
 		std::vector<std::string> m_trackNames;
 		std::vector<jointIndex> m_jointIndices;

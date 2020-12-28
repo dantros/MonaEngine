@@ -3,6 +3,7 @@ set(MONA_HEADERS
 				Core/Log.hpp
 				Core/Config.hpp
 				Core/RootDirectory.hpp
+				Core/AssimpTransformations.hpp
 				Platform/Window.hpp
 				Platform/Input.hpp
 				Platform/KeyCodes.hpp
@@ -44,6 +45,10 @@ set(MONA_HEADERS
 				Animation/AnimationClip.hpp
 				Animation/Skeleton.hpp
 				Animation/SkeletalMeshComponent.hpp
+				Animation/SkeletonManager.hpp
+				Animation/SkinnedMesh.hpp
+				Animation/AnimationClipManager.hpp
+				Animation/AnimationSystem.hpp
 				PhysicsCollision/PhysicsCollisionSystem.hpp
 				PhysicsCollision/PhysicsCollisionEvents.hpp
 				PhysicsCollision/CustomMotionState.hpp
@@ -77,6 +82,9 @@ set(MONA_SOURCES
 				Rendering/MeshManager.cpp
 				Rendering/Texture.cpp
 				Rendering/TextureManager.cpp
+				Animation/AnimationClipManager.cpp
+				Animation/SkeletonManager.cpp
+				Animation/AnimationSystem.cpp
 				PhysicsCollision/PhysicsCollisionSystem.cpp
 				Audio/AudioSystem.cpp
 				Audio/AudioClip.cpp

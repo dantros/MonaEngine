@@ -43,6 +43,7 @@ namespace Mona{
 		//del framebuffer al que OpenGL renderiza.
 		m_onWindowResizeSubscription = eventManager.Subscribe(this, &Renderer::OnWindowResizeEvent);
 		m_debugDrawingSystemPtr = debugDrawingSystemPtr;
+		m_currentMatrixPalette.resize(NUM_MAX_BONES, glm::mat4(1.0f));
 		glEnable(GL_DEPTH_TEST);
 
 
@@ -162,8 +163,8 @@ namespace Mona{
 			TransformComponent* transform = transformDataManager.GetComponentPointer(owner->GetInnerComponentHandle<TransformComponent>());
 			glBindVertexArray(skeletalMesh.GetMeshVAOID());
 			skeletalMesh.m_materialPtr->SetUniforms(projectionMatrix, viewMatrix, transform->GetModelMatrix(), cameraPosition);
-			const auto& matrixPallete = skeletalMesh.GetMatrixPalette();
-			glUniformMatrix4fv(10, matrixPallete.size(), GL_FALSE, (GLfloat*) matrixPallete.data());
+			skeletalMesh.GetMatrixPalette(m_currentMatrixPalette);
+			glUniformMatrix4fv(ShaderProgram::BoneTransformShaderLocation, skeletalMesh.GetJointCount(), GL_FALSE, (GLfloat*) m_currentMatrixPalette.data());
 			glDrawElements(GL_TRIANGLES, skeletalMesh.GetMeshIndexCount(), GL_UNSIGNED_INT, 0);
 		}
 		//En no Debub build este llamado es vacio, en caso contrario se renderiza información de debug

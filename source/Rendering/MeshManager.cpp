@@ -10,9 +10,12 @@
 #include <assimp/postprocess.h>
 #include "../Core/Log.hpp"
 #include "Mesh.hpp"
+
 #include "../Core/RootDirectory.hpp"
+#include "../Core/AssimpTransformations.hpp"
 #include "../Animation/Skeleton.hpp"
 #include "../Animation/AnimationClip.hpp"
+#include "../Animation/SkinnedMesh.hpp"
 #include <glad/glad.h>
 
 namespace Mona {
@@ -36,33 +39,9 @@ namespace Mona {
 
 	};
 
-	glm::mat4 AssimpToGlmMatrix(const aiMatrix4x4& mat)
-	{
-		glm::mat4 m;
-		for (int y = 0; y < 4; y++)
-		{
-			for (int x = 0; x < 4; x++)
-			{
-				m[x][y] = mat[y][x];
-			}
-		}
-		return m;
-	}
+	
 
-	glm::vec3 AssimpToGlmVec3(const aiVector3D&vec)
-	{
-		return glm::vec3(vec.x, vec.y, vec.z);
-	}
 
-	glm::fquat AssimpToGlmQuat(const aiQuaternion& quat) {
-		glm::fquat q;
-		q.x = quat.x;
-		q.y = quat.y;
-		q.z = quat.z;
-		q.w = quat.w;
-
-		return q;
-	}
 
 	std::shared_ptr<Mesh> MeshManager::LoadMesh(PrimitiveType type) noexcept
 	{
@@ -493,34 +472,56 @@ namespace Mona {
 			}
 
 		}
+
+		for (auto i = m_skinnedMeshMap.begin(), last = m_skinnedMeshMap.end(); i != last;) {
+			if (i->second.use_count() == 1) {
+				i = m_skinnedMeshMap.erase(i);
+			}
+			else {
+				++i;
+			}
+
+		}
 	}
 	void MeshManager::ShutDown() noexcept {
 		for (auto& entry : m_meshMap) {
 			entry.second->ClearData();
 		}
 
+		for (auto& entry : m_skinnedMeshMap) {
+			entry.second->ClearData();
+		}
 
 		m_meshMap.clear();
 	}
 
-	std::pair<std::shared_ptr<Mesh>, std::shared_ptr<Skeleton>> MeshManager::LoadMeshWithSkeleton(const std::filesystem::path& filePath,
-		bool flipUvs) noexcept {
-
+	std::shared_ptr<SkinnedMesh> MeshManager::LoadSkinnedMesh(std::shared_ptr<Skeleton> skeleton,
+		const std::filesystem::path& filePath,
+		bool flipUvs) noexcept 
+	{
 		const std::string& stringPath = filePath.string();
+		//En caso de que ya exista una entrada en el mapa de mallas con el mismo path, entonces se retorna inmediatamente
+		//dicha malla.
+		auto it = m_skinnedMeshMap.find(stringPath);
+		if (it != m_skinnedMeshMap.end()) {
+			return it->second;
+		}
+
+		//En caso contrario comienza el proceso de importación
+		//El primer caso consiste en cargar la escena del archivo ubicada en filepath usando assimp
 		Assimp::Importer importer;
 		unsigned int postProcessFlags = flipUvs ? aiProcess_FlipUVs : 0;
 		postProcessFlags |= aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_GenUVCoords | aiProcess_CalcTangentSpace;
 		const aiScene* scene = importer.ReadFile(stringPath, postProcessFlags);
 
 
-		/*
+
 		if (!scene) {
 			//En caso de fallar la carga se envia un mensaje de error y se carga un cubo.
 			MONA_LOG_ERROR("MeshManager Error: Failed to open file with path {0}", stringPath);
-			MONA_LOG_INFO("Loading default model");
-			return LoadMesh(PrimitiveType::Cube);
+			return nullptr;
 		}
-		*/
+
 		//Comienzo del proceso de pasar desde la escena de assimp a un formato interno
 		std::vector<SkeletalMeshVertex> vertices;
 		std::vector<unsigned int> faces;
@@ -535,7 +536,6 @@ namespace Mona {
 
 		vertices.reserve(numVertices);
 		faces.reserve(numFaces);
-
 
 		//El grafo de la escena se reccorre usando DFS (Depth Search First) usando dos stacks.
 		std::stack<const aiNode*> sceneNodes;
@@ -582,7 +582,7 @@ namespace Mona {
 					}
 					vertex.boneIds = glm::ivec4(0);
 					vertex.boneWeights = glm::vec4(0.0f);
-					
+
 					vertices.push_back(vertex);
 				}
 
@@ -593,7 +593,7 @@ namespace Mona {
 					faces.push_back(face.mIndices[1] + offset);
 					faces.push_back(face.mIndices[2] + offset);
 				}
-				
+
 				for (uint32_t i = 0; i < meshOBJ->mNumBones; i++)
 				{
 					const aiBone* bone = meshOBJ->mBones[i];
@@ -614,53 +614,7 @@ namespace Mona {
 			}
 		}
 
-		std::vector<glm::mat4> invBindPoseMatrices;
-		std::vector<std::string> jointNames;
-		std::vector<std::int32_t> parentIndices;
-		std::unordered_map<std::string, uint32_t> boneIndexMap;
-		invBindPoseMatrices.reserve(boneInfo.size());
-		jointNames.reserve(boneInfo.size());
-		parentIndices.reserve(boneInfo.size());
-		std::stack<int32_t> parentNodeIndices;
-		sceneNodes.push(scene->mRootNode);
-
-		parentNodeIndices.push(-1);
-		
-		while (!sceneNodes.empty())
-		{
-			const aiNode* currentNode = sceneNodes.top();
-			sceneNodes.pop();
-			int32_t parentIndex = parentNodeIndices.top();
-			parentNodeIndices.pop();
-			
-			if (boneInfo.find(currentNode->mName.C_Str()) != boneInfo.end())
-			{
-
-				
-				aiMatrix4x4& mat = boneInfo[currentNode->mName.C_Str()];
-				glm::mat4 m = AssimpToGlmMatrix(mat);
-				invBindPoseMatrices.push_back(m);
-				jointNames.push_back(currentNode->mName.C_Str());
-				parentIndices.push_back(parentIndex);
-				boneIndexMap.insert(std::make_pair(currentNode->mName.C_Str(), static_cast<uint32_t>(parentIndices.size()-1)));
-				int32_t newParentIndex = parentIndices.size() - 1;
-				for (uint32_t j = 0; j < currentNode->mNumChildren; j++) {
-					//Pusheamos los hijos y acumulamos la matrix de transformación
-					sceneNodes.push(currentNode->mChildren[j]);
-					parentNodeIndices.push(newParentIndex);
-				}
-			}
-
-			else{
-				for (uint32_t j = 0; j < currentNode->mNumChildren; j++) {
-					//Pusheamos los hijos y acumulamos la matrix de transformación
-					sceneNodes.push(currentNode->mChildren[j]);
-					parentNodeIndices.push(parentIndex);
-				}
-			}
-
-		}
-
+		//Recorremos la escena nuevamente ahora para llenar los datos de la piel del la malla
 		sceneNodes.push(scene->mRootNode);
 		std::vector<uint32_t> boneCounts;
 		boneCounts.resize(numVertices);
@@ -675,7 +629,9 @@ namespace Mona {
 				for (uint32_t i = 0; i < meshOBJ->mNumBones; i++)
 				{
 					const aiBone* bone = meshOBJ->mBones[i];
-					uint32_t index = boneIndexMap[std::string(bone->mName.C_Str())];
+					int32_t signIndex = skeleton->GetJointIndex(bone->mName.C_Str());
+					MONA_ASSERT(signIndex >= 0, "MeshManager Error: Given skeleton incompatible with importing mesh");
+					uint32_t index = static_cast<uint32_t>(signIndex);
 					for (uint32_t k = 0; k < bone->mNumWeights; k++)
 					{
 						uint32_t id = bone->mWeights[k].mVertexId + vertexOffset;
@@ -699,6 +655,7 @@ namespace Mona {
 							vertices[id].boneWeights.w = weight;
 							break;
 						default:
+							MONA_LOG_INFO("MeshManager Info: Engine only supports a maximun of 4 bones per vertex.");
 							break;
 
 						}
@@ -706,16 +663,16 @@ namespace Mona {
 
 				}
 				vertexOffset += meshOBJ->mNumVertices;
-				
+
 			}
 			for (uint32_t j = 0; j < currentNode->mNumChildren; j++) {
-				//Pusheamos los hijos y acumulamos la matrix de transformación
+				//Pusheamos los hijos
 				sceneNodes.push(currentNode->mChildren[j]);
 			}
 		}
 
 
-
+		//Normalizamos los pesos de los vertices
 		for (int i = 0; i < vertices.size(); i++) {
 			glm::vec4& boneWeights = vertices[i].boneWeights;
 			float totalWeight = boneWeights.x + boneWeights.y + boneWeights.z + boneWeights.w;
@@ -728,15 +685,10 @@ namespace Mona {
 				);
 			}
 			else {
-				MONA_LOG_INFO("!!!!!");
+				MONA_ASSERT(false, "MeshManager Error: Vertex with all bone weights equal to 0.");
 
 			}
 		}
-		/*
-		for (uint32_t i = 0; i < parentIndices.size(); i++) {
-			MONA_LOG_INFO("JointName: {0} Parent Index/Name: {1}/{2} ", jointNames[i], parentIndices[i],
-				parentIndices[i] >= 0 ? jointNames[parentIndices[i]] : "NO PARENT");
-		}*/
 		//Comienza el paso de los datos en CPU a GPU usando OpenGL
 		unsigned int modelVBO, modelIBO, modelVAO;
 		glGenVertexArrays(1, &modelVAO);
@@ -762,61 +714,11 @@ namespace Mona {
 		glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(SkeletalMeshVertex), (void*)offsetof(SkeletalMeshVertex, boneIds));
 		glEnableVertexAttribArray(6);
 		glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(SkeletalMeshVertex), (void*)offsetof(SkeletalMeshVertex, boneWeights));
-		Mesh* meshPtr = new Mesh(modelVAO, modelVBO, modelIBO, static_cast<uint32_t>(faces.size()));
-		Skeleton* skeletonPtr = new Skeleton(std::move(invBindPoseMatrices), std::move(jointNames), std::move(parentIndices));
-		std::shared_ptr<Mesh> sharedPtr = std::shared_ptr<Mesh>(meshPtr);
-		std::shared_ptr<Skeleton> skeletonSharedPtr = std::shared_ptr<Skeleton>(skeletonPtr);
+		SkinnedMesh* meshPtr = new SkinnedMesh(skeleton, modelVAO, modelVBO, modelIBO, static_cast<uint32_t>(faces.size()));
+		std::shared_ptr<SkinnedMesh> sharedPtr = std::shared_ptr<SkinnedMesh>(meshPtr);
 		//Antes de retornar la malla recien cargada, insertamos esta al mapa para que cargas futuras sean mucho mas rapidas.
-		//m_meshMap.insert({ stringPath, sharedPtr });
-		return std::make_pair(sharedPtr, skeletonSharedPtr);
+		m_skinnedMeshMap.insert({ stringPath, sharedPtr });
+		return sharedPtr;
 
-	}
-
-	std::shared_ptr<AnimationClip> MeshManager::LoadAnimationClip(const std::filesystem::path& filePath, std::shared_ptr<Skeleton> skeleton) noexcept {
-
-		const std::string& stringPath = filePath.string();
-		Assimp::Importer importer;
-		unsigned int postProcessFlags = aiProcess_Triangulate;
-		const aiScene* scene = importer.ReadFile(stringPath, postProcessFlags);
-		aiAnimation* animation = scene->mAnimations[0];
-		float ticksPerSecond = animation->mTicksPerSecond != 0.0f? animation->mTicksPerSecond : 1.0f;
-		float duration = animation->mDuration / animation->mTicksPerSecond;
-		std::vector<AnimationClip::AnimationTrack> animationTracks;
-		std::vector<std::string> trackNames;
-		animationTracks.resize(animation->mNumChannels);
-		trackNames.reserve(animation->mNumChannels);
-		for (uint32_t i = 0; i < animation->mNumChannels; i++) {
-			aiNodeAnim* track = animation->mChannels[i];
-			trackNames.push_back(track->mNodeName.C_Str());
-			AnimationClip::AnimationTrack& animationTrack = animationTracks[i];
-			animationTrack.positions.reserve(track->mNumPositionKeys);
-			animationTrack.positionTimeStamps.reserve(track->mNumPositionKeys);
-			animationTrack.rotations.reserve(track->mNumRotationKeys);
-			animationTrack.rotationTimeStamps.reserve(track->mNumRotationKeys);
-			animationTrack.scales.reserve(track->mNumScalingKeys);
-			animationTrack.scaleTimeStamps.reserve(track->mNumScalingKeys);
-			for (uint32_t j = 0; j < track->mNumPositionKeys; j++) {
-				animationTrack.positionTimeStamps.push_back(track->mPositionKeys[j].mTime / ticksPerSecond);
-				animationTrack.positions.push_back(AssimpToGlmVec3(track->mPositionKeys[j].mValue));
-			}
-			for (uint32_t j = 0; j < track->mNumRotationKeys; j++) {
-				animationTrack.rotationTimeStamps.push_back(track->mPositionKeys[j].mTime / ticksPerSecond);
-				animationTrack.rotations.push_back(AssimpToGlmQuat(track->mRotationKeys[j].mValue));
-
-			}
-			for (uint32_t j = 0; j < track->mNumScalingKeys; j++) {
-				animationTrack.scaleTimeStamps.push_back(track->mPositionKeys[j].mTime / ticksPerSecond);
-				animationTrack.scales.push_back(AssimpToGlmVec3(track->mScalingKeys[j].mValue));
-
-			}
-		}
-		AnimationClip* animationPtr = new AnimationClip(std::move(animationTracks),
-			std::move(trackNames),
-			skeleton,
-			duration,
-			ticksPerSecond);
-		return std::shared_ptr<AnimationClip>(animationPtr);
-	
-	
 	}
 }

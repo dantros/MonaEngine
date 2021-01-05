@@ -18,12 +18,38 @@ public:
 		auto& meshManager = Mona::MeshManager::GetInstance();
 		auto& skeletonManager = Mona::SkeletonManager::GetInstance();
 		auto& animationManager = Mona::AnimationClipManager::GetInstance();
-		auto skeleton = skeletonManager.LoadSkeleton(Mona::SourcePath("Assets/Idle.fbx"));
-		auto skinnedMesh = meshManager.LoadSkinnedMesh(skeleton, Mona::SourcePath("Assets/Idle.fbx"));
+		auto skeleton = skeletonManager.LoadSkeleton(Mona::SourcePath("Assets/Models/xbot.fbx"));
+		auto skinnedMesh = meshManager.LoadSkinnedMesh(skeleton, Mona::SourcePath("Assets/Models/xbot.fbx"));
 		//auto [newModel, skeleton] = meshManager.LoadMeshWithSkeleton(Mona::SourcePath("Assets/Idle.fbx"));
-		auto animation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Idle.fbx"), skeleton);
-		world.AddComponent<Mona::SkeletalMeshComponent>(*this, skinnedMesh, animation, material);
+		m_animation0 = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/running.fbx"), skeleton);
+		m_animation1 = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/walking.fbx"), skeleton);
+		m_animation2 = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/idle.fbx"), skeleton);
+
+		m_skeletalMesh = world.AddComponent<Mona::SkeletalMeshComponent>(*this, skinnedMesh, m_animation0, material);
+
 	}
+
+	void UserUpdate(Mona::World& world, float timeStep) noexcept override {
+		auto& input = world.GetInput();
+		if (input.IsKeyPressed(MONA_KEY_9))
+		{
+			m_skeletalMesh->PlayAnimation(m_animation0);
+		}
+		else if (input.IsKeyPressed(MONA_KEY_8))
+		{
+			m_skeletalMesh->PlayAnimation(m_animation1);
+		}
+		else if (input.IsKeyPressed(MONA_KEY_7)) {
+			//m_skeletalMesh->SetIsLooping(false);
+			m_skeletalMesh->FadeTo(m_animation2);
+		}
+
+	}
+private:
+	Mona::SkeletalMeshHandle m_skeletalMesh;
+	std::shared_ptr<Mona::AnimationClip> m_animation0;
+	std::shared_ptr<Mona::AnimationClip> m_animation1;
+	std::shared_ptr<Mona::AnimationClip> m_animation2;
 
 };
 class Box : public Mona::GameObject {
@@ -169,17 +195,6 @@ public:
 			Mona::MeshManager::GetInstance().LoadMesh(Mona::MeshManager::PrimitiveType::Cube),
 			world.CreateMaterial(Mona::MaterialType::UnlitFlat)
 			);
-
-		/*
-		auto& meshManager = Mona::MeshManager::GetInstance();
-		auto& textureManager = Mona::TextureManager::GetInstance();
-		std::shared_ptr<Mona::Mesh> planeModel = meshManager.LoadMesh(Mona::MeshManager::PrimitiveType::Plane);
-		std::shared_ptr<Mona::PBRTexturedMaterial> planeMaterial = std::static_pointer_cast<Mona::PBRTexturedMaterial>(world.CreateMaterial(Mona::MaterialType::PBRTextured));
-		std::shared_ptr<Mona::Texture> planeTexture = textureManager.LoadTexture(Mona::SourcePath("Assets/Textures/brickwall.jpg"));
-		std::shared_ptr<Mona::Texture> planeNormalMap = textureManager.LoadTexture(Mona::SourcePath("Assets/Textures/brickwall_normal.jpg"));
-		planeMaterial->SetDiffuseTexture(planeTexture);
-		planeMaterial->SetNormalMapTexture(planeNormalMap);
-		world.AddComponent<Mona::StaticMeshComponent>(plane, planeModel, planeMaterial);*/
 	}
 
 	virtual void UserShutDown(Mona::World& world) noexcept override {

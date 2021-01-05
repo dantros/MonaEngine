@@ -13,7 +13,9 @@ namespace Mona {
 		using AnimationClipMap = std::unordered_map<std::string, std::shared_ptr<AnimationClip>>;
 		AnimationClipManager(AnimationClipManager const&) = delete;
 		AnimationClipManager& operator=(AnimationClipManager const&) = delete;
-		std::shared_ptr<AnimationClip> LoadAnimationClip(const std::filesystem::path& filePath, std::shared_ptr<Skeleton> skeleton) noexcept;
+		std::shared_ptr<AnimationClip> LoadAnimationClip(const std::filesystem::path& filePath,
+			std::shared_ptr<Skeleton> skeleton,
+			bool removeRootMotion = true) noexcept;
 		void CleanUnusedAnimationClips() noexcept;
 		static AnimationClipManager& GetInstance() noexcept {
 			static AnimationClipManager manager;

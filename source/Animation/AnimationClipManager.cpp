@@ -7,7 +7,9 @@
 #include "AnimationClip.hpp"
 #include "Skeleton.hpp"
 namespace Mona {
-	std::shared_ptr<AnimationClip> AnimationClipManager::LoadAnimationClip(const std::filesystem::path& filePath, std::shared_ptr<Skeleton> skeleton) noexcept
+	std::shared_ptr<AnimationClip> AnimationClipManager::LoadAnimationClip(const std::filesystem::path& filePath,
+		std::shared_ptr<Skeleton> skeleton,
+		bool removeRootMotion) noexcept
 	{
 		const std::string& stringPath = filePath.string();
 		//En caso de que ya exista una entrada en el mapa de esqueletos con el mismo path, 
@@ -63,7 +65,8 @@ namespace Mona {
 			std::move(trackNames),
 			skeleton,
 			duration,
-			ticksPerSecond);
+			ticksPerSecond,
+			removeRootMotion);
 		std::shared_ptr<AnimationClip> sharedPtr = std::shared_ptr<AnimationClip>(animationPtr);
 		m_animationClipMap.insert({ stringPath, sharedPtr });
 		return sharedPtr;

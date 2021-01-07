@@ -22,8 +22,9 @@ namespace Mona {
 			std::vector<float> scaleTimeStamps;
 
 		};
-
-		void Sample(std::vector<JointPose>& outPose, float time, bool isLooping);
+		float GetDuration() const { return m_duration; }
+		float GetTicksPerSecond() const { return m_ticksPerSecond; }
+		float Sample(std::vector<JointPose>& outPose, float time, bool isLooping);
 		void SetSkeleton(std::shared_ptr<Skeleton> skeletonPtr);
 		std::shared_ptr<Skeleton> GetSkeleton() const {
 			return m_skeletonPtr;

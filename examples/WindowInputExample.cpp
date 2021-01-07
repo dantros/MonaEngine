@@ -31,17 +31,19 @@ public:
 
 	void UserUpdate(Mona::World& world, float timeStep) noexcept override {
 		auto& input = world.GetInput();
+		auto& animController = m_skeletalMesh->GetAnimationController();
 		if (input.IsKeyPressed(MONA_KEY_9))
 		{
-			m_skeletalMesh->PlayAnimation(m_animation0);
+			animController.PlayAnimation(m_animation0);
 		}
 		else if (input.IsKeyPressed(MONA_KEY_8))
 		{
-			m_skeletalMesh->PlayAnimation(m_animation1);
+			animController.PlayAnimation(m_animation1);
 		}
 		else if (input.IsKeyPressed(MONA_KEY_7)) {
 			//m_skeletalMesh->SetIsLooping(false);
-			m_skeletalMesh->FadeTo(m_animation2);
+			//m_skeletalMesh->SetPlayRate(0.0f);
+			animController.FadeTo(m_animation1, Mona::BlendType::KeepSynchronize, 0.5f, 0.0f);
 		}
 
 	}

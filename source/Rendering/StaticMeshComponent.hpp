@@ -5,7 +5,6 @@
 #include "../World/ComponentTypes.hpp"
 #include "Mesh.hpp"
 #include "Material.hpp"
-#include <glm/glm.hpp>
 namespace Mona {
 	class TransformComponent;
 	class StaticMeshComponent

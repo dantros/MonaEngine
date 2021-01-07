@@ -22,7 +22,7 @@ namespace Mona {
 			RemoveRootMotion();
 	}
 
-	void AnimationClip::Sample(std::vector<JointPose>& outPose, float time, bool isLooping) {
+	float AnimationClip::Sample(std::vector<JointPose>& outPose, float time, bool isLooping) {
 		float newTime = GetSamplingTime(time, isLooping);
 		for (uint32_t i = 0; i < m_animationTracks.size(); i++)
 		{
@@ -67,6 +67,7 @@ namespace Mona {
 			outPose[jointIndex] = JointPose(localRotation, localPosition, localScale);
 
 		}
+		return newTime;
 	}
 
 	void AnimationClip::SetSkeleton(std::shared_ptr<Skeleton> skeletonPtr) {

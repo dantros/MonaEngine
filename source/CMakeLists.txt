@@ -50,6 +50,7 @@ set(MONA_HEADERS
 				Animation/AnimationClipManager.hpp
 				Animation/AnimationSystem.hpp
 				Animation/CrossFadeTarget.hpp
+				Animation/AnimationController.hpp
 				PhysicsCollision/PhysicsCollisionSystem.hpp
 				PhysicsCollision/PhysicsCollisionEvents.hpp
 				PhysicsCollision/CustomMotionState.hpp
@@ -87,6 +88,7 @@ set(MONA_SOURCES
 				Animation/SkeletonManager.cpp
 				Animation/AnimationSystem.cpp
 				Animation/AnimationClip.cpp
+				Animation/AnimationController.cpp
 				PhysicsCollision/PhysicsCollisionSystem.cpp
 				Audio/AudioSystem.cpp
 				Audio/AudioClip.cpp

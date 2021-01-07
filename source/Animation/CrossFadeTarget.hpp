@@ -8,19 +8,29 @@
 #include "JointPose.hpp"
 #include "Skeleton.hpp"
 namespace Mona {
+	enum class BlendType {
+		Smooth,
+		Freeze,
+		KeepSynchronize
+	};
 	class CrossFadeTarget {
 	public:
 		CrossFadeTarget() = default;
 		std::shared_ptr<AnimationClip> GetAnimationClip() const {
 			return m_targetClip;
 		}
-		void SetAnimationClip(std::shared_ptr<AnimationClip> animationClip){
-			m_targetClip = animationClip;
-			m_currentPose.resize(animationClip->GetSkeleton()->JointCount(), JointPose());
+		void SetAnimationClip(std::shared_ptr<AnimationClip> target,
+			BlendType type,
+			float fadeDuration,
+			float startTime,
+			float timeFactor) {
+			m_blendType = type;
+			m_targetClip = target;
+			m_currentPose.resize(target->GetSkeleton()->JointCount(), JointPose());
 			std::fill(m_currentPose.begin(), m_currentPose.end(), JointPose());
-			m_fadeDuration = 0.3f;
+			m_fadeDuration = fadeDuration;
 			m_elapsedTime = 0.0f;
-			m_startTime = 0.0f;
+			m_sampleTime = type == BlendType::KeepSynchronize? timeFactor*target->GetDuration() : startTime;
 		}
 		bool IsNullTarget() const { return m_targetClip == nullptr; }
 		void Clear() {
@@ -28,9 +38,10 @@ namespace Mona {
 			m_targetClip = nullptr;
 		}
 		std::vector<JointPose> m_currentPose;
+		BlendType m_blendType;
 		float m_fadeDuration = 1.3f;
 		float m_elapsedTime = 0.0f;
-		float m_startTime = 0.0f;
+		float m_sampleTime = 0.0f;
 		bool m_isLooping = true;
 		std::shared_ptr<AnimationClip> m_targetClip = nullptr;
 

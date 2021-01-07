@@ -9,6 +9,7 @@
 #include "../Rendering/TextureManager.hpp"
 #include "../Animation/SkeletonManager.hpp"
 #include "../Animation/AnimationClipManager.hpp"
+#include "../Animation/AnimationController.hpp"
 #include <chrono>
 namespace Mona {
 	
@@ -142,12 +143,7 @@ namespace Mona {
 		m_input.Update();
 		m_physicsCollisionSystem.StepSimulation(timeStep);
 		m_physicsCollisionSystem.SubmitCollisionEvents(*this, m_eventManager, rigidBodyDataManager);
-		for (uint32_t i = 0; i < skeletalMeshDataManager.GetCount(); i++) {
-			SkeletalMeshComponent& skeletalMesh = skeletalMeshDataManager[i];
-			GameObject* owner = skeletalMeshDataManager.GetOwnerByIndex(i);
-			TransformComponent* transform = transformDataManager.GetComponentPointer(owner->GetInnerComponentHandle<TransformComponent>());
-			skeletalMesh.Update(transform->GetModelMatrix(), timeStep);
-		}
+		m_animationSystem.UpdateAllPoses(skeletalMeshDataManager, timeStep);
 		m_objectManager.UpdateGameObjects(*this, m_eventManager, timeStep);
 		m_application->UserUpdate(*this, timeStep);
 		m_audioSystem.Update(m_audoListenerTransformHandle, timeStep, transformDataManager, audioSourceDataManager);

@@ -25,7 +25,9 @@
 #include "../Audio/AudioSystem.hpp"
 #include "../Audio/AudioSourceComponent.hpp"
 #include "../Audio/AudioSourceComponentLifetimePolicy.hpp"
+#include "../Animation/AnimationSystem.hpp"
 #include "../Animation/SkeletalMeshComponent.hpp"
+
 #include <memory>
 #include <array>
 #include <filesystem>
@@ -128,6 +130,7 @@ namespace Mona {
 		AudioSystem m_audioSystem;
 		InnerComponentHandle m_audoListenerTransformHandle;
 
+		AnimationSystem m_animationSystem;
 		std::unique_ptr<DebugDrawingSystem> m_debugDrawingSystem;
 
 		

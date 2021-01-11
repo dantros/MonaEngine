@@ -27,6 +27,7 @@
 #include "../Audio/AudioSourceComponentLifetimePolicy.hpp"
 #include "../Animation/AnimationSystem.hpp"
 #include "../Animation/SkeletalMeshComponent.hpp"
+#include "../Animation/JointPose.hpp"
 
 #include <memory>
 #include <array>
@@ -80,7 +81,7 @@ namespace Mona {
 		const glm::vec3& GetAmbientLight() const { return m_ambientLight; }
 		void SetAmbientLight(const glm::vec3& light) { m_ambientLight = light; }
 		ComponentHandle<CameraComponent> GetMainCameraComponent() noexcept;
-		std::shared_ptr<Material> CreateMaterial(MaterialType type) noexcept;
+		std::shared_ptr<Material> CreateMaterial(MaterialType type, bool isForSkinning = false) noexcept;
 
 
 		void SetGravity(const glm::vec3& gravity);
@@ -104,6 +105,8 @@ namespace Mona {
 			AudioSourcePriority priority = AudioSourcePriority::SoundPriorityMedium);
 		float GetMasterVolume() const noexcept;
 		void SetMasterVolume(float volume) noexcept;
+
+		JointPose GetJointWorldPose(const ComponentHandle<SkeletalMeshComponent>& skeletalMeshHandel, uint32_t jointIndex) noexcept;
 
 	private:
 		template <typename ComponentType>

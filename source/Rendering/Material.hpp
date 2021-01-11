@@ -18,7 +18,7 @@ namespace Mona {
 
 	class Material {
 	public:
-		Material(uint32_t shaderID) : m_shaderID(shaderID) {}
+		Material(uint32_t shaderID, bool isForSkinning) : m_shaderID(shaderID), m_isForSkinning(isForSkinning) {}
 		virtual ~Material() = default;
 		void SetUniforms(const glm::mat4& perspectiveMatrix,
 			const glm::mat4& viewMatrix,
@@ -33,7 +33,9 @@ namespace Mona {
 			SetMaterialUniforms(cameraPosition);
 		}
 		virtual void SetMaterialUniforms(const glm::vec3& cameraPosition) = 0;
+		bool IsForSkinning() const { return m_isForSkinning; }
 	protected:
+		bool m_isForSkinning;
 		uint32_t m_shaderID;
 	};
 }

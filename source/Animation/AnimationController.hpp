@@ -23,6 +23,7 @@ namespace Mona {
 		void SetPlayRate(float playrate) { m_playRate = playrate; }
 		float GetPlayRate() const { return m_playRate; }
 		void GetMatrixPalette(std::vector<glm::mat4>& outMatrixPalette) const;
+		JointPose GetJointModelPose(uint32_t jointIndex) const;
 	private:
 		void UpdateCurrentPose(float timeStep) noexcept;
 		float m_sampleTime = 0.0f;

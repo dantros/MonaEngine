@@ -2,12 +2,15 @@
 #include <algorithm>
 #include "../Core/Log.hpp"
 #include "../Core/RootDirectory.hpp"
+#include "../Core/Config.hpp"
 #include "../World/ComponentManager.hpp"
 #include "AudioMacros.hpp"
 #include "AudioSourceComponentLifetimePolicy.hpp"
 #include <stdio.h>
 namespace Mona {
-	void AudioSystem::StartUp(unsigned int channels) noexcept {
+	void AudioSystem::StartUp() noexcept {
+		Config& config = Config::GetInstance();
+		const int channels = config.getValueOrDefault<int>("N_OPENAL_SOURCES", 32);
 		MONA_ASSERT(channels > 0, "AudioSystem Error: please request more than zero channels");
 		//Creación de una instancia de ALCdevice y ALCcontext, y posterior chequeo.
 		m_audioDevice = alcOpenDevice(nullptr);

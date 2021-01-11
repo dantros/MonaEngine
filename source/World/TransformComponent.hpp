@@ -26,6 +26,9 @@ namespace Mona {
 		const glm::fquat& GetLocalRotation() const {
 			return localRotation;
 		}
+		const glm::vec3& GetLocalScale() const {
+			return localScale;
+		}
 		glm::mat4 GetModelMatrix() const {
 			const glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), localTranslation);
 			const glm::mat4 rotationMatrix = glm::toMat4(localRotation);

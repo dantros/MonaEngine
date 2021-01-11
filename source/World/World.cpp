@@ -170,8 +170,8 @@ namespace Mona {
 		return ComponentHandle<CameraComponent>(m_cameraHandle, &cameraDataManager);
 	}
 	
-	std::shared_ptr<Material> World::CreateMaterial(MaterialType type) noexcept {
-		return m_renderer.CreateMaterial(type);
+	std::shared_ptr<Material> World::CreateMaterial(MaterialType type, bool isForSkinning) noexcept {
+		return m_renderer.CreateMaterial(type, isForSkinning);
 	}
 
 	void World::SetAudioListenerTransform(const ComponentHandle<TransformComponent>& transformHandle) noexcept{
@@ -224,6 +224,13 @@ namespace Mona {
 
 	void World::SetMasterVolume(float volume) noexcept {
 		m_audioSystem.SetMasterVolume(volume);
+	}
+
+	JointPose World::GetJointWorldPose(const ComponentHandle<SkeletalMeshComponent>& skeletalMeshHandle, uint32_t jointIndex) noexcept {
+		auto transform = GetSiblingComponentHandle<TransformComponent>(skeletalMeshHandle);
+		JointPose worldPose(transform->GetLocalRotation(), transform->GetLocalTranslation(), transform->GetLocalScale());
+		const AnimationController& animController = skeletalMeshHandle->GetAnimationController();
+		return worldPose * animController.GetJointModelPose(jointIndex);
 	}
 
 

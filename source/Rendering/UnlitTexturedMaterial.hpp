@@ -9,7 +9,7 @@ namespace Mona {
 	class UnlitTexturedMaterial : public Material {
 	public:
  
-		UnlitTexturedMaterial(uint32_t shaderID) : Material(shaderID), m_unlitColorTexture(nullptr) {
+		UnlitTexturedMaterial(uint32_t shaderID, bool isForSkinning) : Material(shaderID, isForSkinning), m_unlitColorTexture(nullptr) {
 			glUseProgram(m_shaderID);
 			glUniform1i(ShaderProgram::UnlitColorTextureSamplerShaderLocation, ShaderProgram::UnlitColorTextureUnit);
 		}

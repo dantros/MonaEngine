@@ -19,6 +19,7 @@ namespace Mona {
 		{
 			MONA_ASSERT(mesh != nullptr, "StaticMeshComponent Error: Mesh pointer cannot be null.");
 			MONA_ASSERT(material != nullptr, "StaticMeshComponent Error: Material cannot be null.");
+			MONA_ASSERT(!material->IsForSkinning(), "StaticMeshComponent Error: Material cannot be used for this type of Mesh");
 
 		}
 		uint32_t GetMeshIndexCount() const noexcept {
@@ -34,8 +35,11 @@ namespace Mona {
 		}
 
 		void SetMaterial(std::shared_ptr<Material> material) noexcept {
-			MONA_ASSERT(material != nullptr, "StaticMeshComponent Error: Material cannot be null.");
-			m_materialPtr = material;
+			if (material != nullptr)
+			{
+				MONA_ASSERT(!material->IsForSkinning(), "StaticMeshComponent Error: Material cannot be used for this type of Mesh");
+				m_materialPtr = material;
+			}
 		}
 		
 

@@ -32,14 +32,19 @@ namespace Mona{
 	void Renderer::StartUp(EventManager& eventManager, DebugDrawingSystem* debugDrawingSystemPtr) noexcept {
 	
 		//Construcción de todos los shaders que soporta el motor.
-		m_shaders.emplace_back(SourcePath("Assets/Shaders/UnlitFlat.vs"), SourcePath("Assets/Shaders/UnlitFlat.ps"));
-		m_shaders.emplace_back(SourcePath("Assets/Shaders/UnlitTextured.vs"), SourcePath("Assets/Shaders/UnlitTextured.ps"));
-		m_shaders.emplace_back(SourcePath("Assets/Shaders/DiffuseFlat.vs"), SourcePath("Assets/Shaders/DiffuseFlat.ps"));
-		m_shaders.emplace_back(SourcePath("Assets/Shaders/DiffuseTextured.vs"), SourcePath("Assets/Shaders/DiffuseTextured.ps"));
-		m_shaders.emplace_back(SourcePath("Assets/Shaders/PBRFlat.vs"), SourcePath("Assets/Shaders/PBRFlat.ps"));
-		m_shaders.emplace_back(SourcePath("Assets/Shaders/PBRTextured.vs"), SourcePath("Assets/Shaders/PBRTextured.ps"));
-		m_shaders.emplace_back(SourcePath("Assets/Shaders/AnimTest.vs"), SourcePath("Assets/Shaders/DiffuseFlat.ps"));
-		
+		m_shaders[static_cast<unsigned int >(MaterialType::UnlitFlat)] = ShaderProgram(SourcePath("Assets/Shaders/UnlitFlat.vs"), SourcePath("Assets/Shaders/UnlitFlat.ps"));
+		m_shaders[static_cast<unsigned int >(MaterialType::UnlitTextured)] = ShaderProgram(SourcePath("Assets/Shaders/UnlitTextured.vs"), SourcePath("Assets/Shaders/UnlitTextured.ps"));
+		m_shaders[static_cast<unsigned int >(MaterialType::DiffuseFlat)] = ShaderProgram(SourcePath("Assets/Shaders/DiffuseFlat.vs"), SourcePath("Assets/Shaders/DiffuseFlat.ps"));
+		m_shaders[static_cast<unsigned int >(MaterialType::DiffuseTextured)] = ShaderProgram(SourcePath("Assets/Shaders/DiffuseTextured.vs"), SourcePath("Assets/Shaders/DiffuseTextured.ps"));
+		m_shaders[static_cast<unsigned int >(MaterialType::PBRFlat)] = ShaderProgram(SourcePath("Assets/Shaders/PBRFlat.vs"), SourcePath("Assets/Shaders/PBRFlat.ps"));
+		m_shaders[static_cast<unsigned int >(MaterialType::PBRTextured)] = ShaderProgram(SourcePath("Assets/Shaders/PBRTextured.vs"), SourcePath("Assets/Shaders/PBRTextured.ps"));
+		constexpr unsigned int offset = static_cast<unsigned int>(MaterialType::MaterialTypeCount);
+		m_shaders[static_cast<unsigned int>(MaterialType::UnlitFlat) + offset] = ShaderProgram(SourcePath("Assets/Shaders/UnlitFlatSkinning.vs"), SourcePath("Assets/Shaders/UnlitFlat.ps"));
+		m_shaders[static_cast<unsigned int>(MaterialType::UnlitTextured) + offset] = ShaderProgram(SourcePath("Assets/Shaders/UnlitTexturedSkinning.vs"), SourcePath("Assets/Shaders/UnlitTextured.ps"));
+		m_shaders[static_cast<unsigned int>(MaterialType::DiffuseFlat) + offset] = ShaderProgram(SourcePath("Assets/Shaders/DiffuseFlatSkinning.vs"), SourcePath("Assets/Shaders/DiffuseFlat.ps"));
+		m_shaders[static_cast<unsigned int>(MaterialType::DiffuseTextured) + offset] = ShaderProgram(SourcePath("Assets/Shaders/DiffuseTexturedSkinning.vs"), SourcePath("Assets/Shaders/DiffuseTextured.ps"));
+		m_shaders[static_cast<unsigned int>(MaterialType::PBRFlat) + offset] = ShaderProgram(SourcePath("Assets/Shaders/PBRFlatSkinning.vs"), SourcePath("Assets/Shaders/PBRFlat.ps"));
+		m_shaders[static_cast<unsigned int>(MaterialType::PBRTextured) + offset] = ShaderProgram(SourcePath("Assets/Shaders/PBRTexturedSkinning.vs"), SourcePath("Assets/Shaders/PBRTextured.ps"));
 		//El sistema de rendering debe subscribirse al cambio de resolución de la ventana para actulizar la resolución
 		//del framebuffer al que OpenGL renderiza.
 		m_onWindowResizeSubscription = eventManager.Subscribe(this, &Renderer::OnWindowResizeEvent);
@@ -175,30 +180,32 @@ namespace Mona{
 		
 	}
 
-	std::shared_ptr<Material> Renderer::CreateMaterial(MaterialType type) {
+	std::shared_ptr<Material> Renderer::CreateMaterial(MaterialType type, bool isForSkinning) {
 
+		unsigned int offset = static_cast<unsigned int>(type);
+		offset = isForSkinning ? offset + static_cast<unsigned int>(MaterialType::MaterialTypeCount) : offset;
 		switch (type)
 		{
 		case Mona::MaterialType::UnlitFlat:
-			return std::make_shared<UnlitFlatMaterial>(m_shaders[0].GetProgramID());
+			return std::make_shared<UnlitFlatMaterial>(m_shaders[offset].GetProgramID(), isForSkinning);
 			break;
 		case Mona::MaterialType::UnlitTextured:
-			return std::make_shared<UnlitTexturedMaterial>(m_shaders[1].GetProgramID());
+			return std::make_shared<UnlitTexturedMaterial>(m_shaders[offset].GetProgramID(), isForSkinning);
 			break;
 		case Mona::MaterialType::DiffuseFlat:
-			return std::make_shared<DiffuseFlatMaterial>(m_shaders[2].GetProgramID());
+			return std::make_shared<DiffuseFlatMaterial>(m_shaders[offset].GetProgramID(), isForSkinning);
 			break;
 		case Mona::MaterialType::DiffuseTextured:
-			return std::make_shared<DiffuseTexturedMaterial>(m_shaders[3].GetProgramID());
+			return std::make_shared<DiffuseTexturedMaterial>(m_shaders[offset].GetProgramID(), isForSkinning);
 			break;
 		case Mona::MaterialType::PBRFlat:
-			return std::make_shared<PBRFlatMaterial>(m_shaders[4].GetProgramID());
+			return std::make_shared<PBRFlatMaterial>(m_shaders[offset].GetProgramID(), isForSkinning);
 			break;
 		case Mona::MaterialType::PBRTextured:
-			return std::make_shared<PBRTexturedMaterial>(m_shaders[5].GetProgramID());
+			return std::make_shared<PBRTexturedMaterial>(m_shaders[offset].GetProgramID(), isForSkinning);
 			break;
 		case Mona::MaterialType::MaterialTypeCount:
-			return std::make_shared<DiffuseFlatMaterial>(m_shaders[6].GetProgramID());
+			return std::make_shared<DiffuseFlatMaterial>(m_shaders[offset].GetProgramID(), isForSkinning);
 			break;
 		default:
 			return nullptr;

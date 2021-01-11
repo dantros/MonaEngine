@@ -2,6 +2,7 @@
 #ifndef RENDERER_HPP
 #define RENDERER_HPP
 #include <vector>
+#include <array>
 #include <glm/glm.hpp>
 #include "../Event/EventManager.hpp"
 #include "../World/ComponentTypes.hpp"
@@ -41,7 +42,7 @@ namespace Mona {
 					PointLightComponent::managerType &pointLightDataManager) noexcept;
 		void ShutDown(EventManager& eventManager) noexcept;
 		void OnWindowResizeEvent(const WindowResizeEvent& event);
-		std::shared_ptr<Material> CreateMaterial(MaterialType type);
+		std::shared_ptr<Material> CreateMaterial(MaterialType type, bool isForSkinning);
 	private:
 		struct DirectionalLight
 		{
@@ -76,7 +77,7 @@ namespace Mona {
 			int pointLightsCount; 
 			int directionalLightsCount; 
 		};
-		std::vector<ShaderProgram> m_shaders;
+		std::array<ShaderProgram, 2 * static_cast<unsigned int>(MaterialType::MaterialTypeCount)> m_shaders;
 		std::vector<glm::mat4> m_currentMatrixPalette;
 		SubscriptionHandle m_onWindowResizeSubscription;
 		DebugDrawingSystem* m_debugDrawingSystemPtr = nullptr;

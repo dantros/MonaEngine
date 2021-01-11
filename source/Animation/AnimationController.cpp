@@ -1,6 +1,7 @@
 #include "AnimationController.hpp"
 #include "AnimationClip.hpp"
 #include "Skeleton.hpp"
+#include <glm/gtx/matrix_decompose.hpp>
 #include "../Core/Log.hpp"
 namespace Mona {
 	void BlendPoses(std::vector<JointPose>& output,
@@ -127,5 +128,16 @@ namespace Mona {
 		}
 	}
 
+	JointPose AnimationController::GetJointModelPose(uint32_t jointIndex) const {
+		auto skeleton = m_animationClipPtr->GetSkeleton();
+		const glm::mat4& invBindMatrix = skeleton->GetInverseBindPoseMatrix(jointIndex); 
+		glm::vec3 scale;
+		glm::fquat rotation;
+		glm::vec3 translation;
+		glm::vec3 skew;
+		glm::vec4 perspective;
+		glm::decompose(invBindMatrix, scale, rotation, translation, skew, perspective);
+		return m_currentPose[jointIndex] * JointPose(rotation, translation, scale);
+	}
 
 }

@@ -26,6 +26,10 @@ namespace Mona {
 			return m_invBindPoseMatrices; 
 		}
 
+		const glm::mat4& GetInverseBindPoseMatrix(uint32_t jointIndex) const {
+			return m_invBindPoseMatrices[jointIndex];
+		}
+
 		std::int32_t GetJointIndex(const std::string& name) const {
 			auto it = m_jointMap.find(name);
 			if (it != m_jointMap.end()) {

@@ -21,7 +21,7 @@ namespace Mona {
 		/*
 		* Función llamada por el motor que inicializa el sistema de audio, el cual es capaz de reproducir channels audios simultaneamente.
 		*/
-		void StartUp(unsigned int channels = 32) noexcept;
+		void StartUp() noexcept;
 		
 		/*
 		* Libera todos los recuros mantenidos por el sistema de audio, esta función es llamada durante el proceso de cierre del motor.

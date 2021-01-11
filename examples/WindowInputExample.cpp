@@ -13,7 +13,7 @@ public:
 		auto transform = world.AddComponent<Mona::TransformComponent>(*this);
 		transform->SetScale(glm::vec3(0.05f));
 		transform->Translate(glm::vec3(3.0f));
-		std::shared_ptr<Mona::DiffuseFlatMaterial> material = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(world.CreateMaterial(Mona::MaterialType::MaterialTypeCount));
+		std::shared_ptr<Mona::DiffuseFlatMaterial> material = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseFlat, true));
 		material->SetDiffuseColor(0.1f * glm::vec3(0.3f, 0.75f, 0.1f));
 		auto& meshManager = Mona::MeshManager::GetInstance();
 		auto& skeletonManager = Mona::SkeletonManager::GetInstance();

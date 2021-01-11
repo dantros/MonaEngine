@@ -12,7 +12,7 @@ out vec3 worldPos;
 void main()
 {
 	worldPos = vec3(modelMatrix * vec4(aPos, 1.0f));
-	normal = mat3(modelInverseTransposeMatrix) * aNormal;
+	normal = normalize(mat3(modelInverseTransposeMatrix) * aNormal);
 	gl_Position = mvpMatrix * vec4(aPos,1.0);
 
 }

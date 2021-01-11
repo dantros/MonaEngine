@@ -10,8 +10,8 @@
 namespace Mona {
 	class PBRTexturedMaterial : public Material {
 	public:
-		PBRTexturedMaterial(uint32_t shaderID) : 
-			Material(shaderID), 
+		PBRTexturedMaterial(uint32_t shaderID, bool isForSkinning) : 
+			Material(shaderID, isForSkinning),
 			m_albedoTexture(nullptr),
 			m_normalMapTexture(nullptr),
 			m_metallicTexture(nullptr),

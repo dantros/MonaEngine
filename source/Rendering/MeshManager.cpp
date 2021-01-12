@@ -463,6 +463,10 @@ namespace Mona {
 		return sharedPtr;
 	}
 	void MeshManager::CleanUnusedMeshes() noexcept {
+		/*
+		* Elimina todos los punteros del mapa de mallas cuyo conteo de referencias es igual a uno,
+		* es decir, que el puntero del mapa es el unico que apunta a esa memoria.
+		*/
 		for (auto i = m_meshMap.begin(), last = m_meshMap.end(); i != last;) {
 			if (i->second.use_count() == 1) {
 				i = m_meshMap.erase(i);
@@ -473,6 +477,11 @@ namespace Mona {
 
 		}
 
+
+		/*
+		* Elimina todos los punteros del mapa de mallas para animación cuyo conteo de referencias es igual a uno,
+		* es decir, que el puntero del mapa es el unico que apunta a esa memoria.
+		*/
 		for (auto i = m_skinnedMeshMap.begin(), last = m_skinnedMeshMap.end(); i != last;) {
 			if (i->second.use_count() == 1) {
 				i = m_skinnedMeshMap.erase(i);
@@ -500,8 +509,8 @@ namespace Mona {
 		bool flipUvs) noexcept 
 	{
 		const std::string& stringPath = filePath.string();
-		//En caso de que ya exista una entrada en el mapa de mallas con el mismo path, entonces se retorna inmediatamente
-		//dicha malla.
+		//En caso de que ya exista una entrada en el mapa de mallas para animación con el mismo path, 
+		// entonces se retorna inmediatamente dicha malla.
 		auto it = m_skinnedMeshMap.find(stringPath);
 		if (it != m_skinnedMeshMap.end()) {
 			return it->second;
@@ -517,7 +526,6 @@ namespace Mona {
 
 
 		if (!scene) {
-			//En caso de fallar la carga se envia un mensaje de error y se carga un cubo.
 			MONA_LOG_ERROR("MeshManager Error: Failed to open file with path {0}", stringPath);
 			return nullptr;
 		}

@@ -42,6 +42,7 @@ namespace Mona {
 			
 		}
 
+		//Chequeo del tamaño del esqueleto a importar
 		if (Renderer::NUM_MAX_BONES < boneInfo.size())
 		{
 			MONA_LOG_ERROR("SkeletonManager Error: Skeleton at {0} has {1} bones while the engine can only support {2}",
@@ -73,7 +74,7 @@ namespace Mona {
 			sceneNodes.pop();
 			int32_t parentIndex = parentNodeIndices.top();
 			parentNodeIndices.pop();
-
+			//Si el nodo de la escena corresponde a una articulación del esqueleto
 			if (boneInfo.find(currentNode->mName.C_Str()) != boneInfo.end())
 			{
 

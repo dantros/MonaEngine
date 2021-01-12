@@ -155,9 +155,6 @@ public:
 	virtual void UserUpdate(Mona::World & world, float timeStep) noexcept override {
 	}
 	std::shared_ptr<Mona::AudioClip> m_blockBreakingSound;
-private:
-	
-	bool onlyOnce = true;
 };
 int main()
 {

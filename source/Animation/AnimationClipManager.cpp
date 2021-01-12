@@ -12,24 +12,29 @@ namespace Mona {
 		bool removeRootMotion) noexcept
 	{
 		const std::string& stringPath = filePath.string();
-		//En caso de que ya exista una entrada en el mapa de esqueletos con el mismo path, 
-		// entonces se retorna inmediatamente dicho esqueleto.
+		//En caso de que ya exista una entrada en el mapa de animaciones con el mismo path, 
+		// entonces se retorna inmediatamente dicha animación.
 		auto it = m_animationClipMap.find(stringPath);
 		if (it != m_animationClipMap.end()) {
 			return it->second;
 		}
+
+		//Si no hay un AnimationClip con la dirección entregada entonces se procese a cargar una nueva instancia de AnimationClip.
 
 		Assimp::Importer importer;
 		unsigned int postProcessFlags = aiProcess_Triangulate;
 		const aiScene* scene = importer.ReadFile(stringPath, postProcessFlags);
 		if (!scene || scene->mNumAnimations == 0)
 		{
-			MONA_LOG_ERROR("SkeletonManager Error: Failed to open file with path {0}", stringPath);
+			MONA_LOG_ERROR("AnimationClipManager Error: Failed to open file with path {0}", stringPath);
 			return nullptr;
 		}
 		
 		//Solo cargamos la primera animación
 		aiAnimation* animation = scene->mAnimations[0];
+		// Dado que los tiempos de muestreo de assimp estan generalmente en ticks se debe dividir casi todos 
+		// los tiempos de sus objetos por tickspersecond. Por otro lado, assimp sigue la convencion de que si mTicksPerSecond 
+		// es 0.0 entonces los timeStamps de las muestras de las animaciones estan en segundos y no ticks.
 		float ticksPerSecond = animation->mTicksPerSecond != 0.0f ? animation->mTicksPerSecond : 1.0f;
 		float duration = animation->mDuration / animation->mTicksPerSecond;
 		std::vector<AnimationClip::AnimationTrack> animationTracks;

@@ -18,6 +18,7 @@ namespace Mona {
 			m_roughnessTexture(nullptr),
 			m_ambientOcclusionTexture(nullptr),
 			m_materialTint(glm::vec3(1.0f)) {
+			//Dado que las ubicaiones de las texturas nunca cambian solo se configura al momento de construcción
 			glUseProgram(m_shaderID);
 			glUniform1i(ShaderProgram::AlbedoTextureSamplerShaderLocation, ShaderProgram::AlbedoTextureUnit);
 			glUniform1i(ShaderProgram::NormalMapSamplerShaderLocation, ShaderProgram::NormalMapTextureUnit);

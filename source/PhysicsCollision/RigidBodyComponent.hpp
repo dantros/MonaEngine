@@ -37,17 +37,20 @@ namespace Mona {
 		RigidBodyComponent(const BoxShapeInformation& boxInformation,
 			RigidBodyType rigidBodyType,
 			float mass = 1.0f,
-			bool isTrigger = false)
+			bool isTrigger = false,
+			const glm::vec3& offset = glm::vec3(0.0f))
 		{
 			const glm::vec3& halfExtents = boxInformation.m_boxHalfExtents;
 			m_collisionShapePtr.reset(new btBoxShape(btVector3(halfExtents.x, halfExtents.y, halfExtents.z)));
 			InitializeRigidBody(mass, rigidBodyType, isTrigger);
+			m_motionStatePtr.reset(new CustomMotionState(offset));
 
 		}
 		RigidBodyComponent(const ConeShapeInformation& coneInformation,
 			RigidBodyType rigidBodyType,
 			float mass = 1.0f,
-			bool isTrigger = false)
+			bool isTrigger = false,
+			const glm::vec3& offset = glm::vec3(0.0f))
 		{
 			switch (coneInformation.m_alignment) {
 				case(ShapeAlignment::X) : {
@@ -64,23 +67,26 @@ namespace Mona {
 				}
 			}
 			InitializeRigidBody(mass, rigidBodyType, isTrigger);
+			m_motionStatePtr.reset(new CustomMotionState(offset));
 		}
 
 		RigidBodyComponent(const SphereShapeInformation& sphereInformation,
 			RigidBodyType rigidBodyType,
 			float mass = 1.0f,
-			bool isTrigger = false) 
+			bool isTrigger = false,
+			const glm::vec3& offset = glm::vec3(0.0f))
 		{
 			
 			m_collisionShapePtr.reset(new btSphereShape(sphereInformation.m_radius));
 			InitializeRigidBody(mass, rigidBodyType, isTrigger);
-
+			m_motionStatePtr.reset(new CustomMotionState(offset));
 		}
 
 		RigidBodyComponent(const CapsuleShapeInformation& capsuleInformation,
 			RigidBodyType rigidBodyType,
 			float mass = 1.0f,
-			bool isTrigger = false)
+			bool isTrigger = false,
+			const glm::vec3& offset = glm::vec3(0.0f))
 		{
 			switch (capsuleInformation.m_alignment) {
 			case(ShapeAlignment::X): {
@@ -97,12 +103,14 @@ namespace Mona {
 			}
 			}
 			InitializeRigidBody(mass, rigidBodyType, isTrigger);
+			m_motionStatePtr.reset(new CustomMotionState(offset));
 		}
 
 		RigidBodyComponent(const CylinderShapeInformation& cylinderInformation,
 			RigidBodyType rigidBodyType,
 			float mass = 1.0f,
-			bool isTrigger = false)
+			bool isTrigger = false,
+			const glm::vec3& offset = glm::vec3(0.0f))
 		{
 			const glm::vec3& halfExtents = cylinderInformation.m_cylinderHalfExtents;
 			const btVector3 btExtents(halfExtents.x, halfExtents.y, halfExtents.z);
@@ -121,6 +129,7 @@ namespace Mona {
 			}
 			}
 			InitializeRigidBody(mass, rigidBodyType, isTrigger);
+			m_motionStatePtr.reset(new CustomMotionState(offset));
 		}
 
 		void SetLocalScaling(const glm::vec3 &scale) {
@@ -246,6 +255,8 @@ namespace Mona {
 			m_onEndCollisionCallback(world, rb);
 		}
 
+		const glm::vec3& GetTranslationOffset() const { return m_motionStatePtr->GetTranslationOffset(); }
+
 	private:
 		void InitializeRigidBody(float mass, RigidBodyType rigidBodyType, bool isTrigger)
 		{
@@ -277,7 +288,7 @@ namespace Mona {
 		}
 
 		void InitializeMotionState(InnerComponentHandle transformHandle, ComponentManager<TransformComponent>* managerPtr) {
-			m_motionStatePtr.reset(new CustomMotionState(transformHandle, managerPtr));
+			m_motionStatePtr->Initialize(transformHandle, managerPtr);
 			m_rigidBodyPtr->setMotionState(m_motionStatePtr.get());
 		}
 		std::unique_ptr<CustomMotionState> m_motionStatePtr;

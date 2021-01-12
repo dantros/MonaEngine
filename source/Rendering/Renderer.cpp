@@ -52,7 +52,7 @@ namespace Mona{
 		m_currentMatrixPalette.resize(NUM_MAX_BONES, glm::mat4(1.0f));
 		glEnable(GL_DEPTH_TEST);
 
-
+		//Se genera el buffer que contendra toda la información lumínica de la escena
 		glGenBuffers(1, &m_lightDataUBO);
 		glBindBuffer(GL_UNIFORM_BUFFER, m_lightDataUBO);
 		glBufferData(GL_UNIFORM_BUFFER, sizeof(Lights), NULL, GL_DYNAMIC_DRAW);
@@ -85,7 +85,7 @@ namespace Mona{
 		glm::mat4 projectionMatrix;
 		glm::vec3 cameraPosition = glm::vec3(0.0f);
 		if (cameraDataManager.IsValid(cameraHandle)) {
-			//Si el usuario configuro la camara principal configuramos apartir de esta la matrix de vista y projección
+			//Si el usuario configuro la camara principal configuramos apartir de esta la matriz de vista y projección
 			//viewMatrix y projectionMatrix respectivamente
 			const CameraComponent* camera = cameraDataManager.GetComponentPointer(cameraHandle);
 			GameObject* cameraOwner = cameraDataManager.GetOwner(cameraHandle);
@@ -95,7 +95,7 @@ namespace Mona{
 			cameraPosition = cameraTransform->GetLocalTranslation();
 		}
 		else {
-			//En caso de que el usuario no haya configurado una cama principal usamos valores predeterminador para ambas matrices
+			//En caso de que el usuario no haya configurado una cama principal usamos valores predeterminados para ambas matrices
 			MONA_LOG_INFO("Render Info: No camera has been set, using defaults transformations");
 			viewMatrix = glm::mat4(1.0f);
 			projectionMatrix = glm::perspective(glm::radians(50.0f), 16.0f / 9.0f, 0.1f, 100.0f);
@@ -103,9 +103,12 @@ namespace Mona{
 
 
 
-
+		//Comienza carga en CPU de la información lumínica de la escena
 		Lights lights;
 		lights.ambientLight = ambientLight;
+
+		//Se pasa la informacion de a lo mas las primeras NUM_HALF_MAX_DIRECTIONAL_LIGHTS * 2 componentes de luz direccional
+		//A una instancia de Lights (informacion de la escena en CPU)
 		uint32_t directionalLightsCount = std::min(static_cast<uint32_t>(NUM_HALF_MAX_DIRECTIONAL_LIGHTS * 2), directionalLightDataManager.GetCount());
 		lights.directionalLightsCount = static_cast<int>(directionalLightsCount);
 		for (uint32_t i = 0; i < directionalLightsCount; i++) {
@@ -116,6 +119,7 @@ namespace Mona{
 			lights.directionalLights[i].direction = glm::rotate(dirLight.GetLightDirection(), lightTransform->GetFrontVector());
 		}
 
+		//Lo mismo para spotlights
 		uint32_t spotLightsCount = std::min(static_cast<uint32_t>(NUM_HALF_MAX_SPOT_LIGHTS * 2), spotLightDataManager.GetCount());
 		lights.spotLightsCount = static_cast<int>(spotLightsCount);
 		for (uint32_t i = 0; i < spotLightsCount; i++) {
@@ -130,6 +134,7 @@ namespace Mona{
 			lights.spotLights[i].maxRadius = spotLight.GetMaxRadius();
 		}
 
+		//Finalmente luces puntuales
 		uint32_t pointLightsCount = std::min(static_cast<uint32_t>(NUM_HALF_MAX_POINT_LIGHTS * 2), pointLightDataManager.GetCount());
 		lights.pointLightsCount = static_cast<int>(pointLightsCount);
 		for (uint32_t i = 0; i < pointLightsCount; i++) {
@@ -141,6 +146,7 @@ namespace Mona{
 			lights.pointLights[i].maxRadius = pointLight.GetMaxRadius();
 		}
 
+		//Pasamos la informacion lumínica a GPU con un unico llamado a OpenGL fuera de los loops de las primitivas.
 		glBindBuffer(GL_UNIFORM_BUFFER, m_lightDataUBO);
 		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(Lights), &lights);
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
@@ -160,6 +166,7 @@ namespace Mona{
 			
 		}
 		
+		//Iteracion sobre todas las instancias de SkeletalMeshComponent
 		for (decltype(skeletalMeshDataManager.GetCount()) i = 0;
 			i < skeletalMeshDataManager.GetCount();
 			i++)
@@ -169,6 +176,8 @@ namespace Mona{
 			TransformComponent* transform = transformDataManager.GetComponentPointer(owner->GetInnerComponentHandle<TransformComponent>());
 			auto skinnedMesh = skeletalMesh.m_skinnedMeshPtr;
 			glBindVertexArray(skinnedMesh->GetVAOID());
+			//A diferencias de StaticMeshes, SkeletalMeshComponent necesita configurar las paletas de matrices de animacion
+			//estas se le solicitan al animationController
 			auto &animController = skeletalMesh.GetAnimationController();
 			skeletalMesh.m_materialPtr->SetUniforms(projectionMatrix, viewMatrix, transform->GetModelMatrix(), cameraPosition);
 			animController.GetMatrixPalette(m_currentMatrixPalette);

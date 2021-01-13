@@ -1,6 +1,6 @@
 #version 450 core 
 layout (location = 3) uniform vec3 diffuseColor;
-
+//Es importante notar que todas expresiones de la forma ${SOME_NAME} son reemplazadas antes de compilar
 out vec4 color;
 
 in vec3 normal;
@@ -26,6 +26,7 @@ struct SpotLight {
 	float cosUmbraAngle;
 };
 
+//Uniforme que contiene toda la información lumínica de la escena
 layout(std140, binding = 0) uniform Lights {
 	SpotLight[${MAX_SPOT_LIGHTS}] spotLights;
 	PointLight[${MAX_POINT_LIGHTS}] pointLights;
@@ -36,21 +37,29 @@ layout(std140, binding = 0) uniform Lights {
 	int directionalLightsCount;
 };
 
-
+//Calcula el decaimiento de la intensidad lumínica dada la distancia a ella
+//El calculo de iluminación para fuentes que decaen con la distancia (puntuales y spotlights)
+//Es de la forma L = atenuacion por distancia * otros valores;
 float GetDistanceAttenuation(vec3 lightVector, float lightRadius)
 {
 	float squareDistance = dot(lightVector, lightVector);
 	float squareRadius = lightRadius * lightRadius;
+	//El factor de windowing permite que esta funcion retorne 1 para distancia igual a 0 y 0 para distancia igual al rango de la luz
 	float windowing = pow(max(1.0 - pow(squareDistance/squareRadius,2.0f),0.0f),2.0f);
 	float distanceAttenuation = windowing * (1 / (squareDistance + 1));
 	return distanceAttenuation;
 }
 
+//Calcula el decaimiento de la intansidad lumínica dada una diferencia angular a ella (solo existe para spotlights)
+//El calculo es de la forma L = atenuacion angular * otros valores;
 float GetAngularAttenuation(vec3 normalizedLightVector, vec3 lightDirection, float lightCosUmbraAngle, float lightCosPenumbraAngle)
 {
 	float cosSurfaceAngle = dot(lightDirection, normalizedLightVector);
 	float t = clamp((cosSurfaceAngle - lightCosUmbraAngle) / (lightCosPenumbraAngle - lightCosUmbraAngle), 0.0f, 1.0f);
 	float angularAttenuation = t*t;
+	//Para angulos menores al angulo de umbra la funcion retorna 1
+	//Para angulos mayores al angulo de penumbra la funcion retorna 0
+	//Para el resto de los casos la funcion retorna valores entre 1 y 0.
 	return angularAttenuation;
 }
 
@@ -58,12 +67,15 @@ void main()
 {
 	vec3 ambient = ambientLight;
 	vec3 norm = normalize(normal);
+	//Valor que acumulara el aporte lumínica de cada luz
 	vec3 Lo = vec3(0.0f,0.0f,0.0f);
 
+	//Iteracion sobre luces direccionales
 	for(int i = 0; i < directionalLightsCount; i++){
 		Lo += directionalLights[i].colorIntensity * max(dot(norm, -directionalLights[i].direction), 0.0);
 	}
 	
+	//Iteracion sobre luces puntuales
 	for(int i = 0; i < pointLightsCount; i++){
 		vec3 lightVector = worldPos - pointLights[i].position;
 		vec3 lightDir = normalize(worldPos - pointLights[i].position);
@@ -71,6 +83,7 @@ void main()
 		Lo += distanceAttenuation * pointLights[i].colorIntensity * max(dot(norm, -lightDir), 0.0);
 	}
 
+	//Iteracion sobre luces de tipo spotlight
 	for(int i = 0; i < spotLightsCount; i++){
 		vec3 lightVector = worldPos - spotLights[i].position;
 		vec3 lightDir = normalize(worldPos - spotLights[i].position);

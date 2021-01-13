@@ -16,6 +16,7 @@ out vec2 texCoord;
 
 void main()
 {
+	//boneTransform representa la matriz al aplicar la piel a este vertice
 	mat4 boneTransform  =  mat4(0.0);
 	boneTransform  +=    boneTransforms[int(aBoneIndices.x)] * aBoneWeights.x;
 	boneTransform  +=    boneTransforms[int(aBoneIndices.y)] * aBoneWeights.y;

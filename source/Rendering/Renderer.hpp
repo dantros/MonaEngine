@@ -27,7 +27,7 @@ namespace Mona {
 		static constexpr int NUM_HALF_MAX_DIRECTIONAL_LIGHTS = 1;
 		static constexpr int NUM_HALF_MAX_POINT_LIGHTS = 3;
 		static constexpr int NUM_HALF_MAX_SPOT_LIGHTS = 3;
-		static constexpr int NUM_MAX_BONES = 75;
+		static constexpr int NUM_MAX_BONES = 60;
 		Renderer() = default;
 		void StartUp(EventManager& eventManager, DebugDrawingSystem* debugDrawingSystemPtr) noexcept;
 		void Render(EventManager& eventManager,

@@ -37,7 +37,7 @@ struct SpotLight {
 	float cosUmbraAngle;
 };
 
-//Uniforme que contiene toda la información lumínica de la escena
+//Uniforme que contiene toda la informaciï¿½n lumï¿½nica de la escena
 layout(std140, binding = 0) uniform Lights {
 	SpotLight[${MAX_SPOT_LIGHTS}] spotLights;
 	PointLight[${MAX_POINT_LIGHTS}] pointLights;
@@ -50,8 +50,8 @@ layout(std140, binding = 0) uniform Lights {
 
 const float PI = 3.14159265359;
 
-//Calcula el decaimiento de la intensidad lumínica dada la distancia a ella
-//El calculo de iluminación para fuentes que decaen con la distancia (puntuales y spotlights)
+//Calcula el decaimiento de la intensidad lumï¿½nica dada la distancia a ella
+//El calculo de iluminaciï¿½n para fuentes que decaen con la distancia (puntuales y spotlights)
 //Es de la forma L = atenuacion por distancia * otros valores;
 float GetDistanceAttenuation(vec3 lightVector, float lightRadius)
 {
@@ -63,7 +63,7 @@ float GetDistanceAttenuation(vec3 lightVector, float lightRadius)
 	return distanceAttenuation;
 }
 
-//Calcula el decaimiento de la intansidad lumínica dada una diferencia angular a ella (solo existe para spotlights)
+//Calcula el decaimiento de la intansidad lumï¿½nica dada una diferencia angular a ella (solo existe para spotlights)
 //El calculo es de la forma L = atenuacion angular * otros valores;
 float GetAngularAttenuation(vec3 normalizedLightVector, vec3 lightDirection, float lightCosUmbraAngle, float lightCosPenumbraAngle)
 {
@@ -153,7 +153,7 @@ void main()
 	
 	vec3 ambient = ambientLight * albedo * ao;
 	
-	//Se usa un valor promedio de FO (factor de fresnel, reflección con angulo de incidencia igual a 0) igual a 0.04 para dialectricos
+	//Se usa un valor promedio de FO (factor de fresnel, reflecciï¿½n con angulo de incidencia igual a 0) igual a 0.04 para dialectricos
 	vec3 F0 = vec3(0.04);
 
 	//Usamos las textura de metalicidad para interpolar entre F0 de dialectricos y el albedo
@@ -201,7 +201,7 @@ void main()
 		vec3 L = normalize(spotLights[i].position - worldPos);
 		vec3 H = normalize(V + L);
 
-		float distanceAttenuation = GetDistanceAttenuation(lightVector, pointLights[i].maxRadius);
+		float distanceAttenuation = GetDistanceAttenuation(lightVector, spotLights[i].maxRadius);
 		float angularAttenuation = GetAngularAttenuation(-L, spotLights[i].direction, spotLights[i].cosUmbraAngle, spotLights[i].cosPenumbraAngle);
 		vec3 radiance = distanceAttenuation*angularAttenuation*spotLights[i].colorIntensity;
 		

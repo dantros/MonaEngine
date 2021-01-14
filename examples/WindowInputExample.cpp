@@ -181,12 +181,12 @@ public:
 		m_sphere = world.CreateGameObject<Sphere>(0.0f, 0.0f);
 		m_rotatingBox = world.CreateGameObject<Box>(0.0f, 0.0f);
 		m_camera = world.CreateGameObject<Mona::BasicPerspectiveCamera>();
-		world.AddComponent<Mona::SpotLightComponent>(m_camera, glm::vec3(12.0f), 15.0f, glm::radians(25.0f), glm::radians(37.0f));
+		world.AddComponent<Mona::SpotLightComponent>(m_camera, glm::vec3(100.0f), 15.0f, glm::radians(25.0f), glm::radians(37.0f));
 		world.CreateGameObject<AnimatedMesh>();
 		world.SetMainCamera(world.GetComponentHandle<Mona::CameraComponent>(m_camera));
 		world.GetInput().SetCursorType(Mona::Input::CursorType::Disabled);
 
-		AddDirectionalLight(world, glm::vec3(1.0f, 0.0f, 0.0f), 10.0f, glm::radians(-45.0f));
+	  AddDirectionalLight(world, glm::vec3(1.0f, 0.0f, 0.0f), 10.0f, glm::radians(-45.0f));
 		AddDirectionalLight(world, glm::vec3(1.0f, 0.0f, 0.0f), 10.0f, glm::radians(-135.0f));
 
 		auto sphere = world.CreateGameObject<Mona::GameObject>();

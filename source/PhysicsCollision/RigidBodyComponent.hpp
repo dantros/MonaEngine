@@ -208,6 +208,11 @@ namespace Mona {
 			m_rigidBodyPtr->applyForce(bulletForce, bulletPos);
 		}
 
+		void ApplyTorque(const glm::vec3& torque) {
+			const btVector3& bulletTorque = btVector3(torque.x, torque.y, torque.z);
+			m_rigidBodyPtr->applyTorque(bulletTorque);
+		}
+
 		bool IsTrigger() const {
 			return m_rigidBodyPtr->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE;
 		}
@@ -275,9 +280,11 @@ namespace Mona {
 			else {
 				btScalar btMass(mass);
 				btVector3 localInertia(0, 0, 0);
+				
 				m_collisionShapePtr->calculateLocalInertia(btMass, localInertia);
 				btRigidBody::btRigidBodyConstructionInfo rbInfo(btMass, nullptr, m_collisionShapePtr.get(), localInertia);
 				m_rigidBodyPtr.reset(new btRigidBody(rbInfo));
+				m_rigidBodyPtr->setActivationState(DISABLE_DEACTIVATION);
 			}
 
 			if(isTrigger){

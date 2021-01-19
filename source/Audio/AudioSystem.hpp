@@ -32,6 +32,7 @@ namespace Mona {
 		* Función llamada cada iteración del mainloop del motor
 		*/
 		void Update(const InnerComponentHandle &audioListenerTransformHandle,
+			const glm::fquat &audioListenerOffsetRotation,
 			float timeStep,
 			const TransformComponent::managerType& transformDataManager,
 			AudioSourceComponent::managerType& audioSourceDataManager) noexcept;

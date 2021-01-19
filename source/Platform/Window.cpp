@@ -69,7 +69,7 @@ namespace Mona {
 			int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 			MONA_ASSERT(status, "Failed to initialize Glad!");
 
-			glfwSwapInterval(0);
+			glfwSwapInterval(1);
 		}
 		void ShutDown() noexcept
 		{

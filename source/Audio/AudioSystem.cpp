@@ -48,6 +48,7 @@ namespace Mona {
 	}
 
 	void AudioSystem::Update(const InnerComponentHandle& audioListenerTransformHandle,
+		const glm::fquat& audioListenerOffsetRotation,
 		float timeStep,
 		const TransformComponent::managerType& transformDataManager,
 		AudioSourceComponent::managerType& audioDataManager) noexcept {
@@ -57,7 +58,9 @@ namespace Mona {
 		if (transformDataManager.IsValid(audioListenerTransformHandle)) {
 			const TransformComponent* listenerTransform = transformDataManager.GetComponentPointer(audioListenerTransformHandle);
 			listenerPosition = listenerTransform->GetLocalTranslation();
-			UpdateListener(listenerPosition, listenerTransform->GetFrontVector(), listenerTransform->GetUpVector());
+			glm::vec3 frontVector = glm::rotate(audioListenerOffsetRotation, listenerTransform->GetFrontVector());
+			glm::vec3 upVector = glm::rotate(audioListenerOffsetRotation, listenerTransform->GetUpVector());
+			UpdateListener(listenerPosition, frontVector, upVector);
 		}
 		else {
 			//En caso de que el usuario no haya asignada ninguna instancia valida de TransformCOmponent como posición del receptor

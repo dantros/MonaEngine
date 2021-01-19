@@ -78,6 +78,7 @@ namespace Mona {
 		void Update(float timeStep) noexcept;
 
 		void SetMainCamera(const ComponentHandle<CameraComponent>& cameraHandle) noexcept;
+		glm::vec3 MainCameraScreenPositionToWorld(const glm::ivec2& screenPos) noexcept;
 		const glm::vec3& GetAmbientLight() const { return m_ambientLight; }
 		void SetAmbientLight(const glm::vec3& light) { m_ambientLight = light; }
 		ComponentHandle<CameraComponent> GetMainCameraComponent() noexcept;
@@ -90,7 +91,8 @@ namespace Mona {
 		AllHitsRaycastResult AllHitsRayTest(const glm::vec3& rayFrom, const glm::vec3& rayTo);
 
 
-		void SetAudioListenerTransform(const ComponentHandle<TransformComponent>& transformHandle) noexcept;
+		void SetAudioListenerTransform(const ComponentHandle<TransformComponent>& transformHandle,
+			const glm::fquat& offRotation = glm::fquat(1.0f, 0.0f, 0.0f, 0.0f)) noexcept;
 		ComponentHandle<TransformComponent> GetAudioListenerTransform() noexcept;
 		void PlayAudioClip3D(std::shared_ptr<AudioClip> audioClip,
 			const glm::vec3& position = glm::vec3(0.0f),
@@ -132,6 +134,7 @@ namespace Mona {
 		
 		AudioSystem m_audioSystem;
 		InnerComponentHandle m_audoListenerTransformHandle;
+		glm::fquat m_audioListenerOffsetRotation = glm::fquat(1.0f, 0.0f, 0.0f, 0.0f);
 
 		AnimationSystem m_animationSystem;
 		std::unique_ptr<DebugDrawingSystem> m_debugDrawingSystem;

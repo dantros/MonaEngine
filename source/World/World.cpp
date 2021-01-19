@@ -146,7 +146,11 @@ namespace Mona {
 		m_animationSystem.UpdateAllPoses(skeletalMeshDataManager, timeStep);
 		m_objectManager.UpdateGameObjects(*this, m_eventManager, timeStep);
 		m_application->UserUpdate(*this, timeStep);
-		m_audioSystem.Update(m_audoListenerTransformHandle, timeStep, transformDataManager, audioSourceDataManager);
+		m_audioSystem.Update(m_audoListenerTransformHandle,
+			m_audioListenerOffsetRotation,
+			timeStep,
+			transformDataManager,
+			audioSourceDataManager);
 		m_renderer.Render(m_eventManager,
 			m_cameraHandle,
 			m_ambientLight,
@@ -165,6 +169,29 @@ namespace Mona {
 
 	}
 
+	glm::vec3 World::MainCameraScreenPositionToWorld(const glm::ivec2& screenPos) noexcept
+	{
+		auto& transformDataManager = GetComponentManager<TransformComponent>();
+		auto& cameraDataManager = GetComponentManager<CameraComponent>();
+		const CameraComponent* camera = cameraDataManager.GetComponentPointer(m_cameraHandle);
+		GameObject* cameraOwner = cameraDataManager.GetOwner(m_cameraHandle);
+		TransformComponent* cameraTransform = transformDataManager.GetComponentPointer(cameraOwner->GetInnerComponentHandle<TransformComponent>());
+		glm::vec3 upVector = cameraTransform->GetUpVector();
+		glm::vec3 rightVector = cameraTransform->GetRightVector();
+		glm::vec3 frontVector = cameraTransform->GetFrontVector();
+		const glm::vec3& cameraPosition = cameraTransform->GetLocalTranslation();
+		const glm::ivec2 screenResolution = m_window.GetWindowFrameBufferSize();
+		glm::vec2 screenPercentage = glm::vec2((float)screenPos.x / (float)screenResolution.x, (float)screenPos.y / (float)screenResolution.y);
+		screenPercentage = glm::vec2(-1.0f) + 2.0f * screenPercentage;
+		screenPercentage.y *= -1.0f;
+		float cameraHalfYLength = camera->zNearPlane * glm::tan(glm::radians(camera->fieldOfView / 2.0f));
+		float cameraHalfXLength = cameraHalfYLength * camera->aspectRatio;
+		float upFactor = screenPercentage.y * cameraHalfYLength;
+		float rightFactor = screenPercentage.x * cameraHalfXLength;
+		float frontFactor = camera->zNearPlane;
+		return upFactor * upVector + rightFactor * rightVector + frontFactor * frontVector + cameraPosition;
+	}
+
 	ComponentHandle<CameraComponent> World::GetMainCameraComponent() noexcept {
 		auto& cameraDataManager = GetComponentManager<CameraComponent>();
 		return ComponentHandle<CameraComponent>(m_cameraHandle, &cameraDataManager);
@@ -174,8 +201,10 @@ namespace Mona {
 		return m_renderer.CreateMaterial(type, isForSkinning);
 	}
 
-	void World::SetAudioListenerTransform(const ComponentHandle<TransformComponent>& transformHandle) noexcept{
+	void World::SetAudioListenerTransform(const ComponentHandle<TransformComponent>& transformHandle,
+		const glm::fquat& offsetRotation) noexcept{
 		m_audoListenerTransformHandle = transformHandle.GetInnerHandle();
+		m_audioListenerOffsetRotation = offsetRotation;
 	}
 
 	ComponentHandle<TransformComponent> World::GetAudioListenerTransform() noexcept {

@@ -23,11 +23,11 @@ namespace Mona {
 
 		}
 		uint32_t GetMeshIndexCount() const noexcept {
-			return m_meshPtr->GetCount();
+			return m_meshPtr->GetIndexBufferCount();
 		}
 
 		uint32_t GetMeshVAOID() const noexcept {
-			return m_meshPtr->GetVAOID();
+			return m_meshPtr->GetVertexArrayID();
 		}
 
 		std::shared_ptr<Material> GetMaterial() const noexcept {

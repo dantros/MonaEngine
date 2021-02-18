@@ -21,7 +21,7 @@ void CreatePlane(Mona::World& world) {
 	float planeScale = 10.0f;
 	auto transform = world.AddComponent<Mona::TransformComponent>(plane);
 	transform->SetScale(glm::vec3(planeScale));
-	world.AddComponent<Mona::StaticMeshComponent>(plane, meshManager.LoadMesh(Mona::MeshManager::PrimitiveType::Plane), materialPtr);
+	world.AddComponent<Mona::StaticMeshComponent>(plane, meshManager.LoadMesh(Mona::Mesh::PrimitiveType::Plane), materialPtr);
 	Mona::BoxShapeInformation boxInfo(glm::vec3(planeScale, planeScale, planeScale));
 	Mona::RigidBodyHandle rb = world.AddComponent<Mona::RigidBodyComponent>(plane, boxInfo, Mona::RigidBodyType::StaticBody, 1.0f, false, glm::vec3(0.0f,0.0f, -planeScale));
 }

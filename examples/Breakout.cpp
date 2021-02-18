@@ -31,7 +31,7 @@ public:
 		auto paddleMaterial = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseFlat));
 		paddleMaterial->SetDiffuseColor(glm::vec3(0.3f, 0.3f, 0.75f));
 		auto& meshManager = Mona::MeshManager::GetInstance();
-		world.AddComponent<Mona::StaticMeshComponent>(*this, meshManager.LoadMesh(Mona::MeshManager::PrimitiveType::Cube), paddleMaterial);
+		world.AddComponent<Mona::StaticMeshComponent>(*this, meshManager.LoadMesh(Mona::Mesh::PrimitiveType::Cube), paddleMaterial);
 		Mona::BoxShapeInformation boxInfo(paddleScale);
 		Mona::RigidBodyHandle rb = world.AddComponent<Mona::RigidBodyComponent>(*this, boxInfo, Mona::RigidBodyType::KinematicBody);
 		rb->SetFriction(0.0f);
@@ -47,7 +47,7 @@ public:
 		m_ballTransform->SetScale(glm::vec3(ballRadius));
 		auto ballMaterial = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseFlat));
 		ballMaterial->SetDiffuseColor(glm::vec3(0.75f, 0.3f, 0.3f));
-		world.AddComponent<Mona::StaticMeshComponent>(ball, meshManager.LoadMesh(Mona::MeshManager::PrimitiveType::Sphere), ballMaterial);
+		world.AddComponent<Mona::StaticMeshComponent>(ball, meshManager.LoadMesh(Mona::Mesh::PrimitiveType::Sphere), ballMaterial);
 		
 		Mona::SphereShapeInformation sphereInfo(ballRadius);
 		m_ballRigidBody = world.AddComponent<Mona::RigidBodyComponent>(ball, sphereInfo, Mona::RigidBodyType::DynamicBody);
@@ -94,7 +94,7 @@ void InitializeWall(Mona::World &world,
 	std::shared_ptr<Mona::Material> wallMaterial) {
 	auto& meshManager = Mona::MeshManager::GetInstance();
 	world.AddComponent<Mona::TransformComponent>(wall, position, glm::fquat(1.0f, 0.0f, 0.0f, 0.0f), scale);
-	world.AddComponent<Mona::StaticMeshComponent>(wall, meshManager.LoadMesh(Mona::MeshManager::PrimitiveType::Cube), wallMaterial);
+	world.AddComponent<Mona::StaticMeshComponent>(wall, meshManager.LoadMesh(Mona::Mesh::PrimitiveType::Cube), wallMaterial);
 	Mona::BoxShapeInformation wallShape(scale);
 	Mona::RigidBodyHandle rb = world.AddComponent<Mona::RigidBodyComponent>(wall, wallShape, Mona::RigidBodyType::StaticBody);
 	rb->SetRestitution(1.0f);
@@ -123,7 +123,7 @@ public:
 				auto block = world.CreateGameObject<Mona::GameObject>();
 				auto transform = world.AddComponent<Mona::TransformComponent>(block, glm::vec3( x, 15.0f + y, 0.0f));
 				transform->Scale(blockScale);
-				world.AddComponent<Mona::StaticMeshComponent>(block, meshManager.LoadMesh(Mona::MeshManager::PrimitiveType::Cube), blockMaterial);
+				world.AddComponent<Mona::StaticMeshComponent>(block, meshManager.LoadMesh(Mona::Mesh::PrimitiveType::Cube), blockMaterial);
 				Mona::RigidBodyHandle rb =world.AddComponent<Mona::RigidBodyComponent>(block, boxInfo, Mona::RigidBodyType::StaticBody, 1.0f);
 				rb->SetRestitution(1.0f);
 				rb->SetFriction(0.0f);

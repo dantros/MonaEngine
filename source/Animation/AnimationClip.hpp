@@ -23,30 +23,26 @@ namespace Mona {
 
 		};
 		float GetDuration() const { return m_duration; }
-		float GetTicksPerSecond() const { return m_ticksPerSecond; }
 		float Sample(std::vector<JointPose>& outPose, float time, bool isLooping);
-		void SetSkeleton(std::shared_ptr<Skeleton> skeletonPtr);
+		
 		std::shared_ptr<Skeleton> GetSkeleton() const {
 			return m_skeletonPtr;
 		}
 	private:
-		AnimationClip(std::vector<AnimationTrack>&& animationTracks,
-			std::vector<std::string>&& trackNames,
-			std::shared_ptr<Skeleton> skeletonPtr,
-			float duration,
-			float ticksPerSecond,
-			bool removeRootMotion);
+		void SetSkeleton(std::shared_ptr<Skeleton> skeletonPtr);
+		AnimationClip(const std::string& filePath,
+			std::shared_ptr<Skeleton> skeleton,
+			bool removeRootMotion = true);
 		void RemoveRootMotion();
 
 		float GetSamplingTime(float time, bool isLooping) const;
 		std::pair<uint32_t, float> GetTimeFraction(const std::vector<float>& timeStamps, float time) const;
 
 		std::vector<AnimationTrack> m_animationTracks;
-		std::vector<std::string> m_trackNames;
-		std::vector<jointIndex> m_jointIndices;
+		std::vector<std::string> m_trackJointNames;
+		std::vector<jointIndex> m_trackJointIndices;
 		std::shared_ptr<Skeleton> m_skeletonPtr;
 		float m_duration = 1.0f;
-		float m_ticksPerSecond = 1.0f;
 	};
 }
 #endif

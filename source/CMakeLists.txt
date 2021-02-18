@@ -84,11 +84,14 @@ set(MONA_SOURCES
 				Rendering/MeshManager.cpp
 				Rendering/Texture.cpp
 				Rendering/TextureManager.cpp
+				Rendering/Mesh.cpp
 				Animation/AnimationClipManager.cpp
 				Animation/SkeletonManager.cpp
 				Animation/AnimationSystem.cpp
 				Animation/AnimationClip.cpp
 				Animation/AnimationController.cpp
+				Animation/SkinnedMesh.cpp
+				Animation/Skeleton.cpp
 				PhysicsCollision/PhysicsCollisionSystem.cpp
 				Audio/AudioSystem.cpp
 				Audio/AudioClip.cpp

@@ -175,14 +175,14 @@ namespace Mona{
 			GameObject* owner = skeletalMeshDataManager.GetOwnerByIndex(i);
 			TransformComponent* transform = transformDataManager.GetComponentPointer(owner->GetInnerComponentHandle<TransformComponent>());
 			auto skinnedMesh = skeletalMesh.m_skinnedMeshPtr;
-			glBindVertexArray(skinnedMesh->GetVAOID());
+			glBindVertexArray(skinnedMesh->GetVertexArrayID());
 			//A diferencias de StaticMeshes, SkeletalMeshComponent necesita configurar las paletas de matrices de animacion
 			//estas se le solicitan al animationController
 			auto &animController = skeletalMesh.GetAnimationController();
 			skeletalMesh.m_materialPtr->SetUniforms(projectionMatrix, viewMatrix, transform->GetModelMatrix(), cameraPosition);
 			animController.GetMatrixPalette(m_currentMatrixPalette);
 			glUniformMatrix4fv(ShaderProgram::BoneTransformShaderLocation, skeletalMesh.GetSkeleton()->JointCount(), GL_FALSE, (GLfloat*) m_currentMatrixPalette.data());
-			glDrawElements(GL_TRIANGLES, skinnedMesh->GetCount(), GL_UNSIGNED_INT, 0);
+			glDrawElements(GL_TRIANGLES, skinnedMesh->GetIndexBufferCount(), GL_UNSIGNED_INT, 0);
 		}
 		//En no Debub build este llamado es vacio, en caso contrario se renderiza información de debug
 		m_debugDrawingSystemPtr->Draw(eventManager, viewMatrix, projectionMatrix);

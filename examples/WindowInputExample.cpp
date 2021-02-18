@@ -194,7 +194,7 @@ public:
 		sphereTransform->Scale(glm::vec3(0.1f));
 		sphereTransform->Translate(glm::vec3(3.0f,3.0f,3.0f));
 		world.AddComponent<Mona::StaticMeshComponent>(sphere,
-			Mona::MeshManager::GetInstance().LoadMesh(Mona::MeshManager::PrimitiveType::Cube),
+			Mona::MeshManager::GetInstance().LoadMesh(Mona::Mesh::PrimitiveType::Cube),
 			world.CreateMaterial(Mona::MaterialType::UnlitFlat)
 			);
 	}

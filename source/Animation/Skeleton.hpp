@@ -5,7 +5,6 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include <string_view>
 #include <glm/glm.hpp>
 namespace Mona {
 
@@ -43,8 +42,8 @@ namespace Mona {
 			return m_parentIndices[index];
 		}
 	private:
-		Skeleton() : m_invBindPoseMatrices(), m_jointNames(), m_parentIndices() {}
-
+		//Skeleton() : m_invBindPoseMatrices(), m_jointNames(), m_parentIndices() {}
+		/*
 		Skeleton(std::vector<glm::mat4>&& invBindPoses,
 			std::vector<std::string>&& jointNames,
 			std::vector<std::int32_t>&& parentIndices,
@@ -55,6 +54,9 @@ namespace Mona {
 			m_jointMap(std::move(jointMap))
 		{
 		}
+		*/
+
+		Skeleton(const std::string &filePath);
 		std::unordered_map<std::string, uint32_t> m_jointMap;
 		std::vector<glm::mat4> m_invBindPoseMatrices;
 		std::vector<std::string> m_jointNames;

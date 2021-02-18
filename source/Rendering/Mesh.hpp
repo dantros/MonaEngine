@@ -2,39 +2,35 @@
 #ifndef MESH_HPP
 #define MESH_HPP
 #include <cstdint>
-#include <glad/glad.h>
-#include "../Core/Log.hpp"
+#include <string>
+
 namespace Mona {
 	class Mesh {
 		friend class MeshManager;
+		
 	public:
-		~Mesh() {
-			if(m_vaoID)
-				ClearData();
-		}
-		uint32_t GetVAOID() const noexcept { return m_vaoID; }
-		uint32_t GetCount() const noexcept { return m_count; }
+		enum class PrimitiveType {
+			Plane,
+			Cube,
+			Sphere,
+			PrimitiveCount
+		};
+		~Mesh();
+		uint32_t GetVertexArrayID() const noexcept { return m_vertexArrayID; }
+		uint32_t GetIndexBufferCount() const noexcept { return m_indexBufferCount; }
 	private:
-		Mesh(uint32_t vaoID, uint32_t vboID, uint32_t iboID, uint32_t count) :
-			m_vaoID(vaoID),
-			m_vboID(vboID),
-			m_iboID(iboID),
-			m_count(count) {}
-		void ClearData() noexcept {
-			MONA_ASSERT(m_vaoID, "Mesh Error: Trying to delete already deleted mesh");
-			MONA_ASSERT(m_vboID, "Mesh Error: Trying to delete already deleted mesh");
-			MONA_ASSERT(m_iboID, "Mesh Error: Trying to delete already deleted mesh");
-			glDeleteBuffers(1, &m_vboID);
-			glDeleteBuffers(1, &m_iboID);
-			glDeleteVertexArrays(1, &m_vaoID);
-			m_vaoID = 0;
+		Mesh(const std::string& filePath, bool flipUVs = false);
+		Mesh(PrimitiveType type);
 
-		}
+		void ClearData() noexcept;
+		void CreateSphere() noexcept;
+		void CreateCube() noexcept;
+		void CreatePlane() noexcept;
 
-		uint32_t m_vaoID;
-		uint32_t m_vboID;
-		uint32_t m_iboID;
-		uint32_t m_count;
+		uint32_t m_vertexArrayID;
+		uint32_t m_vertexBufferID;
+		uint32_t m_indexBufferID;
+		uint32_t m_indexBufferCount;
 	};
 }
 #endif

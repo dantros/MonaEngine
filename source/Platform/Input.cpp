@@ -7,15 +7,15 @@
 #include <GLFW/glfw3.h>
 namespace Mona
 {
-	class Input::Impl {
+	class Input::InputImplementation {
 	public:
-		Impl():m_windowHandle(nullptr), m_mouseWheelOffset(0.0,0.0) {}
-		Impl(const Impl& input) = delete;
-		Impl& operator=(const Impl& input) = delete;
+		InputImplementation():m_windowHandle(nullptr), m_mouseWheelOffset(0.0,0.0) {}
+		InputImplementation(const InputImplementation& input) = delete;
+		InputImplementation& operator=(const InputImplementation& input) = delete;
 		void StartUp(EventManager& eventManager) noexcept {
 			m_windowHandle = glfwGetCurrentContext();
 			MONA_ASSERT(m_windowHandle != NULL, "GLFW Error: Unable to find window");
-			m_mouseScrollSubscription = eventManager.Subscribe(this, &Input::Impl::OnMouseScroll);
+			m_mouseScrollSubscription = eventManager.Subscribe(this, &Input::InputImplementation::OnMouseScroll);
 		}
 
 		void ShutDown(EventManager& eventManager) noexcept {
@@ -73,7 +73,7 @@ namespace Mona
 		SubscriptionHandle m_mouseScrollSubscription;
 	};
 
-	Input::Input() : p_Impl(std::make_unique<Impl>()) {}
+	Input::Input() : p_Impl(std::make_unique<InputImplementation>()) {}
 
 	Input::~Input() = default;
 

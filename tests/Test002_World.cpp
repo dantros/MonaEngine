@@ -79,57 +79,64 @@ public:
 private:
 	int m_frameCount;
 };
-
-
-
 Mona::GameObjectHandle<MyBox> boxes[2000];
-int main(){
-	Mona::Log::StartUp();
-	Mona::Config& config = Mona::Config::GetInstance();
-	config.readFile("config.cfg");
-	Mona::World world;
-	world.StartUp(std::unique_ptr<Mona::Application>(new Sandbox()));
-	Mona::GameObjectHandle<MyBox> box = world.CreateGameObject<MyBox>();
-	MONA_ASSERT(world.GetComponentCount<Mona::TransformComponent>() == 1, "Incorrect component count");
-	MONA_ASSERT(world.GetComponentCount<Mona::CameraComponent>() == 1, "Incorrect component count");
-	MONA_ASSERT(world.GetGameObjectCount() == 1, "Incorrect game object count");
-	MONA_ASSERT(globalStartUpCalls == 1, "Incorrect number of startUp calls");
-	world.Update(10.0f);
-	world.Update(10.0f);
-	MONA_ASSERT(globalUpdateCalls == 2, "Incorrect number of Update calls");
-	MONA_ASSERT(box->GetTranslation() == glm::vec3(20.0f), "Incorrect box translation");
-	world.DestroyGameObject(box);
-	MONA_ASSERT(world.GetComponentCount<Mona::TransformComponent>() == 0, "Incorrect component count");
-	MONA_ASSERT(world.GetComponentCount<Mona::CameraComponent>() == 0, "Incorrect component count");
-	MONA_ASSERT(world.GetGameObjectCount() == 1, "Incorrect game object count");
-	MONA_ASSERT(world.IsValid(box), "box should be valid");
-	MONA_ASSERT(box->GetState() == Mona::GameObject::EState::PendingDestroy, "Incorrect Object State");
-	world.Update(1.0f);
-	MONA_ASSERT(world.GetGameObjectCount() == 0, "Incorrect game object count");
-	MONA_ASSERT(world.IsValid(box) == false, "box should be invalid");
-	for (uint32_t i = 0; i < 2000; i++)
-	{
-		boxes[i] = world.CreateGameObject<MyBox>();
-	}
 
-	MONA_ASSERT(world.GetGameObjectCount() == 2000, "Incorrect game object count");
-	for (uint32_t i = 0; i < 100; i++)
-	{
+class Mona::MonaTest  {
+public:
+	MonaTest() = default;
+	void Run() {
+		Mona::Config& config = Mona::Config::GetInstance();
+		config.readFile("config.cfg");
+		Mona::World world;
+		world.StartUp(std::unique_ptr<Mona::Application>(new Sandbox()));
+		Mona::GameObjectHandle<MyBox> box = world.CreateGameObject<MyBox>();
+		MONA_ASSERT(world.GetComponentCount<Mona::TransformComponent>() == 1, "Incorrect component count");
+		MONA_ASSERT(world.GetComponentCount<Mona::CameraComponent>() == 1, "Incorrect component count");
+		MONA_ASSERT(world.GetGameObjectCount() == 1, "Incorrect game object count");
+		MONA_ASSERT(globalStartUpCalls == 1, "Incorrect number of startUp calls");
+		world.Update(10.0f);
+		world.Update(10.0f);
+		MONA_ASSERT(globalUpdateCalls == 2, "Incorrect number of Update calls");
+		MONA_ASSERT(box->GetTranslation() == glm::vec3(20.0f), "Incorrect box translation");
+		world.DestroyGameObject(box);
+		MONA_ASSERT(world.GetComponentCount<Mona::TransformComponent>() == 0, "Incorrect component count");
+		MONA_ASSERT(world.GetComponentCount<Mona::CameraComponent>() == 0, "Incorrect component count");
+		MONA_ASSERT(world.GetGameObjectCount() == 1, "Incorrect game object count");
+		MONA_ASSERT(world.IsValid(box), "box should be valid");
+		MONA_ASSERT(box->GetState() == Mona::GameObject::EState::PendingDestroy, "Incorrect Object State");
 		world.Update(1.0f);
-	}
-	MONA_ASSERT(world.GetComponentCount<Mona::TransformComponent>() == 2000, "Incorrect component count");
-	MONA_ASSERT(world.GetComponentCount<Mona::CameraComponent>() == 2000, "Incorrect component count");
-	MONA_ASSERT(globalStartUpCalls == 2001, "Incorrect number of startUp calls");
-	MONA_ASSERT(globalUpdateCalls == (2 + 2000*100), "Incorrect number of Update calls");
-	Mona::GameObjectHandle<FrameCountedObject> testObject = world.CreateGameObject<FrameCountedObject>();
-	for (uint32_t i = 0; i < 100; i++)
-	{
+		MONA_ASSERT(world.GetGameObjectCount() == 0, "Incorrect game object count");
+		MONA_ASSERT(world.IsValid(box) == false, "box should be invalid");
+		for (uint32_t i = 0; i < 2000; i++)
+		{
+			boxes[i] = world.CreateGameObject<MyBox>();
+		}
+
+		MONA_ASSERT(world.GetGameObjectCount() == 2000, "Incorrect game object count");
+		for (uint32_t i = 0; i < 100; i++)
+		{
+			world.Update(1.0f);
+		}
+		MONA_ASSERT(world.GetComponentCount<Mona::TransformComponent>() == 2000, "Incorrect component count");
+		MONA_ASSERT(world.GetComponentCount<Mona::CameraComponent>() == 2000, "Incorrect component count");
+		MONA_ASSERT(globalStartUpCalls == 2001, "Incorrect number of startUp calls");
+		MONA_ASSERT(globalUpdateCalls == (2 + 2000 * 100), "Incorrect number of Update calls");
+		Mona::GameObjectHandle<FrameCountedObject> testObject = world.CreateGameObject<FrameCountedObject>();
+		for (uint32_t i = 0; i < 100; i++)
+		{
+			world.Update(1.0f);
+		}
+		MONA_ASSERT(globalStartUpCalls == 2003, "Incorrect number of startUp calls");
 		world.Update(1.0f);
+		world.ShutDown();
+		MONA_ASSERT(globalDestructorCalls == 2003, "Incorrect number of ShutDown calls");
+		MONA_LOG_INFO("All test passed!!!");
 	}
-	MONA_ASSERT(globalStartUpCalls == 2003, "Incorrect number of startUp calls");
-	world.Update(1.0f);
-	world.ShutDown();
-	MONA_ASSERT(globalDestructorCalls == 2003, "Incorrect number of ShutDown calls");
-	MONA_LOG_INFO("All test passed!!!");
+};
+
+
+int main(){
+	Mona::MonaTest test;
+	test.Run();
 	return 0;
 }

@@ -39,6 +39,8 @@ namespace Mona {
 	class Material;
 	class World {
 	public:
+		friend class Engine;
+		friend class MonaTest;
 		World();
 		World(const World& world) = delete;
 		World& operator=(const World& world) = delete;
@@ -71,11 +73,6 @@ namespace Mona {
 		Input& GetInput() noexcept;
 		Window& GetWindow() noexcept;
 		void EndApplication() noexcept;
-
-		void StartUp(std::unique_ptr<Application> app) noexcept;
-		void ShutDown() noexcept;
-		void StartMainLoop() noexcept;
-		void Update(float timeStep) noexcept;
 
 		void SetMainCamera(const ComponentHandle<CameraComponent>& cameraHandle) noexcept;
 		glm::vec3 MainCameraScreenPositionToWorld(const glm::ivec2& screenPos) noexcept;
@@ -111,6 +108,11 @@ namespace Mona {
 		JointPose GetJointWorldPose(const ComponentHandle<SkeletalMeshComponent>& skeletalMeshHandel, uint32_t jointIndex) noexcept;
 
 	private:
+		void StartUp(std::unique_ptr<Application> app) noexcept;
+		void ShutDown() noexcept;
+		void StartMainLoop() noexcept;
+		void Update(float timeStep) noexcept;
+
 		template <typename ComponentType>
 		auto& GetComponentManager() noexcept;
 

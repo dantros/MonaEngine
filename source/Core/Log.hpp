@@ -4,19 +4,25 @@
 #include "Common.hpp"
 #include <memory>
 #include <spdlog/spdlog.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 
 namespace Mona {
 	class Log {
 	public:
 		//TODO(Byron) Maybe move StartUp and ShutDown to private and make caller friend class
-		static void StartUp() noexcept;
-		inline static std::shared_ptr<spdlog::logger>& GetLogger() noexcept{ return s_loggerImplementation; }
+		
+		static std::shared_ptr<spdlog::logger>& GetLogger() noexcept{ 
+			static Log logger;
+			return logger.s_logger; }
 
 	private:
-		Log() {}
+		Log() {
+			spdlog::set_pattern("%^[%T] %n: %v%$");
+			s_logger = spdlog::stdout_color_mt("MONA");
+		}
 		Log(const Log& log) = delete;
 		Log& operator=(const Log& l) = delete;
-		static std::shared_ptr<spdlog::logger> s_loggerImplementation;
+		std::shared_ptr<spdlog::logger> s_logger;
 	};
 }
 

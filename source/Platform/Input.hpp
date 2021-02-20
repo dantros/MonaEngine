@@ -55,8 +55,8 @@ namespace Mona
 		void Update() noexcept;
 		void StartUp(EventManager& eventManager) noexcept;
 		void ShutDown(EventManager& eventManager) noexcept;
-		class Impl;
-		std::unique_ptr<Impl> p_Impl;
+		class InputImplementation;
+		std::unique_ptr<InputImplementation> p_Impl;
 	};
 }
 

@@ -15,11 +15,11 @@ namespace Mona {
 	{
 		MONA_LOG_ERROR("GLFW Error ({0}): {1}", error, description);
 	}
-	class Window::Impl {
+	class Window::WindowImplementation {
 	public:
-		Impl() : m_data(){}
-		Impl(const Impl& window) = delete;
-		Impl& operator=(const Impl& window) = delete;
+		WindowImplementation() : m_data(){}
+		WindowImplementation(const WindowImplementation& window) = delete;
+		WindowImplementation& operator=(const WindowImplementation& window) = delete;
 		void StartUp(EventManager& eventManager) noexcept
 		{
 			MONA_ASSERT(m_windowHandle == nullptr, "Calling Window::StartUp for the second time!!!.");
@@ -141,7 +141,7 @@ namespace Mona {
 		glm::ivec2 m_oldWindowPos = glm::vec2(0,0);
 	};
 
-	Window::Window() : p_Impl(std::make_unique<Impl>()) {}
+	Window::Window() : p_Impl(std::make_unique<WindowImplementation>()) {}
 
 	Window::~Window() = default;
 

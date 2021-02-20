@@ -7,7 +7,7 @@ namespace Mona {
 	class UnlitFlatMaterial : public Material {
 	public:
  
-		UnlitFlatMaterial(uint32_t shaderID, bool isForSkinning) : Material(shaderID, isForSkinning), m_color(glm::vec3(1.0f)) {}
+		UnlitFlatMaterial(const ShaderProgram& shaderProgram, bool isForSkinning) : Material(shaderProgram, isForSkinning), m_color(glm::vec3(1.0f)) {}
 		virtual void SetMaterialUniforms(const glm::vec3& cameraPosition) {
 			glUniform3fv(ShaderProgram::UnlitColorShaderLocation, 1, glm::value_ptr(m_color));
 		}

@@ -7,7 +7,7 @@ namespace Mona {
 	class DiffuseFlatMaterial : public Material {
 	public:
  
-		DiffuseFlatMaterial(uint32_t shaderID, bool isForSkinning) : Material(shaderID, isForSkinning), m_diffuseColor(glm::vec3(1.0f)) {}
+		DiffuseFlatMaterial(const ShaderProgram& shaderProgram, bool isForSkinning) : Material(shaderProgram, isForSkinning), m_diffuseColor(glm::vec3(1.0f)) {}
 		virtual void SetMaterialUniforms(const glm::vec3& cameraPosition) {
 			glUniform3fv(ShaderProgram::DiffuseColorShaderLocation, 1, glm::value_ptr(m_diffuseColor));
 		}

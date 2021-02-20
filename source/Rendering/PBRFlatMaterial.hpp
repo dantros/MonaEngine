@@ -8,8 +8,8 @@
 namespace Mona {
 	class PBRFlatMaterial : public Material {
 	public:
-		PBRFlatMaterial(uint32_t shaderID, bool isForSkinning) : 
-			Material(shaderID, isForSkinning),
+		PBRFlatMaterial(const ShaderProgram& shaderProgram, bool isForSkinning) : 
+			Material(shaderProgram, isForSkinning),
 			m_albedo(glm::vec3(1.0f)),
 			m_metallic(0.0f),
 			m_roughness(0.5f),

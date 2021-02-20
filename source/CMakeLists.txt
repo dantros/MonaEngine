@@ -70,7 +70,6 @@ set(MONA_HEADERS
 				DebugDrawing/BulletDebugDraw.hpp
 				Utilities/BasicCameraControllers.hpp)
 set(MONA_SOURCES 
-				Core/Log.cpp
 				Core/Config.cpp
 				Event/EventManager.cpp
 				Platform/Window.cpp

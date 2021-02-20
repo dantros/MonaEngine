@@ -196,25 +196,25 @@ namespace Mona{
 		switch (type)
 		{
 		case Mona::MaterialType::UnlitFlat:
-			return std::make_shared<UnlitFlatMaterial>(m_shaders[offset].GetProgramID(), isForSkinning);
+			return std::make_shared<UnlitFlatMaterial>(m_shaders[offset], isForSkinning);
 			break;
 		case Mona::MaterialType::UnlitTextured:
-			return std::make_shared<UnlitTexturedMaterial>(m_shaders[offset].GetProgramID(), isForSkinning);
+			return std::make_shared<UnlitTexturedMaterial>(m_shaders[offset], isForSkinning);
 			break;
 		case Mona::MaterialType::DiffuseFlat:
-			return std::make_shared<DiffuseFlatMaterial>(m_shaders[offset].GetProgramID(), isForSkinning);
+			return std::make_shared<DiffuseFlatMaterial>(m_shaders[offset], isForSkinning);
 			break;
 		case Mona::MaterialType::DiffuseTextured:
-			return std::make_shared<DiffuseTexturedMaterial>(m_shaders[offset].GetProgramID(), isForSkinning);
+			return std::make_shared<DiffuseTexturedMaterial>(m_shaders[offset], isForSkinning);
 			break;
 		case Mona::MaterialType::PBRFlat:
-			return std::make_shared<PBRFlatMaterial>(m_shaders[offset].GetProgramID(), isForSkinning);
+			return std::make_shared<PBRFlatMaterial>(m_shaders[offset], isForSkinning);
 			break;
 		case Mona::MaterialType::PBRTextured:
-			return std::make_shared<PBRTexturedMaterial>(m_shaders[offset].GetProgramID(), isForSkinning);
+			return std::make_shared<PBRTexturedMaterial>(m_shaders[offset], isForSkinning);
 			break;
 		case Mona::MaterialType::MaterialTypeCount:
-			return std::make_shared<DiffuseFlatMaterial>(m_shaders[offset].GetProgramID(), isForSkinning);
+			return std::make_shared<DiffuseFlatMaterial>(m_shaders[offset], isForSkinning);
 			break;
 		default:
 			return nullptr;

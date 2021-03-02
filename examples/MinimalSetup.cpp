@@ -14,8 +14,8 @@ public:
 };
 int main()
 {	
-	Mona::Engine& engine = Mona::Engine::GetInstance();
-	engine.StartUp(std::unique_ptr<Mona::Application>(new MinimalSetup()));
+	MinimalSetup app;
+	Mona::Engine engine(app);
 	engine.StartMainLoop();
-	engine.ShutDown();
+	
 }

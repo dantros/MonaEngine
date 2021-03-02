@@ -74,7 +74,6 @@ set(MONA_SOURCES
 				Event/EventManager.cpp
 				Platform/Window.cpp
 				Platform/Input.cpp
-				Engine.cpp
 				Application.cpp
 				World/GameObjectManager.cpp
 				World/World.cpp

@@ -158,8 +158,7 @@ public:
 };
 int main()
 {
-	Mona::Engine& engine = Mona::Engine::GetInstance();
-	engine.StartUp(std::unique_ptr<Mona::Application>(new Breakout()));
+	Breakout breakout;
+	Mona::Engine engine(breakout);
 	engine.StartMainLoop();
-	engine.ShutDown();
 }

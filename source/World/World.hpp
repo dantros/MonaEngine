@@ -41,7 +41,7 @@ namespace Mona {
 	public:
 		friend class Engine;
 		friend class MonaTest;
-		World();
+		
 		World(const World& world) = delete;
 		World& operator=(const World& world) = delete;
 		
@@ -108,8 +108,8 @@ namespace Mona {
 		JointPose GetJointWorldPose(const ComponentHandle<SkeletalMeshComponent>& skeletalMeshHandel, uint32_t jointIndex) noexcept;
 
 	private:
-		void StartUp(std::unique_ptr<Application> app) noexcept;
-		void ShutDown() noexcept;
+		World(Application& app);
+		~World();
 		void StartMainLoop() noexcept;
 		void Update(float timeStep) noexcept;
 
@@ -122,7 +122,7 @@ namespace Mona {
 		EventManager m_eventManager;
 		Input m_input;
 		Window m_window;
-		std::unique_ptr<Application> m_application;
+		Application& m_application;
 		bool m_shouldClose;
 
 		GameObjectManager m_objectManager;

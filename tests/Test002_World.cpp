@@ -87,8 +87,8 @@ public:
 	void Run() {
 		Mona::Config& config = Mona::Config::GetInstance();
 		config.readFile("config.cfg");
-		Mona::World world;
-		world.StartUp(std::unique_ptr<Mona::Application>(new Sandbox()));
+		Sandbox sandbox;
+		Mona::World world(sandbox);
 		Mona::GameObjectHandle<MyBox> box = world.CreateGameObject<MyBox>();
 		MONA_ASSERT(world.GetComponentCount<Mona::TransformComponent>() == 1, "Incorrect component count");
 		MONA_ASSERT(world.GetComponentCount<Mona::CameraComponent>() == 1, "Incorrect component count");
@@ -128,9 +128,7 @@ public:
 		}
 		MONA_ASSERT(globalStartUpCalls == 2003, "Incorrect number of startUp calls");
 		world.Update(1.0f);
-		world.ShutDown();
-		MONA_ASSERT(globalDestructorCalls == 2003, "Incorrect number of ShutDown calls");
-		MONA_LOG_INFO("All test passed!!!");
+		
 	}
 };
 
@@ -138,5 +136,7 @@ public:
 int main(){
 	Mona::MonaTest test;
 	test.Run();
+	MONA_ASSERT(globalDestructorCalls == 2003, "Incorrect number of destructors calls");
+	MONA_LOG_INFO("All test passed!!!");
 	return 0;
 }

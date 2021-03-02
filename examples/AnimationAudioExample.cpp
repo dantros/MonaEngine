@@ -180,7 +180,7 @@ public:
 	AnimationAudio() = default;
 	~AnimationAudio() = default;
 	virtual void UserStartUp(Mona::World& world) noexcept override {
-		world.SetGravity(glm::vec3(0.0f, 0.0f, -9.8f));
+		world.SetGravity(glm::vec3(0.0f, 0.0f, -5.0f));
 		world.SetAmbientLight(glm::vec3(0.1f));
 		m_camera = CreateCamera(world);
 		m_cameraTransform = world.GetSiblingComponentHandle<Mona::TransformComponent>(m_camera);
@@ -265,8 +265,7 @@ private:
 };
 int main()
 {
-	Mona::Engine& engine = Mona::Engine::GetInstance();
-	engine.StartUp(std::unique_ptr<Mona::Application>(new AnimationAudio()));
+	AnimationAudio app;
+	Mona::Engine engine(app);
 	engine.StartMainLoop();
-	engine.ShutDown();
 }

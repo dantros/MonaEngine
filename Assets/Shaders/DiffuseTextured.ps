@@ -39,9 +39,9 @@ layout(std140, binding = 0) uniform Lights {
 	int directionalLightsCount;
 };
 
-//Calcula el decaimiento de la intensidad lumínica dada la distancia a ella
-//El calculo de iluminación para fuentes que decaen con la distancia (puntuales y spotlights)
-//Es de la forma L = atenuacion por distancia * otros valores;
+//Calcula del decaimiento de la intensidad luminica dada la distancia a ella
+// lightVector corresponde un vector que apunta desde la superficie iluminada a la fuente de luz
+// lightRadius es el radio de fuente de luz
 float GetDistanceAttenuation(vec3 lightVector, float lightRadius)
 {
 	float squareDistance = dot(lightVector, lightVector);
@@ -52,16 +52,17 @@ float GetDistanceAttenuation(vec3 lightVector, float lightRadius)
 	return distanceAttenuation;
 }
 
-//Calcula el decaimiento de la intansidad lumínica dada una diferencia angular a ella (solo existe para spotlights)
-//El calculo es de la forma L = atenuacion angular * otros valores;
+//Calcula del decaimiento de la intansidad luminica dada una diferencia angular a ella
+//normalizedLightVector es una vector normalizado que apunta desde la fuente a la superficie iliminada
+//lightDirection corresponde a la direccion de la fuente tipo spotlight
+//Para angulos menores al angulo de umbra la funcion retorna 1
+//Para angulos mayores al angulo de penumbra la funcion retorna 0
+//Para el resto de los casos la funcion retorna valores entre 1 y 0.
 float GetAngularAttenuation(vec3 normalizedLightVector, vec3 lightDirection, float lightCosUmbraAngle, float lightCosPenumbraAngle)
 {
 	float cosSurfaceAngle = dot(lightDirection, normalizedLightVector);
 	float t = clamp((cosSurfaceAngle - lightCosUmbraAngle) / (lightCosPenumbraAngle - lightCosUmbraAngle), 0.0f, 1.0f);
 	float angularAttenuation = t*t;
-	//Para angulos menores al angulo de umbra la funcion retorna 1
-	//Para angulos mayores al angulo de penumbra la funcion retorna 0
-	//Para el resto de los casos la funcion retorna valores entre 1 y 0.
 	return angularAttenuation;
 }
 

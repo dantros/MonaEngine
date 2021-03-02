@@ -176,6 +176,7 @@ namespace Mona {
 		}
 
 		void SetLinearVelocity(const glm::vec3& velocity) {
+			m_rigidBodyPtr->setActivationState(ACTIVE_TAG);
 			m_rigidBodyPtr->setLinearVelocity(btVector3(velocity.x, velocity.y, velocity.z));
 		}
 
@@ -185,6 +186,7 @@ namespace Mona {
 		}
 
 		void SetAngularVelocity(const glm::vec3& velocity) {
+			m_rigidBodyPtr->setActivationState(ACTIVE_TAG);
 			m_rigidBodyPtr->setAngularVelocity(btVector3(velocity.x, velocity.y, velocity.z));
 		}
 
@@ -203,12 +205,14 @@ namespace Mona {
 			return m_rigidBodyPtr->getAngularDamping();
 		}
 		void ApplyForce(const glm::vec3& force, const glm::vec3& rel_pos = glm::vec3(0.0f)) {
+			m_rigidBodyPtr->setActivationState(ACTIVE_TAG);
 			const btVector3& bulletForce = btVector3(force.x, force.y, force.z);
 			const btVector3& bulletPos = btVector3(rel_pos.x, rel_pos.y, rel_pos.z);
 			m_rigidBodyPtr->applyForce(bulletForce, bulletPos);
 		}
 
 		void ApplyTorque(const glm::vec3& torque) {
+			m_rigidBodyPtr->setActivationState(ACTIVE_TAG);
 			const btVector3& bulletTorque = btVector3(torque.x, torque.y, torque.z);
 			m_rigidBodyPtr->applyTorque(bulletTorque);
 		}
@@ -284,7 +288,8 @@ namespace Mona {
 				m_collisionShapePtr->calculateLocalInertia(btMass, localInertia);
 				btRigidBody::btRigidBodyConstructionInfo rbInfo(btMass, nullptr, m_collisionShapePtr.get(), localInertia);
 				m_rigidBodyPtr.reset(new btRigidBody(rbInfo));
-				m_rigidBodyPtr->setActivationState(DISABLE_DEACTIVATION);
+				//m_rigidBodyPtr->setActivationState(DISABLE_DEACTIVATION);
+				
 			}
 
 			if(isTrigger){

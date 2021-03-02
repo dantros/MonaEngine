@@ -13,17 +13,19 @@
 #include <chrono>
 namespace Mona {
 	
-	World::World() : 
+	World::World(Application& app) : 
 		m_objectManager(),
 		m_eventManager(), 
 		m_window(), 
 		m_input(), 
-		m_application(),
+		m_application(app),
 		m_shouldClose(false),
 		m_physicsCollisionSystem(),
 		m_ambientLight(glm::vec3(0.1f))
 	{
-		
+		auto& config = Config::GetInstance();
+		config.readFile("config.cfg");
+
 		m_componentManagers[TransformComponent::componentIndex].reset(new TransformComponent::managerType());
 		m_componentManagers[CameraComponent::componentIndex].reset(new CameraComponent::managerType());
 		m_componentManagers[StaticMeshComponent::componentIndex].reset(new StaticMeshComponent::managerType());
@@ -34,13 +36,11 @@ namespace Mona {
 		m_componentManagers[PointLightComponent::componentIndex].reset(new PointLightComponent::managerType());
 		m_componentManagers[SkeletalMeshComponent::componentIndex].reset(new SkeletalMeshComponent::managerType());
 		m_debugDrawingSystem.reset(new DebugDrawingSystem());
-	
-	}
-	void World::StartUp(std::unique_ptr<Application> app) noexcept {
+		
 		auto& transformDataManager = GetComponentManager<TransformComponent>();
 		auto& rigidBodyDataManager = GetComponentManager<RigidBodyComponent>();
 		auto& audioSourceDataManager = GetComponentManager<AudioSourceComponent>();
-		auto& config = Config::GetInstance();
+
 		const GameObjectID expectedObjects = config.getValueOrDefault<int>("expected_number_of_gameobjects", 1000);
 		rigidBodyDataManager.SetLifetimePolicy(RigidBodyLifetimePolicy(&transformDataManager, &m_physicsCollisionSystem));
 		audioSourceDataManager.SetLifetimePolicy(AudioSourceComponentLifetimePolicy(&m_audioSystem));
@@ -53,11 +53,12 @@ namespace Mona {
 		m_renderer.StartUp(m_eventManager, m_debugDrawingSystem.get());
 		m_audioSystem.StartUp();
 		m_debugDrawingSystem->StartUp(&m_physicsCollisionSystem);
-		m_application->StartUp(*this);
+		m_application.StartUp(*this);
+	
 	}
-
-	void World::ShutDown() noexcept {
-		m_application->UserShutDown(*this);
+	
+	World::~World() {
+		m_application.UserShutDown(*this);
 		m_objectManager.ShutDown(*this);
 		for (auto& componentManager : m_componentManagers)
 			componentManager->ShutDown(m_eventManager);
@@ -145,7 +146,7 @@ namespace Mona {
 		m_physicsCollisionSystem.SubmitCollisionEvents(*this, m_eventManager, rigidBodyDataManager);
 		m_animationSystem.UpdateAllPoses(skeletalMeshDataManager, timeStep);
 		m_objectManager.UpdateGameObjects(*this, m_eventManager, timeStep);
-		m_application->UserUpdate(*this, timeStep);
+		m_application.UserUpdate(*this, timeStep);
 		m_audioSystem.Update(m_audoListenerTransformHandle,
 			m_audioListenerOffsetRotation,
 			timeStep,

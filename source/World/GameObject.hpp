@@ -11,11 +11,10 @@ namespace Mona {
 	class GameObject {
 	public:
 		enum class EState {
-			UnStarted,
-			Started,
+			Active,
 			PendingDestroy
 		};
-		GameObject() : m_objectHandle(), m_state(EState::UnStarted) {}
+		GameObject() : m_objectHandle(), m_state(EState::Active) {}
 		virtual ~GameObject() {};
 		GameObject(const GameObject&) = delete;
 		GameObject& operator=(const GameObject&) = delete;
@@ -25,7 +24,6 @@ namespace Mona {
 		void StartUp(World& world) noexcept 
 		{ 
 			UserStartUp(world);
-			m_state = EState::Started;
 		};
 
 		void Update(World& world, float timeStep) noexcept {

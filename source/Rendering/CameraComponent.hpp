@@ -10,7 +10,7 @@ namespace Mona {
 	public:
 		friend class Renderer;
 		friend class World;
-		using managerType = ComponentManager<CameraComponent>;
+		using LifetimePolicyType = DefaultLifetimePolicy<CameraComponent>;
 		using dependencies = DependencyList<TransformComponent>;
 		static constexpr uint8_t componentIndex = GetComponentIndex(EComponentType::CameraComponent);
 		static constexpr std::string_view componentName = "CameraComponent";

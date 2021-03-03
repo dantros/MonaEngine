@@ -32,7 +32,7 @@ namespace Mona {
 	};
 
 
-	template <typename ComponentType, typename LifetimePolicy>
+	template <typename ComponentType>
 	class ComponentManager : public BaseComponentManager {
 	public:
 		ComponentManager();
@@ -53,7 +53,7 @@ namespace Mona {
 		bool IsValid(const InnerComponentHandle& handle) const noexcept;
 		void SwapComponents(size_type first, size_type second) noexcept;
 
-		void SetLifetimePolicy(const LifetimePolicy& policy) noexcept;
+		void SetLifetimePolicy(const typename ComponentType::LifetimePolicyType& policy) noexcept;
 
 	private:
 		struct HandleEntry { 
@@ -74,7 +74,7 @@ namespace Mona {
 		size_type m_lastFreeIndex;
 		size_type m_freeIndicesCount;
 
-		LifetimePolicy m_lifetimePolicy;
+		typename ComponentType::LifetimePolicyType m_lifetimePolicy;
 	};
 
 }

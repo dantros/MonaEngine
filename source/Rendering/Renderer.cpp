@@ -72,13 +72,13 @@ namespace Mona{
 	void Renderer::Render(EventManager& eventManager,
 		const InnerComponentHandle& cameraHandle,
 		const glm::vec3& ambientLight,
-		StaticMeshComponent::managerType& staticMeshDataManager,
-		SkeletalMeshComponent::managerType& skeletalMeshDataManager,
-		TransformComponent::managerType& transformDataManager,
-		CameraComponent::managerType& cameraDataManager,
-		DirectionalLightComponent::managerType& directionalLightDataManager,
-		SpotLightComponent::managerType& spotLightDataManager,
-		PointLightComponent::managerType& pointLightDataManager) noexcept
+		ComponentManager<StaticMeshComponent>& staticMeshDataManager,
+		ComponentManager<SkeletalMeshComponent>& skeletalMeshDataManager,
+		ComponentManager<TransformComponent>& transformDataManager,
+		ComponentManager<CameraComponent>& cameraDataManager,
+		ComponentManager<DirectionalLightComponent>& directionalLightDataManager,
+		ComponentManager<SpotLightComponent>& spotLightDataManager,
+		ComponentManager<PointLightComponent>& pointLightDataManager) noexcept
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glm::mat4 viewMatrix;

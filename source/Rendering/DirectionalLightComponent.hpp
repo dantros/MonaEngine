@@ -10,7 +10,7 @@ namespace Mona {
 	class TransformComponent;
 	class DirectionalLightComponent {
 	public:
-		using managerType = ComponentManager<DirectionalLightComponent>;
+		using LifetimePolicyType = DefaultLifetimePolicy<DirectionalLightComponent>;
 		using dependencies = DependencyList<TransformComponent>;
 		static constexpr uint8_t componentIndex = GetComponentIndex(EComponentType::DirectionalLightComponent);
 		static constexpr std::string_view componentName = "DirectionalLightComponent";

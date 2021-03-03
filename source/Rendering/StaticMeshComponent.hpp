@@ -11,7 +11,7 @@ namespace Mona {
 	{
 	public:
 		friend class Renderer;
-		using managerType = ComponentManager<StaticMeshComponent>;
+		using LifetimePolicyType = DefaultLifetimePolicy<StaticMeshComponent>;
 		using dependencies = DependencyList<TransformComponent>;
 		static constexpr std::string_view componentName = "StaticMeshComponent";
 		static constexpr uint8_t componentIndex = GetComponentIndex(EComponentType::StaticMeshComponent);

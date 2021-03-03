@@ -6,7 +6,7 @@ namespace Mona {
 	class AnimationSystem {
 	public:
 		AnimationSystem() = default;
-		void UpdateAllPoses(SkeletalMeshComponent::managerType& skeletalMeshDataManager, float timeStep) noexcept;
+		void UpdateAllPoses(ComponentManager<SkeletalMeshComponent>& skeletalMeshDataManager, float timeStep) noexcept;
 	};
 }
 #endif

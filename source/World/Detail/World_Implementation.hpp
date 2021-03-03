@@ -21,7 +21,7 @@ namespace Mona {
 		MONA_ASSERT(!gameObject.HasComponent<ComponentType>(),
 			"World Error: Trying to add already present component. ComponentType = {0}", ComponentType::componentName);
 		MONA_ASSERT(CheckDependencies<ComponentType>(gameObject, typename ComponentType::dependencies()), "World Error: Trying to add component with incomplete dependencies");
-		auto managerPtr = static_cast<typename ComponentType::managerType*>(m_componentManagers[ComponentType::componentIndex].get());
+		auto managerPtr = static_cast<ComponentManager<ComponentType>*>(m_componentManagers[ComponentType::componentIndex].get());
 		InnerComponentHandle componentHandle = managerPtr->AddComponent(&gameObject, std::forward<Args>(args)...);
 		gameObject.AddInnerComponentHandle(ComponentType::componentIndex, componentHandle);
 		return ComponentHandle<ComponentType>(componentHandle, managerPtr);
@@ -30,7 +30,7 @@ namespace Mona {
 	template <typename ComponentType>
 	void World::RemoveComponent(const ComponentHandle<ComponentType>& handle) noexcept {
 		static_assert(is_component<ComponentType>, "Template parameter is not a component");
-		auto managerPtr = static_cast<typename ComponentType::managerType*>(m_componentManagers[ComponentType::componentIndex].get());
+		auto managerPtr = static_cast<ComponentManager<ComponentType>*>(m_componentManagers[ComponentType::componentIndex].get());
 		auto objectPtr = m_objectManager.GetGameObjectPointer(managerPtr->GetOwner(handle.GetInnerHandle()));
 		managerPtr->RemoveComponent(handle.GetInnerHandle());
 		objectPtr->RemoveInnerComponentHandle(ComponentType::componentIndex);
@@ -41,7 +41,7 @@ namespace Mona {
 	{
 		static_assert(is_component<ComponentType>, "Template parameter is not a component");
 		MONA_ASSERT(gameObject.HasComponent<ComponentType>(), "World Error: Object doesnt have component of type : {0}", ComponentType::componentName);
-		auto managerPtr = static_cast<typename ComponentType::managerType*>(m_componentManagers[ComponentType::componentIndex].get());
+		auto managerPtr = static_cast<ComponentManager<ComponentType>*>(m_componentManagers[ComponentType::componentIndex].get());
 		return ComponentHandle<ComponentType>(gameObject.GetInnerComponentHandle<ComponentType>(), managerPtr);
 	}
 
@@ -55,7 +55,7 @@ namespace Mona {
 	BaseComponentManager::size_type World::GetComponentCount() const noexcept
 	{
 		static_assert(is_component<ComponentType>, "Template parameter is not a component");
-		auto managerPtr = static_cast<typename ComponentType::managerType*>(m_componentManagers[ComponentType::componentIndex].get());
+		auto managerPtr = static_cast<ComponentManager<ComponentType>*>(m_componentManagers[ComponentType::componentIndex].get());
 		return managerPtr->GetCount();
 	}
 
@@ -64,8 +64,8 @@ namespace Mona {
 	{
 		static_assert(is_component<SiblingType>, "Template parameter is not a component");
 		static_assert(is_component<ComponentType>, "Template parameter is not a component");
-		auto managerPtr = static_cast<typename ComponentType::managerType*>(m_componentManagers[ComponentType::componentIndex].get());
-		auto siblingManagerPtr = static_cast<typename SiblingType::managerType*>(m_componentManagers[SiblingType::componentIndex].get());
+		auto managerPtr = static_cast<ComponentManager<ComponentType>*>(m_componentManagers[ComponentType::componentIndex].get());
+		auto siblingManagerPtr = static_cast<ComponentManager<SiblingType>*>(m_componentManagers[SiblingType::componentIndex].get());
 		GameObject* gameObject = managerPtr->GetOwner(handle.GetInnerHandle());
 		return  ComponentHandle<SiblingType>(gameObject->GetInnerComponentHandle<SiblingType>(), siblingManagerPtr);
 	}
@@ -73,7 +73,7 @@ namespace Mona {
 	template <typename ComponentType>
 	BaseGameObjectHandle World::GetOwner(const ComponentHandle<ComponentType>& handle) noexcept {
 		static_assert(is_component<ComponentType>, "Template parameter is not a component");
-		auto managerPtr = static_cast<typename ComponentType::managerType*>(m_componentManagers[ComponentType::componentIndex].get());
+		auto managerPtr = static_cast<ComponentManager<ComponentType>*>(m_componentManagers[ComponentType::componentIndex].get());
 		GameObject* gameObject = managerPtr->GetOwner(handle.GetInnerHandle());
 		return BaseGameObjectHandle(gameObject->GetInnerObjectHandle(), gameObject);
 	}
@@ -81,7 +81,7 @@ namespace Mona {
 	template <typename ComponentType>
 	auto& World::GetComponentManager() noexcept {
 		static_assert(is_component<ComponentType>, "Template parameter is not a component");
-		return *static_cast<typename ComponentType::managerType*>(m_componentManagers[ComponentType::componentIndex].get());
+		return *static_cast<ComponentManager<ComponentType>*>(m_componentManagers[ComponentType::componentIndex].get());
 	}
 
 	template <typename ComponentType, typename ... ComponentTypes>

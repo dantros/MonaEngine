@@ -18,7 +18,8 @@ namespace Mona {
 	class AudioSourceComponentLifetimePolicy;
 	class AudioSourceComponent : public AudioSource {
 	public:
-		using managerType = ComponentManager<AudioSourceComponent, AudioSourceComponentLifetimePolicy>;
+		//using managerType = ComponentManager<AudioSourceComponent, AudioSourceComponentLifetimePolicy>;
+		using LifetimePolicyType = AudioSourceComponentLifetimePolicy;
 		using dependencies = DependencyList<TransformComponent>;
 		static constexpr std::string_view componentName = "AudioSourceComponent";
 		static constexpr uint8_t componentIndex = GetComponentIndex(EComponentType::AudioSourceComponent);

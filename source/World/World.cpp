@@ -26,15 +26,15 @@ namespace Mona {
 		auto& config = Config::GetInstance();
 		config.readFile("config.cfg");
 
-		m_componentManagers[TransformComponent::componentIndex].reset(new TransformComponent::managerType());
-		m_componentManagers[CameraComponent::componentIndex].reset(new CameraComponent::managerType());
-		m_componentManagers[StaticMeshComponent::componentIndex].reset(new StaticMeshComponent::managerType());
-		m_componentManagers[RigidBodyComponent::componentIndex].reset(new RigidBodyComponent::managerType());
-		m_componentManagers[AudioSourceComponent::componentIndex].reset(new AudioSourceComponent::managerType());
-		m_componentManagers[DirectionalLightComponent::componentIndex].reset(new DirectionalLightComponent::managerType());
-		m_componentManagers[SpotLightComponent::componentIndex].reset(new SpotLightComponent::managerType());
-		m_componentManagers[PointLightComponent::componentIndex].reset(new PointLightComponent::managerType());
-		m_componentManagers[SkeletalMeshComponent::componentIndex].reset(new SkeletalMeshComponent::managerType());
+		m_componentManagers[TransformComponent::componentIndex].reset(new ComponentManager<TransformComponent>());
+		m_componentManagers[CameraComponent::componentIndex].reset(new ComponentManager<CameraComponent>());
+		m_componentManagers[StaticMeshComponent::componentIndex].reset(new ComponentManager<StaticMeshComponent>());
+		m_componentManagers[RigidBodyComponent::componentIndex].reset(new ComponentManager<RigidBodyComponent>());
+		m_componentManagers[AudioSourceComponent::componentIndex].reset(new ComponentManager<AudioSourceComponent>());
+		m_componentManagers[DirectionalLightComponent::componentIndex].reset(new ComponentManager<DirectionalLightComponent>());
+		m_componentManagers[SpotLightComponent::componentIndex].reset(new ComponentManager<SpotLightComponent>());
+		m_componentManagers[PointLightComponent::componentIndex].reset(new ComponentManager<PointLightComponent>());
+		m_componentManagers[SkeletalMeshComponent::componentIndex].reset(new ComponentManager<SkeletalMeshComponent>());
 		m_debugDrawingSystem.reset(new DebugDrawingSystem());
 		
 		auto& transformDataManager = GetComponentManager<TransformComponent>();

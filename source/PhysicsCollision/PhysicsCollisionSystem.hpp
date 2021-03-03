@@ -31,16 +31,16 @@ namespace Mona {
 		glm::vec3 GetGravity() const noexcept;
 		ClosestHitRaycastResult ClosestHitRayTest(const glm::vec3& rayFrom,
 			const glm::vec3& rayTo,
-			typename RigidBodyComponent::managerType& rigidBodyDatamanager) const;
+			ComponentManager<RigidBodyComponent>& rigidBodyDatamanager) const;
 
 		AllHitsRaycastResult AllHitsRayTest(const glm::vec3& rayFrom,
 			const glm::vec3& rayTo,
-			typename RigidBodyComponent::managerType& rigidBodyDatamanager) const;
+			ComponentManager<RigidBodyComponent>& rigidBodyDatamanager) const;
 
 		void StepSimulation(float timeStep) noexcept;
 		void SubmitCollisionEvents(World& world,
 			EventManager& eventManager,
-			typename RigidBodyComponent::managerType& rigidBodyDatamanager) noexcept;
+			ComponentManager<RigidBodyComponent>& rigidBodyDatamanager) noexcept;
 
 		void AddRigidBody(RigidBodyComponent& component) noexcept;
 		void RemoveRigidBody(RigidBodyComponent& component) noexcept;

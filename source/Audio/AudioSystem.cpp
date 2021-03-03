@@ -50,8 +50,8 @@ namespace Mona {
 	void AudioSystem::Update(const InnerComponentHandle& audioListenerTransformHandle,
 		const glm::fquat& audioListenerOffsetRotation,
 		float timeStep,
-		const TransformComponent::managerType& transformDataManager,
-		AudioSourceComponent::managerType& audioDataManager) noexcept {
+		const ComponentManager<TransformComponent>& transformDataManager,
+		ComponentManager<AudioSourceComponent>& audioDataManager) noexcept {
 
 		//Actualización de la posición del receptor de OpenAL. Usando una instancia de TransformComponent señalada por el usuario
 		glm::vec3 listenerPosition = glm::vec3(0.0f);
@@ -226,7 +226,7 @@ namespace Mona {
 		}
 	}
 
-	void AudioSystem::UpdateAudioSourceComponentsTimers(float timeStep, AudioSourceComponent::managerType& audioDataManager)
+	void AudioSystem::UpdateAudioSourceComponentsTimers(float timeStep, ComponentManager<AudioSourceComponent>& audioDataManager)
 	{
 		//El proceso de actualizar las fuentes de audio usadas como componentes es un poco mas complejo.
 		//Ya que estas pueden estar en repetición, en pausa o detenidas.
@@ -265,7 +265,8 @@ namespace Mona {
 		return firstOutOfRange;
 	}
 
-	uint32_t AudioSystem::PartitionAndRemoveOpenALSourceFromAudioSourceComponents(AudioSourceComponent::managerType& audioDataManager, const TransformComponent::managerType& transformDataManager, const glm::vec3& listenerPosition)
+	uint32_t AudioSystem::PartitionAndRemoveOpenALSourceFromAudioSourceComponents(ComponentManager<AudioSourceComponent>& audioDataManager,
+		const ComponentManager<TransformComponent>& transformDataManager, const glm::vec3& listenerPosition)
 	{
 		uint32_t currentIndex = 0;
 		uint32_t backIndex = audioDataManager.GetCount() - 1;
@@ -332,7 +333,8 @@ namespace Mona {
 
 	}
 
-	void AudioSystem::AssignOpenALSourceToAudioSourceComponents(AudioSourceComponent::managerType& audioDataManager, const TransformComponent::managerType& transformDataManager, uint32_t firstIndex, uint32_t lastIndex)
+	void AudioSystem::AssignOpenALSourceToAudioSourceComponents(ComponentManager<AudioSourceComponent>& audioDataManager,
+		const ComponentManager<TransformComponent>& transformDataManager, uint32_t firstIndex, uint32_t lastIndex)
 	{
 		for (uint32_t i = firstIndex; i < lastIndex; i++) {
 			AudioSourceComponent& audioSource = audioDataManager[i];
@@ -369,7 +371,8 @@ namespace Mona {
 			}
 		}
 	}
-	void AudioSystem::RemoveOpenALSourceFromFreeAudioSources(std::vector<FreeAudioSource>::iterator begin, std::vector<FreeAudioSource>::iterator end)
+	void AudioSystem::RemoveOpenALSourceFromFreeAudioSources(std::vector<FreeAudioSource>::iterator begin,
+		std::vector<FreeAudioSource>::iterator end)
 	{
 		for (auto it = begin; it != end; it++) {
 			if (it->m_openALsource) {
@@ -383,7 +386,7 @@ namespace Mona {
 		}
 	}
 
-	void AudioSystem::RemoveOpenALSourceFromAudioSourceComponents(AudioSourceComponent::managerType& audioDataManager,
+	void AudioSystem::RemoveOpenALSourceFromAudioSourceComponents(ComponentManager<AudioSourceComponent>& audioDataManager,
 		uint32_t firstIndex, uint32_t lastIndex)
 	{
 		for (uint32_t i = firstIndex; i < lastIndex; i++) {
@@ -429,7 +432,7 @@ namespace Mona {
 			}
 		}
 	}
-	void AudioSystem::SortAudioSourceComponentsByPriority(AudioSourceComponent::managerType& audioDataManager,
+	void AudioSystem::SortAudioSourceComponentsByPriority(ComponentManager<AudioSourceComponent>& audioDataManager,
 		uint32_t lastIndex,
 		uint32_t(&outCount)[static_cast<unsigned int>(AudioSourcePriority::PriorityCount)]) {
 

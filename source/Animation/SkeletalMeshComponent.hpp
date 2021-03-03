@@ -20,7 +20,8 @@ namespace Mona {
 		friend class Renderer;
 		friend class World;
 		friend class AnimationSystem;
-		using managerType = ComponentManager<SkeletalMeshComponent>;
+		//using managerType = ComponentManager<SkeletalMeshComponent>;
+		using LifetimePolicyType = DefaultLifetimePolicy<SkeletalMeshComponent>;
 		using dependencies = DependencyList<TransformComponent>;
 		static constexpr std::string_view componentName = "SkeletalMeshComponent";
 		static constexpr uint8_t componentIndex = GetComponentIndex(EComponentType::SkeletalMeshComponent);

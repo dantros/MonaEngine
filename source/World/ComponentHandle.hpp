@@ -20,7 +20,7 @@ namespace Mona {
 	public:
 		static constexpr uint8_t componentIndex = ComponentType::componentIndex;
 		ComponentHandle() : BaseComponentHandle(), m_managerPointer(nullptr) {}
-		ComponentHandle(InnerComponentHandle handle, typename ComponentType::managerType* manager) : BaseComponentHandle(handle), m_managerPointer(manager) {}
+		ComponentHandle(InnerComponentHandle handle, ComponentManager<ComponentType>* manager) : BaseComponentHandle(handle), m_managerPointer(manager) {}
 		InnerComponentHandle GetInnerHandle() const noexcept { return m_innerHandle; }
 		bool IsValid() const noexcept {
 			if (m_managerPointer == nullptr)
@@ -37,7 +37,7 @@ namespace Mona {
 			return m_managerPointer->GetComponentPointer(m_innerHandle);
 		}
 	private:
-		typename ComponentType::managerType* m_managerPointer;
+		ComponentManager<ComponentType>* m_managerPointer;
 	};
 	using TransformHandle = ComponentHandle<TransformComponent>;
 	using StaticMeshHandle = ComponentHandle<StaticMeshComponent>;

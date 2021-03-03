@@ -27,7 +27,8 @@ namespace Mona {
 		friend class PhysicsCollisionSystem;
 		friend class RigidBodyLifetimePolicy;
 	public:
-		using managerType = ComponentManager<RigidBodyComponent, RigidBodyLifetimePolicy>;
+		//using managerType = ComponentManager<RigidBodyComponent, RigidBodyLifetimePolicy>;
+		using LifetimePolicyType = RigidBodyLifetimePolicy;
 		using dependencies = DependencyList<TransformComponent>;
 		static constexpr std::string_view componentName = "RigidBodyComponent";
 		static constexpr uint8_t componentIndex = GetComponentIndex(EComponentType::RigidBodyComponent);

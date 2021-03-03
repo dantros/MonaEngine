@@ -8,7 +8,7 @@
 namespace Mona {
 	class TransformComponent {
 	public:
-		using managerType = ComponentManager<TransformComponent>;
+		using LifetimePolicyType = DefaultLifetimePolicy<TransformComponent>;
 		using dependencies = DependencyList<>;
 		static constexpr std::string_view componentName = "TransformComponent";
 		static constexpr uint8_t componentIndex = GetComponentIndex(EComponentType::TransformComponent);

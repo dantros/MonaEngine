@@ -12,7 +12,7 @@ namespace Mona {
 	*/
 	class ClosestHitRaycastResult {
 	public:
-		ClosestHitRaycastResult(const btCollisionWorld::ClosestRayResultCallback& btRaycastResult, typename RigidBodyComponent::managerType* rigidBodyDatamanager) {
+		ClosestHitRaycastResult(const btCollisionWorld::ClosestRayResultCallback& btRaycastResult, ComponentManager<RigidBodyComponent>* rigidBodyDatamanager) {
 			//El principal trabajo de este constructor es transformar el resultado de una consulta de Bullet a un formato interno
 			m_rayFrom = glm::vec3(btRaycastResult.m_rayFromWorld.x(), btRaycastResult.m_rayFromWorld.y(), btRaycastResult.m_rayFromWorld.z());
 			m_rayTo = glm::vec3(btRaycastResult.m_rayToWorld.x(), btRaycastResult.m_rayToWorld.y(), btRaycastResult.m_rayToWorld.z());
@@ -44,7 +44,7 @@ namespace Mona {
 	*/
 	class AllHitsRaycastResult {
 	public:
-		AllHitsRaycastResult(const btCollisionWorld::AllHitsRayResultCallback& btRaycastResult, typename RigidBodyComponent::managerType* rigidBodyDatamanager) {
+		AllHitsRaycastResult(const btCollisionWorld::AllHitsRayResultCallback& btRaycastResult, ComponentManager<RigidBodyComponent>* rigidBodyDatamanager) {
 			//El principal trabajo de este constructor es transformar el resultado de una consulta de Bullet a un formato interno
 			m_rayFrom = glm::vec3(btRaycastResult.m_rayFromWorld.x(), btRaycastResult.m_rayFromWorld.y(), btRaycastResult.m_rayFromWorld.z());
 			m_rayTo = glm::vec3(btRaycastResult.m_rayToWorld.x(), btRaycastResult.m_rayToWorld.y(), btRaycastResult.m_rayToWorld.z());

@@ -34,8 +34,8 @@ namespace Mona {
 		void Update(const InnerComponentHandle &audioListenerTransformHandle,
 			const glm::fquat &audioListenerOffsetRotation,
 			float timeStep,
-			const TransformComponent::managerType& transformDataManager,
-			AudioSourceComponent::managerType& audioSourceDataManager) noexcept;
+			const ComponentManager<TransformComponent>& transformDataManager,
+			ComponentManager<AudioSourceComponent>& audioSourceDataManager) noexcept;
 
 		/*
 		* Retorna el volumen global o maestro del sistema de audio
@@ -85,25 +85,25 @@ namespace Mona {
 		void UpdateListener(const glm::vec3& position, const glm::vec3& frontVector, const glm::vec3& upVector);
 		void RemoveCompletedFreeAudioSources();
 		void UpdateFreeAudioSourcesTimers(float timeStep);
-		void UpdateAudioSourceComponentsTimers(float timeStep, AudioSourceComponent::managerType& audioDataManager);
+		void UpdateAudioSourceComponentsTimers(float timeStep, ComponentManager<AudioSourceComponent>& audioDataManager);
 		std::vector<FreeAudioSource>::iterator PartitionAndRemoveOpenALSourceFromFreeAudioSources(const glm::vec3& listenerPosition);
-		uint32_t PartitionAndRemoveOpenALSourceFromAudioSourceComponents(AudioSourceComponent::managerType& audioDataManager,
-			const TransformComponent::managerType& transformDataManager,
+		uint32_t PartitionAndRemoveOpenALSourceFromAudioSourceComponents(ComponentManager<AudioSourceComponent>& audioDataManager,
+			const ComponentManager<TransformComponent>& transformDataManager,
 			const glm::vec3& listenerPosition);
 		void AssignOpenALSourceToFreeAudioSources(std::vector<FreeAudioSource>::iterator begin,
 			std::vector<FreeAudioSource>::iterator end);
-		void AssignOpenALSourceToAudioSourceComponents(AudioSourceComponent::managerType& audioDataManager,
-			const TransformComponent::managerType& transformDataManager,
+		void AssignOpenALSourceToAudioSourceComponents(ComponentManager<AudioSourceComponent>& audioDataManager,
+			const ComponentManager<TransformComponent>& transformDataManager,
 			uint32_t firstIndex,
 			uint32_t lastIndex);
 		void RemoveOpenALSourceFromFreeAudioSources(std::vector<FreeAudioSource>::iterator begin,
 			std::vector<FreeAudioSource>::iterator end);
-		void RemoveOpenALSourceFromAudioSourceComponents(AudioSourceComponent::managerType& audioDataManager,
+		void RemoveOpenALSourceFromAudioSourceComponents(ComponentManager<AudioSourceComponent>& audioDataManager,
 			uint32_t firstIndex,
 			uint32_t lastIndex);
 		void SortFreeAudioSourcesByPriority(std::vector<FreeAudioSource>::iterator end,
 			uint32_t (&outCount)[static_cast<unsigned int>(AudioSourcePriority::PriorityCount)]);
-		void SortAudioSourceComponentsByPriority(AudioSourceComponent::managerType& audioDataManager,
+		void SortAudioSourceComponentsByPriority(ComponentManager<AudioSourceComponent>& audioDataManager,
 			uint32_t lastIndex,
 			uint32_t (&outCount)[static_cast<unsigned int>(AudioSourcePriority::PriorityCount)]);
 		

@@ -39,8 +39,7 @@ namespace Mona {
 	class DefaultLifetimePolicy;
 
 
-	template <	typename ComponentType,
-		typename LifetimePolicy = DefaultLifetimePolicy<ComponentType>>
+	template <typename ComponentType>
 		class ComponentManager;
 
 	template <typename ComponentType>

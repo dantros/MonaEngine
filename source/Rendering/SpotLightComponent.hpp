@@ -10,7 +10,8 @@ namespace Mona {
 	class TransformComponent;
 	class SpotLightComponent {
 	public:
-		using managerType = ComponentManager<SpotLightComponent>;
+		//using managerType = ComponentManager<SpotLightComponent>;
+		using LifetimePolicyType = DefaultLifetimePolicy<SpotLightComponent>;
 		using dependencies = DependencyList<TransformComponent>;
 		static constexpr uint8_t componentIndex = GetComponentIndex(EComponentType::SpotLightComponent);
 		static constexpr std::string_view componentName = "SpotLightComponent";

@@ -32,9 +32,6 @@ namespace Mona {
 			UserUpdate(world, timeStep);
 		}
 
-		void ShutDown(World& world) noexcept {
-			m_state = EState::PendingDestroy;
-		}
 		virtual void UserUpdate(World& world, float timeStep) noexcept {};
 		virtual void UserStartUp(World& world) noexcept {};
 
@@ -57,6 +54,9 @@ namespace Mona {
 	private:
 		friend class GameObjectManager;
 		friend class World;
+		void ShutDown() noexcept {
+			m_state = EState::PendingDestroy;
+		}
 		void SetObjectHandle(const InnerGameObjectHandle& handle) {
 			m_objectHandle = handle;
 		}

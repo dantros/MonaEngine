@@ -25,7 +25,7 @@ namespace Mona {
 		m_lastFreeIndex = s_maxEntries;
 		m_freeIndicesCount = 0;
 	}
-	void GameObjectManager::DestroyGameObject(World& world, const InnerGameObjectHandle& handle) noexcept {
+	void GameObjectManager::DestroyGameObject(const InnerGameObjectHandle& handle) noexcept {
 		auto index = handle.m_index;
 		MONA_ASSERT(index < m_handleEntries.size(), "GameObjectManager Error: handle index out of bounds");
 		MONA_ASSERT(handle.m_generation == m_handleEntries[index].generation, "GamObjectManager Error: Trying to destroy from invalid handle");
@@ -33,11 +33,11 @@ namespace Mona {
 		auto& handleEntry = m_handleEntries[index];
 		auto& gameObject = m_gameObjects[handleEntry.index];
 		MONA_ASSERT(gameObject->GetState() != GameObject::EState::PendingDestroy, "GameObjectManager Error: Trying to destroy object pending to destroy");
-		gameObject->ShutDown(world);
+		gameObject->ShutDown();
 		m_pendingDestroyObjectHandles.push_back(handle);
 
 	}
-	void GameObjectManager::ImmediateDestroyGameObject(World& world, EventManager& eventManager, const InnerGameObjectHandle& handle) noexcept
+	void GameObjectManager::ImmediateDestroyGameObject(EventManager& eventManager, const InnerGameObjectHandle& handle) noexcept
 	{
 		auto index = handle.m_index;
 		MONA_ASSERT(index < m_handleEntries.size(), "GameObjectManager Error: handle index out of bounds");
@@ -97,7 +97,7 @@ namespace Mona {
 			m_gameObjects[i]->Update(world, timeStep);
 		}
 		for (const auto& handle : m_pendingDestroyObjectHandles) {
-			ImmediateDestroyGameObject(world, eventManager, handle);
+			ImmediateDestroyGameObject(eventManager, handle);
 		}
 		m_pendingDestroyObjectHandles.clear();
 		

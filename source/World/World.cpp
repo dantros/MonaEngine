@@ -89,7 +89,7 @@ namespace Mona {
 			m_componentManagers[it.first]->RemoveComponent(it.second);
 		}
 		innerComponentHandles.clear();
-		m_objectManager.DestroyGameObject(*this, gameObject.GetInnerObjectHandle());
+		m_objectManager.DestroyGameObject(gameObject.GetInnerObjectHandle());
 	}
 
 	bool World::IsValid(const BaseGameObjectHandle& handle) const noexcept {

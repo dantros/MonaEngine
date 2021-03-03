@@ -20,7 +20,7 @@ namespace Mona {
 		void ShutDown(World &world) noexcept;
 		template <typename ObjectType,typename ...Args>
 		ObjectType* CreateGameObject(World &world, Args&& ... args);
-		void DestroyGameObject(World& world, const InnerGameObjectHandle& handle) noexcept;
+		void DestroyGameObject(const InnerGameObjectHandle& handle) noexcept;
 		GameObject* GetGameObjectPointer(const InnerGameObjectHandle& handle) noexcept;
 		size_type GetCount() const noexcept;
 		bool IsValid(const InnerGameObjectHandle& handle) const noexcept;
@@ -29,7 +29,7 @@ namespace Mona {
 		void UpdateGameObjects(World& world, EventManager& eventManager, float timeStep) noexcept;
 	private:
 		
-		void ImmediateDestroyGameObject(World& world, EventManager& eventManager, const InnerGameObjectHandle& handle) noexcept;
+		void ImmediateDestroyGameObject(EventManager& eventManager, const InnerGameObjectHandle& handle) noexcept;
 		constexpr static size_type s_maxEntries = std::numeric_limits<size_type>::max();
 		constexpr static size_type s_minFreeIndices = 1024;
 		struct HandleEntry {

@@ -1,24 +1,38 @@
 #include "MonaEngine.hpp"
 #include "Rendering/DiffuseFlatMaterial.hpp"
-class BasicCamera : public Mona::GameObject {
-public:
-	BasicCamera() = default;
-	~BasicCamera() = default;
-	virtual void UserStartUp(Mona::World& world) noexcept {
-		auto transform = world.AddComponent<Mona::TransformComponent>(*this, glm::vec3(0.0f,-15.0f, 15.0f));
-		transform->Rotate(glm::vec3(-1.0f, 0.0f, 0.0f), 0.5f);
-		world.SetMainCamera(world.AddComponent<Mona::CameraComponent>(*this));
-		world.SetAudioListenerTransform(transform);
-		auto& audioClipManager = Mona::AudioClipManager::GetInstance();
-		auto audioClipPtr = audioClipManager.LoadAudioClip(Mona::SourcePath("Assets/AudioFiles/music.wav"));
-		auto audioSource = world.AddComponent<Mona::AudioSourceComponent>(*this, audioClipPtr);
-		audioSource->SetIsLooping(true);
-		audioSource->SetVolume(0.3f);
-		audioSource->Play();
-	
-		world.AddComponent<Mona::DirectionalLightComponent>(*this, glm::vec3(1.0f));
-	}
-};
+
+void CreateBasicCameraWithMusicAndLight(Mona::World& world)
+{
+	auto camera = world.CreateGameObject<Mona::GameObject>();
+	auto transform = world.AddComponent<Mona::TransformComponent>(camera, glm::vec3(0.0f, -15.0f, 15.0f));
+	transform->Rotate(glm::vec3(-1.0f, 0.0f, 0.0f), 0.5f);
+	world.SetMainCamera(world.AddComponent<Mona::CameraComponent>(camera));
+	world.SetAudioListenerTransform(transform);
+	auto& audioClipManager = Mona::AudioClipManager::GetInstance();
+	auto audioClipPtr = audioClipManager.LoadAudioClip(Mona::SourcePath("Assets/AudioFiles/music.wav"));
+	auto audioSource = world.AddComponent<Mona::AudioSourceComponent>(camera, audioClipPtr);
+	audioSource->SetIsLooping(true);
+	audioSource->SetVolume(0.3f);
+	audioSource->Play();
+
+	world.AddComponent<Mona::DirectionalLightComponent>(camera, glm::vec3(1.0f));
+
+}
+
+void CreateWall(Mona::World& world,
+	const glm::vec3& position,
+	const glm::vec3& scale,
+	std::shared_ptr<Mona::Material> wallMaterial) {
+	auto& meshManager = Mona::MeshManager::GetInstance();
+	auto wall = world.CreateGameObject<Mona::GameObject>();
+	world.AddComponent<Mona::TransformComponent>(wall, position, glm::fquat(1.0f, 0.0f, 0.0f, 0.0f), scale);
+	world.AddComponent<Mona::StaticMeshComponent>(wall, meshManager.LoadMesh(Mona::Mesh::PrimitiveType::Cube), wallMaterial);
+	Mona::BoxShapeInformation wallShape(scale);
+	Mona::RigidBodyHandle rb = world.AddComponent<Mona::RigidBodyComponent>(wall, wallShape, Mona::RigidBodyType::StaticBody);
+	rb->SetRestitution(1.0f);
+	rb->SetFriction(0.0f);
+}
+
 
 class Paddle : public Mona::GameObject {
 public:
@@ -39,6 +53,7 @@ public:
 		
 		auto& audioClipManager = Mona::AudioClipManager::GetInstance();
 		m_ballBounceSound = audioClipManager.LoadAudioClip(Mona::SourcePath("Assets/AudioFiles/ballBounce.wav"));
+
 		auto ball = world.CreateGameObject<Mona::GameObject>();
 		float ballRadius = 0.5f;
 		m_ballTransform = world.AddComponent<Mona::TransformComponent>(ball);
@@ -87,19 +102,7 @@ private:
 };
 
 
-void InitializeWall(Mona::World &world,
-	Mona::GameObjectHandle<Mona::GameObject>& wall,
-	const glm::vec3& position,
-	const glm::vec3& scale,
-	std::shared_ptr<Mona::Material> wallMaterial) {
-	auto& meshManager = Mona::MeshManager::GetInstance();
-	world.AddComponent<Mona::TransformComponent>(wall, position, glm::fquat(1.0f, 0.0f, 0.0f, 0.0f), scale);
-	world.AddComponent<Mona::StaticMeshComponent>(wall, meshManager.LoadMesh(Mona::Mesh::PrimitiveType::Cube), wallMaterial);
-	Mona::BoxShapeInformation wallShape(scale);
-	Mona::RigidBodyHandle rb = world.AddComponent<Mona::RigidBodyComponent>(wall, wallShape, Mona::RigidBodyType::StaticBody);
-	rb->SetRestitution(1.0f);
-	rb->SetFriction(0.0f);
-}
+
 class Breakout : public Mona::Application {
 public:
 	Breakout() = default;
@@ -107,8 +110,11 @@ public:
 	virtual void UserStartUp(Mona::World & world) noexcept override {
 		world.SetGravity(glm::vec3(0.0f,0.0f,0.0f));
 		world.SetAmbientLight(glm::vec3(0.3f));
-		world.CreateGameObject<BasicCamera>();
+		CreateBasicCameraWithMusicAndLight(world);
 		world.CreateGameObject<Paddle>(20.0f);
+		
+
+		//Crear el los bloques destructibles del nivel
 		glm::vec3 blockScale(1.0f, 0.5f, 0.5f);
 		auto& audioClipManager = Mona::AudioClipManager::GetInstance();
 		m_blockBreakingSound = audioClipManager.LoadAudioClip(Mona::SourcePath("Assets/AudioFiles/boxBreaking.wav"));
@@ -136,17 +142,18 @@ public:
 				
 			}
 		}
+
+		//Crear las paredes
 		auto wallMaterial = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseFlat));
 		wallMaterial->SetDiffuseColor(glm::vec3(0.15f, 0.15f, 0.15f));
-		auto upperWall = world.CreateGameObject<Mona::GameObject>();
-		InitializeWall(world, upperWall, glm::vec3(0.0f, 26.0f, 0.0f), glm::vec3(18.0f, 1.0f, 1.0f), wallMaterial);
+
+
+		CreateWall(world, glm::vec3(0.0f, 26.0f, 0.0f), glm::vec3(18.0f, 1.0f, 1.0f), wallMaterial);
 
 		glm::vec3 sideWallScale(1.0f, 27.0f, 1.0f);
 		float sideWallOffset = 19.0f;
-		auto leftWall = world.CreateGameObject<Mona::GameObject>();
-		InitializeWall(world, leftWall, glm::vec3(-sideWallOffset, 0.0f, 0.0f), sideWallScale, wallMaterial);
-		auto rightWall = world.CreateGameObject<Mona::GameObject>();
-		InitializeWall(world, rightWall, glm::vec3(sideWallOffset, 0.0f, 0.0f), sideWallScale, wallMaterial);
+		CreateWall(world, glm::vec3(-sideWallOffset, 0.0f, 0.0f), sideWallScale, wallMaterial);
+		CreateWall(world, glm::vec3(sideWallOffset, 0.0f, 0.0f), sideWallScale, wallMaterial);
 
 	}
 

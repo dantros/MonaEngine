@@ -31,7 +31,7 @@ algunas librerías con los siguientes comandos:
  - sudo apt-get install libx11-dev
 
 En uno de los computadores con linux que se probaron los ejemplos desarrollados fue necesario ejecutarlos con permisos de administrador
-ya que OpenAL los necesita.
+ya que OpenAL los necesita, de no hacerse se probocara un crash en medio de la ejecución de los ejemplos.
 
 
 ## Assets usados

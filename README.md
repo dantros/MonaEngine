@@ -17,12 +17,12 @@ MonaEngine depende de una lista de diferentes librerías, estas estan en el dire
 Para generar el projecto,solución o makefiles se necesita [CMake 3.15+](https://cmake.org/), y de OpenGL4.5 para funcionar.
 
 ## Generando la solución o makefiles
-En windows basta con ejecutar el comando:
-cmake -G "Visual Studio 16 2019" -A x64 
-Dentro del directorio del repositorio.
+En windows basta con ejecutar el comando: **cmake -G "Visual Studio 16 2019" -A x64** , dentro del directorio del repositorio. Es importante
+mencionar que la version de VS cambiara dependediendo de la version instalada en el computador donde se desea compilar el motor.
 
 
-##Posibles problemas
+
+## Posibles problemas
 El motor se desarrolló principalmente en windows y se probó en dos computadores con linux, en uno de estos fue necesario instalar
 algunas librerías con los siguientes comandos:
  - sudo apt-get install xorg-dev libglu1-mesa-dev
@@ -30,4 +30,11 @@ algunas librerías con los siguientes comandos:
 
 
 ## Assets usados
+Para la implementación de los ejemplos desarrollados con el motor se usaron los siguientes assets:
+ - Animaciones, mallas y esqueletos desde el sitio https://www.mixamo.com/#/.
+ - [Sonido de aire acondicionado](https://freesound.org/people/addiofbaddi/sounds/241702/) bajo la licencia CC0.
+ - [Drumloops](https://freesound.org/people/Bronxio/sounds/199870/) bajo la licencia CC0.
+ - [Golden Super Fly Boombox Roblox Remake](https://sketchfab.com/3d-models/golden-super-fly-boombox-roblox-remake-d2b9b14dd01e4fa0bdd3b1704fcb2b2f) hecho por el artista Sir_Numb y bajo la licencia CC.
+ - [Drakefire Pistol](https://sketchfab.com/3d-models/drakefire-pistol-bee02e85f22d4eaaa3c0144f11204843) hecho por el/la artista [Teliri](https://www.artstation.com/artwork/3XE92) y bajo la licencia CC.
+ - [Air Conditioner Low Poly](https://sketchfab.com/3d-models/air-conditioner-low-poly-textured-game-asset-84c4e55948414c6db2473da7b6e9cbb7) hecho por el artista [Karthik Naidu](instagram.com/k3dart) y bajo la licencia CC.
 

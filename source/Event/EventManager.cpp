@@ -1,6 +1,12 @@
 #include "EventManager.hpp"
 namespace Mona
 {
+	SubscriptionHandle::~SubscriptionHandle() {
+		if (m_eventManager != nullptr && m_eventManager->IsSubcriptionHandleValid(*this)) {
+			m_eventManager->Unsubscribe(*this);
+		}
+	}
+
 	ObserverList::ObserverList() :
 		m_firstFreeIndex(s_maxEntries),
 		m_lastFreeIndex(s_maxEntries),

@@ -24,7 +24,6 @@ if (BUILD_SHARED_LIBS AND UNIX)
 else()
     set(GLFW_LIB_NAME glfw3)
 endif()
-
 if (GLFW_VULKAN_STATIC)
     if (BUILD_SHARED_LIBS)
         # If you absolutely must do this, remove this line and add the Vulkan

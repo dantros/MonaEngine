@@ -15,7 +15,7 @@ namespace Mona
 		void StartUp(EventManager& eventManager) noexcept {
 			m_windowHandle = glfwGetCurrentContext();
 			MONA_ASSERT(m_windowHandle != NULL, "GLFW Error: Unable to find window");
-			m_mouseScrollSubscription = eventManager.Subscribe(this, &Input::InputImplementation::OnMouseScroll);
+			eventManager.Subscribe(m_mouseScrollSubscription, this, &Input::InputImplementation::OnMouseScroll);
 		}
 
 		void ShutDown(EventManager& eventManager) noexcept {

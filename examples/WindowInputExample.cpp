@@ -176,8 +176,8 @@ public:
 		MONA_LOG_INFO("Starting User App: Sandbox");
 		world.SetAmbientLight(glm::vec3(0.0f));
 		auto& eventManager = world.GetEventManager();
-		m_windowResizeSubcription = eventManager.Subscribe(this, &Sandbox::OnWindowResize);
-		m_debugGUISubcription = eventManager.Subscribe(this, &Sandbox::OnDebugGUIEvent);
+		eventManager.Subscribe(m_windowResizeSubcription, this, &Sandbox::OnWindowResize);
+		eventManager.Subscribe(m_debugGUISubcription, this, &Sandbox::OnDebugGUIEvent);
 		m_sphere = world.CreateGameObject<Sphere>(0.0f, 0.0f);
 		m_rotatingBox = world.CreateGameObject<Box>(0.0f, 0.0f);
 		m_camera = world.CreateGameObject<Mona::BasicPerspectiveCamera>();

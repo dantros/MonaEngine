@@ -95,9 +95,9 @@ namespace Mona {
 			if (m_crossfadeTarget.m_blendType == BlendType::KeepSynchronize)
 			{
 				float targetDuration = m_crossfadeTarget.m_targetClip->GetDuration();
-				float durationRatio = clipDuration / targetDuration;
+				float durationRatio = targetDuration / clipDuration;
 				playbackFactorTarget = (1.0f - factor) * durationRatio + factor;
-				playbackFactorClip = playbackFactorTarget * durationRatio;
+				playbackFactorClip = playbackFactorTarget / durationRatio;
 			}
 			else if (m_crossfadeTarget.m_blendType == BlendType::Freeze) {
 				playbackFactorClip = 0.0f;

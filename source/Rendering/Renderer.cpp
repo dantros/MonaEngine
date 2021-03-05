@@ -47,7 +47,7 @@ namespace Mona{
 		m_shaders[static_cast<unsigned int>(MaterialType::PBRTextured) + offset] = ShaderProgram(SourcePath("Assets/Shaders/PBRTexturedSkinning.vs"), SourcePath("Assets/Shaders/PBRTextured.ps"));
 		//El sistema de rendering debe subscribirse al cambio de resolución de la ventana para actulizar la resolución
 		//del framebuffer al que OpenGL renderiza.
-		m_onWindowResizeSubscription = eventManager.Subscribe(this, &Renderer::OnWindowResizeEvent);
+		eventManager.Subscribe(m_onWindowResizeSubscription, this, &Renderer::OnWindowResizeEvent);
 		m_debugDrawingSystemPtr = debugDrawingSystemPtr;
 		m_currentMatrixPalette.resize(NUM_MAX_BONES, glm::mat4(1.0f));
 		glEnable(GL_DEPTH_TEST);

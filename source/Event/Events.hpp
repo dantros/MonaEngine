@@ -28,21 +28,7 @@ namespace Mona
 
 	};
 	constexpr uint32_t INVALID_EVENT_INDEX = std::numeric_limits<uint32_t>::max();
-	class SubscriptionHandle {
-	public:
-		SubscriptionHandle() : m_index(INVALID_EVENT_INDEX), m_generation(0), m_typeIndex(GetEventTypeCount()) {};
-		SubscriptionHandle(uint32_t index, uint32_t generation, uint8_t typeIndex) :
-			m_index(index),
-			m_generation(generation),
-			m_typeIndex(typeIndex)
-		{};
-		friend class ObserverList;
-		friend class EventManager;
-	private:
-		uint32_t m_index;
-		uint32_t m_generation;
-		uint8_t m_typeIndex;
-	};
+	
 	struct WindowResizeEvent : public Event {
 		static constexpr uint8_t eventIndex = GetEventIndex(EEventType::WindowResizeEvent);
 		int width;

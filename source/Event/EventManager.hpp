@@ -13,6 +13,27 @@
 #include "../PhysicsCollision/PhysicsCollisionEvents.hpp"
 namespace Mona
 {
+	class SubscriptionHandle {
+	public:
+		SubscriptionHandle(SubscriptionHandle const&) = delete;
+		SubscriptionHandle& operator=(SubscriptionHandle const&) = delete;
+		SubscriptionHandle() : m_index(INVALID_EVENT_INDEX), m_generation(0), m_typeIndex(GetEventTypeCount()) {};
+		SubscriptionHandle(uint32_t index, uint32_t generation, uint8_t typeIndex) :
+			m_index(index),
+			m_generation(generation),
+			m_typeIndex(typeIndex)
+		{};
+		~SubscriptionHandle();
+		friend class ObserverList;
+		friend class EventManager;
+	private:
+		void SetEventManager(EventManager* em) { m_eventManager = em; }
+		uint32_t m_index;
+		uint32_t m_generation;
+		uint8_t m_typeIndex;
+		EventManager* m_eventManager = nullptr;
+	};
+
 	class Engine;
 	class ObserverList {
 	public:
@@ -20,7 +41,7 @@ namespace Mona
 		using EventHandler = std::function<void(const Event&)>;
 		static constexpr uint32_t s_maxEntries = INVALID_EVENT_INDEX;
 		static constexpr uint32_t s_minFreeIndices = 10;
-		SubscriptionHandle Subscribe(EventHandler handler, uint8_t typeIndex) noexcept {
+		void Subscribe(SubscriptionHandle& handle, EventHandler handler, uint8_t typeIndex) noexcept {
 			MONA_ASSERT(m_eventHandlers.size() < s_maxEntries, "EventManager Error: Cannot Add more observers, max number reached.");
 			if (m_firstFreeIndex != s_maxEntries && m_freeIndicesCount > s_minFreeIndices)
 			{
@@ -39,19 +60,36 @@ namespace Mona
 				handleEntry.index = static_cast<uint32_t>(m_eventHandlers.size());
 				handleEntry.prevIndex = s_maxEntries;
 				--m_freeIndicesCount;
-				SubscriptionHandle resultHandle(handleIndex, handleEntry.generation, typeIndex);
+				//SubscriptionHandle resultHandle(handleIndex, handleEntry.generation, typeIndex);
+				handle.m_index = handleIndex;
+				handle.m_generation = handleEntry.generation;
+				handle.m_typeIndex = typeIndex;
 				m_eventHandlers.push_back(handler);
 				m_handleEntryIndices.emplace_back(handleIndex);
-				return resultHandle;
+				//return resultHandle;
 			}
 			else {
 				m_handleEntries.emplace_back(static_cast<uint32_t>(m_eventHandlers.size()), s_maxEntries, 0);
 
-				SubscriptionHandle resultHandle(static_cast<uint32_t>(m_handleEntries.size() - 1), 0, typeIndex);
+				//SubscriptionHandle resultHandle(static_cast<uint32_t>(m_handleEntries.size() - 1), 0, typeIndex);
+				handle.m_index = static_cast<uint32_t>(m_handleEntries.size() - 1);
+				handle.m_generation = 0;
+				handle.m_typeIndex = typeIndex;
 				m_eventHandlers.push_back(handler);
 				m_handleEntryIndices.emplace_back(static_cast<uint32_t>(m_handleEntries.size() - 1));
-				return resultHandle;
+				//return resultHandle;
 			}
+		}
+		bool IsSubcriptionHandleValid(const SubscriptionHandle& handle) {
+			auto index = handle.m_index;
+			if (index < m_handleEntries.size() &&
+				handle.m_generation == m_handleEntries[index].generation &&
+				m_handleEntries[index].active == true)
+			{
+				return true;
+			}
+
+			return false;
 		}
 		void Unsubscribe(const SubscriptionHandle& handle) noexcept;
 		void Publish(const Event& e) noexcept;
@@ -79,17 +117,21 @@ namespace Mona
 	class EventManager {
 	public:
 		template <typename ObjType, typename EventType>
-		SubscriptionHandle Subscribe(ObjType* obj, void (ObjType::* memberFunction)(const EventType&)) {
+		void Subscribe(SubscriptionHandle& handle, ObjType* obj, void (ObjType::* memberFunction)(const EventType&)) {
 			static_assert(is_event<EventType>, "Template parameter is not an event");
 			auto eventHandler = [obj, memberFunction](const Event& e) { (obj->*memberFunction)(static_cast<const EventType&>(e)); };
-			return m_observerLists[EventType::eventIndex].Subscribe(eventHandler, EventType::eventIndex);
+			m_observerLists[EventType::eventIndex].Subscribe(handle, eventHandler, EventType::eventIndex);
+			handle.SetEventManager(this);
+			return;
 		}
 		
 		template <typename EventType>
-		SubscriptionHandle Subscribe(void (*freeFunction)(const EventType&)) {
+		void Subscribe(SubscriptionHandle& handle, void (*freeFunction)(const EventType&)) {
 			static_assert(is_event<EventType>, "Template parameter is not an event");
 			auto eventHandler = [freeFunction](const Event& e) { (*freeFunction)(static_cast<const EventType&>(e)); };
-			return m_observerLists[EventType::eventIndex].Subscribe(eventHandler, EventType::eventIndex);
+			m_observerLists[EventType::eventIndex].Subscribe(handle, eventHandler, EventType::eventIndex);
+			handle.SetEventManager(this);
+			return;
 		}
 
 		template <typename EventType>
@@ -99,9 +141,16 @@ namespace Mona
 			m_observerLists[EventType::eventIndex].Publish(e);
 		}
 		
-		void Unsubscribe(const SubscriptionHandle& handle) {
+		void Unsubscribe(SubscriptionHandle& handle) {
 			MONA_ASSERT(handle.m_typeIndex < GetEventTypeCount(), "EventManager Error: Handle with invalid type index");
 			m_observerLists[handle.m_typeIndex].Unsubscribe(handle);
+			handle.SetEventManager(nullptr);
+		}
+
+		bool IsSubcriptionHandleValid(const SubscriptionHandle& handle) {
+			if (handle.m_typeIndex >= GetEventTypeCount())
+				return false;
+			return m_observerLists[handle.m_typeIndex].IsSubcriptionHandleValid(handle);
 		}
 		EventManager() = default;
 		~EventManager() = default;

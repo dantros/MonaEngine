@@ -3,6 +3,7 @@
 #include "Rendering/DiffuseFlatMaterial.hpp"
 #include "Rendering/DiffuseTexturedMaterial.hpp"
 #include "Rendering/PBRTexturedMaterial.hpp"
+#include <imgui.h>
 Mona::CameraHandle CreateCamera(Mona::World& world) {
 	auto camera = world.CreateGameObject<Mona::GameObject>();
 	auto cameraTransform = world.AddComponent<Mona::TransformComponent>(camera);
@@ -64,35 +65,65 @@ void AddObjectWithSound(Mona::World &world,
 class Character : public Mona::GameObject
 {
 private:
+	void SetTargetPosition(const glm::vec3 position) {
+		m_targetPosition = position;
+		const glm::vec3& currentPos = m_transform->GetLocalTranslation();
+		glm::vec3 toTarget = glm::vec3(m_targetPosition.x - currentPos.x,
+			m_targetPosition.y - currentPos.y,
+			0.0f);
+		m_targetFrontVector = glm::normalize(toTarget);
+	}
+
+	void UpdateTargetPosition(Mona::World& world) {
+		auto& input = world.GetInput();
+		if (input.IsMouseButtonPressed(MONA_MOUSE_BUTTON_1) && !m_prevIsPress) {
+			auto mousePos = input.GetMousePosition();
+			MONA_LOG_INFO("Mouse Button press At: ({0},{1}).", mousePos.x, mousePos.y);
+			auto camera = world.GetMainCameraComponent();
+			auto cameraTransform = world.GetSiblingComponentHandle<Mona::TransformComponent>(camera);
+			glm::vec3 rayFrom = cameraTransform->GetLocalTranslation();
+			glm::vec3 rayTo = world.MainCameraScreenPositionToWorld(mousePos);
+			glm::vec3 direction = glm::normalize(rayTo - rayFrom);
+			auto raycastResult = world.ClosestHitRayTest(rayFrom, rayFrom + camera->GetZFarPlane() * direction);
+			if (raycastResult.HasHit())
+			{
+				SetTargetPosition(raycastResult.m_hitPosition);
+			}
+			m_prevIsPress = true;
+		}
+		else if (m_prevIsPress && !input.IsMouseButtonPressed(MONA_MOUSE_BUTTON_1)) {
+			m_prevIsPress = false;
+		}
+
+	}
+
+
 	void UpdateSteeringBehaviour() {
 		const glm::vec3& currentPos = m_transform->GetLocalTranslation();
 		glm::vec3 toTarget = glm::vec3(m_targetPosition.x - currentPos.x,
 			m_targetPosition.y - currentPos.y,
 			0.0f);
 		float distance = glm::length(toTarget);
-		m_rigidBody->ClearForces();
-		if (distance > 0.0f)
-		{
-			
-			
+		
 
-			float speed = distance / m_deacelerationFactor;
-			speed = std::min(speed, m_maxSpeed);
-			glm::vec3 desiredVelocity = toTarget * speed / distance;
-			glm::vec3 rbVelocity = m_rigidBody->GetLinearVelocity();
-			glm::vec3 force = glm::vec3(desiredVelocity.x - rbVelocity.x,
-				desiredVelocity.y - rbVelocity.y, 0.0f);
-			m_rigidBody->ApplyForce(1.0f * force);
-
-		}
+		
+		float speed = distance / m_deacelerationFactor;
+		speed = std::min(speed, m_maxSpeed);
+		glm::vec3 desiredVelocity = distance >= m_distanceThreshold?  speed * toTarget / distance : glm::vec3(0.0f);
+		glm::vec3 rbVelocity = m_rigidBody->GetLinearVelocity();
+		glm::vec3 force = glm::vec3(desiredVelocity.x - rbVelocity.x,
+			desiredVelocity.y - rbVelocity.y, 0.0f);
+		m_rigidBody->SetLinearVelocity(desiredVelocity);
+		
 		
 		glm::vec3 currentFrontVector = m_transform->GetUpVector();
 		float cosAngle = glm::dot(currentFrontVector, m_targetFrontVector);
 		float angle = glm::acos(cosAngle);
 		float sign = glm::cross(currentFrontVector, m_targetFrontVector).z > 0.0f ? 1.0f : -1.0f;
 		if (angle != 0.0f) {
-			m_rigidBody->ApplyTorque(glm::vec3(0.0f, 0.0f, 1.5f*sign * angle));
+			m_rigidBody->SetAngularVelocity(glm::vec3(0.0f, 0.0f, m_angularVelocityFactor*sign * angle));
 		}
+		
 
 
 	}
@@ -103,29 +134,33 @@ private:
 		currentVelocity.z = 0.0f;
 		float speed = glm::length(currentVelocity);
 		
-		if (speed > m_walkingSpeed) {
-			Mona::BlendType blendType = m_walkingAnimation == animController.GetCurrentAnimation() ? Mona::BlendType::KeepSynchronize : Mona::BlendType::Freeze;
-			animController.FadeTo(m_runningAnimation, blendType, 0.35f, 0.0f);
+		if (speed > m_maxWalkingSpeed) {
+			Mona::BlendType blendType = m_walkingAnimation == animController.GetCurrentAnimation() ? Mona::BlendType::KeepSynchronize : Mona::BlendType::Smooth;
+			animController.FadeTo(m_runningAnimation, blendType, m_fadeTime, 0.0f);
 		}
-		else if (speed > m_idleSpeed) {
-			Mona::BlendType blendType = m_runningAnimation == animController.GetCurrentAnimation() ? Mona::BlendType::KeepSynchronize : Mona::BlendType::Freeze;
-			animController.FadeTo(m_walkingAnimation, blendType, 0.35f, 0.0f);
+		else if (speed > m_maxIdleSpeed) {
+			Mona::BlendType blendType = m_runningAnimation == animController.GetCurrentAnimation() ? Mona::BlendType::KeepSynchronize : Mona::BlendType::Smooth;
+			animController.FadeTo(m_walkingAnimation, blendType, m_fadeTime, 0.0f);
 		}
 		else {
-			animController.FadeTo(m_idleAnimation, Mona::BlendType::Freeze, 0.35f, 0.0f);
+			animController.FadeTo(m_idleAnimation, Mona::BlendType::Smooth, m_fadeTime, 0.0f);
 		}
 
 	}
 public:
 	virtual void UserUpdate(Mona::World& world, float timeStep) noexcept {
+		UpdateTargetPosition(world);
 		UpdateSteeringBehaviour();
 		UpdateAnimationState();
 	};
 	virtual void UserStartUp(Mona::World& world) noexcept {
+		auto& eventManager = world.GetEventManager();
+		eventManager.Subscribe(m_debugGUISubcription, this, &Character::OnDebugGUIEvent);
+
 		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
 		m_transform->Rotate(glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(90.f));
 		m_transform->SetScale(glm::vec3(0.01f));
-		m_transform->Translate(glm::vec3(0.0f,0.0f,1.5f));
+		m_transform->Translate(glm::vec3(0.0f,0.0f,01.1f));
 		m_targetPosition = glm::vec3(0.0f);
 		glm::fquat offsetRotation = glm::rotate(glm::fquat(1.0f, 0.0f, 0.0f, 0.0f), glm::radians(180.f), glm::vec3(0.0f, 0.0f, 1.0f)) * glm::rotate(glm::fquat(1.0f, 0.0f, 0.0f, 0.0f), glm::radians(-90.f), glm::vec3(1.0f, 0.0f, 0.0f));
 
@@ -146,24 +181,32 @@ public:
 		m_walkingAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/female/walking.fbx"), skeleton);
 		m_idleAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/female/idle.fbx"), skeleton);
 		m_skeletalMesh = world.AddComponent<Mona::SkeletalMeshComponent>(*this, skinnedMesh, m_idleAnimation, materialPtr);
-		Mona::BoxShapeInformation boxInfo(glm::vec3(.5f,1.0f,0.5f));
+		Mona::BoxShapeInformation boxInfo(glm::vec3(.6f,1.0f,0.6f));
 		m_rigidBody = world.AddComponent<Mona::RigidBodyComponent>(*this, boxInfo, Mona::RigidBodyType::DynamicBody, 1.0f, false, glm::vec3(0.0f, -0.1f,0.0f));
-		m_rigidBody->SetDamping(.5f, .95f);
-	}
-	void SetTargetPosition(const glm::vec3 position) {
-		m_targetPosition = position;
-		const glm::vec3& currentPos = m_transform->GetLocalTranslation();
-		glm::vec3 toTarget = glm::vec3(m_targetPosition.x - currentPos.x,
-			m_targetPosition.y - currentPos.y,
-			0.0f);
-		m_targetFrontVector = glm::normalize(toTarget);
+		m_rigidBody->ClearForces();
+
 	}
 
+	void OnDebugGUIEvent(const Mona::DebugGUIEvent& event) {
+		ImGui::Begin("Character Options:");
+		ImGui::SliderFloat("DeacelerationFactor", &(m_deacelerationFactor), 0.0f, 10.0f);
+		ImGui::SliderFloat("DistanceThreshold", &(m_distanceThreshold), 0.0f, 10.0f);
+		ImGui::SliderFloat("AngularVelocityFactor", &(m_angularVelocityFactor), 0.0f, 10.0f);
+		ImGui::SliderFloat("MaxSpeed", &(m_maxSpeed), 0.0f, 10.0f);
+		ImGui::SliderFloat("MaxIdleSpeed", &(m_maxIdleSpeed), 0.0f, 10.0f);
+		ImGui::SliderFloat("MaxWalkingSpeed", &(m_maxWalkingSpeed), 0.0f, 10.0f);
+		ImGui::SliderFloat("FadeTime", &(m_fadeTime), 0.0f, 1.0f);
+		ImGui::End();
+	}
 private:
-	float m_deacelerationFactor = 0.5f;
-	float m_maxSpeed = 15.0f;
-	float m_idleSpeed = 0.15f;
-	float m_walkingSpeed = 3.0f;
+	float m_deacelerationFactor = 1.1f;
+	float m_angularVelocityFactor = 3.0f;
+	float m_distanceThreshold = 0.65f;
+	float m_maxSpeed = 5.0f;
+	float m_maxIdleSpeed = 0.2f;
+	float m_maxWalkingSpeed = 3.4f;
+	float m_fadeTime = 0.5f;
+	bool m_prevIsPress = false;
 	glm::vec3 m_targetPosition = glm::vec3(0.0f);
 	glm::vec3 m_targetFrontVector = glm::vec3(0.0f,-1.0f,0.0f);
 	Mona::TransformHandle m_transform;
@@ -172,6 +215,7 @@ private:
 	std::shared_ptr<Mona::AnimationClip> m_runningAnimation;
 	std::shared_ptr<Mona::AnimationClip> m_walkingAnimation;
 	std::shared_ptr<Mona::AnimationClip> m_idleAnimation;
+	Mona::SubscriptionHandle m_debugGUISubcription;
 
 };
 class AnimationAudio : public Mona::Application
@@ -180,12 +224,11 @@ public:
 	AnimationAudio() = default;
 	~AnimationAudio() = default;
 	virtual void UserStartUp(Mona::World& world) noexcept override {
-		world.SetGravity(glm::vec3(0.0f, 0.0f, -5.0f));
+		world.SetGravity(glm::vec3(0.0f, 0.0f, 0.0f));
 		world.SetAmbientLight(glm::vec3(0.1f));
-		m_camera = CreateCamera(world);
-		m_cameraTransform = world.GetSiblingComponentHandle<Mona::TransformComponent>(m_camera);
+		CreateCamera(world);
 		CreatePlane(world);
-		m_character = world.CreateGameObject<Character>();
+		world.CreateGameObject<Character>();
 		AddDirectionalLight(world, glm::vec3(1.0f, 0.0f, 0.0f), 10.0f, glm::radians(-45.0f));
 		AddDirectionalLight(world, glm::vec3(1.0f, 0.0f, 0.0f), 10.0f, glm::radians(-135.0f));
 
@@ -239,29 +282,8 @@ public:
 	virtual void UserShutDown(Mona::World& world) noexcept override {
 	}
 	virtual void UserUpdate(Mona::World& world, float timeStep) noexcept override {
-		auto& input = world.GetInput();
-		if (input.IsMouseButtonPressed(MONA_MOUSE_BUTTON_1) && !m_prevIsPress) {
-			auto mousePos = input.GetMousePosition();
-			MONA_LOG_INFO("Mouse Button press At: ({0},{1}).", mousePos.x, mousePos.y);
-			glm::vec3 rayFrom = m_cameraTransform->GetLocalTranslation();
-			glm::vec3 rayTo = world.MainCameraScreenPositionToWorld(mousePos);
-			glm::vec3 direction = glm::normalize(rayTo - rayFrom);
-			auto raycastResult = world.ClosestHitRayTest(rayFrom, rayFrom + m_camera->GetZFarPlane() * direction);
-			if (raycastResult.HasHit())
-			{
-				m_character->SetTargetPosition(raycastResult.m_hitPosition);
-			}
-			m_prevIsPress = true;
-		}
-		else if (m_prevIsPress && !input.IsMouseButtonPressed(MONA_MOUSE_BUTTON_1)) {
-			m_prevIsPress = false;
-		}
+
 	}
-private:
-	bool m_prevIsPress = false;
-	Mona::CameraHandle m_camera;
-	Mona::TransformHandle m_cameraTransform;
-	Mona::GameObjectHandle<Character> m_character;
 };
 int main()
 {

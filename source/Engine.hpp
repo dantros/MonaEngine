@@ -8,12 +8,12 @@ namespace Mona {
 	class Engine
 	{
 	public:
-		Engine::Engine(Application& app) : m_world(app) {}
+		Engine(Application& app) : m_world(app) {}
 		~Engine() = default;
 		Engine(const Engine&) = delete;
 		Engine& operator=(const Engine&) = delete;
 		/*
-		* Función que comienza el main loop del motor.
+		* Funciï¿½n que comienza el main loop del motor.
 		*/
 		void StartMainLoop() noexcept {
 			m_world.StartMainLoop();

@@ -80,8 +80,8 @@ private:
 	int m_frameCount;
 };
 Mona::GameObjectHandle<MyBox> boxes[2000];
-
-class Mona::MonaTest  {
+namespace Mona{
+class MonaTest  {
 public:
 	MonaTest() = default;
 	void Run() {
@@ -131,7 +131,7 @@ public:
 		
 	}
 };
-
+}
 
 int main(){
 	Mona::MonaTest test;

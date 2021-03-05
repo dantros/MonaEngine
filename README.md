@@ -16,17 +16,22 @@ MonaEngine depende de una lista de diferentes librerías, estas estan en el dire
 ## Software/Libreria externas necesarias
 Para generar el projecto,solución o makefiles se necesita [CMake 3.15+](https://cmake.org/), y de OpenGL4.5 para funcionar.
 
-## Generando la solución o makefiles
+## Generando la solución o makefiles y el proceso de compilación
 En windows basta con ejecutar el comando: **cmake -G "Visual Studio 16 2019" -A x64** , dentro del directorio del repositorio. Es importante
 mencionar que la version de VS cambiara dependediendo de la version instalada en el computador donde se desea compilar el motor.
 
+En linux basta ejecutar el comando **cmake . -DCMAKE_BUILD_TYPE=BUILDTYPE**, dentro del directorio del repositorio. BUILDTYPE puede ser
+DEBUG o RELEASE.
 
-
+Una vez generada la solición o los makefiles, basta con seguir el flujo tipico de VS o linux.
 ## Posibles problemas
 El motor se desarrolló principalmente en windows y se probó en dos computadores con linux, en uno de estos fue necesario instalar
 algunas librerías con los siguientes comandos:
  - sudo apt-get install xorg-dev libglu1-mesa-dev
  - sudo apt-get install libx11-dev
+
+En uno de los computadores con linux que se probaron los ejemplos desarrollados fue necesario ejecutarlos con permisos de administrador
+ya que OpenAL los necesita.
 
 
 ## Assets usados

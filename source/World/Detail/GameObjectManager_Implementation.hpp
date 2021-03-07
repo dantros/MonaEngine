@@ -10,8 +10,8 @@ namespace Mona {
 	{
 		static_assert(std::is_base_of<GameObject, ObjectType>::value, "ObjectType must be a derived class from GameObject");
 		MONA_ASSERT(m_gameObjects.size() < s_maxEntries, "GameObjectManager Error: Cannot Add more objects, max number reached.");
-		auto gameObjectPointer = std::make_unique<ObjectType>(std::forward<Args>(args)...);
-		ObjectType* rawPointer = gameObjectPointer.get();
+		ObjectType* rawPointer = new ObjectType(std::forward<Args>(args)...);
+		std::unique_ptr<ObjectType>gameObjectPointer(rawPointer);
 		if (m_firstFreeIndex != s_maxEntries && m_freeIndicesCount > s_minFreeIndices)
 		{
 			auto& handleEntry = m_handleEntries[m_firstFreeIndex];

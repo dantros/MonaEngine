@@ -14,12 +14,9 @@ namespace Mona {
 			Active,
 			PendingDestroy
 		};
-		GameObject() : m_objectHandle(), m_state(EState::Active) {}
+		
 		virtual ~GameObject() {};
-		GameObject(const GameObject&) = delete;
-		GameObject& operator=(const GameObject&) = delete;
-		GameObject(GameObject&&) = default;
-		GameObject& operator=(GameObject&&) = default;
+		
 		
 		void StartUp(World& world) noexcept 
 		{ 
@@ -51,7 +48,14 @@ namespace Mona {
 				return it->second;
 			else return InnerComponentHandle();
 		}
+	protected:
+		GameObject(const GameObject&) = delete;
+		GameObject& operator=(const GameObject&) = delete;
+		GameObject(GameObject&&) = default;
+		GameObject& operator=(GameObject&&) = default;
+		GameObject() : m_objectHandle(), m_state(EState::Active) {}
 	private:
+		
 		friend class GameObjectManager;
 		friend class World;
 		void ShutDown() noexcept {

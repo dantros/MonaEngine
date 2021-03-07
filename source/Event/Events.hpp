@@ -3,6 +3,9 @@
 #define EVENTS_HPP
 #include "../World/GameObject.hpp"
 #include <cstdint>
+#include <variant>
+#include <glm/glm.hpp>
+#include <glm/gtx/quaternion.hpp>
 #include "../Core/Common.hpp"
 namespace Mona
 {
@@ -14,6 +17,7 @@ namespace Mona
 		DebugGUIEvent,
 		StartCollisionEvent,
 		EndCollisionEvent,
+		CustomUserEvent,
 		EventTypeCount
 	};
 
@@ -55,6 +59,11 @@ namespace Mona
 		static constexpr uint8_t eventIndex = GetEventIndex(EEventType::DebugGUIEvent);
 	};
 
+	struct CustomUserEvent : public Event {
+		static constexpr uint8_t eventIndex = GetEventIndex(EEventType::CustomUserEvent);
+		uint32_t eventID;
+		std::array <std::variant<uint32_t,int32_t, float, glm::vec3, glm::fquat>, 4> parameters;
+	};
 
 	class StartCollisionEvent;
 	class EndCollisionEvent;
@@ -66,7 +75,8 @@ namespace Mona
 											ApplicationEndEvent,
 											DebugGUIEvent,
 											StartCollisionEvent,
-											EndCollisionEvent>;
+											EndCollisionEvent,
+											CustomUserEvent>;
 
 
 }

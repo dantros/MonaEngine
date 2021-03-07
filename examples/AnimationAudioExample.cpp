@@ -277,6 +277,7 @@ public:
 		AddObjectWithSound(world, ventMesh, ventMaterial, ventilationSound, glm::vec3(-8.0f, 0.0f, 0.5f), rotation, 0.02f, glm::vec3(.8f,.7f,.4f), glm::vec3(0.0f,-0.1f,0.3f));
 		rotation = glm::rotate(glm::fquat(1.0f, 0.0f, 0.0f, 0.0f), glm::radians(180.f), glm::vec3(0.0f, 0.0f, 1.0f)) * rotation;
 		AddObjectWithSound(world, boomBoxMesh, boomBoxMaterial, musicSound, glm::vec3(7.0f, 0.0f, 0.0f), rotation, 1.0f, glm::vec3(1.5f,.8f,.4f), glm::vec3(-0.1f, .8f,0.0f));
+		auto &em = world.GetEventManager();
 	}
 
 	virtual void UserShutDown(Mona::World& world) noexcept override {
@@ -284,7 +285,9 @@ public:
 	virtual void UserUpdate(Mona::World& world, float timeStep) noexcept override {
 
 	}
+
 };
+
 int main()
 {
 	AnimationAudio app;

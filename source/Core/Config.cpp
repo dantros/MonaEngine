@@ -6,9 +6,7 @@ namespace Mona
 {
 	void Config::readFile(const std::string& path)
 	{
-		//TODO(BYRON): This path calculation may be move from to another FilePathSystem or something like that
-		const std::string new_path = source_directory + ("/" + path);
-		std::ifstream in(new_path);
+		std::ifstream in(path);
 		if(in.is_open())
 		{
 			std::string line;
@@ -41,7 +39,7 @@ namespace Mona
 		}
 		else
 		{
-			MONA_LOG_ERROR("Configuration: Failed to open file {0}", new_path);
+			MONA_LOG_ERROR("Configuration: Failed to open file {0}", path);
 		}
 		
 		return;

@@ -6,7 +6,7 @@
 #define ROOTDIRECTORY_HPP
 #include <filesystem>
 namespace Mona{
-	static const char * const source_directory = "${CMAKE_SOURCE_DIR}/";
+	static const char * const source_directory = "${CMAKE_CURRENT_SOURCE_DIR}/";
 	static std::filesystem::path SourcePath(const std::string &relative_path){
 		return source_directory + relative_path;
 	}

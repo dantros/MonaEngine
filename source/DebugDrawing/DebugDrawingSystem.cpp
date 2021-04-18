@@ -54,8 +54,8 @@ namespace Mona {
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	}
 	void DebugDrawingSystem::StartUp(PhysicsCollisionSystem* physicsSystemPtr) noexcept {
-		m_lineShader = ShaderProgram(SourcePath("Assets/Shaders/LineVS.vs"),
-			SourcePath("Assets/Shaders/LinePS.ps"));
+		m_lineShader = ShaderProgram(SourcePath("source/Rendering/Shaders/LineVS.vs"),
+			SourcePath("source/Rendering/Shaders/LinePS.ps"));
 		m_physicsWorldPtr = physicsSystemPtr->GetPhysicsWorldPtr();
 		m_bulletDebugDrawPtr.reset(new BulletDebugDraw());
 		m_bulletDebugDrawPtr->StartUp();

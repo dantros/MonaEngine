@@ -33,7 +33,27 @@ algunas librerías con los siguientes comandos:
 En uno de los computadores con linux en los que se probaron los ejemplos desarrollados fue necesario ejecutarlos con permisos de administrador
 ya que OpenAL los necesita, de no hacerse se provocará un crash en medio de la ejecución de los ejemplos.
 
+## Como crear aplicaciones usando el motor
+La manera más automática, y quizás más sencilla de usar el motor dentro de un nuevo proyecto es usando CMake. Para esto un ejemplo 
+de estructura de archivos y carpetas consistiría de los siguientes elementos:
+ - Una carpeta de nombre MonaEngine que contiene los archivos del repositorio del motor.
+ - Un archivo llamado CMakeLists.txt con contenido similar  al extracto de código mostrado más abajo.
+ - El resto de los archivos fuentes y encabezados necesarios. En el caso del ejemplo ilustrado por el extracto de código mostrado más abajo 
+ estos corresponden a main.cpp, clase0.h, clase0.cpp, clase1.h y clase.cpp.
+ 
+El siguiente extracto de código muestra un ejemplo de CMakeLists.txt para un proyecto de nombre SomeGame, que consiste de dos clases, 
+clase0 y clase1, y otro archivo de fuente con la definición del punto de entrada de ejecución.
 
+```
+set(CMAKE_LEGACY_CYGWIN_WIN32 OFF)
+cmake_minimum_required(VERSION 3.15)
+project(SomeGame C CXX)
+add_subdirectory(MonaEngine)
+add_executable(SomeGame main.cpp clase0.h clase0.cpp clase1.h clase1.cpp) 
+set_property(TARGET SomeGame  PROPERTY CXX_STANDARD 20)
+target_link_libraries(SomeGame  PRIVATE MonaEngine)
+target_include_directories(SomeGame  PRIVATE  ${MONA_INCLUDE_DIRECTORY} ${THIRD_PARTY_INCLUDE_DIRECTORIES})
+```
 ## Assets usados
 Para la implementación de los ejemplos desarrollados con el motor se usaron los siguientes assets:
  - Animaciones, mallas y esqueletos desde el sitio https://www.mixamo.com/#/.

@@ -1,5 +1,7 @@
 # MonaEngine
 Motor desarrollado en C++ para el proceso de titulación en la carrera de Ingeniería en Computación de la Universidad de Chile.
+## Documento de memoria
+El documento escrito que describe en detalle el trabajo realizado en esta memoria esta en la carpeta Memoria.
 ## Dependencias
 MonaEngine depende de una lista de diferentes librerías, estas estan en el directorio `thirdParty/`
  - [ImGui](https://github.com/ocornut/imgui) Para gui de depuración
@@ -63,3 +65,6 @@ Para la implementación de los ejemplos desarrollados con el motor se usaron los
  - [Drakefire Pistol](https://sketchfab.com/3d-models/drakefire-pistol-bee02e85f22d4eaaa3c0144f11204843) hecho por el/la artista [Teliri](https://www.artstation.com/artwork/3XE92) y bajo la licencia CC.
  - [Air Conditioner Low Poly](https://sketchfab.com/3d-models/air-conditioner-low-poly-textured-game-asset-84c4e55948414c6db2473da7b6e9cbb7) hecho por el artista [Karthik Naidu](instagram.com/k3dart) y bajo la licencia CC.
 
+ 
+## Screenshots
+![](images/AnimatedExample.png "AnimatedExample")

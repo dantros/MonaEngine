@@ -1,6 +1,7 @@
 set(CMAKE_LEGACY_CYGWIN_WIN32 OFF)
 cmake_minimum_required(VERSION 3.15)
 project(MonaEngine C CXX)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 find_package(OpenGL REQUIRED)
 set(THIRD_PARTY_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/glad/include"
 									"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/glfw-3.3.2/include"

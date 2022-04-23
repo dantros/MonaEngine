@@ -63,7 +63,7 @@ class BVH_writer():
         self.joint_num = len(self.parent)
 
     # position, rotation with shape T * J * (3/4)
-    def write(self, rotations, positions, order, path, frametime=1.0/30): #offsets incluye la raiz
+    def write(self, rotations, positions, order, path, frametime=1.0/30):
         if order == 'quaternion':
             norm = rotations[:, :, 0] ** 2 + rotations[:, :, 1] ** 2 + rotations[:, :, 2] ** 2 + rotations[:, :, 3] ** 2
             norm = np.repeat(norm[:, :, np.newaxis], 4, axis=2)

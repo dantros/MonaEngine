@@ -1,8 +1,5 @@
 import operator
 
-import numpy as np
-from Quaternions_old import Quaternions
-
 class Animation:
     """
     Animation is a numpy-like wrapper for animation data

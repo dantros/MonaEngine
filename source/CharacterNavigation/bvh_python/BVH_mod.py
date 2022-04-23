@@ -1,8 +1,3 @@
-import os
-import sys
-sys.path.append(os.getcwd())
-sys.path.append('../')
-
 import re
 import numpy as np
 

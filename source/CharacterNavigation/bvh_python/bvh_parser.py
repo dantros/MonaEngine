@@ -1,127 +1,53 @@
-import os
-import sys
-sys.path.append(os.getcwd())
-sys.path.append('../')
-
 import torch
 import BVH_mod as BVH
 import numpy as np
 from Quaternions import Quaternions
 from Kinematics import ForwardKinematics
 from skeleton import build_edge_topology
-from option_parser import get_std_bvh
 from bvh_writer import write_bvh
 
-"""
-1.
-Specify the joints that you want to use in training and test. Other joints will be discarded.
-Please start with root joint, then left leg chain, right leg chain, head chain, left shoulder chain and right shoulder chain.
-See the examples below.
-"""
-corps_name_1 = ['Pelvis', 'LeftUpLeg', 'LeftLeg', 'LeftFoot', 'LeftToeBase', 'RightUpLeg', 'RightLeg', 'RightFoot', 'RightToeBase', 'Hips', 'Spine', 'Spine1', 'Spine2', 'Neck', 'Head', 'LeftShoulder', 'LeftArm', 'LeftForeArm', 'LeftHand', 'RightShoulder', 'RightArm', 'RightForeArm', 'RightHand']
-corps_name_2 = ['Hips', 'LeftUpLeg', 'LeftLeg', 'LeftFoot', 'LeftToeBase', 'LeftToe_End', 'RightUpLeg', 'RightLeg', 'RightFoot', 'RightToeBase', 'RightToe_End', 'Spine', 'Spine1', 'Spine2', 'Neck', 'Head', 'HeadTop_End', 'LeftShoulder', 'LeftArm', 'LeftForeArm', 'LeftHand', 'RightShoulder', 'RightArm', 'RightForeArm', 'RightHand']
-corps_name_3 = ['Hips', 'LeftUpLeg', 'LeftLeg', 'LeftFoot', 'RightUpLeg', 'RightLeg', 'RightFoot', 'Spine', 'Spine1', 'Neck', 'Head', 'LeftShoulder', 'LeftArm', 'LeftForeArm', 'LeftHand', 'RightShoulder', 'RightArm', 'RightForeArm', 'RightHand']
-corps_name_boss = ['Hips', 'LeftUpLeg', 'LeftLeg', 'LeftFoot', 'LeftToeBase', 'RightUpLeg', 'RightLeg', 'RightFoot', 'RightToeBase', 'Spine', 'Spine1', 'Spine2', 'Neck', 'Neck1', 'Head', 'LeftShoulder', 'LeftArm', 'LeftForeArm', 'LeftHand', 'RightShoulder', 'RightArm', 'RightForeArm', 'RightHand']
-corps_name_boss2 = ['Hips', 'LeftUpLeg', 'LeftLeg', 'LeftFoot', 'LeftToeBase', 'Left_End', 'RightUpLeg', 'RightLeg', 'RightFoot', 'RightToeBase', 'Right_End', 'Spine', 'Spine1', 'Spine2', 'Neck', 'Neck1', 'Head', 'LeftShoulder', 'LeftArm', 'LeftForeArm', 'LeftHand', 'RightShoulder', 'RightArm', 'RightForeArm', 'RightHand']
-corps_name_cmu = ['Hips', 'LHipJoint', 'LeftUpLeg', 'LeftLeg', 'LeftFoot', 'LeftToeBase', 'RHipJoint', 'RightUpLeg', 'RightLeg', 'RightFoot', 'RightToeBase', 'LowerBack', 'Spine', 'Spine1', 'Neck', 'Neck1', 'Head', 'LeftShoulder', 'LeftArm', 'LeftForeArm', 'LeftHand', 'RightShoulder', 'RightArm', 'RightForeArm', 'RightHand']
-corps_name_monkey = ['Hips', 'LeftUpLeg', 'LeftLeg', 'LeftFoot', 'LeftToeBase', 'RightUpLeg', 'RightLeg', 'RightFoot', 'RightToeBase', 'Spine', 'Spine1', 'Neck', 'Head', 'LeftShoulder', 'LeftArm', 'LeftForeArm', 'LeftHand', 'RightShoulder', 'RightArm', 'RightForeArm', 'RightHand']
-corps_name_three_arms = ['Three_Arms_Hips', 'LeftUpLeg', 'LeftLeg', 'LeftFoot', 'LeftToeBase', 'RightUpLeg', 'RightLeg', 'RightFoot', 'RightToeBase', 'Spine', 'Spine1', 'Neck', 'Head', 'LeftShoulder', 'LeftArm', 'LeftForeArm', 'LeftHand', 'RightShoulder', 'RightArm', 'RightForeArm', 'RightHand']
-corps_name_three_arms_split = ['Three_Arms_split_Hips', 'LeftUpLeg', 'LeftLeg', 'LeftFoot', 'LeftToeBase', 'RightUpLeg', 'RightLeg', 'RightFoot', 'RightToeBase', 'Spine', 'Spine1', 'Neck', 'Head', 'LeftShoulder', 'LeftArm', 'LeftForeArm', 'LeftHand', 'LeftHand_split', 'RightShoulder', 'RightArm', 'RightForeArm', 'RightHand', 'RightHand_split']
-corps_name_Prisoner = ['HipsPrisoner', 'LeftUpLeg', 'LeftLeg', 'LeftFoot', 'LeftToeBase', 'LeftToe_End', 'RightUpLeg', 'RightLeg', 'RightFoot', 'RightToeBase', 'RightToe_End', 'Spine', 'Spine1', 'Spine2', 'Neck', 'Head', 'HeadTop_End', 'LeftShoulder', 'LeftArm', 'LeftForeArm', 'LeftHand', 'RightShoulder', 'RightArm', 'RightForeArm']
-corps_name_Mixamo2_m = ['Hips', 'LeftUpLeg', 'LeftLeg', 'LeftFoot', 'LeftToeBase', 'LeftToe_End', 'RightUpLeg', 'RightLeg', 'RightFoot', 'RightToeBase', 'RightToe_End', 'Spine', 'Spine1', 'Spine1_split', 'Spine2', 'Neck', 'Head', 'HeadTop_End', 'LeftShoulder', 'LeftShoulder_split', 'LeftArm', 'LeftForeArm', 'LeftHand', 'RightShoulder', 'RightShoulder_split', 'RightArm', 'RightForeArm', 'RightHand']
-# corps_name_example = ['Root', 'LeftUpLeg', ..., 'LeftToe', 'RightUpLeg', ..., 'RightToe', 'Spine', ..., 'Head', 'LeftShoulder', ..., 'LeftHand', 'RightShoulder', ..., 'RightHand']
-
-def getJointsBySkeletonType():
-    f = open('./datasets/jointsBySkeletonType.txt', 'r')
-    jointsBySkeletonType = []
-    for line in f:
-        joints = line[:-1].split('#')[1].split(',')
-        jointsBySkeletonType.append(joints)
-    return jointsBySkeletonType
-
-def getEEBySkeletonType():
-    f = open('./datasets/eeBySkeletonType.txt', 'r')
-    eeBySkeletonType = []
-    for line in f:
-        ee = line[:-1].split('#')[1].split(',')
-        eeBySkeletonType.append(ee)
-    return eeBySkeletonType
-
-
-"""
-2.
-Specify five end effectors' name.
-Please follow the same order as in 1.
-"""
-ee_name_1 = ['LeftToeBase', 'RightToeBase', 'Head', 'LeftHand', 'RightHand']
-ee_name_2 = ['LeftToe_End', 'RightToe_End', 'HeadTop_End', 'LeftHand', 'RightHand']
-ee_name_3 = ['LeftFoot', 'RightFoot', 'Head', 'LeftHand', 'RightHand']
-ee_name_cmu = ['LeftToeBase', 'RightToeBase', 'Head', 'LeftHand', 'RightHand']
-ee_name_monkey = ['LeftToeBase', 'RightToeBase', 'Head', 'LeftHand', 'RightHand']
-ee_name_three_arms_split = ['LeftToeBase', 'RightToeBase', 'Head', 'LeftHand_split', 'RightHand_split']
-ee_name_Prisoner = ['LeftToe_End', 'RightToe_End', 'HeadTop_End', 'LeftHand', 'RightForeArm']
-# ee_name_example = ['LeftToe', 'RightToe', 'Head', 'LeftHand', 'RightHand']
-
-
-
-jointsBySkeletonType = [corps_name_1, corps_name_2, corps_name_3, corps_name_cmu, corps_name_monkey, corps_name_boss, corps_name_boss, corps_name_three_arms, corps_name_three_arms_split, corps_name_Prisoner, corps_name_Mixamo2_m, corps_name_1] #getJointsBySkeletonType()
-eeBySkeletonType = [ee_name_1, ee_name_2, ee_name_3, ee_name_cmu, ee_name_monkey, ee_name_1, ee_name_1, ee_name_1, ee_name_three_arms_split, ee_name_Prisoner, ee_name_2, ee_name_1] #getEEBySkeletonType()
-"""
-3.
-Add previously added corps_name and ee_name at the end of the two above lists.
-"""
-# corps_names.append(corps_name_example)
-# ee_names.append(ee_name_example)
 
 class BVH_file:
-    def __init__(self, file_path=None, args=None, character=None, new_root=None, topologyIndex=None):
-        if file_path is None:
-            if topologyIndex is None:
-                raise Exception('Must indicate topology')
-            file_path = get_std_bvh(character=character,topologyIndex=topologyIndex)
+    def __init__(self, file_path, jointNames = None, eeNames = None):
         self.anim, self._names, self.frametime = BVH.load(file_path)
-        if new_root is not None:
-            self.set_new_root(new_root)
         self.edges = [] #incluye offsets
         self.edge_mat = []
         self.edge_num = 0
         self._topology = None
         self.ee_length = []
+        if jointNames:
+            self.subsetNames = jointNames
+        else:
+            self.subsetNames = self._names
 
         for i, name in enumerate(self._names):
             if ':' in name:
                 name = name[name.find(':') + 1:]
                 self._names[i] = name
 
-        self.skeleton_type = self.getSkeletonType()
-        if self.skeleton_type == -1:
-            print(self._names)
-            raise Exception('Unknown skeleton')
 
-        if self.skeleton_type == 0:
-            self.set_new_root(1)
-
-        self.details = [i for i, name in enumerate(self._names) if name not in jointsBySkeletonType[self.skeleton_type]]
+        self.details = [i for i, name in enumerate(self._names) if name not in self.subsetNames]
         self.joint_num = self.anim.shape[1]
         self.joints = []
         self.simplified_name = []
         self.simplify_map = {}
         self.inverse_simplify_map = {}
 
-        for name in jointsBySkeletonType[self.skeleton_type]:
+        for name in self.subsetNames:
             for j in range(self.anim.shape[1]):
                 if name == self._names[j]:
                     self.joints.append(j)
                     break
 
-        if len(self.joints) != len(jointsBySkeletonType[self.skeleton_type]):
+        if len(self.joints) != len(self.subsetNames):
             for i in self.joints: print(self._names[i], end=' ')
-            print(self.joints, self.skeleton_type, len(self.joints), sep='\n')
+            print(self.joints, len(self.joints), sep='\n')
             raise Exception('Problem in file', file_path)
 
         self.ee_id = []
-        for ee_name in eeBySkeletonType[self.skeleton_type]:
-            self.ee_id.append(jointsBySkeletonType[self.skeleton_type].index(ee_name))
+        if eeNames != None:
+            for ee_name in eeNames:
+                self.ee_id.append(self.subsetNames.index(ee_name))
 
         self.joint_num_simplify = len(self.joints)
         for i, j in enumerate(self.joints):
@@ -134,54 +60,6 @@ class BVH_file:
                 self.simplify_map[i] = -1
 
         self.edges = build_edge_topology(self.topology, self.offset)
-    
-    def getSkeletonType(self):
-        skeleton_type = -1
-        full_fill = [1] * len(jointsBySkeletonType)
-        for i, ref_names in enumerate(jointsBySkeletonType):
-            for ref_name in ref_names:
-                if ref_name not in self._names:
-                    full_fill[i] = 0
-                    break
-        # check for perfect match
-        for i in range(1,(len(full_fill))):
-            filled = full_fill[i]
-            if filled and len(jointsBySkeletonType[i])==len(self._names):
-                skeleton_type = i
-                return skeleton_type
-
-        if full_fill[3]:
-            skeleton_type = 3
-        else:
-            for i, _ in enumerate(full_fill):
-                if full_fill[i]:
-                    skeleton_type = i
-                    break
-
-        if skeleton_type == 2 and full_fill[4]:
-            skeleton_type = 4
-        if 'Neck1' in self._names:
-            skeleton_type = 5
-        if 'Left_End' in self._names:
-            skeleton_type = 6
-        if 'Three_Arms_Hips' in self._names:
-            skeleton_type = 7
-        if 'Three_Arms_Hips_split' in self._names:
-            skeleton_type = 8
-        if 'LHipJoint' in self._names:
-            skeleton_type = 3
-        if 'HipsPrisoner' in self._names:
-            skeleton_type = 9
-        if 'Spine1_split' in self._names:
-            skeleton_type = 10
-        """
-        4. 
-        Here, you need to assign self.skeleton_type the corresponding index of your own dataset in corps_names or ee_names list.
-        You can use self._names, which contains the joints name in original bvh file, to write your own if statement.
-        """
-        # if ...:
-        #     self.skeleton_type = 11
-        return skeleton_type
 
 
 

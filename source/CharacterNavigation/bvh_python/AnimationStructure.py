@@ -1,10 +1,4 @@
-import os
-import sys
-sys.path.append(os.getcwd())
-sys.path.append('../')
-
 import numpy as np
-import scipy.sparse as sparse
 import Animation as Animation
 
   

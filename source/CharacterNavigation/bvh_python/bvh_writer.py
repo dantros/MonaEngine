@@ -1,8 +1,3 @@
-import os
-import sys
-sys.path.append(os.getcwd())
-sys.path.append('../')
-
 import numpy as np
 from Quaternions import Quaternions
 from skeleton import build_joint_topology

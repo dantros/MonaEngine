@@ -174,7 +174,7 @@ def load(filename, start=None, end=None, order=None, world=False, need_quater=Fa
     
 
     
-def save(filename, anim, names=None, frametime=1.0/24.0, order='zyx', positions=False, orients=True, mask=None, quater=False):
+def save(filename, anim, names=None, frametime=1.0/24.0, order='zyx', positions=False, mask=None, quater=False):
     """
     Saves an Animation to file as BVH
     
@@ -232,11 +232,6 @@ def save(filename, anim, names=None, frametime=1.0/24.0, order='zyx', positions=
         f.write("Frames: %i\n" % anim.shape[0]);
         f.write("Frame Time: %f\n" % frametime);
             
-        #if orients:        
-        #    rots = np.degrees((-anim.orients[np.newaxis] * anim.rotations).euler(order=order[::-1]))
-        #else:
-        #    rots = np.degrees(anim.rotations.euler(order=order[::-1]))
-        # rots = np.degrees(anim.rotations.euler(order=order[::-1]))
         if quater:
             rots = np.degrees(anim.rotations.euler(order=order[::-1]))
         else:

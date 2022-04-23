@@ -3,7 +3,6 @@ import BVH_mod as BVH
 import numpy as np
 from Quaternions import Quaternions
 from Kinematics import ForwardKinematics
-from skeleton import build_edge_topology
 from bvh_writer import write_bvh
 
 
@@ -59,7 +58,7 @@ class BVH_file:
             if i in self.details:
                 self.simplify_map[i] = -1
 
-        self.edges = build_edge_topology(self.topology, self.offset)
+        self.edges = self.build_edge_topology(self.topology, self.offset)
 
 
 
@@ -238,3 +237,14 @@ class BVH_file:
         for i, j in enumerate(new_seq):
             self._names[i] = names[j]
         self.anim.parents = np.array(new_parent, dtype=np.int)
+
+
+        def build_edge_topology(topology, offset):
+            # get all edges (pa, child, offset)
+            edges = []
+            joint_num = len(topology)
+            for i in range(1, joint_num):
+                # se salta la raiz
+                edges.append((topology[i], i, offset[i]))
+            return edges
+

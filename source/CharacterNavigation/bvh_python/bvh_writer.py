@@ -54,7 +54,7 @@ def write_bvh(parent, offset, rotation, position, names, frametime, order, path,
     return file_string
 
 
-class BVH_writer():
+class BVH_writer_Py():
     def __init__(self, stdbvhPath):
         staticFile = BVH_file(stdbvhPath)
         self.parent = staticFile.topology
@@ -62,15 +62,9 @@ class BVH_writer():
         self.names = staticFile.names
         self.joint_num = len(self.parent)
 
-    # position, rotation with shape T * J * (3/4)
-    def write(self, rotations, positions, order, path, frametime=1.0/30):
-        if order == 'quaternion':
-            norm = rotations[:, :, 0] ** 2 + rotations[:, :, 1] ** 2 + rotations[:, :, 2] ** 2 + rotations[:, :, 3] ** 2
-            norm = np.repeat(norm[:, :, np.newaxis], 4, axis=2)
-            rotations /= norm
-            rotations = Quaternions(rotations)
-            rotations = np.degrees(rotations.euler())
-            order = 'xyz'
+    # position, rotation with shape T * J * 3
+    def write(self, rotations, positions, path, frametime=1.0/30):
+        order = 'xyz'
         
         if rotations.shape[1] < self.joint_num:
             rootRot = torch.zeros((rotations.shape[0], 1, 3))

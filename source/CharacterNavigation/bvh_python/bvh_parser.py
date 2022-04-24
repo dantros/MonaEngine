@@ -5,18 +5,9 @@ from Quaternions import Quaternions
 from Kinematics import ForwardKinematics
 from bvh_writer import write_bvh
 
-def build_edge_topology(topology, offset):
-            # get all edges (pa, child, offset)
-            edges = []
-            joint_num = len(topology)
-            for i in range(1, joint_num):
-                # se salta la raiz
-                edges.append((topology[i], i, offset[i]))
-            return edges
-
-class BVH_file:
-    def __init__(self, file_path, jointNames = None, eeNames = None):
-        self.anim, self._names, self.frametime = BVH.load(file_path)
+class BVH_file_Py:
+    def __init__(self, filePath, jointNames = None, eeNames = None):
+        self.anim, self._names, self.frametime = BVH.load(filePath)
         self.edges = [] #incluye offsets
         self.edge_mat = []
         self.edge_num = 0
@@ -49,12 +40,12 @@ class BVH_file:
         if len(self.joints) != len(self.subsetNames):
             for i in self.joints: print(self._names[i], end=' ')
             print(self.joints, len(self.joints), sep='\n')
-            raise Exception('Problem in file', file_path)
+            raise Exception('Problem in file', filePath)
 
-        self.ee_id = []
+        self.ee_ids = []
         if eeNames != None:
             for ee_name in eeNames:
-                self.ee_id.append(self.subsetNames.index(ee_name))
+                self.ee_ids.append(self.subsetNames.index(ee_name))
 
         self.joint_num_simplify = len(self.joints)
         for i, j in enumerate(self.joints):
@@ -65,9 +56,6 @@ class BVH_file:
         for i in range(self.anim.shape[1]):
             if i in self.details:
                 self.simplify_map[i] = -1
-
-        self.edges = build_edge_topology(self.topology, self.offset)
-
 
 
     def scale(self, alpha):
@@ -103,8 +91,8 @@ class BVH_file:
             self._topology = tuple(self._topology)
         return self._topology
 
-    def get_ee_id(self):
-        return self.ee_id
+    def get_ee_ids(self):
+        return self.ee_ids
 
     def to_numpy(self, quater=False, edge=True):
         rotations = self.anim.rotations[:, self.joints, :]
@@ -136,13 +124,13 @@ class BVH_file:
         # tomando el k-ésimo elemento de cada fila.
         return res
 
-    def get_position(self):
+    def get_positions(self):
         positions = self.anim.positions
         positions = positions[:, self.joints, :]
         return positions
 
     @property
-    def offset(self): #offsets incluye la raiz
+    def offsets(self): #offsets incluye la raiz
         return self.anim.offsets[self.joints]
 
     @property
@@ -150,17 +138,17 @@ class BVH_file:
         return self.simplified_name
 
     def get_height(self):
-        offset = self.offset
+        offset = self.offsets
         topo = self.topology
 
         res = 0
-        p = self.ee_id[0]
+        p = self.ee_ids[0]
         # sumamos largos desde la cadena raiz (desde su end effector)
         while p != 0:
             res += np.dot(offset[p], offset[p]) ** 0.5
             p = topo[p]
 
-        p = self.ee_id[2]
+        p = self.ee_ids[2]
         # sumamos largos desde la cadena de la pierna derecha (desde su end effector)
         while p != 0:
             res += np.dot(offset[p], offset[p]) ** 0.5
@@ -172,38 +160,7 @@ class BVH_file:
         motion = self.to_numpy(quater=False, edge=False)
         rotations = motion[..., :-3].reshape(motion.shape[0], -1, 3)
         positions = motion[..., -3:]
-        write_bvh(self.topology, self.offset, rotations, positions, self.names, 1.0/30, 'xyz', file_path)
-
-    def get_ee_length(self):
-        if len(self.ee_length): return self.ee_length
-        degree = [0] * len(self.topology)
-        # guardamos la cantidad de hijos directos de cada joint.
-        for i in self.topology:
-            if i < 0: continue
-            degree[i] += 1
-
-        for j in self.ee_id:
-            length = 0
-            # si tiene 0 o 1 hijos, sumamos su largo a la cadena del end effector j.
-            while degree[j] <= 1:
-                t = self.offset[j]
-                length += np.dot(t, t) ** 0.5
-                j = self.topology[j]
-
-            self.ee_length.append(length)
-
-        height = self.get_height()
-        # hardcodeo extraño de valores. se agrupan end effectors del 0 al 4 para ir procesandolos.
-        ee_group = [[0, 1], [2], [3, 4]]
-        for group in ee_group:
-            maxv = 0
-            for j in group:
-                # se guarda el valor maximo del grupo
-                maxv = max(maxv, self.ee_length[j])
-            for j in group:
-                self.ee_length[j] *= height / maxv
-
-        return self.ee_length
+        write_bvh(self.topology, self.offsets, rotations, positions, self.names, 1.0/30, 'xyz', file_path)
 
     def set_new_root(self, new_root):
         euler = torch.tensor(self.anim.rotations[:, 0, :], dtype=torch.float)

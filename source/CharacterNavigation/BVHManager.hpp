@@ -2,21 +2,20 @@
 #ifndef BVHMANAGER_HPP
 #define BVHMANAGER_HPP
 #include <string>
+#include <vector>
 
 namespace Mona {
 
 	class BVH_file {
         public:
-            BVH_file(std::string &filePath, std::string* jointNames, std::string* eeNames);
+            BVH_file(std::string &filePath, std::vector<std::string> jointNames = NULL);
             int* m_topology;
-            std::string* m_jointNames;
-            std::string* m_eeNames;
+            std::string* m_jointNames; // si se quiere usar un subset de las joints originales
             float** m_offsets;
             float*** m_positions;
             float*** m_rotations;
             int m_jointNum;
             int m_frameNum;
-            int m_eeNum;
             float m_frametime;	
 
     };

@@ -25,6 +25,7 @@ struct BVH_file_interface {
   int jointNum;
   int frameNum;
   int eeNum;
+  float frametime;
   PyObject *__dict__;
 };
 

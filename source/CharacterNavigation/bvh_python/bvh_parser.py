@@ -6,7 +6,7 @@ from Kinematics import ForwardKinematics
 from bvh_writer import write_bvh
 
 class BVH_file:
-    def __init__(self, filePath, jointNames = None, eeNames = None):
+    def __init__(self, filePath, jointNames = None):
         self.anim, self._names, self.frametime = BVH.load(filePath)
         self.edges = [] #incluye offsets
         self.edge_mat = []
@@ -41,11 +41,6 @@ class BVH_file:
             for i in self.joints: print(self._names[i], end=' ')
             print(self.joints, len(self.joints), sep='\n')
             raise Exception('Problem in file', filePath)
-
-        self.ee_ids = []
-        if eeNames != None:
-            for ee_name in eeNames:
-                self.ee_ids.append(self.subsetNames.index(ee_name))
 
         self.joint_num_simplify = len(self.joints)
         for i, j in enumerate(self.joints):
@@ -91,9 +86,6 @@ class BVH_file:
             self._topology = tuple(self._topology)
         return self._topology
 
-    def get_ee_ids(self):
-        return self.ee_ids
-
     def to_numpy(self, quater=False, edge=True):
         rotations = self.anim.rotations[:, self.joints, :]
         if quater:
@@ -136,25 +128,6 @@ class BVH_file:
     @property
     def names(self):
         return self.simplified_name
-
-    def get_height(self):
-        offset = self.offsets
-        topo = self.topology
-
-        res = 0
-        p = self.ee_ids[0]
-        # sumamos largos desde la cadena raiz (desde su end effector)
-        while p != 0:
-            res += np.dot(offset[p], offset[p]) ** 0.5
-            p = topo[p]
-
-        p = self.ee_ids[2]
-        # sumamos largos desde la cadena de la pierna derecha (desde su end effector)
-        while p != 0:
-            res += np.dot(offset[p], offset[p]) ** 0.5
-            p = topo[p]
-
-        return res
 
     def write(self, file_path):
         motion = self.to_numpy(quater=False, edge=False)

@@ -1,4 +1,5 @@
 # distutils: language = c++
+# cython: language_level=3
 from bvh_parser import BVH_file
 from bvh_writer import BVH_writer
 from torch import tensor
@@ -6,7 +7,7 @@ from torch import tensor
 
 #BVH_file
 
-cdef class BVH_file_interface:
+cdef public class BVH_file_interface[object BVH_file_interface, type BVH_file_interface_type]:
     cdef public object topology
     cdef public object jointNames
     cdef public object eeNames
@@ -25,30 +26,30 @@ cdef class BVH_file_interface:
         self.frameNum = len(self.pyFile.anim.rotations)
 
         #topology (jointNum)
-        self.topology = self.pyFile.topology()
+        self.topology = list(self.pyFile.topology())
 
         #jointNames (jointNum)
-        self.jointNames = self.pyFile.names
+        self.jointNames = list(self.pyFile.names)
         
         ##eeNames (eeNum)
-        self.eeNames = eeNames
+        self.eeNames = list(eeNames)
         self.eeNum = len(eeNames)
         
         #offsets (JointNum x 3)
-        self.offsets = self.pyFile.offsets()
+        self.offsets = self.pyFile.offsets().tolist()
         
         #positions (FrameNum x JointNum x 3)
-        self.positions = self.pyFile.get_positions()
+        self.positions = self.pyFile.get_positions().tolist()
         
         #rotations (FrameNum x JointNum x 3)
-        self.rotations = self.pyFile.anim.rotations[:, self.pyFile.joints, :]
+        self.rotations = self.pyFile.anim.rotations[:, self.pyFile.joints, :].tolist()
 
 
 #BVH_writer
 
 #rotations -> F x J x 3, positions -> F x 3
-cdef public void writeBVH_interface(stdbvhPath, rotations, positions, writePath, frametime):
+cdef public void writeBVH_interface(staticDataPath, rotations, positions, writePath, frametime):
     tRotations = tensor(rotations)
     tPositions = tensor(positions)
-    pyWriter = BVH_writer(stdbvhPath)
+    pyWriter = BVH_writer(staticDataPath)
     pyWriter.write(rotations=tRotations, positions=tPositions, path=writePath, frametime=1.0/30)

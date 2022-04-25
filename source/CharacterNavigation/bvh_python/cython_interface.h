@@ -4,6 +4,29 @@
 #define __PYX_HAVE__cython_interface
 
 #include "Python.h"
+struct BVH_file_interface;
+
+/* "cython_interface.pyx":10
+ * #BVH_file
+ * 
+ * cdef public class BVH_file_interface[object BVH_file_interface, type BVH_file_interface_type]:             # <<<<<<<<<<<<<<
+ *     cdef public object topology
+ *     cdef public object jointNames
+ */
+struct BVH_file_interface {
+  PyObject_HEAD
+  struct __pyx_vtabstruct_16cython_interface_BVH_file_interface *__pyx_vtab;
+  PyObject *topology;
+  PyObject *jointNames;
+  PyObject *eeNames;
+  PyObject *offsets;
+  PyObject *positions;
+  PyObject *rotations;
+  int jointNum;
+  int frameNum;
+  int eeNum;
+  PyObject *__dict__;
+};
 
 #ifndef __PYX_HAVE_API__cython_interface
 
@@ -18,6 +41,8 @@
 #ifndef DL_IMPORT
   #define DL_IMPORT(_T) _T
 #endif
+
+__PYX_EXTERN_C DL_IMPORT(PyTypeObject) BVH_file_interface_type;
 
 __PYX_EXTERN_C void writeBVH_interface(PyObject *, PyObject *, PyObject *, PyObject *, PyObject *);
 

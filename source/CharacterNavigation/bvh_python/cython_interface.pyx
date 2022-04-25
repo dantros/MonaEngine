@@ -7,7 +7,7 @@ from torch import tensor
 
 #BVH_file
 
-cdef public class BVH_file_interface[object BVH_file_interface, type BVH_file_interface_type]:
+cdef public class BVH_file_interface[object BVH_file_interface, type BVH_file_interface]:
     cdef public object topology
     cdef public object jointNames
     cdef public object eeNames
@@ -17,6 +17,7 @@ cdef public class BVH_file_interface[object BVH_file_interface, type BVH_file_in
     cdef public int jointNum
     cdef public int frameNum
     cdef public int eeNum
+    cdef public float frametime
     cdef dict __dict__
     pyFile = None
 
@@ -24,6 +25,7 @@ cdef public class BVH_file_interface[object BVH_file_interface, type BVH_file_in
         self.pyFile = BVH_file(filePath, jointNames, eeNames)
         self.jointNum = self.pyFile.jointNum
         self.frameNum = len(self.pyFile.anim.rotations)
+        self.frametime = self.pyFile.frametime
 
         #topology (jointNum)
         self.topology = list(self.pyFile.topology())

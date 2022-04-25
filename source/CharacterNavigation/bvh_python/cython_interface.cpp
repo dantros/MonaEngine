@@ -915,7 +915,7 @@ struct BVH_file_interface;
 /* "cython_interface.pyx":10
  * #BVH_file
  * 
- * cdef public class BVH_file_interface[object BVH_file_interface, type BVH_file_interface_type]:             # <<<<<<<<<<<<<<
+ * cdef public class BVH_file_interface[object BVH_file_interface, type BVH_file_interface]:             # <<<<<<<<<<<<<<
  *     cdef public object topology
  *     cdef public object jointNames
  */
@@ -934,9 +934,9 @@ struct BVH_file_interface {
   PyObject *__dict__;
 };
 
-__PYX_EXTERN_C DL_EXPORT(PyTypeObject) BVH_file_interface_type;
+__PYX_EXTERN_C DL_EXPORT(PyTypeObject) BVH_file_interface;
 
-__PYX_EXTERN_C DL_EXPORT(PyTypeObject) BVH_file_interface_type;
+__PYX_EXTERN_C DL_EXPORT(PyTypeObject) BVH_file_interface;
 
 struct __pyx_vtabstruct_16cython_interface_BVH_file_interface {
   void (*init)(struct BVH_file_interface *, PyObject *, PyObject *, PyObject *);
@@ -1829,7 +1829,7 @@ void __pyx_f_16cython_interface_18BVH_file_interface_init(struct BVH_file_interf
 
 /* "cython_interface.pyx":11
  * 
- * cdef public class BVH_file_interface[object BVH_file_interface, type BVH_file_interface_type]:
+ * cdef public class BVH_file_interface[object BVH_file_interface, type BVH_file_interface]:
  *     cdef public object topology             # <<<<<<<<<<<<<<
  *     cdef public object jointNames
  *     cdef public object eeNames
@@ -1923,7 +1923,7 @@ static int __pyx_pf_16cython_interface_18BVH_file_interface_8topology_4__del__(s
 }
 
 /* "cython_interface.pyx":12
- * cdef public class BVH_file_interface[object BVH_file_interface, type BVH_file_interface_type]:
+ * cdef public class BVH_file_interface[object BVH_file_interface, type BVH_file_interface]:
  *     cdef public object topology
  *     cdef public object jointNames             # <<<<<<<<<<<<<<
  *     cdef public object eeNames
@@ -3875,7 +3875,7 @@ static struct PyGetSetDef __pyx_getsets_16cython_interface_BVH_file_interface[] 
   {0, 0, 0, 0, 0}
 };
 
-DL_EXPORT(PyTypeObject) BVH_file_interface_type = {
+DL_EXPORT(PyTypeObject) BVH_file_interface = {
   PyVarObject_HEAD_INIT(0, 0)
   "cython_interface.BVH_file_interface", /*tp_name*/
   sizeof(struct BVH_file_interface), /*tp_basicsize*/
@@ -4126,14 +4126,14 @@ static int __Pyx_modinit_type_init_code(void) {
   /*--- Type init code ---*/
   __pyx_vtabptr_16cython_interface_BVH_file_interface = &__pyx_vtable_16cython_interface_BVH_file_interface;
   __pyx_vtable_16cython_interface_BVH_file_interface.init = (void (*)(struct BVH_file_interface *, PyObject *, PyObject *, PyObject *))__pyx_f_16cython_interface_18BVH_file_interface_init;
-  if (PyType_Ready(&BVH_file_interface_type) < 0) __PYX_ERR(0, 10, __pyx_L1_error)
+  if (PyType_Ready(&BVH_file_interface) < 0) __PYX_ERR(0, 10, __pyx_L1_error)
   #if PY_VERSION_HEX < 0x030800B1
-  BVH_file_interface_type.tp_print = 0;
+  BVH_file_interface.tp_print = 0;
   #endif
-  if (__Pyx_SetVtable(BVH_file_interface_type.tp_dict, __pyx_vtabptr_16cython_interface_BVH_file_interface) < 0) __PYX_ERR(0, 10, __pyx_L1_error)
-  if (PyObject_SetAttr(__pyx_m, __pyx_n_s_BVH_file_interface, (PyObject *)&BVH_file_interface_type) < 0) __PYX_ERR(0, 10, __pyx_L1_error)
-  if (__Pyx_setup_reduce((PyObject*)&BVH_file_interface_type) < 0) __PYX_ERR(0, 10, __pyx_L1_error)
-  __pyx_ptype_16cython_interface_BVH_file_interface = &BVH_file_interface_type;
+  if (__Pyx_SetVtable(BVH_file_interface.tp_dict, __pyx_vtabptr_16cython_interface_BVH_file_interface) < 0) __PYX_ERR(0, 10, __pyx_L1_error)
+  if (PyObject_SetAttr(__pyx_m, __pyx_n_s_BVH_file_interface, (PyObject *)&BVH_file_interface) < 0) __PYX_ERR(0, 10, __pyx_L1_error)
+  if (__Pyx_setup_reduce((PyObject*)&BVH_file_interface) < 0) __PYX_ERR(0, 10, __pyx_L1_error)
+  __pyx_ptype_16cython_interface_BVH_file_interface = &BVH_file_interface;
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;

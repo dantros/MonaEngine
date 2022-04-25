@@ -9,7 +9,7 @@ struct BVH_file_interface;
 /* "cython_interface.pyx":10
  * #BVH_file
  * 
- * cdef public class BVH_file_interface[object BVH_file_interface, type BVH_file_interface_type]:             # <<<<<<<<<<<<<<
+ * cdef public class BVH_file_interface[object BVH_file_interface, type BVH_file_interface]:             # <<<<<<<<<<<<<<
  *     cdef public object topology
  *     cdef public object jointNames
  */
@@ -42,7 +42,7 @@ struct BVH_file_interface {
   #define DL_IMPORT(_T) _T
 #endif
 
-__PYX_EXTERN_C DL_IMPORT(PyTypeObject) BVH_file_interface_type;
+__PYX_EXTERN_C DL_IMPORT(PyTypeObject) BVH_file_interface;
 
 __PYX_EXTERN_C void writeBVH_interface(PyObject *, PyObject *, PyObject *, PyObject *, PyObject *);
 

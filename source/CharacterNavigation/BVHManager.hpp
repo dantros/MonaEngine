@@ -17,13 +17,15 @@ namespace Mona {
             int m_jointNum;
             int m_frameNum;
             int m_eeNum;
-            float m_frametime;
+            float m_frametime;	
+
     };
 
     class BVH_writer {
         public:
             BVH_writer(std::string &staticDataPath);
-            void write(float*** rotations, float** positions, std::string& writePath, float frametime);
+            std::string m_staticDataPath;
+            void write(float*** rotations, float** positions, float frametime, std::string& writePath);
     };
 
 

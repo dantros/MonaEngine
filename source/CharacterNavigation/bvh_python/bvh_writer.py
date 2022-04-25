@@ -54,7 +54,7 @@ def write_bvh(parent, offset, rotation, position, names, frametime, order, path,
     return file_string
 
 
-class BVH_writer_Py():
+class BVH_writer():
     def __init__(self, stdbvhPath):
         staticFile = BVH_file(stdbvhPath)
         self.parent = staticFile.topology

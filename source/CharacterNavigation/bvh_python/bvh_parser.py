@@ -5,7 +5,7 @@ from Quaternions import Quaternions
 from Kinematics import ForwardKinematics
 from bvh_writer import write_bvh
 
-class BVH_file_Py:
+class BVH_file:
     def __init__(self, filePath, jointNames = None, eeNames = None):
         self.anim, self._names, self.frametime = BVH.load(filePath)
         self.edges = [] #incluye offsets

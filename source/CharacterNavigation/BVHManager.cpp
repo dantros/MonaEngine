@@ -70,13 +70,13 @@ namespace Mona{
         
 
         // offsets
-        m_offsets = new taco::Tensor<float>({ jointNum, 3 }, taco::ModeFormat::dense);//new float[jointNum][3];
+        m_offsets = new Eigen::Tensor<float, 2>(jointNum, 3);//new float[jointNum][3];
         if (PyList_Check(pyFile.offsets)) {
             for (Py_ssize_t i = 0; i < PyList_Size(pyFile.offsets); i++) {
                 PyObject* jointOff = PyList_GetItem(pyFile.offsets, i);
                 for (Py_ssize_t j = 0; j < PyList_Size(jointOff); j++) {
                     PyObject* valOff = PyList_GetItem(jointOff, j);
-                    m_offsets->insert({int(i), int(j)}, (float)PyFloat_AsDouble(valOff));
+                    m_offsets(int(i), int(j)) = (float)PyFloat_AsDouble(valOff);
                 }
 
             }
@@ -86,7 +86,7 @@ namespace Mona{
         }
 
         // rotations
-        m_rotations = new taco::Tensor<float>({ frameNum, jointNum, 3 }, taco::ModeFormat::dense);//new float[frameNum][jointNum][3];
+        m_rotations = new Eigen::Tensor<float, 3>( frameNum, jointNum, 3 );//new float[frameNum][jointNum][3];
         if (PyList_Check(pyFile.rotations)) {
             for (Py_ssize_t i = 0; i < PyList_Size(pyFile.rotations); i++) {
                 PyObject* frameRot = PyList_GetItem(pyFile.rotations, i);
@@ -94,7 +94,7 @@ namespace Mona{
                     PyObject* jointRot = PyList_GetItem(frameRot, j);
                     for (Py_ssize_t k = 0; k < PyList_Size(jointRot); k++) {
                         PyObject* valRot = PyList_GetItem(jointRot, k);
-                        m_rotations->insert({ (int)i, (int)j ,(int)k }, (float)PyFloat_AsDouble(valRot));
+                        m_rotations((int)i, (int)j ,(int)k ) = (float)PyFloat_AsDouble(valRot);
                     }
                 }
             }
@@ -105,7 +105,7 @@ namespace Mona{
 
 
         // positions
-        m_positions = new taco::Tensor<float>({ frameNum, jointNum, 3 }, taco::ModeFormat::dense);//new float[frameNum][jointNum][3];
+        m_positions = new Eigen::Tensor<float, 3>(frameNum, jointNum, 3);//new float[frameNum][jointNum][3];
         if (PyList_Check(pyFile.positions)) {
             for (Py_ssize_t i = 0; i < PyList_Size(pyFile.positions); i++) {
                 PyObject* framePos = PyList_GetItem(pyFile.positions, i);
@@ -113,7 +113,7 @@ namespace Mona{
                     PyObject* jointPos = PyList_GetItem(framePos, j);
                     for (Py_ssize_t k = 0; k < PyList_Size(jointPos); k++) {
                         PyObject* valPos = PyList_GetItem(jointPos, k);
-                        m_positions->insert({ (int)i, (int)j ,(int)k }, (float)PyFloat_AsDouble(valPos));
+                        m_positions((int)i, (int)j ,(int)k ) = (float)PyFloat_AsDouble(valPos);
                     }
                 }
             }

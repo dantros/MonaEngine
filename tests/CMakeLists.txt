@@ -8,3 +8,4 @@ function(Add_Test TARGETNAME FILENAME)
 endfunction(Add_Test)
 
 Add_Test(Test002_World Test002_World.cpp)
+Add_Test(test test.cpp)

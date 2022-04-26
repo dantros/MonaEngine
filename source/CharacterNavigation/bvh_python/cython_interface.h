@@ -5,6 +5,7 @@
 
 #include "Python.h"
 struct BVH_file_interface;
+struct BVH_writer_interface;
 
 /* "cython_interface.pyx":10
  * #BVH_file
@@ -29,6 +30,20 @@ struct BVH_file_interface {
   PyObject *__dict__;
 };
 
+/* "cython_interface.pyx":48
+ * #BVH_writer
+ * 
+ * cdef public class BVH_writer_interface[object BVH_writer_interface, type BVH_writer_interface]:             # <<<<<<<<<<<<<<
+ *     cdef public int jointNum
+ *     cdef dict __dict__
+ */
+struct BVH_writer_interface {
+  PyObject_HEAD
+  struct __pyx_vtabstruct_16cython_interface_BVH_writer_interface *__pyx_vtab;
+  int jointNum;
+  PyObject *__dict__;
+};
+
 #ifndef __PYX_HAVE_API__cython_interface
 
 #ifndef __PYX_EXTERN_C
@@ -44,8 +59,7 @@ struct BVH_file_interface {
 #endif
 
 __PYX_EXTERN_C DL_IMPORT(PyTypeObject) BVH_file_interface;
-
-__PYX_EXTERN_C void writeBVH_interface(PyObject *, PyObject *, PyObject *, PyObject *, PyObject *);
+__PYX_EXTERN_C DL_IMPORT(PyTypeObject) BVH_writer_interface;
 
 #endif /* !__PYX_HAVE_API__cython_interface */
 

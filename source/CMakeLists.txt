@@ -68,7 +68,8 @@ set(MONA_HEADERS
 				Audio/AudioSourceComponentLifetimePolicy.hpp
 				DebugDrawing/DebugDrawingSystem.hpp
 				DebugDrawing/BulletDebugDraw.hpp
-				Utilities/BasicCameraControllers.hpp)
+				Utilities/BasicCameraControllers.hpp
+				CharacterNavigation/BVHManager.hpp)
 set(MONA_SOURCES 
 				Core/Config.cpp
 				Event/EventManager.cpp
@@ -97,7 +98,8 @@ set(MONA_SOURCES
 				Audio/AudioSourceComponent.cpp
 				DebugDrawing/ImGuiBuild.cpp
 				DebugDrawing/BulletDebugDraw.cpp
-				DebugDrawing/DebugDrawingSystem.cpp)
+				DebugDrawing/DebugDrawingSystem.cpp
+				CharacterNavigation/BVHManager.cpp)
 file(GLOB_RECURSE Shaders  "${CMAKE_SOURCE_DIR}/Assets/Shaders/*")
 source_group("Shaders" FILES ${Shaders})
 

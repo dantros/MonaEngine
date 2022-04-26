@@ -3,12 +3,14 @@
 #define BVHMANAGER_HPP
 #include <string>
 #include <vector>
+#include "cython_interface.h"
 
 namespace Mona {
 
 	class BVH_file {
         public:
-            BVH_file(std::string &filePath, std::vector<std::string> jointNames = NULL);
+            BVH_file(std::string &filePath);
+            BVH_file(std::string& filePath, std::vector<std::string> jointNames);
             int* m_topology;
             std::string* m_jointNames; // si se quiere usar un subset de las joints originales
             float** m_offsets;
@@ -16,7 +18,9 @@ namespace Mona {
             float*** m_rotations;
             int m_jointNum;
             int m_frameNum;
-            float m_frametime;	
+            float m_frametime;
+    private:
+        void initFile(BVH_file_interface pyFile);
 
     };
 

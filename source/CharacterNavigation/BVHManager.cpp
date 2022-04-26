@@ -2,98 +2,110 @@
 #include <Python.h>
 #include <stdexcept>
 #include "PyUtils.h"
-#include "cython_interface.h"
 
 namespace Mona{
 
     BVH_file::BVH_file(std::string &filePath, std::vector<std::string> jointNames){
         Py_Initialize();   // initialize Python
         PyInit_cython_interface();
-        BVH_file_interface pyFile = BVH_file_interface(PyUnicode_FromString( filePath.data()), NULL);
-        if (jointNames != NULL){
-            PyObject* listObj = PyList_New( jointNames.size() );
-            if (!listObj) throw logic_error("Unable to allocate memory for Python list");
-            for (unsigned int i = 0; i < jointNames.size(); i++) {
-                PyObject *name = PyUnicode_FromString( jointNames[i].data());
-                if (!name) {
-                    Py_DECREF(listObj);
-                    throw logic_error("Unable to allocate memory for Python list");
-                }
-                PyList_SET_ITEM(listObj, i, name);
+        PyObject* listObj = PyList_New(jointNames.size());
+        if (!listObj) throw logic_error("Unable to allocate memory for Python list");
+        for (unsigned int i = 0; i < jointNames.size(); i++) {
+            PyObject* name = PyUnicode_FromString(jointNames[i].data());
+            if (!name) {
+                Py_DECREF(listObj);
+                throw logic_error("Unable to allocate memory for Python list");
             }
-            pyFile = BVH_file_interface(PyUnicode_FromString( filePath.data()), listObj);
+            PyList_SET_ITEM(listObj, i, name);
         }
+        pyFile = BVH_file_interface(PyUnicode_FromString(filePath.data()), listObj);
+        initFile(pyFile);
+        Py_Finalize();
+    }
+
+    BVH_file::BVH_file(std::string& filePath) {
+        Py_Initialize();   // initialize Python
+        PyInit_cython_interface();
+        BVH_file_interface pyFile = BVH_file_interface(PyUnicode_FromString(filePath.data()), NULL);
+        initFile(pyFile);
+        Py_Finalize();
+    }
+
+    void BVH_file::initFile(BVH_file_interface pyFile) {
         m_jointNum = pyFile.jointNum;
         m_frameNum = pyFile.frameNum;
         m_frametime = pyFile.frametime;
-        
+
         // topology
         m_topology = new int[m_jointNum];
         if (PyList_Check(pyFile.topology)) {
-			for(Py_ssize_t i = 0; i < PyList_Size(pyFile.topology); i++) {
-				PyObject *value = PyList_GetItem(pyFile.topology, i);
-				m_topology[i] = PyInt_AsInt(value);
-			}
-		} else {
-			throw logic_error("Passed PyObject pointer was not a list!");
-		}
+            for (Py_ssize_t i = 0; i < PyList_Size(pyFile.topology); i++) {
+                PyObject* value = PyList_GetItem(pyFile.topology, i);
+                m_topology[i] = PyInt_AsInt(value);
+            }
+        }
+        else {
+            throw logic_error("Passed PyObject pointer was not a list!");
+        }
 
         // jointNames
         m_jointNames = new std::string[m_jointNum];
-        for(int i = 0; i < m_jointNum; i++){
+        for (int i = 0; i < m_jointNum; i++) {
             m_jointNames[i] = jointNames[i]
         }
 
         // offsets
         m_offsets = new float[m_jointNum][3];
         if (PyList_Check(pyFile.offsets)) {
-			for(Py_ssize_t i = 0; i < PyList_Size(pyFile.offsets); i++) {
-				PyObject *jointOff = PyList_GetItem(pyFile.offsets, i);
-                for(Py_ssize_t j = 0; j < PyList_Size(jointOff); j++) {
-                    PyObject *valOff = PyList_GetItem(jointOff, j);
+            for (Py_ssize_t i = 0; i < PyList_Size(pyFile.offsets); i++) {
+                PyObject* jointOff = PyList_GetItem(pyFile.offsets, i);
+                for (Py_ssize_t j = 0; j < PyList_Size(jointOff); j++) {
+                    PyObject* valOff = PyList_GetItem(jointOff, j);
                     m_offsets[i][j] = PyFloat_AsFloat(valOff);
                 }
-				
-			}
-		} else {
-			throw logic_error("Passed PyObject pointer was not a list!");
-		}
+
+            }
+        }
+        else {
+            throw logic_error("Passed PyObject pointer was not a list!");
+        }
 
         // rotations
         m_rotations = new float[m_frameNum][m_jointNum][3];
         if (PyList_Check(pyFile.rotations)) {
-			for(Py_ssize_t i = 0; i < PyList_Size(pyFile.rotations); i++) {
-				PyObject *frameRot = PyList_GetItem(pyFile.rotations, i);
-                for(Py_ssize_t j = 0; j < PyList_Size(frameRot); j++) {
-                    PyObject *jointRot = PyList_GetItem(frameRot, j);
-                    for(Py_ssize_t k = 0; k < PyList_Size(jointRot); k++) {
-                        PyObject *valRot = PyList_GetItem(jointRot, k);
+            for (Py_ssize_t i = 0; i < PyList_Size(pyFile.rotations); i++) {
+                PyObject* frameRot = PyList_GetItem(pyFile.rotations, i);
+                for (Py_ssize_t j = 0; j < PyList_Size(frameRot); j++) {
+                    PyObject* jointRot = PyList_GetItem(frameRot, j);
+                    for (Py_ssize_t k = 0; k < PyList_Size(jointRot); k++) {
+                        PyObject* valRot = PyList_GetItem(jointRot, k);
                         m_rotations[i][j][k] = PyFloat_AsFloat(valRot);
                     }
                 }
-			}
-		} else {
-			throw logic_error("Passed PyObject pointer was not a list!");
-		}
+            }
+        }
+        else {
+            throw logic_error("Passed PyObject pointer was not a list!");
+        }
 
 
         // positions
         m_positions = new float[m_frameNum][m_jointNum][3];
-		if (PyList_Check(pyFile.positions)) {
-			for(Py_ssize_t i = 0; i < PyList_Size(pyFile.positions); i++) {
-				PyObject *framePos = PyList_GetItem(pyFile.positions, i);
-                for(Py_ssize_t j = 0; j < PyList_Size(framePos); j++) {
-                    PyObject *jointPos = PyList_GetItem(framePos, j);
-                    for(Py_ssize_t k = 0; k < PyList_Size(jointPos); k++) {
-                        PyObject *valPos = PyList_GetItem(jointPos, k);
+        if (PyList_Check(pyFile.positions)) {
+            for (Py_ssize_t i = 0; i < PyList_Size(pyFile.positions); i++) {
+                PyObject* framePos = PyList_GetItem(pyFile.positions, i);
+                for (Py_ssize_t j = 0; j < PyList_Size(framePos); j++) {
+                    PyObject* jointPos = PyList_GetItem(framePos, j);
+                    for (Py_ssize_t k = 0; k < PyList_Size(jointPos); k++) {
+                        PyObject* valPos = PyList_GetItem(jointPos, k);
                         m_positions[i][j][k] = PyFloat_AsFloat(valPos);
                     }
                 }
-			}
-		} else {
-			throw logic_error("Passed PyObject pointer was not a list!");
-		}
-        Py_Finalize();
+            }
+        }
+        else {
+            throw logic_error("Passed PyObject pointer was not a list!");
+        }
     }
 
     BVH_writer::BVH_writer(std::string &staticDataPath){

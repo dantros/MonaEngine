@@ -54,7 +54,7 @@ cdef public class BVH_writer_interface[object BVH_writer_interface, type BVH_wri
             self.staticDataPath = staticDataPath
 
     #rotations -> F x J x 3, positions -> F x 3
-    cdef public void writeBVH_interface(rotations, positions, writePath, frametime):
+    cdef public void writeBVH_interface(self, rotations, positions, writePath, frametime):
         tRotations = tensor(rotations)
         tPositions = tensor(positions)
         pyWriter = BVH_writer(self.staticDataPath)

@@ -10,52 +10,55 @@ from torch import tensor
 cdef public class BVH_file_interface[object BVH_file_interface, type BVH_file_interface_type]:
     cdef public object topology
     cdef public object jointNames
-    cdef public object eeNames
     cdef public object offsets
     cdef public object positions
     cdef public object rotations
     cdef public int jointNum
     cdef public int frameNum
-    cdef public int eeNum
     cdef public float frametime
-    cdef dict __dict__
-    pyFile = None
 
-    cdef public void init(self, filePath, jointNames):
-        pyFile = BVH_file(filePath, jointNames)
-        self.jointNum = pyFile.jointNum
-        self.frameNum = len(pyFile.anim.rotations)
-        self.frametime = pyFile.frametime
+cdef public object createFileObject():
+    return BVH_file_interface()
 
-        #topology (jointNum)
-        self.topology = list(pyFile.topology())
+cdef public void initFileInterface(fileInterface, filePath, jointNames):
+    pyFile = BVH_file(filePath, jointNames)
+    fileInterface.jointNum = pyFile.jointNum
+    fileInterface.frameNum = len(pyFile.anim.rotations)
+    fileInterface.frametime = pyFile.frametime
 
-        #jointNames (jointNum)
-        self.jointNames = list(pyFile.names)
-        
-        #offsets (JointNum x 3)
-        self.offsets = pyFile.offsets().tolist()
-        
-        #positions (FrameNum x JointNum x 3)
-        self.positions = pyFile.get_positions().tolist()
-        
-        #rotations (FrameNum x JointNum x 3)
-        self.rotations = pyFile.anim.rotations[:, pyFile.joints, :].tolist()
+    #topology (jointNum)
+    fileInterface.topology = list(pyFile.topology())
+
+    #jointNames (jointNum)
+    fileInterface.jointNames = list(pyFile.names)
+    
+    #offsets (JointNum x 3)
+    fileInterface.offsets = pyFile.offsets().tolist()
+    
+    #positions (FrameNum x JointNum x 3)
+    fileInterface.positions = pyFile.get_positions().tolist()
+    
+    #rotations (FrameNum x JointNum x 3)
+    fileInterface.rotations = pyFile.anim.rotations[:, pyFile.joints, :].tolist()
 
 
 #BVH_writer
 
 cdef public class BVH_writer_interface[object BVH_writer_interface, type BVH_writer_interface_type]:
     cdef public int jointNum
-    cdef dict __dict__
-    cdef public void init(self, staticDataPath):
-            pyFile = BVH_writer(staticDataPath)
-            self.jointNum = pyFile.joint_num
-            self.staticDataPath = staticDataPath
+    cdef public staticDataPath
 
-    #rotations -> F x J x 3, positions -> F x 3
-    cdef public void writeBVH_interface(self, rotations, positions, writePath, frametime):
-        tRotations = tensor(rotations)
-        tPositions = tensor(positions)
-        pyWriter = BVH_writer(self.staticDataPath)
-        pyWriter.write(rotations=tRotations, positions=tPositions, path=writePath, frametime=1.0/30)
+cdef public object createWriterObject():
+    return BVH_writer_interface()
+
+cdef public void initWriterInterface(writerInterface, staticDataPath):
+        pyFile = BVH_writer(staticDataPath)
+        writerInterface.jointNum = pyFile.joint_num
+        writerInterface.staticDataPath = staticDataPath
+
+#rotations -> F x J x 3, positions -> F x 3
+cdef public void writeBVH_interface(writerInterface, rotations, positions, writePath, frametime):
+    tRotations = tensor(rotations)
+    tPositions = tensor(positions)
+    pyWriter = BVH_writer(writerInterface.staticDataPath)
+    pyWriter.write(rotations=tRotations, positions=tPositions, path=writePath, frametime=1.0/30)

@@ -17,29 +17,32 @@ namespace Mona{
             }
             PyList_SET_ITEM(listObj, i, name);
         }
-        BVH_file_interface_type pyFile = BVH_file_interface(PyUnicode_FromString(filePath.data()), listObj);
-        initFile(pyFile, jointNames, true);
+        PyObject* pyFile = createFileObject();
+        initFileInterface(pyFile, PyUnicode_FromString(filePath.data()), listObj);
+        initFile(pyFile);
         Py_Finalize();
     }
 
     BVH_file::BVH_file(std::string& filePath) {
         Py_Initialize();   // initialize Python
         PyInit_cython_interface();
-        BVH_file_interface_type pyFile = BVH_file_interface(PyUnicode_FromString(filePath.data()), NULL);
+        PyObject* pyFile = createFileObject();
+        initFileInterface(PyUnicode_FromString(filePath.data()), NULL);
         initFile(pyFile);
         Py_Finalize();
     }
 
-    void BVH_file::initFile(BVH_file_interface_type pyFile) {
-        m_jointNum = pyFile.jointNum;
-        m_frameNum = pyFile.frameNum;
-        m_frametime = pyFile.frametime;
+    void BVH_file::initFile(PyObject* pyFile) {
+        BVH_file_interface structFile = (BVH_file_interface)pyFile;
+        m_jointNum = structFile.jointNum;
+        m_frameNum = structFile.frameNum;
+        m_frametime = structFile.frametime;
 
         // topology
         m_topology = new int[m_jointNum];
-        if (PyList_Check(pyFile.topology)) {
-            for (Py_ssize_t i = 0; i < PyList_Size(pyFile.topology); i++) {
-                PyObject* value = PyList_GetItem(pyFile.topology, i);
+        if (PyList_Check(structFile.topology)) {
+            for (Py_ssize_t i = 0; i < PyList_Size(structFile.topology); i++) {
+                PyObject* value = PyList_GetItem(structFile.topology, i);
                 m_topology[i] = (int)PyLong_AsLong(value);
             }
         }
@@ -49,9 +52,9 @@ namespace Mona{
 
         // jointNames
         m_jointNames = new std::string[m_jointNum];
-        if (PyList_Check(pyFile.jointNames)) {
-            for (Py_ssize_t i = 0; i < PyList_Size(pyFile.jointNames); i++) {
-                PyObject* name = PyList_GetItem(pyFile.jointNames, i);
+        if (PyList_Check(structFile.jointNames)) {
+            for (Py_ssize_t i = 0; i < PyList_Size(structFile.jointNames); i++) {
+                PyObject* name = PyList_GetItem(structFile.jointNames, i);
                 m_jointNames[i] = PyUnicode_AsUTF8(name);
             }
         }
@@ -63,9 +66,9 @@ namespace Mona{
 
         // offsets
         m_offsets = new float[m_jointNum][3];
-        if (PyList_Check(pyFile.offsets)) {
-            for (Py_ssize_t i = 0; i < PyList_Size(pyFile.offsets); i++) {
-                PyObject* jointOff = PyList_GetItem(pyFile.offsets, i);
+        if (PyList_Check(structFile.offsets)) {
+            for (Py_ssize_t i = 0; i < PyList_Size(structFile.offsets); i++) {
+                PyObject* jointOff = PyList_GetItem(structFile.offsets, i);
                 for (Py_ssize_t j = 0; j < PyList_Size(jointOff); j++) {
                     PyObject* valOff = PyList_GetItem(jointOff, j);
                     m_offsets[i][j] = (float)PyFloat_AsDouble(valOff);
@@ -79,9 +82,9 @@ namespace Mona{
 
         // rotations
         m_rotations = new float[m_frameNum][m_jointNum][3];
-        if (PyList_Check(pyFile.rotations)) {
-            for (Py_ssize_t i = 0; i < PyList_Size(pyFile.rotations); i++) {
-                PyObject* frameRot = PyList_GetItem(pyFile.rotations, i);
+        if (PyList_Check(structFile.rotations)) {
+            for (Py_ssize_t i = 0; i < PyList_Size(structFile.rotations); i++) {
+                PyObject* frameRot = PyList_GetItem(structFile.rotations, i);
                 for (Py_ssize_t j = 0; j < PyList_Size(frameRot); j++) {
                     PyObject* jointRot = PyList_GetItem(frameRot, j);
                     for (Py_ssize_t k = 0; k < PyList_Size(jointRot); k++) {
@@ -98,9 +101,9 @@ namespace Mona{
 
         // positions
         m_positions = new float[m_frameNum][m_jointNum][3];
-        if (PyList_Check(pyFile.positions)) {
-            for (Py_ssize_t i = 0; i < PyList_Size(pyFile.positions); i++) {
-                PyObject* framePos = PyList_GetItem(pyFile.positions, i);
+        if (PyList_Check(structFile.positions)) {
+            for (Py_ssize_t i = 0; i < PyList_Size(structFile.positions); i++) {
+                PyObject* framePos = PyList_GetItem(structFile.positions, i);
                 for (Py_ssize_t j = 0; j < PyList_Size(framePos); j++) {
                     PyObject* jointPos = PyList_GetItem(framePos, j);
                     for (Py_ssize_t k = 0; k < PyList_Size(jointPos); k++) {
@@ -122,8 +125,10 @@ namespace Mona{
     void BVH_writer::write(float*** rotations, float** positions, float frametime, int frameNum, std::string& writePath){
         Py_Initialize();   // initialize Python
         PyInit_cython_interface();
-        BVH_writer_interface_type pyWriter = BVH_writer_interface(PyUnicode_FromString( writePath.data()));
-        int jointNum = pyWriter.jointNum;
+        PyObject* pyWriter = createWriterObject();
+        initWriterInterface(pyWriter, PyUnicode_FromString(writePath.data()));
+        BVH_writer_interface structWriter = (BVH_writer_interface)pyWriter;
+        int jointNum = structWriter.jointNum;
         // rotations
         PyObject* frameListRot = PyList_New( frameNum );
         for (unsigned int i = 0; i < frameNum; i++) {
@@ -155,7 +160,7 @@ namespace Mona{
             }
         }
 
-        pyWriter.writeBVH_interface(frameListRot, frameListPos, PyUnicode_FromString(writePath.data()), frametime);
+        writeBVH_interface(pyWriter, frameListRot, frameListPos, PyUnicode_FromString(writePath.data()), PyFloat_FromDouble((double)frametime));
         Py_Finalize();
     }
 

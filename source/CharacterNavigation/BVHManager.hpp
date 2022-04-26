@@ -3,7 +3,7 @@
 #define BVHMANAGER_HPP
 #include <string>
 #include <vector>
-#include "cython_interface.h"
+#include "bvh_python/cython_interface.h"
 
 namespace Mona {
 
@@ -20,7 +20,7 @@ namespace Mona {
             int m_frameNum;
             float m_frametime;
     private:
-        void initFile(BVH_file_interface pyFile);
+        void initFile(BVH_file_interface_type pyFile);
 
     };
 
@@ -28,7 +28,7 @@ namespace Mona {
         public:
             BVH_writer(std::string &staticDataPath);
             std::string m_staticDataPath;
-            void write(float*** rotations, float** positions, float frametime, std::string& writePath);
+            void write(float*** rotations, float** positions, float frametime, int frameNum, std::string& writePath);
     };
 
 

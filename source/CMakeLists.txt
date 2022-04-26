@@ -69,7 +69,8 @@ set(MONA_HEADERS
 				DebugDrawing/DebugDrawingSystem.hpp
 				DebugDrawing/BulletDebugDraw.hpp
 				Utilities/BasicCameraControllers.hpp
-				CharacterNavigation/BVHManager.hpp)
+				CharacterNavigation/BVHManager.hpp
+				CharacterNavigation/bvh_python/cython_interface.h)
 set(MONA_SOURCES 
 				Core/Config.cpp
 				Event/EventManager.cpp
@@ -99,7 +100,8 @@ set(MONA_SOURCES
 				DebugDrawing/ImGuiBuild.cpp
 				DebugDrawing/BulletDebugDraw.cpp
 				DebugDrawing/DebugDrawingSystem.cpp
-				CharacterNavigation/BVHManager.cpp)
+				CharacterNavigation/BVHManager.cpp
+				CharacterNavigation/bvh_python/cython_interface.cpp)
 file(GLOB_RECURSE Shaders  "${CMAKE_SOURCE_DIR}/Assets/Shaders/*")
 source_group("Shaders" FILES ${Shaders})
 

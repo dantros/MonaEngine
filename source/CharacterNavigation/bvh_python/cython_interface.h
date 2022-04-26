@@ -10,7 +10,7 @@ struct BVH_writer_interface;
 /* "cython_interface.pyx":10
  * #BVH_file
  * 
- * cdef public class BVH_file_interface[object BVH_file_interface, type BVH_file_interface]:             # <<<<<<<<<<<<<<
+ * cdef public class BVH_file_interface[object BVH_file_interface, type BVH_file_interface_type]:             # <<<<<<<<<<<<<<
  *     cdef public object topology
  *     cdef public object jointNames
  */
@@ -33,7 +33,7 @@ struct BVH_file_interface {
 /* "cython_interface.pyx":48
  * #BVH_writer
  * 
- * cdef public class BVH_writer_interface[object BVH_writer_interface, type BVH_writer_interface]:             # <<<<<<<<<<<<<<
+ * cdef public class BVH_writer_interface[object BVH_writer_interface, type BVH_writer_interface_type]:             # <<<<<<<<<<<<<<
  *     cdef public int jointNum
  *     cdef dict __dict__
  */
@@ -58,8 +58,8 @@ struct BVH_writer_interface {
   #define DL_IMPORT(_T) _T
 #endif
 
-__PYX_EXTERN_C DL_IMPORT(PyTypeObject) BVH_file_interface;
-__PYX_EXTERN_C DL_IMPORT(PyTypeObject) BVH_writer_interface;
+__PYX_EXTERN_C DL_IMPORT(PyTypeObject) BVH_file_interface_type;
+__PYX_EXTERN_C DL_IMPORT(PyTypeObject) BVH_writer_interface_type;
 
 #endif /* !__PYX_HAVE_API__cython_interface */
 

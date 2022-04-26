@@ -7,7 +7,7 @@ from torch import tensor
 
 #BVH_file
 
-cdef public class BVH_file_interface[object BVH_file_interface, type BVH_file_interface]:
+cdef public class BVH_file_interface[object BVH_file_interface, type BVH_file_interface_type]:
     cdef public object topology
     cdef public object jointNames
     cdef public object eeNames
@@ -45,7 +45,7 @@ cdef public class BVH_file_interface[object BVH_file_interface, type BVH_file_in
 
 #BVH_writer
 
-cdef public class BVH_writer_interface[object BVH_writer_interface, type BVH_writer_interface]:
+cdef public class BVH_writer_interface[object BVH_writer_interface, type BVH_writer_interface_type]:
     cdef public int jointNum
     cdef dict __dict__
     cdef public void init(self, staticDataPath):

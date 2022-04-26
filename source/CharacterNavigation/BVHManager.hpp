@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include "bvh_python/cython_interface.h"
+#include <taco.h>
 
 namespace Mona {
 
@@ -11,11 +12,11 @@ namespace Mona {
         public:
             BVH_file(std::string &filePath);
             BVH_file(std::string& filePath, std::vector<std::string> jointNames);
-            int* m_topology;
-            std::string* m_jointNames; // si se quiere usar un subset de las joints originales
-            float** m_offsets;
-            float*** m_positions;
-            float*** m_rotations;
+            std::vector<int>* m_topology;
+            std::vector<std::string>* m_jointNames; // si se quiere usar un subset de las joints originales
+            taco::Tensor<float>* m_offsets;
+            taco::Tensor<float>* m_positions;
+            taco::Tensor<float>* m_rotations;
             int m_jointNum;
             int m_frameNum;
             float m_frametime;

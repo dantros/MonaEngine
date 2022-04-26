@@ -38,12 +38,15 @@ namespace Mona{
         m_frameNum = structFile.frameNum;
         m_frametime = structFile.frametime;
 
+        int jointNum = m_jointNum;
+        int frameNum = m_frameNum;
+
         // topology
-        m_topology = new int[m_jointNum];
+        m_topology = new std::vector<int>(jointNum);
         if (PyList_Check(structFile.topology)) {
             for (Py_ssize_t i = 0; i < PyList_Size(structFile.topology); i++) {
                 PyObject* value = PyList_GetItem(structFile.topology, i);
-                m_topology[i] = (int)PyLong_AsLong(value);
+                m_topology->push_back((int)PyLong_AsLong(value));
             }
         }
         else {
@@ -51,11 +54,11 @@ namespace Mona{
         }
 
         // jointNames
-        m_jointNames = new std::string[m_jointNum];
+        m_jointNames = new std::vector<std::string>(jointNum);
         if (PyList_Check(structFile.jointNames)) {
             for (Py_ssize_t i = 0; i < PyList_Size(structFile.jointNames); i++) {
                 PyObject* name = PyList_GetItem(structFile.jointNames, i);
-                m_jointNames[i] = PyUnicode_AsUTF8(name);
+                m_jointNames->push_back(PyUnicode_AsUTF8(name));
             }
         }
         else {
@@ -65,13 +68,13 @@ namespace Mona{
         
 
         // offsets
-        m_offsets = new float[m_jointNum][3];
+        m_offsets = new taco::Tensor<float>({ jointNum, 3 }, taco::ModeFormat::dense);//new float[jointNum][3];
         if (PyList_Check(structFile.offsets)) {
             for (Py_ssize_t i = 0; i < PyList_Size(structFile.offsets); i++) {
                 PyObject* jointOff = PyList_GetItem(structFile.offsets, i);
                 for (Py_ssize_t j = 0; j < PyList_Size(jointOff); j++) {
                     PyObject* valOff = PyList_GetItem(jointOff, j);
-                    m_offsets[i][j] = (float)PyFloat_AsDouble(valOff);
+                    m_offsets->insert({int(i), int(j)}, (float)PyFloat_AsDouble(valOff));
                 }
 
             }
@@ -81,7 +84,7 @@ namespace Mona{
         }
 
         // rotations
-        m_rotations = new float[m_frameNum][m_jointNum][3];
+        m_rotations = new taco::Tensor<float>({ frameNum, jointNum, 3 }, taco::ModeFormat::dense);//new float[frameNum][jointNum][3];
         if (PyList_Check(structFile.rotations)) {
             for (Py_ssize_t i = 0; i < PyList_Size(structFile.rotations); i++) {
                 PyObject* frameRot = PyList_GetItem(structFile.rotations, i);
@@ -89,7 +92,7 @@ namespace Mona{
                     PyObject* jointRot = PyList_GetItem(frameRot, j);
                     for (Py_ssize_t k = 0; k < PyList_Size(jointRot); k++) {
                         PyObject* valRot = PyList_GetItem(jointRot, k);
-                        m_rotations[i][j][k] = (float)PyFloat_AsDouble(valRot);
+                        m_rotations->insert({ (int)i, (int)j ,(int)k }, (float)PyFloat_AsDouble(valRot));
                     }
                 }
             }
@@ -100,7 +103,7 @@ namespace Mona{
 
 
         // positions
-        m_positions = new float[m_frameNum][m_jointNum][3];
+        m_positions = new taco::Tensor<float>({ frameNum, jointNum, 3 }, taco::ModeFormat::dense);//new float[frameNum][jointNum][3];
         if (PyList_Check(structFile.positions)) {
             for (Py_ssize_t i = 0; i < PyList_Size(structFile.positions); i++) {
                 PyObject* framePos = PyList_GetItem(structFile.positions, i);
@@ -108,7 +111,7 @@ namespace Mona{
                     PyObject* jointPos = PyList_GetItem(framePos, j);
                     for (Py_ssize_t k = 0; k < PyList_Size(jointPos); k++) {
                         PyObject* valPos = PyList_GetItem(jointPos, k);
-                        m_positions[i][j][k] = (float)PyFloat_AsDouble(valPos);
+                        m_positions->insert({ (int)i, (int)j ,(int)k }, (float)PyFloat_AsDouble(valPos));
                     }
                 }
             }

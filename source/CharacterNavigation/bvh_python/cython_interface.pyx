@@ -20,7 +20,7 @@ cdef public class BVH_file_interface[object BVH_file_interface, type BVH_file_in
 cdef public object createFileObject():
     return BVH_file_interface()
 
-cdef public void initFileInterface(fileInterface, filePath, jointNames):
+cdef public void initFileInterface(BVH_file_interface fileInterface, filePath, jointNames):
     pyFile = BVH_file(filePath, jointNames)
     fileInterface.jointNum = pyFile.jointNum
     fileInterface.frameNum = len(pyFile.anim.rotations)
@@ -51,14 +51,14 @@ cdef public class BVH_writer_interface[object BVH_writer_interface, type BVH_wri
 cdef public object createWriterObject():
     return BVH_writer_interface()
 
-cdef public void initWriterInterface(writerInterface, staticDataPath):
+cdef public void initWriterInterface(BVH_writer_interface writerInterface, staticDataPath):
         pyFile = BVH_writer(staticDataPath)
         writerInterface.jointNum = pyFile.joint_num
         writerInterface.staticDataPath = staticDataPath
 
 #rotations -> F x J x 3, positions -> F x 3
-cdef public void writeBVH_interface(writerInterface, rotations, positions, writePath, frametime):
+cdef public void writeBVH_interface(BVH_writer_interface writerInterface, rotations, positions, writePath, frametime):
     tRotations = tensor(rotations)
     tPositions = tensor(positions)
     pyWriter = BVH_writer(writerInterface.staticDataPath)
-    pyWriter.write(rotations=tRotations, positions=tPositions, path=writePath, frametime=1.0/30)
+    pyWriter.write(rotations=tRotations, positions=tPositions, path=writePath, frametime=frametime)

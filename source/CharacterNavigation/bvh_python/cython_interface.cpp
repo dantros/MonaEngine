@@ -1171,15 +1171,6 @@ static CYTHON_INLINE PyObject *__Pyx_PyCFunction_FastCall(PyObject *func, PyObje
 #define __Pyx_PyCFunction_FastCall(func, args, nargs)  (assert(0), NULL)
 #endif
 
-/* PyObjectSetAttrStr.proto */
-#if CYTHON_USE_TYPE_SLOTS
-#define __Pyx_PyObject_DelAttrStr(o,n) __Pyx_PyObject_SetAttrStr(o, n, NULL)
-static CYTHON_INLINE int __Pyx_PyObject_SetAttrStr(PyObject* obj, PyObject* attr_name, PyObject* value);
-#else
-#define __Pyx_PyObject_DelAttrStr(o,n)   PyObject_DelAttr(o,n)
-#define __Pyx_PyObject_SetAttrStr(o,n,v) PyObject_SetAttr(o,n,v)
-#endif
-
 /* PyObjectCallOneArg.proto */
 static CYTHON_INLINE PyObject* __Pyx_PyObject_CallOneArg(PyObject *func, PyObject *arg);
 
@@ -1331,10 +1322,10 @@ static int __Pyx_InitStrings(__Pyx_StringTabEntry *t);
 static PyTypeObject *__pyx_ptype_16cython_interface_BVH_file_interface = 0;
 static PyTypeObject *__pyx_ptype_16cython_interface_BVH_writer_interface = 0;
 __PYX_EXTERN_C PyObject *createFileObject(void); /*proto*/
-__PYX_EXTERN_C void initFileInterface(PyObject *, PyObject *, PyObject *); /*proto*/
+__PYX_EXTERN_C void initFileInterface(struct BVH_file_interface *, PyObject *, PyObject *); /*proto*/
 __PYX_EXTERN_C PyObject *createWriterObject(void); /*proto*/
-__PYX_EXTERN_C void initWriterInterface(PyObject *, PyObject *); /*proto*/
-__PYX_EXTERN_C void writeBVH_interface(PyObject *, PyObject *, PyObject *, PyObject *, PyObject *); /*proto*/
+__PYX_EXTERN_C void initWriterInterface(struct BVH_writer_interface *, PyObject *); /*proto*/
+__PYX_EXTERN_C void writeBVH_interface(struct BVH_writer_interface *, PyObject *, PyObject *, PyObject *, PyObject *); /*proto*/
 static PyObject *__pyx_f_16cython_interface___pyx_unpickle_BVH_file_interface__set_state(struct BVH_file_interface *, PyObject *); /*proto*/
 static PyObject *__pyx_f_16cython_interface___pyx_unpickle_BVH_writer_interface__set_state(struct BVH_writer_interface *, PyObject *); /*proto*/
 #define __Pyx_MODULE_NAME "cython_interface"
@@ -1361,7 +1352,6 @@ static const char __pyx_k_tolist[] = "tolist";
 static const char __pyx_k_update[] = "update";
 static const char __pyx_k_offsets[] = "offsets";
 static const char __pyx_k_BVH_file[] = "BVH_file";
-static const char __pyx_k_frameNum[] = "frameNum";
 static const char __pyx_k_getstate[] = "__getstate__";
 static const char __pyx_k_jointNum[] = "jointNum";
 static const char __pyx_k_pyx_type[] = "__pyx_type";
@@ -1376,14 +1366,12 @@ static const char __pyx_k_rotations[] = "rotations";
 static const char __pyx_k_BVH_writer[] = "BVH_writer";
 static const char __pyx_k_bvh_parser[] = "bvh_parser";
 static const char __pyx_k_bvh_writer[] = "bvh_writer";
-static const char __pyx_k_jointNames[] = "jointNames";
 static const char __pyx_k_pyx_result[] = "__pyx_result";
 static const char __pyx_k_PickleError[] = "PickleError";
 static const char __pyx_k_pyx_checksum[] = "__pyx_checksum";
 static const char __pyx_k_stringsource[] = "stringsource";
 static const char __pyx_k_get_positions[] = "get_positions";
 static const char __pyx_k_reduce_cython[] = "__reduce_cython__";
-static const char __pyx_k_staticDataPath[] = "staticDataPath";
 static const char __pyx_k_pyx_PickleError[] = "__pyx_PickleError";
 static const char __pyx_k_setstate_cython[] = "__setstate_cython__";
 static const char __pyx_k_cython_interface[] = "cython_interface";
@@ -1407,12 +1395,10 @@ static PyObject *__pyx_n_s_bvh_writer;
 static PyObject *__pyx_n_s_cline_in_traceback;
 static PyObject *__pyx_n_s_cython_interface;
 static PyObject *__pyx_n_s_dict;
-static PyObject *__pyx_n_s_frameNum;
 static PyObject *__pyx_n_s_frametime;
 static PyObject *__pyx_n_s_get_positions;
 static PyObject *__pyx_n_s_getstate;
 static PyObject *__pyx_n_s_import;
-static PyObject *__pyx_n_s_jointNames;
 static PyObject *__pyx_n_s_jointNum;
 static PyObject *__pyx_n_s_joint_num;
 static PyObject *__pyx_n_s_joints;
@@ -1437,7 +1423,6 @@ static PyObject *__pyx_n_s_reduce_ex;
 static PyObject *__pyx_n_s_rotations;
 static PyObject *__pyx_n_s_setstate;
 static PyObject *__pyx_n_s_setstate_cython;
-static PyObject *__pyx_n_s_staticDataPath;
 static PyObject *__pyx_kp_s_stringsource;
 static PyObject *__pyx_n_s_tensor;
 static PyObject *__pyx_n_s_test;
@@ -2586,7 +2571,7 @@ PyObject *createFileObject(void) {
  * cdef public object createFileObject():
  *     return BVH_file_interface()             # <<<<<<<<<<<<<<
  * 
- * cdef public void initFileInterface(fileInterface, filePath, jointNames):
+ * cdef public void initFileInterface(BVH_file_interface fileInterface, filePath, jointNames):
  */
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_1 = __Pyx_PyObject_CallNoArg(((PyObject *)__pyx_ptype_16cython_interface_BVH_file_interface)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 21, __pyx_L1_error)
@@ -2617,12 +2602,12 @@ PyObject *createFileObject(void) {
 /* "cython_interface.pyx":23
  *     return BVH_file_interface()
  * 
- * cdef public void initFileInterface(fileInterface, filePath, jointNames):             # <<<<<<<<<<<<<<
+ * cdef public void initFileInterface(BVH_file_interface fileInterface, filePath, jointNames):             # <<<<<<<<<<<<<<
  *     pyFile = BVH_file(filePath, jointNames)
  *     fileInterface.jointNum = pyFile.jointNum
  */
 
-void initFileInterface(PyObject *__pyx_v_fileInterface, PyObject *__pyx_v_filePath, PyObject *__pyx_v_jointNames) {
+void initFileInterface(struct BVH_file_interface *__pyx_v_fileInterface, PyObject *__pyx_v_filePath, PyObject *__pyx_v_jointNames) {
   PyObject *__pyx_v_pyFile = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -2631,6 +2616,7 @@ void initFileInterface(PyObject *__pyx_v_fileInterface, PyObject *__pyx_v_filePa
   int __pyx_t_4;
   PyObject *__pyx_t_5 = NULL;
   Py_ssize_t __pyx_t_6;
+  float __pyx_t_7;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -2638,7 +2624,7 @@ void initFileInterface(PyObject *__pyx_v_fileInterface, PyObject *__pyx_v_filePa
 
   /* "cython_interface.pyx":24
  * 
- * cdef public void initFileInterface(fileInterface, filePath, jointNames):
+ * cdef public void initFileInterface(BVH_file_interface fileInterface, filePath, jointNames):
  *     pyFile = BVH_file(filePath, jointNames)             # <<<<<<<<<<<<<<
  *     fileInterface.jointNum = pyFile.jointNum
  *     fileInterface.frameNum = len(pyFile.anim.rotations)
@@ -2694,7 +2680,7 @@ void initFileInterface(PyObject *__pyx_v_fileInterface, PyObject *__pyx_v_filePa
   __pyx_t_1 = 0;
 
   /* "cython_interface.pyx":25
- * cdef public void initFileInterface(fileInterface, filePath, jointNames):
+ * cdef public void initFileInterface(BVH_file_interface fileInterface, filePath, jointNames):
  *     pyFile = BVH_file(filePath, jointNames)
  *     fileInterface.jointNum = pyFile.jointNum             # <<<<<<<<<<<<<<
  *     fileInterface.frameNum = len(pyFile.anim.rotations)
@@ -2702,8 +2688,9 @@ void initFileInterface(PyObject *__pyx_v_fileInterface, PyObject *__pyx_v_filePa
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_pyFile, __pyx_n_s_jointNum); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 25, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (__Pyx_PyObject_SetAttrStr(__pyx_v_fileInterface, __pyx_n_s_jointNum, __pyx_t_1) < 0) __PYX_ERR(0, 25, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyInt_As_int(__pyx_t_1); if (unlikely((__pyx_t_4 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 25, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_v_fileInterface->jointNum = __pyx_t_4;
 
   /* "cython_interface.pyx":26
  *     pyFile = BVH_file(filePath, jointNames)
@@ -2719,10 +2706,7 @@ void initFileInterface(PyObject *__pyx_v_fileInterface, PyObject *__pyx_v_filePa
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_t_6 = PyObject_Length(__pyx_t_2); if (unlikely(__pyx_t_6 == ((Py_ssize_t)-1))) __PYX_ERR(0, 26, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = PyInt_FromSsize_t(__pyx_t_6); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 26, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_2);
-  if (__Pyx_PyObject_SetAttrStr(__pyx_v_fileInterface, __pyx_n_s_frameNum, __pyx_t_2) < 0) __PYX_ERR(0, 26, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __pyx_v_fileInterface->frameNum = __pyx_t_6;
 
   /* "cython_interface.pyx":27
  *     fileInterface.jointNum = pyFile.jointNum
@@ -2733,8 +2717,9 @@ void initFileInterface(PyObject *__pyx_v_fileInterface, PyObject *__pyx_v_filePa
  */
   __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_pyFile, __pyx_n_s_frametime); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 27, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  if (__Pyx_PyObject_SetAttrStr(__pyx_v_fileInterface, __pyx_n_s_frametime, __pyx_t_2) < 0) __PYX_ERR(0, 27, __pyx_L1_error)
+  __pyx_t_7 = __pyx_PyFloat_AsFloat(__pyx_t_2); if (unlikely((__pyx_t_7 == (float)-1) && PyErr_Occurred())) __PYX_ERR(0, 27, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __pyx_v_fileInterface->frametime = __pyx_t_7;
 
   /* "cython_interface.pyx":30
  * 
@@ -2763,8 +2748,11 @@ void initFileInterface(PyObject *__pyx_v_fileInterface, PyObject *__pyx_v_filePa
   __pyx_t_1 = PySequence_List(__pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 30, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  if (__Pyx_PyObject_SetAttrStr(__pyx_v_fileInterface, __pyx_n_s_topology, __pyx_t_1) < 0) __PYX_ERR(0, 30, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __Pyx_GIVEREF(__pyx_t_1);
+  __Pyx_GOTREF(__pyx_v_fileInterface->topology);
+  __Pyx_DECREF(__pyx_v_fileInterface->topology);
+  __pyx_v_fileInterface->topology = __pyx_t_1;
+  __pyx_t_1 = 0;
 
   /* "cython_interface.pyx":33
  * 
@@ -2778,8 +2766,11 @@ void initFileInterface(PyObject *__pyx_v_fileInterface, PyObject *__pyx_v_filePa
   __pyx_t_2 = PySequence_List(__pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 33, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  if (__Pyx_PyObject_SetAttrStr(__pyx_v_fileInterface, __pyx_n_s_jointNames, __pyx_t_2) < 0) __PYX_ERR(0, 33, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __Pyx_GIVEREF(__pyx_t_2);
+  __Pyx_GOTREF(__pyx_v_fileInterface->jointNames);
+  __Pyx_DECREF(__pyx_v_fileInterface->jointNames);
+  __pyx_v_fileInterface->jointNames = __pyx_t_2;
+  __pyx_t_2 = 0;
 
   /* "cython_interface.pyx":36
  * 
@@ -2823,8 +2814,11 @@ void initFileInterface(PyObject *__pyx_v_fileInterface, PyObject *__pyx_v_filePa
   if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 36, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-  if (__Pyx_PyObject_SetAttrStr(__pyx_v_fileInterface, __pyx_n_s_offsets, __pyx_t_2) < 0) __PYX_ERR(0, 36, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __Pyx_GIVEREF(__pyx_t_2);
+  __Pyx_GOTREF(__pyx_v_fileInterface->offsets);
+  __Pyx_DECREF(__pyx_v_fileInterface->offsets);
+  __pyx_v_fileInterface->offsets = __pyx_t_2;
+  __pyx_t_2 = 0;
 
   /* "cython_interface.pyx":39
  * 
@@ -2868,8 +2862,11 @@ void initFileInterface(PyObject *__pyx_v_fileInterface, PyObject *__pyx_v_filePa
   if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 39, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  if (__Pyx_PyObject_SetAttrStr(__pyx_v_fileInterface, __pyx_n_s_positions, __pyx_t_2) < 0) __PYX_ERR(0, 39, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __Pyx_GIVEREF(__pyx_t_2);
+  __Pyx_GOTREF(__pyx_v_fileInterface->positions);
+  __Pyx_DECREF(__pyx_v_fileInterface->positions);
+  __pyx_v_fileInterface->positions = __pyx_t_2;
+  __pyx_t_2 = 0;
 
   /* "cython_interface.pyx":42
  * 
@@ -2918,13 +2915,16 @@ void initFileInterface(PyObject *__pyx_v_fileInterface, PyObject *__pyx_v_filePa
   if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 42, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  if (__Pyx_PyObject_SetAttrStr(__pyx_v_fileInterface, __pyx_n_s_rotations, __pyx_t_2) < 0) __PYX_ERR(0, 42, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __Pyx_GIVEREF(__pyx_t_2);
+  __Pyx_GOTREF(__pyx_v_fileInterface->rotations);
+  __Pyx_DECREF(__pyx_v_fileInterface->rotations);
+  __pyx_v_fileInterface->rotations = __pyx_t_2;
+  __pyx_t_2 = 0;
 
   /* "cython_interface.pyx":23
  *     return BVH_file_interface()
  * 
- * cdef public void initFileInterface(fileInterface, filePath, jointNames):             # <<<<<<<<<<<<<<
+ * cdef public void initFileInterface(BVH_file_interface fileInterface, filePath, jointNames):             # <<<<<<<<<<<<<<
  *     pyFile = BVH_file(filePath, jointNames)
  *     fileInterface.jointNum = pyFile.jointNum
  */
@@ -3439,7 +3439,7 @@ PyObject *createWriterObject(void) {
  * cdef public object createWriterObject():
  *     return BVH_writer_interface()             # <<<<<<<<<<<<<<
  * 
- * cdef public void initWriterInterface(writerInterface, staticDataPath):
+ * cdef public void initWriterInterface(BVH_writer_interface writerInterface, staticDataPath):
  */
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_1 = __Pyx_PyObject_CallNoArg(((PyObject *)__pyx_ptype_16cython_interface_BVH_writer_interface)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 52, __pyx_L1_error)
@@ -3470,17 +3470,18 @@ PyObject *createWriterObject(void) {
 /* "cython_interface.pyx":54
  *     return BVH_writer_interface()
  * 
- * cdef public void initWriterInterface(writerInterface, staticDataPath):             # <<<<<<<<<<<<<<
+ * cdef public void initWriterInterface(BVH_writer_interface writerInterface, staticDataPath):             # <<<<<<<<<<<<<<
  *         pyFile = BVH_writer(staticDataPath)
  *         writerInterface.jointNum = pyFile.joint_num
  */
 
-void initWriterInterface(PyObject *__pyx_v_writerInterface, PyObject *__pyx_v_staticDataPath) {
+void initWriterInterface(struct BVH_writer_interface *__pyx_v_writerInterface, PyObject *__pyx_v_staticDataPath) {
   PyObject *__pyx_v_pyFile = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   PyObject *__pyx_t_2 = NULL;
   PyObject *__pyx_t_3 = NULL;
+  int __pyx_t_4;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -3488,7 +3489,7 @@ void initWriterInterface(PyObject *__pyx_v_writerInterface, PyObject *__pyx_v_st
 
   /* "cython_interface.pyx":55
  * 
- * cdef public void initWriterInterface(writerInterface, staticDataPath):
+ * cdef public void initWriterInterface(BVH_writer_interface writerInterface, staticDataPath):
  *         pyFile = BVH_writer(staticDataPath)             # <<<<<<<<<<<<<<
  *         writerInterface.jointNum = pyFile.joint_num
  *         writerInterface.staticDataPath = staticDataPath
@@ -3514,7 +3515,7 @@ void initWriterInterface(PyObject *__pyx_v_writerInterface, PyObject *__pyx_v_st
   __pyx_t_1 = 0;
 
   /* "cython_interface.pyx":56
- * cdef public void initWriterInterface(writerInterface, staticDataPath):
+ * cdef public void initWriterInterface(BVH_writer_interface writerInterface, staticDataPath):
  *         pyFile = BVH_writer(staticDataPath)
  *         writerInterface.jointNum = pyFile.joint_num             # <<<<<<<<<<<<<<
  *         writerInterface.staticDataPath = staticDataPath
@@ -3522,8 +3523,9 @@ void initWriterInterface(PyObject *__pyx_v_writerInterface, PyObject *__pyx_v_st
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_pyFile, __pyx_n_s_joint_num); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 56, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (__Pyx_PyObject_SetAttrStr(__pyx_v_writerInterface, __pyx_n_s_jointNum, __pyx_t_1) < 0) __PYX_ERR(0, 56, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyInt_As_int(__pyx_t_1); if (unlikely((__pyx_t_4 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 56, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_v_writerInterface->jointNum = __pyx_t_4;
 
   /* "cython_interface.pyx":57
  *         pyFile = BVH_writer(staticDataPath)
@@ -3532,12 +3534,16 @@ void initWriterInterface(PyObject *__pyx_v_writerInterface, PyObject *__pyx_v_st
  * 
  * #rotations -> F x J x 3, positions -> F x 3
  */
-  if (__Pyx_PyObject_SetAttrStr(__pyx_v_writerInterface, __pyx_n_s_staticDataPath, __pyx_v_staticDataPath) < 0) __PYX_ERR(0, 57, __pyx_L1_error)
+  __Pyx_INCREF(__pyx_v_staticDataPath);
+  __Pyx_GIVEREF(__pyx_v_staticDataPath);
+  __Pyx_GOTREF(__pyx_v_writerInterface->staticDataPath);
+  __Pyx_DECREF(__pyx_v_writerInterface->staticDataPath);
+  __pyx_v_writerInterface->staticDataPath = __pyx_v_staticDataPath;
 
   /* "cython_interface.pyx":54
  *     return BVH_writer_interface()
  * 
- * cdef public void initWriterInterface(writerInterface, staticDataPath):             # <<<<<<<<<<<<<<
+ * cdef public void initWriterInterface(BVH_writer_interface writerInterface, staticDataPath):             # <<<<<<<<<<<<<<
  *         pyFile = BVH_writer(staticDataPath)
  *         writerInterface.jointNum = pyFile.joint_num
  */
@@ -3557,12 +3563,12 @@ void initWriterInterface(PyObject *__pyx_v_writerInterface, PyObject *__pyx_v_st
 /* "cython_interface.pyx":60
  * 
  * #rotations -> F x J x 3, positions -> F x 3
- * cdef public void writeBVH_interface(writerInterface, rotations, positions, writePath, frametime):             # <<<<<<<<<<<<<<
+ * cdef public void writeBVH_interface(BVH_writer_interface writerInterface, rotations, positions, writePath, frametime):             # <<<<<<<<<<<<<<
  *     tRotations = tensor(rotations)
  *     tPositions = tensor(positions)
  */
 
-void writeBVH_interface(PyObject *__pyx_v_writerInterface, PyObject *__pyx_v_rotations, PyObject *__pyx_v_positions, PyObject *__pyx_v_writePath, CYTHON_UNUSED PyObject *__pyx_v_frametime) {
+void writeBVH_interface(struct BVH_writer_interface *__pyx_v_writerInterface, PyObject *__pyx_v_rotations, PyObject *__pyx_v_positions, PyObject *__pyx_v_writePath, PyObject *__pyx_v_frametime) {
   PyObject *__pyx_v_tRotations = NULL;
   PyObject *__pyx_v_tPositions = NULL;
   PyObject *__pyx_v_pyWriter = NULL;
@@ -3570,7 +3576,6 @@ void writeBVH_interface(PyObject *__pyx_v_writerInterface, PyObject *__pyx_v_rot
   PyObject *__pyx_t_1 = NULL;
   PyObject *__pyx_t_2 = NULL;
   PyObject *__pyx_t_3 = NULL;
-  PyObject *__pyx_t_4 = NULL;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -3578,7 +3583,7 @@ void writeBVH_interface(PyObject *__pyx_v_writerInterface, PyObject *__pyx_v_rot
 
   /* "cython_interface.pyx":61
  * #rotations -> F x J x 3, positions -> F x 3
- * cdef public void writeBVH_interface(writerInterface, rotations, positions, writePath, frametime):
+ * cdef public void writeBVH_interface(BVH_writer_interface writerInterface, rotations, positions, writePath, frametime):
  *     tRotations = tensor(rotations)             # <<<<<<<<<<<<<<
  *     tPositions = tensor(positions)
  *     pyWriter = BVH_writer(writerInterface.staticDataPath)
@@ -3604,11 +3609,11 @@ void writeBVH_interface(PyObject *__pyx_v_writerInterface, PyObject *__pyx_v_rot
   __pyx_t_1 = 0;
 
   /* "cython_interface.pyx":62
- * cdef public void writeBVH_interface(writerInterface, rotations, positions, writePath, frametime):
+ * cdef public void writeBVH_interface(BVH_writer_interface writerInterface, rotations, positions, writePath, frametime):
  *     tRotations = tensor(rotations)
  *     tPositions = tensor(positions)             # <<<<<<<<<<<<<<
  *     pyWriter = BVH_writer(writerInterface.staticDataPath)
- *     pyWriter.write(rotations=tRotations, positions=tPositions, path=writePath, frametime=1.0/30)
+ *     pyWriter.write(rotations=tRotations, positions=tPositions, path=writePath, frametime=frametime)
  */
   __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_tensor); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 62, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
@@ -3634,25 +3639,22 @@ void writeBVH_interface(PyObject *__pyx_v_writerInterface, PyObject *__pyx_v_rot
  *     tRotations = tensor(rotations)
  *     tPositions = tensor(positions)
  *     pyWriter = BVH_writer(writerInterface.staticDataPath)             # <<<<<<<<<<<<<<
- *     pyWriter.write(rotations=tRotations, positions=tPositions, path=writePath, frametime=1.0/30)
+ *     pyWriter.write(rotations=tRotations, positions=tPositions, path=writePath, frametime=frametime)
  */
   __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_BVH_writer); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 63, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_writerInterface, __pyx_n_s_staticDataPath); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 63, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = NULL;
+  __pyx_t_3 = NULL;
   if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_2))) {
-    __pyx_t_4 = PyMethod_GET_SELF(__pyx_t_2);
-    if (likely(__pyx_t_4)) {
+    __pyx_t_3 = PyMethod_GET_SELF(__pyx_t_2);
+    if (likely(__pyx_t_3)) {
       PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_2);
-      __Pyx_INCREF(__pyx_t_4);
+      __Pyx_INCREF(__pyx_t_3);
       __Pyx_INCREF(function);
       __Pyx_DECREF_SET(__pyx_t_2, function);
     }
   }
-  __pyx_t_1 = (__pyx_t_4) ? __Pyx_PyObject_Call2Args(__pyx_t_2, __pyx_t_4, __pyx_t_3) : __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_t_3);
-  __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __pyx_t_1 = (__pyx_t_3) ? __Pyx_PyObject_Call2Args(__pyx_t_2, __pyx_t_3, __pyx_v_writerInterface->staticDataPath) : __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_v_writerInterface->staticDataPath);
+  __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
   if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 63, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
@@ -3662,7 +3664,7 @@ void writeBVH_interface(PyObject *__pyx_v_writerInterface, PyObject *__pyx_v_rot
   /* "cython_interface.pyx":64
  *     tPositions = tensor(positions)
  *     pyWriter = BVH_writer(writerInterface.staticDataPath)
- *     pyWriter.write(rotations=tRotations, positions=tPositions, path=writePath, frametime=1.0/30)             # <<<<<<<<<<<<<<
+ *     pyWriter.write(rotations=tRotations, positions=tPositions, path=writePath, frametime=frametime)             # <<<<<<<<<<<<<<
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_pyWriter, __pyx_n_s_write); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 64, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
@@ -3671,10 +3673,7 @@ void writeBVH_interface(PyObject *__pyx_v_writerInterface, PyObject *__pyx_v_rot
   if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_rotations, __pyx_v_tRotations) < 0) __PYX_ERR(0, 64, __pyx_L1_error)
   if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_positions, __pyx_v_tPositions) < 0) __PYX_ERR(0, 64, __pyx_L1_error)
   if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_path, __pyx_v_writePath) < 0) __PYX_ERR(0, 64, __pyx_L1_error)
-  __pyx_t_3 = PyFloat_FromDouble((1.0 / 30.0)); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 64, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_3);
-  if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_frametime, __pyx_t_3) < 0) __PYX_ERR(0, 64, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_frametime, __pyx_v_frametime) < 0) __PYX_ERR(0, 64, __pyx_L1_error)
   __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_empty_tuple, __pyx_t_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 64, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -3684,7 +3683,7 @@ void writeBVH_interface(PyObject *__pyx_v_writerInterface, PyObject *__pyx_v_rot
   /* "cython_interface.pyx":60
  * 
  * #rotations -> F x J x 3, positions -> F x 3
- * cdef public void writeBVH_interface(writerInterface, rotations, positions, writePath, frametime):             # <<<<<<<<<<<<<<
+ * cdef public void writeBVH_interface(BVH_writer_interface writerInterface, rotations, positions, writePath, frametime):             # <<<<<<<<<<<<<<
  *     tRotations = tensor(rotations)
  *     tPositions = tensor(positions)
  */
@@ -3695,7 +3694,6 @@ void writeBVH_interface(PyObject *__pyx_v_writerInterface, PyObject *__pyx_v_rot
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_2);
   __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_XDECREF(__pyx_t_4);
   __Pyx_WriteUnraisable("cython_interface.writeBVH_interface", __pyx_clineno, __pyx_lineno, __pyx_filename, 1, 0);
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_tRotations);
@@ -5068,12 +5066,10 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_cline_in_traceback, __pyx_k_cline_in_traceback, sizeof(__pyx_k_cline_in_traceback), 0, 0, 1, 1},
   {&__pyx_n_s_cython_interface, __pyx_k_cython_interface, sizeof(__pyx_k_cython_interface), 0, 0, 1, 1},
   {&__pyx_n_s_dict, __pyx_k_dict, sizeof(__pyx_k_dict), 0, 0, 1, 1},
-  {&__pyx_n_s_frameNum, __pyx_k_frameNum, sizeof(__pyx_k_frameNum), 0, 0, 1, 1},
   {&__pyx_n_s_frametime, __pyx_k_frametime, sizeof(__pyx_k_frametime), 0, 0, 1, 1},
   {&__pyx_n_s_get_positions, __pyx_k_get_positions, sizeof(__pyx_k_get_positions), 0, 0, 1, 1},
   {&__pyx_n_s_getstate, __pyx_k_getstate, sizeof(__pyx_k_getstate), 0, 0, 1, 1},
   {&__pyx_n_s_import, __pyx_k_import, sizeof(__pyx_k_import), 0, 0, 1, 1},
-  {&__pyx_n_s_jointNames, __pyx_k_jointNames, sizeof(__pyx_k_jointNames), 0, 0, 1, 1},
   {&__pyx_n_s_jointNum, __pyx_k_jointNum, sizeof(__pyx_k_jointNum), 0, 0, 1, 1},
   {&__pyx_n_s_joint_num, __pyx_k_joint_num, sizeof(__pyx_k_joint_num), 0, 0, 1, 1},
   {&__pyx_n_s_joints, __pyx_k_joints, sizeof(__pyx_k_joints), 0, 0, 1, 1},
@@ -5098,7 +5094,6 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_rotations, __pyx_k_rotations, sizeof(__pyx_k_rotations), 0, 0, 1, 1},
   {&__pyx_n_s_setstate, __pyx_k_setstate, sizeof(__pyx_k_setstate), 0, 0, 1, 1},
   {&__pyx_n_s_setstate_cython, __pyx_k_setstate_cython, sizeof(__pyx_k_setstate_cython), 0, 0, 1, 1},
-  {&__pyx_n_s_staticDataPath, __pyx_k_staticDataPath, sizeof(__pyx_k_staticDataPath), 0, 0, 1, 1},
   {&__pyx_kp_s_stringsource, __pyx_k_stringsource, sizeof(__pyx_k_stringsource), 0, 0, 1, 0},
   {&__pyx_n_s_tensor, __pyx_k_tensor, sizeof(__pyx_k_tensor), 0, 0, 1, 1},
   {&__pyx_n_s_test, __pyx_k_test, sizeof(__pyx_k_test), 0, 0, 1, 1},
@@ -5953,20 +5948,6 @@ static CYTHON_INLINE PyObject * __Pyx_PyCFunction_FastCall(PyObject *func_obj, P
     } else {
         return (*((__Pyx_PyCFunctionFast)(void*)meth)) (self, args, nargs);
     }
-}
-#endif
-
-/* PyObjectSetAttrStr */
-#if CYTHON_USE_TYPE_SLOTS
-static CYTHON_INLINE int __Pyx_PyObject_SetAttrStr(PyObject* obj, PyObject* attr_name, PyObject* value) {
-    PyTypeObject* tp = Py_TYPE(obj);
-    if (likely(tp->tp_setattro))
-        return tp->tp_setattro(obj, attr_name, value);
-#if PY_MAJOR_VERSION < 3
-    if (likely(tp->tp_setattr))
-        return tp->tp_setattr(obj, PyString_AS_STRING(attr_name), value);
-#endif
-    return PyObject_SetAttr(obj, attr_name, value);
 }
 #endif
 

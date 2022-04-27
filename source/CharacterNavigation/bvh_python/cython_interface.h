@@ -7,7 +7,7 @@
 struct BVH_file_interface;
 struct BVH_writer_interface;
 
-/* "cython_interface.pyx":10
+/* "cython_interface.pyx":11
  * #BVH_file
  * 
  * cdef public class BVH_file_interface[object BVH_file_interface, type BVH_file_interface_type]:             # <<<<<<<<<<<<<<
@@ -26,7 +26,7 @@ struct BVH_file_interface {
   float frametime;
 };
 
-/* "cython_interface.pyx":47
+/* "cython_interface.pyx":53
  * #BVH_writer
  * 
  * cdef public class BVH_writer_interface[object BVH_writer_interface, type BVH_writer_interface_type]:             # <<<<<<<<<<<<<<
@@ -56,9 +56,7 @@ struct BVH_writer_interface {
 __PYX_EXTERN_C DL_IMPORT(PyTypeObject) BVH_file_interface_type;
 __PYX_EXTERN_C DL_IMPORT(PyTypeObject) BVH_writer_interface_type;
 
-__PYX_EXTERN_C PyObject *createFileObject(void);
 __PYX_EXTERN_C void initFileInterface(struct BVH_file_interface *, PyObject *, PyObject *);
-__PYX_EXTERN_C PyObject *createWriterObject(void);
 __PYX_EXTERN_C void initWriterInterface(struct BVH_writer_interface *, PyObject *);
 __PYX_EXTERN_C void writeBVH_interface(struct BVH_writer_interface *, PyObject *, PyObject *, PyObject *, PyObject *);
 

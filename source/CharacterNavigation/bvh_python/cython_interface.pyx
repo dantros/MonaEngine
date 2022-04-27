@@ -3,6 +3,7 @@
 from bvh_parser import BVH_file
 from bvh_writer import BVH_writer
 from torch import tensor
+from libc.stdio cimport printf
 
 
 #BVH_file
@@ -17,29 +18,34 @@ cdef public class BVH_file_interface[object BVH_file_interface, type BVH_file_in
     cdef public int frameNum
     cdef public float frametime
 
-cdef public object createFileObject():
-    return BVH_file_interface()
-
 cdef public void initFileInterface(BVH_file_interface fileInterface, filePath, jointNames):
+    printf("inter0")
     pyFile = BVH_file(filePath, jointNames)
     fileInterface.jointNum = pyFile.jointNum
     fileInterface.frameNum = len(pyFile.anim.rotations)
     fileInterface.frametime = pyFile.frametime
+    printf("inter1")
 
     #topology (jointNum)
     fileInterface.topology = list(pyFile.topology())
+    printf("inter2")
+
 
     #jointNames (jointNum)
     fileInterface.jointNames = list(pyFile.names)
-    
+    printf("inter3")
+
     #offsets (JointNum x 3)
     fileInterface.offsets = pyFile.offsets().tolist()
-    
+    printf("inter4")
+
     #positions (FrameNum x JointNum x 3)
     fileInterface.positions = pyFile.get_positions().tolist()
-    
+    printf("inter5")
+
     #rotations (FrameNum x JointNum x 3)
     fileInterface.rotations = pyFile.anim.rotations[:, pyFile.joints, :].tolist()
+    printf("inter6")
 
 
 #BVH_writer
@@ -47,9 +53,6 @@ cdef public void initFileInterface(BVH_file_interface fileInterface, filePath, j
 cdef public class BVH_writer_interface[object BVH_writer_interface, type BVH_writer_interface_type]:
     cdef public int jointNum
     cdef public staticDataPath
-
-cdef public object createWriterObject():
-    return BVH_writer_interface()
 
 cdef public void initWriterInterface(BVH_writer_interface writerInterface, staticDataPath):
         pyFile = BVH_writer(staticDataPath)

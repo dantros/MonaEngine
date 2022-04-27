@@ -1,5 +1,4 @@
 #include "BVHManager.hpp"
-#include <Python.h>
 #include <stdexcept>
 
 namespace Mona{

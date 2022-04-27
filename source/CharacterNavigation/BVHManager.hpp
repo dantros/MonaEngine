@@ -1,9 +1,9 @@
 #pragma once
 #ifndef BVHMANAGER_HPP
 #define BVHMANAGER_HPP
+#include "bvh_python/cython_interface.h"
 #include <string>
 #include <vector>
-#include "bvh_python/cython_interface.h"
 
 namespace Mona {
 

@@ -1,10 +1,14 @@
 #include "./CharacterNavigation/BVHManager.hpp"
 #include <iostream>
 
-namespace Mona{
+
     
-    int main(){
-        BVH_file file = BVH_file::BVH_file(const std::string("./BigVegas.bvh"));
-        std::cout << file.m_frameNum;
+int main(){
+    Mona::BVH_file file = Mona::BVH_file::BVH_file(std::string("./BigVegas.bvh"));
+    std::cout << file.m_frameNum;
+    while (true) {
+
     }
+    return 0;
 }
+

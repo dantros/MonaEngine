@@ -70,13 +70,14 @@ namespace Mona{
         
 
         // offsets
-        m_offsets = new Eigen::Tensor<float, 2>(jointNum, 3);//new float[jointNum][3];
+        m_offsets = new float*[jointNum];
         if (PyList_Check(pyFile.offsets)) {
             for (Py_ssize_t i = 0; i < PyList_Size(pyFile.offsets); i++) {
                 PyObject* jointOff = PyList_GetItem(pyFile.offsets, i);
+                m_offsets[i] = new float[3];
                 for (Py_ssize_t j = 0; j < PyList_Size(jointOff); j++) {
                     PyObject* valOff = PyList_GetItem(jointOff, j);
-                    m_offsets(int(i), int(j)) = (float)PyFloat_AsDouble(valOff);
+                    m_offsets[i][j] = (float)PyFloat_AsDouble(valOff);
                 }
 
             }
@@ -86,15 +87,17 @@ namespace Mona{
         }
 
         // rotations
-        m_rotations = new Eigen::Tensor<float, 3>( frameNum, jointNum, 3 );//new float[frameNum][jointNum][3];
+        m_rotations = new float**[frameNum];//new float[frameNum][jointNum][3];
         if (PyList_Check(pyFile.rotations)) {
             for (Py_ssize_t i = 0; i < PyList_Size(pyFile.rotations); i++) {
                 PyObject* frameRot = PyList_GetItem(pyFile.rotations, i);
+                m_rotations[i] = new float*[jointNum];
                 for (Py_ssize_t j = 0; j < PyList_Size(frameRot); j++) {
                     PyObject* jointRot = PyList_GetItem(frameRot, j);
+                    m_rotations[i][j] = new float[3];
                     for (Py_ssize_t k = 0; k < PyList_Size(jointRot); k++) {
                         PyObject* valRot = PyList_GetItem(jointRot, k);
-                        m_rotations((int)i, (int)j ,(int)k ) = (float)PyFloat_AsDouble(valRot);
+                        m_rotations[i][j][k] = (float)PyFloat_AsDouble(valRot);
                     }
                 }
             }
@@ -105,15 +108,17 @@ namespace Mona{
 
 
         // positions
-        m_positions = new Eigen::Tensor<float, 3>(frameNum, jointNum, 3);//new float[frameNum][jointNum][3];
+        m_positions = new float**[frameNum];//new float[frameNum][jointNum][3];
         if (PyList_Check(pyFile.positions)) {
             for (Py_ssize_t i = 0; i < PyList_Size(pyFile.positions); i++) {
                 PyObject* framePos = PyList_GetItem(pyFile.positions, i);
+                m_positions[i] = new float*[jointNum];
                 for (Py_ssize_t j = 0; j < PyList_Size(framePos); j++) {
                     PyObject* jointPos = PyList_GetItem(framePos, j);
+                    m_positions[i][j] = new float[3];
                     for (Py_ssize_t k = 0; k < PyList_Size(jointPos); k++) {
                         PyObject* valPos = PyList_GetItem(jointPos, k);
-                        m_positions((int)i, (int)j ,(int)k ) = (float)PyFloat_AsDouble(valPos);
+                        m_positions[i][j][k] = (float)PyFloat_AsDouble(valPos);
                     }
                 }
             }

@@ -1,4 +1,6 @@
 set(MONA_HEADERS 
+				CharacterNavigation/BVHManager.hpp
+				CharacterNavigation/bvh_python/cython_interface.h
 				Core/Common.hpp 
 				Core/Log.hpp
 				Core/Config.hpp
@@ -68,10 +70,10 @@ set(MONA_HEADERS
 				Audio/AudioSourceComponentLifetimePolicy.hpp
 				DebugDrawing/DebugDrawingSystem.hpp
 				DebugDrawing/BulletDebugDraw.hpp
-				Utilities/BasicCameraControllers.hpp
-				CharacterNavigation/BVHManager.hpp
-				CharacterNavigation/bvh_python/cython_interface.h)
+				Utilities/BasicCameraControllers.hpp)
 set(MONA_SOURCES 
+				CharacterNavigation/BVHManager.cpp
+				CharacterNavigation/bvh_python/cython_interface.cpp
 				Core/Config.cpp
 				Event/EventManager.cpp
 				Platform/Window.cpp
@@ -99,9 +101,7 @@ set(MONA_SOURCES
 				Audio/AudioSourceComponent.cpp
 				DebugDrawing/ImGuiBuild.cpp
 				DebugDrawing/BulletDebugDraw.cpp
-				DebugDrawing/DebugDrawingSystem.cpp
-				CharacterNavigation/BVHManager.cpp
-				CharacterNavigation/bvh_python/cython_interface.cpp)
+				DebugDrawing/DebugDrawingSystem.cpp)
 file(GLOB_RECURSE Shaders  "${CMAKE_SOURCE_DIR}/Assets/Shaders/*")
 source_group("Shaders" FILES ${Shaders})
 

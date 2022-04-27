@@ -4,7 +4,6 @@
 #include <string>
 #include <vector>
 #include "bvh_python/cython_interface.h"
-#include <unsupported/Eigen/CXX11/Tensor>
 
 namespace Mona {
 
@@ -14,9 +13,9 @@ namespace Mona {
             BVH_file(std::string filePath, std::vector<std::string> jointNames);
             std::vector<int>* m_topology;
             std::vector<std::string>* m_jointNames; // si se quiere usar un subset de las joints originales
-            Eigen::Tensor<float, 2> m_offsets;
-            Eigen::Tensor<float, 3> m_positions;
-            Eigen::Tensor<float, 3> m_rotations;
+            float** m_offsets;
+            float*** m_positions;
+            float*** m_rotations;
             int m_jointNum;
             int m_frameNum;
             float m_frametime;

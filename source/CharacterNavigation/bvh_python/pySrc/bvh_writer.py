@@ -1,4 +1,4 @@
-import torch
+import numpy as np
 from bvh_parser import BVH_file
 
 
@@ -15,13 +15,12 @@ class BVH_writer():
         order = 'xyz'
         
         if rotations.shape[1] < self.joint_num:
-            rootRot = torch.zeros((rotations.shape[0], 1, 3))
-            rotations = torch.cat((rootRot, rotations), 1)
+            rootRot = np.zeros((rotations.shape[0], 1, 3))
+            rotations = np.concatenate((rootRot, rotations), 1)
 
         return self.write_bvh(self.parent, self.offset, rotations, positions, self.names, frametime, order, path)
 
     def write_raw(self, motion, order, path, frametime=1.0/30):
-        motion = motion.permute(1, 0).detach().cpu().numpy()
         positions = motion[:, -3:]
         rotations = motion[:, :-3]
         if order == 'quaternion':

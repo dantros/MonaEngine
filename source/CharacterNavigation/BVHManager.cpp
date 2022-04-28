@@ -12,7 +12,7 @@ namespace Mona{
         std::string file_path = __FILE__;
         std::string dir_path = file_path.substr(0, file_path.rfind("\\"));
         std::replace(dir_path.begin(), dir_path.end(), '\\', '/');
-        std::string src_path = "'" + dir_path + std::string("/bvh_python") + "'";
+        std::string src_path = "'" + dir_path + std::string("/bvh_python/pySrc") + "'";
         std::string pyLine = std::string("sys.path.append(") + src_path + std::string(")");
         PyRun_SimpleString("import sys");
         PyRun_SimpleString(pyLine.data());
@@ -50,7 +50,7 @@ namespace Mona{
         std::string file_path = __FILE__;
         std::string dir_path = file_path.substr(0, file_path.rfind("\\"));
         std::replace(dir_path.begin(), dir_path.end(), '\\', '/');
-        std::string src_path = "'" + dir_path + std::string("/bvh_python") + "'";
+        std::string src_path = "'" + dir_path + std::string("/bvh_python/pySrc") + "'";
         std::string pyLine = std::string("sys.path.append(") + src_path + std::string(")");
         PyRun_SimpleString("import sys");
         PyRun_SimpleString(pyLine.data());

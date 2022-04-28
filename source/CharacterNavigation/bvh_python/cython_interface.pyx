@@ -1,14 +1,10 @@
 # distutils: language = c++
 # cython: language_level=3
-import sys
-import os
-dir_path = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(dir_path)
-
 from libc.stdio cimport printf
-from pySrc.bvh_parser import BVH_file
-from pySrc.bvh_writer import BVH_writer
-from torch import tensor
+import sys
+import numpy as np
+from bvh_parser import BVH_file
+from bvh_writer import BVH_writer
 
 
 #BVH_file
@@ -68,7 +64,7 @@ cdef public void initWriterInterface(BVH_writer_interface writerInterface, stati
 
 #rotations -> F x J x 3, positions -> F x 3
 cdef public void writeBVH_interface(BVH_writer_interface writerInterface, rotations, positions, writePath, frametime):
-    tRotations = tensor(rotations)
-    tPositions = tensor(positions)
+    tRotations = np.array(rotations)
+    tPositions = np.array(positions)
     pyWriter = BVH_writer(writerInterface.staticDataPath)
     pyWriter.write(rotations=tRotations, positions=tPositions, path=writePath, frametime=frametime)

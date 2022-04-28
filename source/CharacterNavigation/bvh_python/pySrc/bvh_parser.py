@@ -1,8 +1,6 @@
-import torch
 from BVH_mod import BVH
 import numpy as np
 from Quaternions import Quaternions
-from Kinematics import ForwardKinematics
 from bvh_writer import BVH_writer
 
 class BVH_file:
@@ -86,36 +84,6 @@ class BVH_file:
             self._topology = tuple(self._topology)
         return self._topology
 
-    def to_numpy(self, quater=False, edge=True):
-        rotations = self.anim.rotations[:, self.joints, :]
-        if quater:
-            rotations = Quaternions.from_euler(np.radians(rotations)).qs
-            positions = self.anim.positions[:, 0, :]
-        else:
-            positions = self.anim.positions[:, 0, :]
-        if edge:
-            index = []
-            for e in self.edges:
-                index.append(e[0])
-            rotations = rotations[:, index, :]
-
-        # se concatenan las rotaciones de las articulaciones por frame
-        rotations = rotations.reshape(rotations.shape[0], -1)
-        # si edge=True no incluye rotacion para la raiz
-        # al final de cada arreglo de rotaciones por frame se concatena la posicion de la raiz
-        # [ frame1-> [rotXjoint1, rotYjoint1, rotZjoint1, rotXjoint2, rotYjoint2, rotZjoint2, ..., posX, posY, posZ], ..., frameN ->...]
-        return np.concatenate((rotations, positions), axis=1)
-
-    def to_tensor(self, quater=False, edge=True):
-        res = self.to_numpy(quater, edge)
-        res = torch.tensor(res, dtype=torch.float)
-        res = res.permute(1, 0)
-        res = res.reshape((-1, res.shape[-1]))
-        # si edge=True no incluye rotacion para la raiz
-        # la forma final del tensor es la de self.to_numpy con las dimensiones 0 y 1 invertidas. Se recupera la info de un frame k, 
-        # tomando el k-ésimo elemento de cada fila.
-        return res
-
     def get_positions(self):
         positions = self.anim.positions
         positions = positions[:, self.joints, :]
@@ -134,45 +102,4 @@ class BVH_file:
         rotations = motion[..., :-3].reshape(motion.shape[0], -1, 3)
         positions = motion[..., -3:]
         BVH_writer.write_bvh(self.topology, self.offsets, rotations, positions, self.names, 1.0/30, 'xyz', file_path)
-
-    def set_new_root(self, new_root):
-        euler = torch.tensor(self.anim.rotations[:, 0, :], dtype=torch.float)
-        transform = ForwardKinematics.transform_from_euler(euler, 'xyz')
-        offset = torch.tensor(self.anim.offsets[new_root], dtype=torch.float)
-        new_pos = torch.matmul(transform, offset)
-        new_pos = new_pos.numpy() + self.anim.positions[:, 0, :]
-        self.anim.offsets[0] = -self.anim.offsets[new_root]
-        self.anim.offsets[new_root] = np.zeros((3, ))
-        self.anim.positions[:, new_root, :] = new_pos
-        rot0 = Quaternions.from_euler(np.radians(self.anim.rotations[:, 0, :]), order='xyz')
-        rot1 = Quaternions.from_euler(np.radians(self.anim.rotations[:, new_root, :]), order='xyz')
-        new_rot1 = rot0 * rot1
-        new_rot0 = (-rot1)
-        new_rot0 = np.degrees(new_rot0.euler())
-        new_rot1 = np.degrees(new_rot1.euler())
-        self.anim.rotations[:, 0, :] = new_rot0
-        self.anim.rotations[:, new_root, :] = new_rot1
-
-        new_seq = []
-        vis = [0] * self.anim.rotations.shape[1]
-        new_idx = [-1] * len(vis)
-        new_parent = [0] * len(vis)
-
-        def relabel(x):
-            nonlocal new_seq, vis, new_idx, new_parent
-            new_idx[x] = len(new_seq)
-            new_seq.append(x)
-            vis[x] = 1
-            for y in range(len(vis)):
-                if not vis[y] and (self.anim.parents[x] == y or self.anim.parents[y] == x):
-                    relabel(y)
-                    new_parent[new_idx[y]] = new_idx[x]
-
-        relabel(new_root)
-        self.anim.rotations = self.anim.rotations[:, new_seq, :]
-        self.anim.offsets = self.anim.offsets[new_seq]
-        names = self._names.copy()
-        for i, j in enumerate(new_seq):
-            self._names[i] = names[j]
-        self.anim.parents = np.array(new_parent, dtype=np.int)
 

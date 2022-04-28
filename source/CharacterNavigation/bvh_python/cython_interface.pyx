@@ -1,10 +1,8 @@
 # distutils: language = c++
 # cython: language_level=3
 from libc.stdio cimport printf
-import sys
 import numpy as np
-from bvh_parser import BVH_file
-from bvh_writer import BVH_writer
+from bvh_handler import BVH_file, BVH_writer
 
 
 #BVH_file
@@ -21,8 +19,6 @@ cdef public class BVH_file_interface[object BVH_file_interface, type BVH_file_in
 
 cdef public void initFileInterface(BVH_file_interface fileInterface, filePath, jointNames):
     printf("inter0")
-    for el in sys.path:
-        printf(el.encode('utf-8'))
     pyFile = BVH_file(filePath, jointNames)
     fileInterface.jointNum = pyFile.jointNum
     fileInterface.frameNum = len(pyFile.anim.rotations)

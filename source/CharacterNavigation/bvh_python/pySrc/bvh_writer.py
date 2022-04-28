@@ -1,10 +1,5 @@
-import numpy as np
 import torch
-from Quaternions import Quaternions
 from bvh_parser import BVH_file
-
-
-
 
 
 class BVH_writer():

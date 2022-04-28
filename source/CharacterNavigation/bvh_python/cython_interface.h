@@ -7,7 +7,7 @@
 struct BVH_file_interface;
 struct BVH_writer_interface;
 
-/* "cython_interface.pyx":11
+/* "cython_interface.pyx":18
  * #BVH_file
  * 
  * cdef public class BVH_file_interface[object BVH_file_interface, type BVH_file_interface_type]:             # <<<<<<<<<<<<<<
@@ -26,7 +26,7 @@ struct BVH_file_interface {
   float frametime;
 };
 
-/* "cython_interface.pyx":53
+/* "cython_interface.pyx":62
  * #BVH_writer
  * 
  * cdef public class BVH_writer_interface[object BVH_writer_interface, type BVH_writer_interface_type]:             # <<<<<<<<<<<<<<

@@ -1,9 +1,16 @@
 # distutils: language = c++
 # cython: language_level=3
+import sys
+import os
+dir_path = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(dir_path)
+sys.path.insert(0, '.')
+sys.path.insert(0, './')
+
+from libc.stdio cimport printf
 from bvh_parser import BVH_file
 from bvh_writer import BVH_writer
 from torch import tensor
-from libc.stdio cimport printf
 
 
 #BVH_file
@@ -20,6 +27,8 @@ cdef public class BVH_file_interface[object BVH_file_interface, type BVH_file_in
 
 cdef public void initFileInterface(BVH_file_interface fileInterface, filePath, jointNames):
     printf("inter0")
+    for el in sys.path:
+        printf(el.encode('utf-8'))
     pyFile = BVH_file(filePath, jointNames)
     fileInterface.jointNum = pyFile.jointNum
     fileInterface.frameNum = len(pyFile.anim.rotations)

@@ -4,8 +4,19 @@
 namespace Mona{
 
     BVH_file::BVH_file(std::string filePath, std::vector<std::string> jointNames){
+        if (PyImport_AppendInittab("cython_interface", PyInit_cython_interface) != 0) {
+            fprintf(stderr, "Unable to extend Python inittab");
+        }
         Py_Initialize();   // initialize Python
-        PyInit_cython_interface();
+        if (PyImport_ImportModule("cython_interface") == NULL) {
+            fprintf(stderr, "Unable to import cython module.\n");
+            if (PyErr_Occurred()) {
+                PyErr_PrintEx(0);
+            }
+            else {
+                fprintf(stderr, "Unknown error");
+            }
+        }
         PyObject* listObj = PyList_New(jointNames.size());
         if (!listObj) throw new std::exception("Unable to allocate memory for Python list");
         for (unsigned int i = 0; i < jointNames.size(); i++) {
@@ -24,9 +35,19 @@ namespace Mona{
     }
 
     BVH_file::BVH_file(std::string filePath) {
+        if (PyImport_AppendInittab("cython_interface", PyInit_cython_interface) != 0) {
+            fprintf(stderr, "Unable to extend Python inittab");
+        }
         Py_Initialize();   // initialize Python
-        PyInit_cython_interface();
-        //PyObject* pyFile = createFileObject();
+        if (PyImport_ImportModule("cython_interface") == NULL) {
+            fprintf(stderr, "Unable to import cython module.\n");
+            if (PyErr_Occurred()) {
+                PyErr_PrintEx(0);
+            }
+            else {
+                fprintf(stderr, "Unknown error");
+            }
+        }
         BVH_file_interface pyFile = BVH_file_interface();
         BVH_file_interface* pyFilePtr = &pyFile;
         initFileInterface(pyFilePtr, PyUnicode_FromString(filePath.data()), NULL);

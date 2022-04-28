@@ -39,6 +39,8 @@ namespace Mona{
             fprintf(stderr, "Unable to extend Python inittab");
         }
         Py_Initialize();   // initialize Python
+        PyRun_SimpleString("import sys");
+        PyRun_SimpleString("sys.path.insert(0, '.')");
         if (PyImport_ImportModule("cython_interface") == NULL) {
             fprintf(stderr, "Unable to import cython module.\n");
             if (PyErr_Occurred()) {

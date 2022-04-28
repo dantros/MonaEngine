@@ -1,9 +1,9 @@
 import torch
-import BVH_mod as BVH
+from BVH_mod import BVH
 import numpy as np
 from Quaternions import Quaternions
 from Kinematics import ForwardKinematics
-from bvh_writer import write_bvh
+from bvh_writer import BVH_writer
 
 class BVH_file:
     def __init__(self, filePath, jointNames = None):
@@ -133,7 +133,7 @@ class BVH_file:
         motion = self.to_numpy(quater=False, edge=False)
         rotations = motion[..., :-3].reshape(motion.shape[0], -1, 3)
         positions = motion[..., -3:]
-        write_bvh(self.topology, self.offsets, rotations, positions, self.names, 1.0/30, 'xyz', file_path)
+        BVH_writer.write_bvh(self.topology, self.offsets, rotations, positions, self.names, 1.0/30, 'xyz', file_path)
 
     def set_new_root(self, new_root):
         euler = torch.tensor(self.anim.rotations[:, 0, :], dtype=torch.float)

@@ -4,12 +4,10 @@ import sys
 import os
 dir_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(dir_path)
-sys.path.insert(0, '.')
-sys.path.insert(0, './')
 
 from libc.stdio cimport printf
-from bvh_parser import BVH_file
-from bvh_writer import BVH_writer
+from pySrc.bvh_parser import BVH_file
+from pySrc.bvh_writer import BVH_writer
 from torch import tensor
 
 

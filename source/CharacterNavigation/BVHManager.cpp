@@ -1,5 +1,6 @@
 #include "BVHManager.hpp"
 #include <stdexcept>
+#include <algorithm>
 
 namespace Mona{
 
@@ -8,6 +9,13 @@ namespace Mona{
             fprintf(stderr, "Unable to extend Python inittab");
         }
         Py_Initialize();   // initialize Python
+        std::string file_path = __FILE__;
+        std::string dir_path = file_path.substr(0, file_path.rfind("\\"));
+        std::replace(dir_path.begin(), dir_path.end(), '\\', '/');
+        std::string src_path = "'" + dir_path + std::string("/bvh_python") + "'";
+        std::string pyLine = std::string("sys.path.append(") + src_path + std::string(")");
+        PyRun_SimpleString("import sys");
+        PyRun_SimpleString(pyLine.data());
         if (PyImport_ImportModule("cython_interface") == NULL) {
             fprintf(stderr, "Unable to import cython module.\n");
             if (PyErr_Occurred()) {
@@ -39,6 +47,14 @@ namespace Mona{
             fprintf(stderr, "Unable to extend Python inittab");
         }
         Py_Initialize();   // initialize Python
+        std::string file_path = __FILE__;
+        std::string dir_path = file_path.substr(0, file_path.rfind("\\"));
+        std::replace(dir_path.begin(), dir_path.end(), '\\', '/');
+        std::string src_path = "'" + dir_path + std::string("/bvh_python") + "'";
+        std::string pyLine = std::string("sys.path.append(") + src_path + std::string(")");
+        PyRun_SimpleString("import sys");
+        PyRun_SimpleString(pyLine.data());
+
         if (PyImport_ImportModule("cython_interface") == NULL) {
             fprintf(stderr, "Unable to import cython module.\n");
             if (PyErr_Occurred()) {

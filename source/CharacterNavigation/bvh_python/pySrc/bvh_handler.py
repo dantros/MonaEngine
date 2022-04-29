@@ -88,7 +88,6 @@ class BVH_file:
         self.edge_num = 0
         self._topology = None
         self.ee_length = []
-        print(self._names)
         if jointNames:
             self.subsetNames = jointNames
         else:

@@ -9,9 +9,12 @@
 namespace Mona {
 
     class BVH_file {
-        public:
+        private:
+            friend class BVHManager;
             BVH_file(std::string filePath);
             BVH_file(std::string filePath, std::vector<std::string> jointNames);
+            void initFile(BVH_file_interface* pyFile);
+        public:
             std::vector<int>* m_topology;
             std::vector<std::string>* m_jointNames; // si se quiere usar un subset de las joints originales
             float** m_offsets;
@@ -20,9 +23,6 @@ namespace Mona {
             int m_jointNum;
             int m_frameNum;
             float m_frametime;
-    private:
-        void initFile(BVH_file_interface* pyFile);
-
     };
 
     class BVHManager {
@@ -42,8 +42,8 @@ namespace Mona {
             static BVHManager* GetInstance();
             static void DestroyInstance();
             bool initialized = false;
-            BVH_file* readBVH(std::string filePath);
-            BVH_file* readBVH(std::string filePath, std::vector<std::string> jointNames);
+            BVH_file readBVH(std::string filePath);
+            BVH_file readBVH(std::string filePath, std::vector<std::string> jointNames);
             void writeBVH(float*** rotations, float** rootPositions, float frametime, int frameNum, std::string staticDataPath, std::string writePath);
 
 

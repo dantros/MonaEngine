@@ -40,11 +40,11 @@ namespace Mona{
         Py_FinalizeEx();
     }
 
-    BVH_file* BVHManager::readBVH(std::string filePath) {
-        return new BVH_file(filePath);
+    BVH_file BVHManager::readBVH(std::string filePath) {
+        return BVH_file(filePath);
     }
-    BVH_file* BVHManager::readBVH(std::string filePath, std::vector<std::string> jointNames) {
-        return new BVH_file(filePath, jointNames);
+    BVH_file BVHManager::readBVH(std::string filePath, std::vector<std::string> jointNames) {
+        return BVH_file(filePath, jointNames);
     }
     void  BVHManager::writeBVH(float*** rotations, float** rootPositions, float frametime, int frameNum, std::string staticDataPath, std::string writePath) {
         BVH_writer_interface* pyWriterPtr = createWriterInterface(PyUnicode_FromString(staticDataPath.data()));
@@ -68,15 +68,11 @@ namespace Mona{
         // positions
         PyObject* frameListPos = PyList_New(frameNum);
         for (unsigned int i = 0; i < frameNum; i++) {
-            PyObject* jointListPos = PyList_New(jointNum);
-            PyList_SET_ITEM(frameListPos, i, jointListPos);
-            for (unsigned int j = 0; j < jointNum; j++) {
-                PyObject* valListPos = PyList_New(3);
-                PyList_SET_ITEM(jointListPos, j, valListPos);
-                for (unsigned int k = 0; k < 3; k++) {
-                    PyObject* valPos = PyFloat_FromDouble((double)rotations[i][j][k]);
-                    PyList_SET_ITEM(valListPos, k, valPos);
-                }
+            PyObject* rootPos = PyList_New(3);
+            PyList_SET_ITEM(frameListPos, i, rootPos);
+            for (unsigned int j = 0; j < 3; j++) {
+                PyObject* valRootPos = PyFloat_FromDouble((double)rootPositions[i][j]);
+                PyList_SET_ITEM(rootPos, j, valRootPos);
             }
         }
         writeBVH_interface(pyWriterPtr, frameListRot, frameListPos, PyUnicode_FromString(writePath.data()), PyFloat_FromDouble((double)frametime));

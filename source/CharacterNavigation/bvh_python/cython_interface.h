@@ -19,7 +19,7 @@ struct BVH_file_interface {
   PyObject *topology;
   PyObject *jointNames;
   PyObject *offsets;
-  PyObject *positions;
+  PyObject *rootPositions;
   PyObject *rotations;
   int jointNum;
   int frameNum;

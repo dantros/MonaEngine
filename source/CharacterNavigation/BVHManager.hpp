@@ -14,7 +14,7 @@ namespace Mona {
             std::vector<int>* m_topology;
             std::vector<std::string>* m_jointNames; // si se quiere usar un subset de las joints originales
             float** m_offsets;
-            float*** m_positions;
+            float** m_rootPositions;
             float*** m_rotations;
             int m_jointNum;
             int m_frameNum;

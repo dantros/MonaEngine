@@ -165,6 +165,11 @@ class BVH_file:
         positions = self.anim.positions
         positions = positions[:, self.joints, :]
         return positions
+    
+    def get_root_positions(self):
+        positions = self.anim.positions
+        positions = positions[:, 0, :]
+        return np.squeeze(positions)
 
     @property
     def offsets(self): #offsets incluye la raiz

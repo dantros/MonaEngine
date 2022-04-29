@@ -8,7 +8,7 @@ cdef public class BVH_file_interface[object BVH_file_interface, type BVH_file_in
     cdef public object topology
     cdef public object jointNames
     cdef public object offsets
-    cdef public object positions
+    cdef public object rootPositions
     cdef public object rotations
     cdef public int jointNum
     cdef public int frameNum
@@ -31,7 +31,7 @@ cdef public BVH_file_interface createFileInterface(filePath, jointNames):
     fileInterface.offsets = pyFile.offsets.tolist()
 
     #positions (FrameNum x JointNum x 3)
-    fileInterface.positions = pyFile.get_positions().tolist()
+    fileInterface.rootPositions = pyFile.get_root_positions().tolist()
 
     #rotations (FrameNum x JointNum x 3)
     fileInterface.rotations = pyFile.anim.rotations[:, pyFile.joints, :].tolist()

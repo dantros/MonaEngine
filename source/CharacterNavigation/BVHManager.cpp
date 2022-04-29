@@ -140,19 +140,16 @@ namespace Mona{
 
 
         // positions
-        m_positions = new float**[frameNum];//new float[frameNum][jointNum][3];
-        if (PyList_Check(pyFile->positions)) {
-            for (Py_ssize_t i = 0; i < PyList_Size(pyFile->positions); i++) {
-                PyObject* framePos = PyList_GetItem(pyFile->positions, i);
-                m_positions[i] = new float*[jointNum];
-                for (Py_ssize_t j = 0; j < PyList_Size(framePos); j++) {
-                    PyObject* jointPos = PyList_GetItem(framePos, j);
-                    m_positions[i][j] = new float[3];
-                    for (Py_ssize_t k = 0; k < PyList_Size(jointPos); k++) {
-                        PyObject* valPos = PyList_GetItem(jointPos, k);
-                        m_positions[i][j][k] = (float)PyFloat_AsDouble(valPos);
-                    }
+        m_rootPositions = new float* [jointNum];
+        if (PyList_Check(pyFile->rootPositions)) {
+            for (Py_ssize_t i = 0; i < PyList_Size(pyFile->rootPositions); i++) {
+                PyObject* jointRoot = PyList_GetItem(pyFile->rootPositions, i);
+                m_rootPositions[i] = new float[3];
+                for (Py_ssize_t j = 0; j < PyList_Size(jointRoot); j++) {
+                    PyObject* valRoot = PyList_GetItem(jointRoot, j);
+                    m_rootPositions[i][j] = (float)PyFloat_AsDouble(valRoot);
                 }
+
             }
         }
         else {

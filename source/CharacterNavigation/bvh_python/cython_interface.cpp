@@ -925,7 +925,7 @@ struct BVH_file_interface {
   PyObject *topology;
   PyObject *jointNames;
   PyObject *offsets;
-  PyObject *positions;
+  PyObject *rootPositions;
   PyObject *rotations;
   int jointNum;
   int frameNum;
@@ -1367,24 +1367,24 @@ static const char __pyx_k_PickleError[] = "PickleError";
 static const char __pyx_k_bvh_handler[] = "bvh_handler";
 static const char __pyx_k_pyx_checksum[] = "__pyx_checksum";
 static const char __pyx_k_stringsource[] = "stringsource";
-static const char __pyx_k_get_positions[] = "get_positions";
 static const char __pyx_k_reduce_cython[] = "__reduce_cython__";
 static const char __pyx_k_pyx_PickleError[] = "__pyx_PickleError";
 static const char __pyx_k_setstate_cython[] = "__setstate_cython__";
 static const char __pyx_k_cython_interface[] = "cython_interface";
 static const char __pyx_k_BVH_file_interface[] = "BVH_file_interface";
 static const char __pyx_k_cline_in_traceback[] = "cline_in_traceback";
+static const char __pyx_k_get_root_positions[] = "get_root_positions";
 static const char __pyx_k_BVH_writer_interface[] = "BVH_writer_interface";
 static const char __pyx_k_pyx_unpickle_BVH_file_interfac[] = "__pyx_unpickle_BVH_file_interface";
 static const char __pyx_k_pyx_unpickle_BVH_writer_interf[] = "__pyx_unpickle_BVH_writer_interface";
-static const char __pyx_k_Incompatible_checksums_s_vs_0x63[] = "Incompatible checksums (%s vs 0x63b6e46 = (frameNum, frametime, jointNames, jointNum, offsets, positions, rotations, topology))";
 static const char __pyx_k_Incompatible_checksums_s_vs_0xb7[] = "Incompatible checksums (%s vs 0xb7ba609 = (jointNum, staticDataPath))";
+static const char __pyx_k_Incompatible_checksums_s_vs_0xd8[] = "Incompatible checksums (%s vs 0xd82e78e = (frameNum, frametime, jointNames, jointNum, offsets, rootPositions, rotations, topology))";
 static PyObject *__pyx_n_s_BVH_file;
 static PyObject *__pyx_n_s_BVH_file_interface;
 static PyObject *__pyx_n_s_BVH_writer;
 static PyObject *__pyx_n_s_BVH_writer_interface;
-static PyObject *__pyx_kp_s_Incompatible_checksums_s_vs_0x63;
 static PyObject *__pyx_kp_s_Incompatible_checksums_s_vs_0xb7;
+static PyObject *__pyx_kp_s_Incompatible_checksums_s_vs_0xd8;
 static PyObject *__pyx_n_s_PickleError;
 static PyObject *__pyx_n_s_anim;
 static PyObject *__pyx_n_s_array;
@@ -1393,7 +1393,7 @@ static PyObject *__pyx_n_s_cline_in_traceback;
 static PyObject *__pyx_n_s_cython_interface;
 static PyObject *__pyx_n_s_dict;
 static PyObject *__pyx_n_s_frametime;
-static PyObject *__pyx_n_s_get_positions;
+static PyObject *__pyx_n_s_get_root_positions;
 static PyObject *__pyx_n_s_getstate;
 static PyObject *__pyx_n_s_import;
 static PyObject *__pyx_n_s_joint_num;
@@ -1436,9 +1436,9 @@ static int __pyx_pf_16cython_interface_18BVH_file_interface_10jointNames_4__del_
 static PyObject *__pyx_pf_16cython_interface_18BVH_file_interface_7offsets___get__(struct BVH_file_interface *__pyx_v_self); /* proto */
 static int __pyx_pf_16cython_interface_18BVH_file_interface_7offsets_2__set__(struct BVH_file_interface *__pyx_v_self, PyObject *__pyx_v_value); /* proto */
 static int __pyx_pf_16cython_interface_18BVH_file_interface_7offsets_4__del__(struct BVH_file_interface *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_16cython_interface_18BVH_file_interface_9positions___get__(struct BVH_file_interface *__pyx_v_self); /* proto */
-static int __pyx_pf_16cython_interface_18BVH_file_interface_9positions_2__set__(struct BVH_file_interface *__pyx_v_self, PyObject *__pyx_v_value); /* proto */
-static int __pyx_pf_16cython_interface_18BVH_file_interface_9positions_4__del__(struct BVH_file_interface *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_16cython_interface_18BVH_file_interface_13rootPositions___get__(struct BVH_file_interface *__pyx_v_self); /* proto */
+static int __pyx_pf_16cython_interface_18BVH_file_interface_13rootPositions_2__set__(struct BVH_file_interface *__pyx_v_self, PyObject *__pyx_v_value); /* proto */
+static int __pyx_pf_16cython_interface_18BVH_file_interface_13rootPositions_4__del__(struct BVH_file_interface *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_16cython_interface_18BVH_file_interface_9rotations___get__(struct BVH_file_interface *__pyx_v_self); /* proto */
 static int __pyx_pf_16cython_interface_18BVH_file_interface_9rotations_2__set__(struct BVH_file_interface *__pyx_v_self, PyObject *__pyx_v_value); /* proto */
 static int __pyx_pf_16cython_interface_18BVH_file_interface_9rotations_4__del__(struct BVH_file_interface *__pyx_v_self); /* proto */
@@ -1461,8 +1461,8 @@ static PyObject *__pyx_pf_16cython_interface___pyx_unpickle_BVH_file_interface(C
 static PyObject *__pyx_pf_16cython_interface_2__pyx_unpickle_BVH_writer_interface(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v___pyx_type, long __pyx_v___pyx_checksum, PyObject *__pyx_v___pyx_state); /* proto */
 static PyObject *__pyx_tp_new_16cython_interface_BVH_file_interface(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tp_new_16cython_interface_BVH_writer_interface(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
-static PyObject *__pyx_int_104558150;
 static PyObject *__pyx_int_192652809;
+static PyObject *__pyx_int_226682766;
 static PyObject *__pyx_slice_;
 static PyObject *__pyx_tuple__2;
 static PyObject *__pyx_tuple__4;
@@ -1570,7 +1570,7 @@ static int __pyx_pf_16cython_interface_18BVH_file_interface_8topology_4__del__(s
  *     cdef public object topology
  *     cdef public object jointNames             # <<<<<<<<<<<<<<
  *     cdef public object offsets
- *     cdef public object positions
+ *     cdef public object rootPositions
  */
 
 /* Python wrapper */
@@ -1664,7 +1664,7 @@ static int __pyx_pf_16cython_interface_18BVH_file_interface_10jointNames_4__del_
  *     cdef public object topology
  *     cdef public object jointNames
  *     cdef public object offsets             # <<<<<<<<<<<<<<
- *     cdef public object positions
+ *     cdef public object rootPositions
  *     cdef public object rotations
  */
 
@@ -1758,31 +1758,31 @@ static int __pyx_pf_16cython_interface_18BVH_file_interface_7offsets_4__del__(st
 /* "cython_interface.pyx":11
  *     cdef public object jointNames
  *     cdef public object offsets
- *     cdef public object positions             # <<<<<<<<<<<<<<
+ *     cdef public object rootPositions             # <<<<<<<<<<<<<<
  *     cdef public object rotations
  *     cdef public int jointNum
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_16cython_interface_18BVH_file_interface_9positions_1__get__(PyObject *__pyx_v_self); /*proto*/
-static PyObject *__pyx_pw_16cython_interface_18BVH_file_interface_9positions_1__get__(PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_16cython_interface_18BVH_file_interface_13rootPositions_1__get__(PyObject *__pyx_v_self); /*proto*/
+static PyObject *__pyx_pw_16cython_interface_18BVH_file_interface_13rootPositions_1__get__(PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__get__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_16cython_interface_18BVH_file_interface_9positions___get__(((struct BVH_file_interface *)__pyx_v_self));
+  __pyx_r = __pyx_pf_16cython_interface_18BVH_file_interface_13rootPositions___get__(((struct BVH_file_interface *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_16cython_interface_18BVH_file_interface_9positions___get__(struct BVH_file_interface *__pyx_v_self) {
+static PyObject *__pyx_pf_16cython_interface_18BVH_file_interface_13rootPositions___get__(struct BVH_file_interface *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__get__", 0);
   __Pyx_XDECREF(__pyx_r);
-  __Pyx_INCREF(__pyx_v_self->positions);
-  __pyx_r = __pyx_v_self->positions;
+  __Pyx_INCREF(__pyx_v_self->rootPositions);
+  __pyx_r = __pyx_v_self->rootPositions;
   goto __pyx_L0;
 
   /* function exit code */
@@ -1793,27 +1793,27 @@ static PyObject *__pyx_pf_16cython_interface_18BVH_file_interface_9positions___g
 }
 
 /* Python wrapper */
-static int __pyx_pw_16cython_interface_18BVH_file_interface_9positions_3__set__(PyObject *__pyx_v_self, PyObject *__pyx_v_value); /*proto*/
-static int __pyx_pw_16cython_interface_18BVH_file_interface_9positions_3__set__(PyObject *__pyx_v_self, PyObject *__pyx_v_value) {
+static int __pyx_pw_16cython_interface_18BVH_file_interface_13rootPositions_3__set__(PyObject *__pyx_v_self, PyObject *__pyx_v_value); /*proto*/
+static int __pyx_pw_16cython_interface_18BVH_file_interface_13rootPositions_3__set__(PyObject *__pyx_v_self, PyObject *__pyx_v_value) {
   int __pyx_r;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__set__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_16cython_interface_18BVH_file_interface_9positions_2__set__(((struct BVH_file_interface *)__pyx_v_self), ((PyObject *)__pyx_v_value));
+  __pyx_r = __pyx_pf_16cython_interface_18BVH_file_interface_13rootPositions_2__set__(((struct BVH_file_interface *)__pyx_v_self), ((PyObject *)__pyx_v_value));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static int __pyx_pf_16cython_interface_18BVH_file_interface_9positions_2__set__(struct BVH_file_interface *__pyx_v_self, PyObject *__pyx_v_value) {
+static int __pyx_pf_16cython_interface_18BVH_file_interface_13rootPositions_2__set__(struct BVH_file_interface *__pyx_v_self, PyObject *__pyx_v_value) {
   int __pyx_r;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__set__", 0);
   __Pyx_INCREF(__pyx_v_value);
   __Pyx_GIVEREF(__pyx_v_value);
-  __Pyx_GOTREF(__pyx_v_self->positions);
-  __Pyx_DECREF(__pyx_v_self->positions);
-  __pyx_v_self->positions = __pyx_v_value;
+  __Pyx_GOTREF(__pyx_v_self->rootPositions);
+  __Pyx_DECREF(__pyx_v_self->rootPositions);
+  __pyx_v_self->rootPositions = __pyx_v_value;
 
   /* function exit code */
   __pyx_r = 0;
@@ -1822,27 +1822,27 @@ static int __pyx_pf_16cython_interface_18BVH_file_interface_9positions_2__set__(
 }
 
 /* Python wrapper */
-static int __pyx_pw_16cython_interface_18BVH_file_interface_9positions_5__del__(PyObject *__pyx_v_self); /*proto*/
-static int __pyx_pw_16cython_interface_18BVH_file_interface_9positions_5__del__(PyObject *__pyx_v_self) {
+static int __pyx_pw_16cython_interface_18BVH_file_interface_13rootPositions_5__del__(PyObject *__pyx_v_self); /*proto*/
+static int __pyx_pw_16cython_interface_18BVH_file_interface_13rootPositions_5__del__(PyObject *__pyx_v_self) {
   int __pyx_r;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__del__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_16cython_interface_18BVH_file_interface_9positions_4__del__(((struct BVH_file_interface *)__pyx_v_self));
+  __pyx_r = __pyx_pf_16cython_interface_18BVH_file_interface_13rootPositions_4__del__(((struct BVH_file_interface *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static int __pyx_pf_16cython_interface_18BVH_file_interface_9positions_4__del__(struct BVH_file_interface *__pyx_v_self) {
+static int __pyx_pf_16cython_interface_18BVH_file_interface_13rootPositions_4__del__(struct BVH_file_interface *__pyx_v_self) {
   int __pyx_r;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__del__", 0);
   __Pyx_INCREF(Py_None);
   __Pyx_GIVEREF(Py_None);
-  __Pyx_GOTREF(__pyx_v_self->positions);
-  __Pyx_DECREF(__pyx_v_self->positions);
-  __pyx_v_self->positions = Py_None;
+  __Pyx_GOTREF(__pyx_v_self->rootPositions);
+  __Pyx_DECREF(__pyx_v_self->rootPositions);
+  __pyx_v_self->rootPositions = Py_None;
 
   /* function exit code */
   __pyx_r = 0;
@@ -1852,7 +1852,7 @@ static int __pyx_pf_16cython_interface_18BVH_file_interface_9positions_4__del__(
 
 /* "cython_interface.pyx":12
  *     cdef public object offsets
- *     cdef public object positions
+ *     cdef public object rootPositions
  *     cdef public object rotations             # <<<<<<<<<<<<<<
  *     cdef public int jointNum
  *     cdef public int frameNum
@@ -1946,7 +1946,7 @@ static int __pyx_pf_16cython_interface_18BVH_file_interface_9rotations_4__del__(
 }
 
 /* "cython_interface.pyx":13
- *     cdef public object positions
+ *     cdef public object rootPositions
  *     cdef public object rotations
  *     cdef public int jointNum             # <<<<<<<<<<<<<<
  *     cdef public int frameNum
@@ -2231,7 +2231,7 @@ static PyObject *__pyx_pf_16cython_interface_18BVH_file_interface___reduce_cytho
   /* "(tree fragment)":5
  *     cdef object _dict
  *     cdef bint use_setstate
- *     state = (self.frameNum, self.frametime, self.jointNames, self.jointNum, self.offsets, self.positions, self.rotations, self.topology)             # <<<<<<<<<<<<<<
+ *     state = (self.frameNum, self.frametime, self.jointNames, self.jointNum, self.offsets, self.rootPositions, self.rotations, self.topology)             # <<<<<<<<<<<<<<
  *     _dict = getattr(self, '__dict__', None)
  *     if _dict is not None:
  */
@@ -2255,9 +2255,9 @@ static PyObject *__pyx_pf_16cython_interface_18BVH_file_interface___reduce_cytho
   __Pyx_INCREF(__pyx_v_self->offsets);
   __Pyx_GIVEREF(__pyx_v_self->offsets);
   PyTuple_SET_ITEM(__pyx_t_4, 4, __pyx_v_self->offsets);
-  __Pyx_INCREF(__pyx_v_self->positions);
-  __Pyx_GIVEREF(__pyx_v_self->positions);
-  PyTuple_SET_ITEM(__pyx_t_4, 5, __pyx_v_self->positions);
+  __Pyx_INCREF(__pyx_v_self->rootPositions);
+  __Pyx_GIVEREF(__pyx_v_self->rootPositions);
+  PyTuple_SET_ITEM(__pyx_t_4, 5, __pyx_v_self->rootPositions);
   __Pyx_INCREF(__pyx_v_self->rotations);
   __Pyx_GIVEREF(__pyx_v_self->rotations);
   PyTuple_SET_ITEM(__pyx_t_4, 6, __pyx_v_self->rotations);
@@ -2272,7 +2272,7 @@ static PyObject *__pyx_pf_16cython_interface_18BVH_file_interface___reduce_cytho
 
   /* "(tree fragment)":6
  *     cdef bint use_setstate
- *     state = (self.frameNum, self.frametime, self.jointNames, self.jointNum, self.offsets, self.positions, self.rotations, self.topology)
+ *     state = (self.frameNum, self.frametime, self.jointNames, self.jointNum, self.offsets, self.rootPositions, self.rotations, self.topology)
  *     _dict = getattr(self, '__dict__', None)             # <<<<<<<<<<<<<<
  *     if _dict is not None:
  *         state += (_dict,)
@@ -2283,7 +2283,7 @@ static PyObject *__pyx_pf_16cython_interface_18BVH_file_interface___reduce_cytho
   __pyx_t_4 = 0;
 
   /* "(tree fragment)":7
- *     state = (self.frameNum, self.frametime, self.jointNames, self.jointNum, self.offsets, self.positions, self.rotations, self.topology)
+ *     state = (self.frameNum, self.frametime, self.jointNames, self.jointNum, self.offsets, self.rootPositions, self.rotations, self.topology)
  *     _dict = getattr(self, '__dict__', None)
  *     if _dict is not None:             # <<<<<<<<<<<<<<
  *         state += (_dict,)
@@ -2316,12 +2316,12 @@ static PyObject *__pyx_pf_16cython_interface_18BVH_file_interface___reduce_cytho
  *         state += (_dict,)
  *         use_setstate = True             # <<<<<<<<<<<<<<
  *     else:
- *         use_setstate = self.jointNames is not None or self.offsets is not None or self.positions is not None or self.rotations is not None or self.topology is not None
+ *         use_setstate = self.jointNames is not None or self.offsets is not None or self.rootPositions is not None or self.rotations is not None or self.topology is not None
  */
     __pyx_v_use_setstate = 1;
 
     /* "(tree fragment)":7
- *     state = (self.frameNum, self.frametime, self.jointNames, self.jointNum, self.offsets, self.positions, self.rotations, self.topology)
+ *     state = (self.frameNum, self.frametime, self.jointNames, self.jointNum, self.offsets, self.rootPositions, self.rotations, self.topology)
  *     _dict = getattr(self, '__dict__', None)
  *     if _dict is not None:             # <<<<<<<<<<<<<<
  *         state += (_dict,)
@@ -2333,9 +2333,9 @@ static PyObject *__pyx_pf_16cython_interface_18BVH_file_interface___reduce_cytho
   /* "(tree fragment)":11
  *         use_setstate = True
  *     else:
- *         use_setstate = self.jointNames is not None or self.offsets is not None or self.positions is not None or self.rotations is not None or self.topology is not None             # <<<<<<<<<<<<<<
+ *         use_setstate = self.jointNames is not None or self.offsets is not None or self.rootPositions is not None or self.rotations is not None or self.topology is not None             # <<<<<<<<<<<<<<
  *     if use_setstate:
- *         return __pyx_unpickle_BVH_file_interface, (type(self), 0x63b6e46, None), state
+ *         return __pyx_unpickle_BVH_file_interface, (type(self), 0xd82e78e, None), state
  */
   /*else*/ {
     __pyx_t_5 = (__pyx_v_self->jointNames != Py_None);
@@ -2352,7 +2352,7 @@ static PyObject *__pyx_pf_16cython_interface_18BVH_file_interface___reduce_cytho
       __pyx_t_6 = __pyx_t_5;
       goto __pyx_L4_bool_binop_done;
     }
-    __pyx_t_5 = (__pyx_v_self->positions != Py_None);
+    __pyx_t_5 = (__pyx_v_self->rootPositions != Py_None);
     __pyx_t_7 = (__pyx_t_5 != 0);
     if (!__pyx_t_7) {
     } else {
@@ -2376,20 +2376,20 @@ static PyObject *__pyx_pf_16cython_interface_18BVH_file_interface___reduce_cytho
 
   /* "(tree fragment)":12
  *     else:
- *         use_setstate = self.jointNames is not None or self.offsets is not None or self.positions is not None or self.rotations is not None or self.topology is not None
+ *         use_setstate = self.jointNames is not None or self.offsets is not None or self.rootPositions is not None or self.rotations is not None or self.topology is not None
  *     if use_setstate:             # <<<<<<<<<<<<<<
- *         return __pyx_unpickle_BVH_file_interface, (type(self), 0x63b6e46, None), state
+ *         return __pyx_unpickle_BVH_file_interface, (type(self), 0xd82e78e, None), state
  *     else:
  */
   __pyx_t_6 = (__pyx_v_use_setstate != 0);
   if (__pyx_t_6) {
 
     /* "(tree fragment)":13
- *         use_setstate = self.jointNames is not None or self.offsets is not None or self.positions is not None or self.rotations is not None or self.topology is not None
+ *         use_setstate = self.jointNames is not None or self.offsets is not None or self.rootPositions is not None or self.rotations is not None or self.topology is not None
  *     if use_setstate:
- *         return __pyx_unpickle_BVH_file_interface, (type(self), 0x63b6e46, None), state             # <<<<<<<<<<<<<<
+ *         return __pyx_unpickle_BVH_file_interface, (type(self), 0xd82e78e, None), state             # <<<<<<<<<<<<<<
  *     else:
- *         return __pyx_unpickle_BVH_file_interface, (type(self), 0x63b6e46, state)
+ *         return __pyx_unpickle_BVH_file_interface, (type(self), 0xd82e78e, state)
  */
     __Pyx_XDECREF(__pyx_r);
     __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_pyx_unpickle_BVH_file_interfac); if (unlikely(!__pyx_t_3)) __PYX_ERR(1, 13, __pyx_L1_error)
@@ -2399,9 +2399,9 @@ static PyObject *__pyx_pf_16cython_interface_18BVH_file_interface___reduce_cytho
     __Pyx_INCREF(((PyObject *)Py_TYPE(((PyObject *)__pyx_v_self))));
     __Pyx_GIVEREF(((PyObject *)Py_TYPE(((PyObject *)__pyx_v_self))));
     PyTuple_SET_ITEM(__pyx_t_4, 0, ((PyObject *)Py_TYPE(((PyObject *)__pyx_v_self))));
-    __Pyx_INCREF(__pyx_int_104558150);
-    __Pyx_GIVEREF(__pyx_int_104558150);
-    PyTuple_SET_ITEM(__pyx_t_4, 1, __pyx_int_104558150);
+    __Pyx_INCREF(__pyx_int_226682766);
+    __Pyx_GIVEREF(__pyx_int_226682766);
+    PyTuple_SET_ITEM(__pyx_t_4, 1, __pyx_int_226682766);
     __Pyx_INCREF(Py_None);
     __Pyx_GIVEREF(Py_None);
     PyTuple_SET_ITEM(__pyx_t_4, 2, Py_None);
@@ -2422,17 +2422,17 @@ static PyObject *__pyx_pf_16cython_interface_18BVH_file_interface___reduce_cytho
 
     /* "(tree fragment)":12
  *     else:
- *         use_setstate = self.jointNames is not None or self.offsets is not None or self.positions is not None or self.rotations is not None or self.topology is not None
+ *         use_setstate = self.jointNames is not None or self.offsets is not None or self.rootPositions is not None or self.rotations is not None or self.topology is not None
  *     if use_setstate:             # <<<<<<<<<<<<<<
- *         return __pyx_unpickle_BVH_file_interface, (type(self), 0x63b6e46, None), state
+ *         return __pyx_unpickle_BVH_file_interface, (type(self), 0xd82e78e, None), state
  *     else:
  */
   }
 
   /* "(tree fragment)":15
- *         return __pyx_unpickle_BVH_file_interface, (type(self), 0x63b6e46, None), state
+ *         return __pyx_unpickle_BVH_file_interface, (type(self), 0xd82e78e, None), state
  *     else:
- *         return __pyx_unpickle_BVH_file_interface, (type(self), 0x63b6e46, state)             # <<<<<<<<<<<<<<
+ *         return __pyx_unpickle_BVH_file_interface, (type(self), 0xd82e78e, state)             # <<<<<<<<<<<<<<
  * def __setstate_cython__(self, __pyx_state):
  *     __pyx_unpickle_BVH_file_interface__set_state(self, __pyx_state)
  */
@@ -2445,9 +2445,9 @@ static PyObject *__pyx_pf_16cython_interface_18BVH_file_interface___reduce_cytho
     __Pyx_INCREF(((PyObject *)Py_TYPE(((PyObject *)__pyx_v_self))));
     __Pyx_GIVEREF(((PyObject *)Py_TYPE(((PyObject *)__pyx_v_self))));
     PyTuple_SET_ITEM(__pyx_t_4, 0, ((PyObject *)Py_TYPE(((PyObject *)__pyx_v_self))));
-    __Pyx_INCREF(__pyx_int_104558150);
-    __Pyx_GIVEREF(__pyx_int_104558150);
-    PyTuple_SET_ITEM(__pyx_t_4, 1, __pyx_int_104558150);
+    __Pyx_INCREF(__pyx_int_226682766);
+    __Pyx_GIVEREF(__pyx_int_226682766);
+    PyTuple_SET_ITEM(__pyx_t_4, 1, __pyx_int_226682766);
     __Pyx_INCREF(__pyx_v_state);
     __Pyx_GIVEREF(__pyx_v_state);
     PyTuple_SET_ITEM(__pyx_t_4, 2, __pyx_v_state);
@@ -2488,7 +2488,7 @@ static PyObject *__pyx_pf_16cython_interface_18BVH_file_interface___reduce_cytho
 
 /* "(tree fragment)":16
  *     else:
- *         return __pyx_unpickle_BVH_file_interface, (type(self), 0x63b6e46, state)
+ *         return __pyx_unpickle_BVH_file_interface, (type(self), 0xd82e78e, state)
  * def __setstate_cython__(self, __pyx_state):             # <<<<<<<<<<<<<<
  *     __pyx_unpickle_BVH_file_interface__set_state(self, __pyx_state)
  */
@@ -2516,7 +2516,7 @@ static PyObject *__pyx_pf_16cython_interface_18BVH_file_interface_2__setstate_cy
   __Pyx_RefNannySetupContext("__setstate_cython__", 0);
 
   /* "(tree fragment)":17
- *         return __pyx_unpickle_BVH_file_interface, (type(self), 0x63b6e46, state)
+ *         return __pyx_unpickle_BVH_file_interface, (type(self), 0xd82e78e, state)
  * def __setstate_cython__(self, __pyx_state):
  *     __pyx_unpickle_BVH_file_interface__set_state(self, __pyx_state)             # <<<<<<<<<<<<<<
  */
@@ -2527,7 +2527,7 @@ static PyObject *__pyx_pf_16cython_interface_18BVH_file_interface_2__setstate_cy
 
   /* "(tree fragment)":16
  *     else:
- *         return __pyx_unpickle_BVH_file_interface, (type(self), 0x63b6e46, state)
+ *         return __pyx_unpickle_BVH_file_interface, (type(self), 0xd82e78e, state)
  * def __setstate_cython__(self, __pyx_state):             # <<<<<<<<<<<<<<
  *     __pyx_unpickle_BVH_file_interface__set_state(self, __pyx_state)
  */
@@ -2753,11 +2753,11 @@ struct BVH_file_interface *createFileInterface(PyObject *__pyx_v_filePath, PyObj
   /* "cython_interface.pyx":34
  * 
  *     #positions (FrameNum x JointNum x 3)
- *     fileInterface.positions = pyFile.get_positions().tolist()             # <<<<<<<<<<<<<<
+ *     fileInterface.rootPositions = pyFile.get_root_positions().tolist()             # <<<<<<<<<<<<<<
  * 
  *     #rotations (FrameNum x JointNum x 3)
  */
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_pyFile, __pyx_n_s_get_positions); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 34, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_pyFile, __pyx_n_s_get_root_positions); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 34, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_t_3 = NULL;
   if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_1))) {
@@ -2793,9 +2793,9 @@ struct BVH_file_interface *createFileInterface(PyObject *__pyx_v_filePath, PyObj
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_GIVEREF(__pyx_t_2);
-  __Pyx_GOTREF(__pyx_v_fileInterface->positions);
-  __Pyx_DECREF(__pyx_v_fileInterface->positions);
-  __pyx_v_fileInterface->positions = __pyx_t_2;
+  __Pyx_GOTREF(__pyx_v_fileInterface->rootPositions);
+  __Pyx_DECREF(__pyx_v_fileInterface->rootPositions);
+  __pyx_v_fileInterface->rootPositions = __pyx_t_2;
   __pyx_t_2 = 0;
 
   /* "cython_interface.pyx":37
@@ -3733,18 +3733,18 @@ static PyObject *__pyx_pf_16cython_interface___pyx_unpickle_BVH_file_interface(C
   /* "(tree fragment)":4
  *     cdef object __pyx_PickleError
  *     cdef object __pyx_result
- *     if __pyx_checksum != 0x63b6e46:             # <<<<<<<<<<<<<<
+ *     if __pyx_checksum != 0xd82e78e:             # <<<<<<<<<<<<<<
  *         from pickle import PickleError as __pyx_PickleError
- *         raise __pyx_PickleError("Incompatible checksums (%s vs 0x63b6e46 = (frameNum, frametime, jointNames, jointNum, offsets, positions, rotations, topology))" % __pyx_checksum)
+ *         raise __pyx_PickleError("Incompatible checksums (%s vs 0xd82e78e = (frameNum, frametime, jointNames, jointNum, offsets, rootPositions, rotations, topology))" % __pyx_checksum)
  */
-  __pyx_t_1 = ((__pyx_v___pyx_checksum != 0x63b6e46) != 0);
+  __pyx_t_1 = ((__pyx_v___pyx_checksum != 0xd82e78e) != 0);
   if (__pyx_t_1) {
 
     /* "(tree fragment)":5
  *     cdef object __pyx_result
- *     if __pyx_checksum != 0x63b6e46:
+ *     if __pyx_checksum != 0xd82e78e:
  *         from pickle import PickleError as __pyx_PickleError             # <<<<<<<<<<<<<<
- *         raise __pyx_PickleError("Incompatible checksums (%s vs 0x63b6e46 = (frameNum, frametime, jointNames, jointNum, offsets, positions, rotations, topology))" % __pyx_checksum)
+ *         raise __pyx_PickleError("Incompatible checksums (%s vs 0xd82e78e = (frameNum, frametime, jointNames, jointNum, offsets, rootPositions, rotations, topology))" % __pyx_checksum)
  *     __pyx_result = BVH_file_interface.__new__(__pyx_type)
  */
     __pyx_t_2 = PyList_New(1); if (unlikely(!__pyx_t_2)) __PYX_ERR(1, 5, __pyx_L1_error)
@@ -3763,15 +3763,15 @@ static PyObject *__pyx_pf_16cython_interface___pyx_unpickle_BVH_file_interface(C
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
     /* "(tree fragment)":6
- *     if __pyx_checksum != 0x63b6e46:
+ *     if __pyx_checksum != 0xd82e78e:
  *         from pickle import PickleError as __pyx_PickleError
- *         raise __pyx_PickleError("Incompatible checksums (%s vs 0x63b6e46 = (frameNum, frametime, jointNames, jointNum, offsets, positions, rotations, topology))" % __pyx_checksum)             # <<<<<<<<<<<<<<
+ *         raise __pyx_PickleError("Incompatible checksums (%s vs 0xd82e78e = (frameNum, frametime, jointNames, jointNum, offsets, rootPositions, rotations, topology))" % __pyx_checksum)             # <<<<<<<<<<<<<<
  *     __pyx_result = BVH_file_interface.__new__(__pyx_type)
  *     if __pyx_state is not None:
  */
     __pyx_t_2 = __Pyx_PyInt_From_long(__pyx_v___pyx_checksum); if (unlikely(!__pyx_t_2)) __PYX_ERR(1, 6, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_4 = __Pyx_PyString_Format(__pyx_kp_s_Incompatible_checksums_s_vs_0x63, __pyx_t_2); if (unlikely(!__pyx_t_4)) __PYX_ERR(1, 6, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyString_Format(__pyx_kp_s_Incompatible_checksums_s_vs_0xd8, __pyx_t_2); if (unlikely(!__pyx_t_4)) __PYX_ERR(1, 6, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __Pyx_INCREF(__pyx_v___pyx_PickleError);
@@ -3798,15 +3798,15 @@ static PyObject *__pyx_pf_16cython_interface___pyx_unpickle_BVH_file_interface(C
     /* "(tree fragment)":4
  *     cdef object __pyx_PickleError
  *     cdef object __pyx_result
- *     if __pyx_checksum != 0x63b6e46:             # <<<<<<<<<<<<<<
+ *     if __pyx_checksum != 0xd82e78e:             # <<<<<<<<<<<<<<
  *         from pickle import PickleError as __pyx_PickleError
- *         raise __pyx_PickleError("Incompatible checksums (%s vs 0x63b6e46 = (frameNum, frametime, jointNames, jointNum, offsets, positions, rotations, topology))" % __pyx_checksum)
+ *         raise __pyx_PickleError("Incompatible checksums (%s vs 0xd82e78e = (frameNum, frametime, jointNames, jointNum, offsets, rootPositions, rotations, topology))" % __pyx_checksum)
  */
   }
 
   /* "(tree fragment)":7
  *         from pickle import PickleError as __pyx_PickleError
- *         raise __pyx_PickleError("Incompatible checksums (%s vs 0x63b6e46 = (frameNum, frametime, jointNames, jointNum, offsets, positions, rotations, topology))" % __pyx_checksum)
+ *         raise __pyx_PickleError("Incompatible checksums (%s vs 0xd82e78e = (frameNum, frametime, jointNames, jointNum, offsets, rootPositions, rotations, topology))" % __pyx_checksum)
  *     __pyx_result = BVH_file_interface.__new__(__pyx_type)             # <<<<<<<<<<<<<<
  *     if __pyx_state is not None:
  *         __pyx_unpickle_BVH_file_interface__set_state(<BVH_file_interface> __pyx_result, __pyx_state)
@@ -3832,7 +3832,7 @@ static PyObject *__pyx_pf_16cython_interface___pyx_unpickle_BVH_file_interface(C
   __pyx_t_3 = 0;
 
   /* "(tree fragment)":8
- *         raise __pyx_PickleError("Incompatible checksums (%s vs 0x63b6e46 = (frameNum, frametime, jointNames, jointNum, offsets, positions, rotations, topology))" % __pyx_checksum)
+ *         raise __pyx_PickleError("Incompatible checksums (%s vs 0xd82e78e = (frameNum, frametime, jointNames, jointNum, offsets, rootPositions, rotations, topology))" % __pyx_checksum)
  *     __pyx_result = BVH_file_interface.__new__(__pyx_type)
  *     if __pyx_state is not None:             # <<<<<<<<<<<<<<
  *         __pyx_unpickle_BVH_file_interface__set_state(<BVH_file_interface> __pyx_result, __pyx_state)
@@ -3855,7 +3855,7 @@ static PyObject *__pyx_pf_16cython_interface___pyx_unpickle_BVH_file_interface(C
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
     /* "(tree fragment)":8
- *         raise __pyx_PickleError("Incompatible checksums (%s vs 0x63b6e46 = (frameNum, frametime, jointNames, jointNum, offsets, positions, rotations, topology))" % __pyx_checksum)
+ *         raise __pyx_PickleError("Incompatible checksums (%s vs 0xd82e78e = (frameNum, frametime, jointNames, jointNum, offsets, rootPositions, rotations, topology))" % __pyx_checksum)
  *     __pyx_result = BVH_file_interface.__new__(__pyx_type)
  *     if __pyx_state is not None:             # <<<<<<<<<<<<<<
  *         __pyx_unpickle_BVH_file_interface__set_state(<BVH_file_interface> __pyx_result, __pyx_state)
@@ -3868,7 +3868,7 @@ static PyObject *__pyx_pf_16cython_interface___pyx_unpickle_BVH_file_interface(C
  *         __pyx_unpickle_BVH_file_interface__set_state(<BVH_file_interface> __pyx_result, __pyx_state)
  *     return __pyx_result             # <<<<<<<<<<<<<<
  * cdef __pyx_unpickle_BVH_file_interface__set_state(BVH_file_interface __pyx_result, tuple __pyx_state):
- *     __pyx_result.frameNum = __pyx_state[0]; __pyx_result.frametime = __pyx_state[1]; __pyx_result.jointNames = __pyx_state[2]; __pyx_result.jointNum = __pyx_state[3]; __pyx_result.offsets = __pyx_state[4]; __pyx_result.positions = __pyx_state[5]; __pyx_result.rotations = __pyx_state[6]; __pyx_result.topology = __pyx_state[7]
+ *     __pyx_result.frameNum = __pyx_state[0]; __pyx_result.frametime = __pyx_state[1]; __pyx_result.jointNames = __pyx_state[2]; __pyx_result.jointNum = __pyx_state[3]; __pyx_result.offsets = __pyx_state[4]; __pyx_result.rootPositions = __pyx_state[5]; __pyx_result.rotations = __pyx_state[6]; __pyx_result.topology = __pyx_state[7]
  */
   __Pyx_XDECREF(__pyx_r);
   __Pyx_INCREF(__pyx_v___pyx_result);
@@ -3901,7 +3901,7 @@ static PyObject *__pyx_pf_16cython_interface___pyx_unpickle_BVH_file_interface(C
  *         __pyx_unpickle_BVH_file_interface__set_state(<BVH_file_interface> __pyx_result, __pyx_state)
  *     return __pyx_result
  * cdef __pyx_unpickle_BVH_file_interface__set_state(BVH_file_interface __pyx_result, tuple __pyx_state):             # <<<<<<<<<<<<<<
- *     __pyx_result.frameNum = __pyx_state[0]; __pyx_result.frametime = __pyx_state[1]; __pyx_result.jointNames = __pyx_state[2]; __pyx_result.jointNum = __pyx_state[3]; __pyx_result.offsets = __pyx_state[4]; __pyx_result.positions = __pyx_state[5]; __pyx_result.rotations = __pyx_state[6]; __pyx_result.topology = __pyx_state[7]
+ *     __pyx_result.frameNum = __pyx_state[0]; __pyx_result.frametime = __pyx_state[1]; __pyx_result.jointNames = __pyx_state[2]; __pyx_result.jointNum = __pyx_state[3]; __pyx_result.offsets = __pyx_state[4]; __pyx_result.rootPositions = __pyx_state[5]; __pyx_result.rotations = __pyx_state[6]; __pyx_result.topology = __pyx_state[7]
  *     if len(__pyx_state) > 8 and hasattr(__pyx_result, '__dict__'):
  */
 
@@ -3926,7 +3926,7 @@ static PyObject *__pyx_f_16cython_interface___pyx_unpickle_BVH_file_interface__s
   /* "(tree fragment)":12
  *     return __pyx_result
  * cdef __pyx_unpickle_BVH_file_interface__set_state(BVH_file_interface __pyx_result, tuple __pyx_state):
- *     __pyx_result.frameNum = __pyx_state[0]; __pyx_result.frametime = __pyx_state[1]; __pyx_result.jointNames = __pyx_state[2]; __pyx_result.jointNum = __pyx_state[3]; __pyx_result.offsets = __pyx_state[4]; __pyx_result.positions = __pyx_state[5]; __pyx_result.rotations = __pyx_state[6]; __pyx_result.topology = __pyx_state[7]             # <<<<<<<<<<<<<<
+ *     __pyx_result.frameNum = __pyx_state[0]; __pyx_result.frametime = __pyx_state[1]; __pyx_result.jointNames = __pyx_state[2]; __pyx_result.jointNum = __pyx_state[3]; __pyx_result.offsets = __pyx_state[4]; __pyx_result.rootPositions = __pyx_state[5]; __pyx_result.rotations = __pyx_state[6]; __pyx_result.topology = __pyx_state[7]             # <<<<<<<<<<<<<<
  *     if len(__pyx_state) > 8 and hasattr(__pyx_result, '__dict__'):
  *         __pyx_result.__dict__.update(__pyx_state[8])
  */
@@ -3986,9 +3986,9 @@ static PyObject *__pyx_f_16cython_interface___pyx_unpickle_BVH_file_interface__s
   __pyx_t_1 = __Pyx_GetItemInt_Tuple(__pyx_v___pyx_state, 5, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(1, 12, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_GIVEREF(__pyx_t_1);
-  __Pyx_GOTREF(__pyx_v___pyx_result->positions);
-  __Pyx_DECREF(__pyx_v___pyx_result->positions);
-  __pyx_v___pyx_result->positions = __pyx_t_1;
+  __Pyx_GOTREF(__pyx_v___pyx_result->rootPositions);
+  __Pyx_DECREF(__pyx_v___pyx_result->rootPositions);
+  __pyx_v___pyx_result->rootPositions = __pyx_t_1;
   __pyx_t_1 = 0;
   if (unlikely(__pyx_v___pyx_state == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
@@ -4015,7 +4015,7 @@ static PyObject *__pyx_f_16cython_interface___pyx_unpickle_BVH_file_interface__s
 
   /* "(tree fragment)":13
  * cdef __pyx_unpickle_BVH_file_interface__set_state(BVH_file_interface __pyx_result, tuple __pyx_state):
- *     __pyx_result.frameNum = __pyx_state[0]; __pyx_result.frametime = __pyx_state[1]; __pyx_result.jointNames = __pyx_state[2]; __pyx_result.jointNum = __pyx_state[3]; __pyx_result.offsets = __pyx_state[4]; __pyx_result.positions = __pyx_state[5]; __pyx_result.rotations = __pyx_state[6]; __pyx_result.topology = __pyx_state[7]
+ *     __pyx_result.frameNum = __pyx_state[0]; __pyx_result.frametime = __pyx_state[1]; __pyx_result.jointNames = __pyx_state[2]; __pyx_result.jointNum = __pyx_state[3]; __pyx_result.offsets = __pyx_state[4]; __pyx_result.rootPositions = __pyx_state[5]; __pyx_result.rotations = __pyx_state[6]; __pyx_result.topology = __pyx_state[7]
  *     if len(__pyx_state) > 8 and hasattr(__pyx_result, '__dict__'):             # <<<<<<<<<<<<<<
  *         __pyx_result.__dict__.update(__pyx_state[8])
  */
@@ -4037,7 +4037,7 @@ static PyObject *__pyx_f_16cython_interface___pyx_unpickle_BVH_file_interface__s
   if (__pyx_t_4) {
 
     /* "(tree fragment)":14
- *     __pyx_result.frameNum = __pyx_state[0]; __pyx_result.frametime = __pyx_state[1]; __pyx_result.jointNames = __pyx_state[2]; __pyx_result.jointNum = __pyx_state[3]; __pyx_result.offsets = __pyx_state[4]; __pyx_result.positions = __pyx_state[5]; __pyx_result.rotations = __pyx_state[6]; __pyx_result.topology = __pyx_state[7]
+ *     __pyx_result.frameNum = __pyx_state[0]; __pyx_result.frametime = __pyx_state[1]; __pyx_result.jointNames = __pyx_state[2]; __pyx_result.jointNum = __pyx_state[3]; __pyx_result.offsets = __pyx_state[4]; __pyx_result.rootPositions = __pyx_state[5]; __pyx_result.rotations = __pyx_state[6]; __pyx_result.topology = __pyx_state[7]
  *     if len(__pyx_state) > 8 and hasattr(__pyx_result, '__dict__'):
  *         __pyx_result.__dict__.update(__pyx_state[8])             # <<<<<<<<<<<<<<
  */
@@ -4072,7 +4072,7 @@ static PyObject *__pyx_f_16cython_interface___pyx_unpickle_BVH_file_interface__s
 
     /* "(tree fragment)":13
  * cdef __pyx_unpickle_BVH_file_interface__set_state(BVH_file_interface __pyx_result, tuple __pyx_state):
- *     __pyx_result.frameNum = __pyx_state[0]; __pyx_result.frametime = __pyx_state[1]; __pyx_result.jointNames = __pyx_state[2]; __pyx_result.jointNum = __pyx_state[3]; __pyx_result.offsets = __pyx_state[4]; __pyx_result.positions = __pyx_state[5]; __pyx_result.rotations = __pyx_state[6]; __pyx_result.topology = __pyx_state[7]
+ *     __pyx_result.frameNum = __pyx_state[0]; __pyx_result.frametime = __pyx_state[1]; __pyx_result.jointNames = __pyx_state[2]; __pyx_result.jointNum = __pyx_state[3]; __pyx_result.offsets = __pyx_state[4]; __pyx_result.rootPositions = __pyx_state[5]; __pyx_result.rotations = __pyx_state[6]; __pyx_result.topology = __pyx_state[7]
  *     if len(__pyx_state) > 8 and hasattr(__pyx_result, '__dict__'):             # <<<<<<<<<<<<<<
  *         __pyx_result.__dict__.update(__pyx_state[8])
  */
@@ -4082,7 +4082,7 @@ static PyObject *__pyx_f_16cython_interface___pyx_unpickle_BVH_file_interface__s
  *         __pyx_unpickle_BVH_file_interface__set_state(<BVH_file_interface> __pyx_result, __pyx_state)
  *     return __pyx_result
  * cdef __pyx_unpickle_BVH_file_interface__set_state(BVH_file_interface __pyx_result, tuple __pyx_state):             # <<<<<<<<<<<<<<
- *     __pyx_result.frameNum = __pyx_state[0]; __pyx_result.frametime = __pyx_state[1]; __pyx_result.jointNames = __pyx_state[2]; __pyx_result.jointNum = __pyx_state[3]; __pyx_result.offsets = __pyx_state[4]; __pyx_result.positions = __pyx_state[5]; __pyx_result.rotations = __pyx_state[6]; __pyx_result.topology = __pyx_state[7]
+ *     __pyx_result.frameNum = __pyx_state[0]; __pyx_result.frametime = __pyx_state[1]; __pyx_result.jointNames = __pyx_state[2]; __pyx_result.jointNum = __pyx_state[3]; __pyx_result.offsets = __pyx_state[4]; __pyx_result.rootPositions = __pyx_state[5]; __pyx_result.rotations = __pyx_state[6]; __pyx_result.topology = __pyx_state[7]
  *     if len(__pyx_state) > 8 and hasattr(__pyx_result, '__dict__'):
  */
 
@@ -4522,7 +4522,7 @@ static PyObject *__pyx_tp_new_16cython_interface_BVH_file_interface(PyTypeObject
   p->topology = Py_None; Py_INCREF(Py_None);
   p->jointNames = Py_None; Py_INCREF(Py_None);
   p->offsets = Py_None; Py_INCREF(Py_None);
-  p->positions = Py_None; Py_INCREF(Py_None);
+  p->rootPositions = Py_None; Py_INCREF(Py_None);
   p->rotations = Py_None; Py_INCREF(Py_None);
   return o;
 }
@@ -4538,7 +4538,7 @@ static void __pyx_tp_dealloc_16cython_interface_BVH_file_interface(PyObject *o) 
   Py_CLEAR(p->topology);
   Py_CLEAR(p->jointNames);
   Py_CLEAR(p->offsets);
-  Py_CLEAR(p->positions);
+  Py_CLEAR(p->rootPositions);
   Py_CLEAR(p->rotations);
   (*Py_TYPE(o)->tp_free)(o);
 }
@@ -4555,8 +4555,8 @@ static int __pyx_tp_traverse_16cython_interface_BVH_file_interface(PyObject *o, 
   if (p->offsets) {
     e = (*v)(p->offsets, a); if (e) return e;
   }
-  if (p->positions) {
-    e = (*v)(p->positions, a); if (e) return e;
+  if (p->rootPositions) {
+    e = (*v)(p->rootPositions, a); if (e) return e;
   }
   if (p->rotations) {
     e = (*v)(p->rotations, a); if (e) return e;
@@ -4576,8 +4576,8 @@ static int __pyx_tp_clear_16cython_interface_BVH_file_interface(PyObject *o) {
   tmp = ((PyObject*)p->offsets);
   p->offsets = Py_None; Py_INCREF(Py_None);
   Py_XDECREF(tmp);
-  tmp = ((PyObject*)p->positions);
-  p->positions = Py_None; Py_INCREF(Py_None);
+  tmp = ((PyObject*)p->rootPositions);
+  p->rootPositions = Py_None; Py_INCREF(Py_None);
   Py_XDECREF(tmp);
   tmp = ((PyObject*)p->rotations);
   p->rotations = Py_None; Py_INCREF(Py_None);
@@ -4624,16 +4624,16 @@ static int __pyx_setprop_16cython_interface_18BVH_file_interface_offsets(PyObjec
   }
 }
 
-static PyObject *__pyx_getprop_16cython_interface_18BVH_file_interface_positions(PyObject *o, CYTHON_UNUSED void *x) {
-  return __pyx_pw_16cython_interface_18BVH_file_interface_9positions_1__get__(o);
+static PyObject *__pyx_getprop_16cython_interface_18BVH_file_interface_rootPositions(PyObject *o, CYTHON_UNUSED void *x) {
+  return __pyx_pw_16cython_interface_18BVH_file_interface_13rootPositions_1__get__(o);
 }
 
-static int __pyx_setprop_16cython_interface_18BVH_file_interface_positions(PyObject *o, PyObject *v, CYTHON_UNUSED void *x) {
+static int __pyx_setprop_16cython_interface_18BVH_file_interface_rootPositions(PyObject *o, PyObject *v, CYTHON_UNUSED void *x) {
   if (v) {
-    return __pyx_pw_16cython_interface_18BVH_file_interface_9positions_3__set__(o, v);
+    return __pyx_pw_16cython_interface_18BVH_file_interface_13rootPositions_3__set__(o, v);
   }
   else {
-    return __pyx_pw_16cython_interface_18BVH_file_interface_9positions_5__del__(o);
+    return __pyx_pw_16cython_interface_18BVH_file_interface_13rootPositions_5__del__(o);
   }
 }
 
@@ -4702,7 +4702,7 @@ static struct PyGetSetDef __pyx_getsets_16cython_interface_BVH_file_interface[] 
   {(char *)"topology", __pyx_getprop_16cython_interface_18BVH_file_interface_topology, __pyx_setprop_16cython_interface_18BVH_file_interface_topology, (char *)0, 0},
   {(char *)"jointNames", __pyx_getprop_16cython_interface_18BVH_file_interface_jointNames, __pyx_setprop_16cython_interface_18BVH_file_interface_jointNames, (char *)0, 0},
   {(char *)"offsets", __pyx_getprop_16cython_interface_18BVH_file_interface_offsets, __pyx_setprop_16cython_interface_18BVH_file_interface_offsets, (char *)0, 0},
-  {(char *)"positions", __pyx_getprop_16cython_interface_18BVH_file_interface_positions, __pyx_setprop_16cython_interface_18BVH_file_interface_positions, (char *)0, 0},
+  {(char *)"rootPositions", __pyx_getprop_16cython_interface_18BVH_file_interface_rootPositions, __pyx_setprop_16cython_interface_18BVH_file_interface_rootPositions, (char *)0, 0},
   {(char *)"rotations", __pyx_getprop_16cython_interface_18BVH_file_interface_rotations, __pyx_setprop_16cython_interface_18BVH_file_interface_rotations, (char *)0, 0},
   {(char *)"jointNum", __pyx_getprop_16cython_interface_18BVH_file_interface_jointNum, __pyx_setprop_16cython_interface_18BVH_file_interface_jointNum, (char *)0, 0},
   {(char *)"frameNum", __pyx_getprop_16cython_interface_18BVH_file_interface_frameNum, __pyx_setprop_16cython_interface_18BVH_file_interface_frameNum, (char *)0, 0},
@@ -4987,8 +4987,8 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_BVH_file_interface, __pyx_k_BVH_file_interface, sizeof(__pyx_k_BVH_file_interface), 0, 0, 1, 1},
   {&__pyx_n_s_BVH_writer, __pyx_k_BVH_writer, sizeof(__pyx_k_BVH_writer), 0, 0, 1, 1},
   {&__pyx_n_s_BVH_writer_interface, __pyx_k_BVH_writer_interface, sizeof(__pyx_k_BVH_writer_interface), 0, 0, 1, 1},
-  {&__pyx_kp_s_Incompatible_checksums_s_vs_0x63, __pyx_k_Incompatible_checksums_s_vs_0x63, sizeof(__pyx_k_Incompatible_checksums_s_vs_0x63), 0, 0, 1, 0},
   {&__pyx_kp_s_Incompatible_checksums_s_vs_0xb7, __pyx_k_Incompatible_checksums_s_vs_0xb7, sizeof(__pyx_k_Incompatible_checksums_s_vs_0xb7), 0, 0, 1, 0},
+  {&__pyx_kp_s_Incompatible_checksums_s_vs_0xd8, __pyx_k_Incompatible_checksums_s_vs_0xd8, sizeof(__pyx_k_Incompatible_checksums_s_vs_0xd8), 0, 0, 1, 0},
   {&__pyx_n_s_PickleError, __pyx_k_PickleError, sizeof(__pyx_k_PickleError), 0, 0, 1, 1},
   {&__pyx_n_s_anim, __pyx_k_anim, sizeof(__pyx_k_anim), 0, 0, 1, 1},
   {&__pyx_n_s_array, __pyx_k_array, sizeof(__pyx_k_array), 0, 0, 1, 1},
@@ -4997,7 +4997,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_cython_interface, __pyx_k_cython_interface, sizeof(__pyx_k_cython_interface), 0, 0, 1, 1},
   {&__pyx_n_s_dict, __pyx_k_dict, sizeof(__pyx_k_dict), 0, 0, 1, 1},
   {&__pyx_n_s_frametime, __pyx_k_frametime, sizeof(__pyx_k_frametime), 0, 0, 1, 1},
-  {&__pyx_n_s_get_positions, __pyx_k_get_positions, sizeof(__pyx_k_get_positions), 0, 0, 1, 1},
+  {&__pyx_n_s_get_root_positions, __pyx_k_get_root_positions, sizeof(__pyx_k_get_root_positions), 0, 0, 1, 1},
   {&__pyx_n_s_getstate, __pyx_k_getstate, sizeof(__pyx_k_getstate), 0, 0, 1, 1},
   {&__pyx_n_s_import, __pyx_k_import, sizeof(__pyx_k_import), 0, 0, 1, 1},
   {&__pyx_n_s_joint_num, __pyx_k_joint_num, sizeof(__pyx_k_joint_num), 0, 0, 1, 1},
@@ -5074,8 +5074,8 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
 
 static CYTHON_SMALL_CODE int __Pyx_InitGlobals(void) {
   if (__Pyx_InitStrings(__pyx_string_tab) < 0) __PYX_ERR(0, 1, __pyx_L1_error);
-  __pyx_int_104558150 = PyInt_FromLong(104558150L); if (unlikely(!__pyx_int_104558150)) __PYX_ERR(0, 1, __pyx_L1_error)
   __pyx_int_192652809 = PyInt_FromLong(192652809L); if (unlikely(!__pyx_int_192652809)) __PYX_ERR(0, 1, __pyx_L1_error)
+  __pyx_int_226682766 = PyInt_FromLong(226682766L); if (unlikely(!__pyx_int_226682766)) __PYX_ERR(0, 1, __pyx_L1_error)
   return 0;
   __pyx_L1_error:;
   return -1;
@@ -5426,7 +5426,7 @@ if (!__Pyx_RefNanny) {
  *         __pyx_unpickle_BVH_file_interface__set_state(<BVH_file_interface> __pyx_result, __pyx_state)
  *     return __pyx_result
  * cdef __pyx_unpickle_BVH_file_interface__set_state(BVH_file_interface __pyx_result, tuple __pyx_state):             # <<<<<<<<<<<<<<
- *     __pyx_result.frameNum = __pyx_state[0]; __pyx_result.frametime = __pyx_state[1]; __pyx_result.jointNames = __pyx_state[2]; __pyx_result.jointNum = __pyx_state[3]; __pyx_result.offsets = __pyx_state[4]; __pyx_result.positions = __pyx_state[5]; __pyx_result.rotations = __pyx_state[6]; __pyx_result.topology = __pyx_state[7]
+ *     __pyx_result.frameNum = __pyx_state[0]; __pyx_result.frametime = __pyx_state[1]; __pyx_result.jointNames = __pyx_state[2]; __pyx_result.jointNum = __pyx_state[3]; __pyx_result.offsets = __pyx_state[4]; __pyx_result.rootPositions = __pyx_state[5]; __pyx_result.rotations = __pyx_state[6]; __pyx_result.topology = __pyx_state[7]
  *     if len(__pyx_state) > 8 and hasattr(__pyx_result, '__dict__'):
  */
   __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_16cython_interface_3__pyx_unpickle_BVH_writer_interface, NULL, __pyx_n_s_cython_interface); if (unlikely(!__pyx_t_2)) __PYX_ERR(1, 1, __pyx_L1_error)

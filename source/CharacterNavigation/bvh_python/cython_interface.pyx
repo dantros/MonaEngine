@@ -14,42 +14,29 @@ cdef public class BVH_file_interface[object BVH_file_interface, type BVH_file_in
     cdef public int frameNum
     cdef public float frametime
 
-def hola():
-    return "hola"
-class chao:
-    bye = "chao"
-cdef public void initFileInterface(BVH_file_interface fileInterface, filePath, jointNames):
-    print("inter0")
-    print(str(filePath))
+cdef public BVH_file_interface createFileInterface(filePath, jointNames):
+    fileInterface = BVH_file_interface()
     pyFile = BVH_file(filePath, jointNames)
-    print("inter01")
-    fileInterface.jointNum = pyFile.jointNum
-    print("inter02")
+    fileInterface.jointNum = pyFile.joint_num
     fileInterface.frameNum = len(pyFile.anim.rotations)
-    print("inter03")
     fileInterface.frametime = pyFile.frametime
-    print("inter1")
 
     #topology (jointNum)
-    fileInterface.topology = list(pyFile.topology())
-    print("inter2")
-
+    fileInterface.topology = list(pyFile.topology)
 
     #jointNames (jointNum)
     fileInterface.jointNames = list(pyFile.names)
-    print("inter3")
 
     #offsets (JointNum x 3)
-    fileInterface.offsets = pyFile.offsets().tolist()
-    print("inter4")
+    fileInterface.offsets = pyFile.offsets.tolist()
 
     #positions (FrameNum x JointNum x 3)
     fileInterface.positions = pyFile.get_positions().tolist()
-    print("inter5")
 
     #rotations (FrameNum x JointNum x 3)
     fileInterface.rotations = pyFile.anim.rotations[:, pyFile.joints, :].tolist()
-    print("inter6")
+
+    return fileInterface
 
 
 #BVH_writer
@@ -58,10 +45,12 @@ cdef public class BVH_writer_interface[object BVH_writer_interface, type BVH_wri
     cdef public int jointNum
     cdef public staticDataPath
 
-cdef public void initWriterInterface(BVH_writer_interface writerInterface, staticDataPath):
+cdef public BVH_writer_interface createWriterInterface(staticDataPath):
+        writerInterface = BVH_writer_interface()
         pyFile = BVH_writer(staticDataPath)
         writerInterface.jointNum = pyFile.joint_num
         writerInterface.staticDataPath = staticDataPath
+        return writerInterface
 
 #rotations -> F x J x 3, positions -> F x 3
 cdef public void writeBVH_interface(BVH_writer_interface writerInterface, rotations, positions, writePath, frametime):

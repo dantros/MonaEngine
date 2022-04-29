@@ -20,7 +20,7 @@ namespace Mona {
             int m_frameNum;
             float m_frametime;
     private:
-        void initFile(BVH_file_interface pyFile);
+        void initFile(BVH_file_interface* pyFile);
 
     };
 

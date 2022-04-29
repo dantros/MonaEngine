@@ -1,5 +1,5 @@
 import numpy as np
-from BVH_mod import BVH
+import BVH
 from Quaternions import Quaternions
 
 class BVH_writer():

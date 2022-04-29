@@ -66,7 +66,7 @@ namespace Mona{
         }
         BVH_file_interface pyFile = BVH_file_interface();
         BVH_file_interface* pyFilePtr = &pyFile;
-        initFileInterface(pyFilePtr, PyUnicode_FromString(filePath.data()), NULL);
+        initFileInterface(pyFilePtr, PyUnicode_FromString(filePath.data()), PyBool_FromLong(0));
         initFile(pyFile);
         Py_Finalize();
     }

@@ -3,28 +3,86 @@
 #include <algorithm>
 
 namespace Mona{
+    BVHManager* BVHManager::singleton = nullptr;
+    BVHManager* BVHManager::GetInstance() {
+        if (BVHManager::singleton == nullptr) {
+            BVHManager::singleton = new BVHManager();
+        }
+        if (!BVHManager::singleton->initialized) {
+            if (PyImport_AppendInittab("cython_interface", PyInit_cython_interface) != 0) {
+                fprintf(stderr, "Unable to extend Python inittab");
+            }
+            Py_Initialize();   // initialize Python
+            std::string file_path = __FILE__;
+            std::string dir_path = file_path.substr(0, file_path.rfind("\\"));
+            std::replace(dir_path.begin(), dir_path.end(), '\\', '/');
+            std::string src_path = "'" + dir_path + std::string("/bvh_python/pySrc") + "'";
+            std::string pyLine = std::string("sys.path.append(") + src_path + std::string(")");
+            PyRun_SimpleString("import sys");
+            PyRun_SimpleString(pyLine.data());
+
+            if (PyImport_ImportModule("cython_interface") == NULL) {
+                fprintf(stderr, "Unable to import cython module.\n");
+                if (PyErr_Occurred()) {
+                    PyErr_PrintEx(0);
+                }
+                else {
+                    fprintf(stderr, "Unknown error");
+                }
+            }
+            BVHManager::singleton->initialized = true;
+        }
+        return BVHManager::singleton;
+    }
+
+    void BVHManager::DestroyInstance() {
+        delete BVHManager::singleton;
+        Py_FinalizeEx();
+    }
+
+    BVH_file* BVHManager::readBVH(std::string filePath) {
+        return new BVH_file(filePath);
+    }
+    BVH_file* BVHManager::readBVH(std::string filePath, std::vector<std::string> jointNames) {
+        return new BVH_file(filePath, jointNames);
+    }
+    void  BVHManager::writeBVH(float*** rotations, float** rootPositions, float frametime, int frameNum, std::string staticDataPath, std::string writePath) {
+        BVH_writer_interface* pyWriterPtr = createWriterInterface(PyUnicode_FromString(staticDataPath.data()));
+        int jointNum = pyWriterPtr->jointNum;
+        // rotations
+        PyObject* frameListRot = PyList_New(frameNum);
+        for (unsigned int i = 0; i < frameNum; i++) {
+            PyObject* jointListRot = PyList_New(jointNum);
+            PyList_SET_ITEM(frameListRot, i, jointListRot);
+            for (unsigned int j = 0; j < jointNum; j++) {
+                PyObject* valListRot = PyList_New(3);
+                PyList_SET_ITEM(jointListRot, j, valListRot);
+                for (unsigned int k = 0; k < 3; k++) {
+                    PyObject* valRot = PyFloat_FromDouble((double)rotations[i][j][k]);
+                    PyList_SET_ITEM(valListRot, k, valRot);
+                }
+            }
+        }
+
+
+        // positions
+        PyObject* frameListPos = PyList_New(frameNum);
+        for (unsigned int i = 0; i < frameNum; i++) {
+            PyObject* jointListPos = PyList_New(jointNum);
+            PyList_SET_ITEM(frameListPos, i, jointListPos);
+            for (unsigned int j = 0; j < jointNum; j++) {
+                PyObject* valListPos = PyList_New(3);
+                PyList_SET_ITEM(jointListPos, j, valListPos);
+                for (unsigned int k = 0; k < 3; k++) {
+                    PyObject* valPos = PyFloat_FromDouble((double)rotations[i][j][k]);
+                    PyList_SET_ITEM(valListPos, k, valPos);
+                }
+            }
+        }
+        writeBVH_interface(pyWriterPtr, frameListRot, frameListPos, PyUnicode_FromString(writePath.data()), PyFloat_FromDouble((double)frametime));
+    }
 
     BVH_file::BVH_file(std::string filePath, std::vector<std::string> jointNames){
-        if (PyImport_AppendInittab("cython_interface", PyInit_cython_interface) != 0) {
-            fprintf(stderr, "Unable to extend Python inittab");
-        }
-        Py_Initialize();   // initialize Python
-        std::string file_path = __FILE__;
-        std::string dir_path = file_path.substr(0, file_path.rfind("\\"));
-        std::replace(dir_path.begin(), dir_path.end(), '\\', '/');
-        std::string src_path = "'" + dir_path + std::string("/bvh_python/pySrc") + "'";
-        std::string pyLine = std::string("sys.path.append(") + src_path + std::string(")");
-        PyRun_SimpleString("import sys");
-        PyRun_SimpleString(pyLine.data());
-        if (PyImport_ImportModule("cython_interface") == NULL) {
-            fprintf(stderr, "Unable to import cython module.\n");
-            if (PyErr_Occurred()) {
-                PyErr_PrintEx(0);
-            }
-            else {
-                fprintf(stderr, "Unknown error");
-            }
-        }
         PyObject* listObj = PyList_New(jointNames.size());
         if (!listObj) throw new std::exception("Unable to allocate memory for Python list");
         for (unsigned int i = 0; i < jointNames.size(); i++) {
@@ -36,35 +94,11 @@ namespace Mona{
             PyList_SET_ITEM(listObj, i, name);
         }
         BVH_file_interface* pyFilePtr = createFileInterface(PyUnicode_FromString(filePath.data()), listObj);
-        initFile(pyFilePtr);
-        Py_Finalize();
     }
 
     BVH_file::BVH_file(std::string filePath) {
-        if (PyImport_AppendInittab("cython_interface", PyInit_cython_interface) != 0) {
-            fprintf(stderr, "Unable to extend Python inittab");
-        }
-        Py_Initialize();   // initialize Python
-        std::string file_path = __FILE__;
-        std::string dir_path = file_path.substr(0, file_path.rfind("\\"));
-        std::replace(dir_path.begin(), dir_path.end(), '\\', '/');
-        std::string src_path = "'" + dir_path + std::string("/bvh_python/pySrc") + "'";
-        std::string pyLine = std::string("sys.path.append(") + src_path + std::string(")");
-        PyRun_SimpleString("import sys");
-        PyRun_SimpleString(pyLine.data());
-
-        if (PyImport_ImportModule("cython_interface") == NULL) {
-            fprintf(stderr, "Unable to import cython module.\n");
-            if (PyErr_Occurred()) {
-                PyErr_PrintEx(0);
-            }
-            else {
-                fprintf(stderr, "Unknown error");
-            }
-        }
         BVH_file_interface* pyFilePtr = createFileInterface(PyUnicode_FromString(filePath.data()), PyBool_FromLong(0));
         initFile(pyFilePtr);
-        Py_Finalize();
     }
 
     void BVH_file::initFile(BVH_file_interface* pyFile) {
@@ -157,50 +191,6 @@ namespace Mona{
         }
     }
 
-    BVH_writer::BVH_writer(std::string staticDataPath){
-        m_staticDataPath = staticDataPath;
-    }
-
-    void BVH_writer::write(float*** rotations, float** positions, float frametime, int frameNum, std::string writePath){
-        Py_Initialize();   // initialize Python
-        PyInit_cython_interface();
-        BVH_writer_interface* pyWriterPtr = createWriterInterface(PyUnicode_FromString(writePath.data()));
-        // BVH_writer_interface structWriter = (BVH_writer_interface)pyWriter;
-        int jointNum = pyWriterPtr->jointNum;
-        // rotations
-        PyObject* frameListRot = PyList_New( frameNum );
-        for (unsigned int i = 0; i < frameNum; i++) {
-            PyObject* jointListRot = PyList_New( jointNum );
-            PyList_SET_ITEM(frameListRot, i, jointListRot);
-            for (unsigned int j = 0; j < jointNum; j++) {
-                PyObject* valListRot = PyList_New( 3 );
-                PyList_SET_ITEM(jointListRot, j, valListRot);
-                for (unsigned int k = 0; k < 3; k++) {
-                    PyObject* valRot = PyFloat_FromDouble((double)rotations[i][j][k]);
-                    PyList_SET_ITEM(valListRot, k, valRot);
-                }
-            }
-        }
-
-
-        // positions
-        PyObject* frameListPos = PyList_New( frameNum );
-        for (unsigned int i = 0; i < frameNum; i++) {
-            PyObject* jointListPos = PyList_New( jointNum );
-            PyList_SET_ITEM(frameListPos, i, jointListPos);
-            for (unsigned int j = 0; j < jointNum; j++) {
-                PyObject* valListPos = PyList_New( 3 );
-                PyList_SET_ITEM(jointListPos, j, valListPos);
-                for (unsigned int k = 0; k < 3; k++) {
-                    PyObject* valPos = PyFloat_FromDouble((double)rotations[i][j][k]);
-                    PyList_SET_ITEM(valListPos, k, valPos);
-                }
-            }
-        }
-
-        writeBVH_interface(pyWriterPtr, frameListRot, frameListPos, PyUnicode_FromString(writePath.data()), PyFloat_FromDouble((double)frametime));
-        Py_Finalize();
-    }
 
 }
 

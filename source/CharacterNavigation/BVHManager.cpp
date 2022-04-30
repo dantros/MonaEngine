@@ -53,9 +53,11 @@ namespace Mona{
             PyObject* jointListRot = PyList_New(jointNum);
             PyList_SET_ITEM(frameListRot, i, jointListRot);
             for (unsigned int j = 0; j < jointNum; j++) {
-                PyObject* valListRot = PyList_New(4);
+                int rotSize = 4;
+                if (!data.isQuater()) { rotSize = 3; }
+                PyObject* valListRot = PyList_New(rotSize);
                 PyList_SET_ITEM(jointListRot, j, valListRot);
-                for (unsigned int k = 0; k < 4; k++) {
+                for (unsigned int k = 0; k < PyList_Size(valListRot); k++) {
                     PyObject* valRot = PyFloat_FromDouble((double)data.getRotations()[i][j][k]);
                     PyList_SET_ITEM(valListRot, k, valRot);
                 }
@@ -73,7 +75,7 @@ namespace Mona{
                 PyList_SET_ITEM(rootPos, j, valRootPos);
             }
         }
-        writeBVH_interface(pyWriterPtr, frameListRot, frameListPos, PyUnicode_FromString(writePath.data()), PyFloat_FromDouble((double)data.getFrametime()));
+        writeBVH_interface(pyWriterPtr, frameListRot, frameListPos, PyUnicode_FromString(writePath.data()), PyFloat_FromDouble((double)data.getFrametime()), PyBool_FromLong((long)data.isQuater()));
     }
 
     BVHData::BVHData(std::string filePath, std::vector<std::string> jointNames, bool quater){
@@ -89,13 +91,13 @@ namespace Mona{
             }
             PyList_SET_ITEM(listObj, i, name);
         }
-        BVH_file_interface* pyFilePtr = createFileInterface(PyUnicode_FromString(filePath.data()), listObj);
+        BVH_file_interface* pyFilePtr = createFileInterface(PyUnicode_FromString(filePath.data()), listObj, PyBool_FromLong((long)quater));
     }
 
     BVHData::BVHData(std::string filePath, bool quater) {
         m_quater = quater;
         m_inputFilePath = filePath;
-        BVH_file_interface* pyFilePtr = createFileInterface(PyUnicode_FromString(filePath.data()), PyBool_FromLong(0));
+        BVH_file_interface* pyFilePtr = createFileInterface(PyUnicode_FromString(filePath.data()), PyBool_FromLong(0), PyBool_FromLong((long)quater));
         initFile(pyFilePtr);
     }
 
@@ -191,12 +193,13 @@ namespace Mona{
         }
     }
 
-    void BVHData::setNewData(float*** rotations, float** rootPositions, int frameNum, float frametime, int frameOffset){
+    void BVHData::setNewData(float*** rotations, float** rootPositions, int frameNum, float frametime, bool quater, int frameOffset){
         m_frameNum = frameNum;
         m_rotations = rotations;
         m_rootPositions = rootPositions;
         m_frametime = frametime;
         m_frameOffset = frameOffset;
+        m_quater = quater;
     }
 
 }

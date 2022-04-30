@@ -56,9 +56,9 @@ struct BVH_writer_interface {
 __PYX_EXTERN_C DL_IMPORT(PyTypeObject) BVH_file_interface_type;
 __PYX_EXTERN_C DL_IMPORT(PyTypeObject) BVH_writer_interface_type;
 
-__PYX_EXTERN_C struct BVH_file_interface *createFileInterface(PyObject *, PyObject *);
+__PYX_EXTERN_C struct BVH_file_interface *createFileInterface(PyObject *, PyObject *, PyObject *);
 __PYX_EXTERN_C struct BVH_writer_interface *createWriterInterface(PyObject *);
-__PYX_EXTERN_C void writeBVH_interface(struct BVH_writer_interface *, PyObject *, PyObject *, PyObject *, PyObject *);
+__PYX_EXTERN_C void writeBVH_interface(struct BVH_writer_interface *, PyObject *, PyObject *, PyObject *, PyObject *, PyObject *);
 
 #endif /* !__PYX_HAVE_API__cython_interface */
 

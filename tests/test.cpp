@@ -9,10 +9,9 @@ int main(){
     std::string file_path = __FILE__;
     std::string dir_path = file_path.substr(0, file_path.rfind("\\"));
     std::replace(dir_path.begin(), dir_path.end(), '\\', '/');
-    Mona::BVHData file1 = bvhManager->readBVH(dir_path + std::string("/input.bvh"));
-    std::string staticPath = dir_path + std::string("/input.bvh");
+    Mona::BVHData file1 = bvhManager->readBVH(dir_path + std::string("/input.bvh"), false);
     std::string writePath = dir_path + std::string("/inputCopy.bvh");
-    bvhManager->writeBVH(file1.getRotations(), file1.getRootPositions(), file1.getFrametime(), file1.getFrameNum(), staticPath, writePath);
+    bvhManager->writeBVH(file1, writePath);
     while (true) {
 
     }

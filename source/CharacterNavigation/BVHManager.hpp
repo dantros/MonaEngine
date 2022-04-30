@@ -36,7 +36,7 @@ namespace Mona {
             std::vector<std::string>* getJointNames() { return m_jointNames; }
             std::string getInputFilePath() { return m_inputFilePath;  }
             bool isQuater() { return m_quater; }
-            void setNewData(float*** rotations, float** rootPositions, int frameNum, float frametime, int frameOffset=0);
+            void setNewData(float*** rotations, float** rootPositions, int frameNum, float frametime, bool quater=true, int frameOffset=0);
     };
 
     class BVHManager {

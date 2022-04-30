@@ -2575,7 +2575,7 @@ struct BVH_file_interface *createFileInterface(PyObject *__pyx_v_filePath, PyObj
  * cdef public BVH_file_interface createFileInterface(filePath, jointNames, quater):
  *     fileInterface = BVH_file_interface()             # <<<<<<<<<<<<<<
  *     pyFile = BVH_file(filePath, jointNames)
- *     fileInterface.jointNum = pyFile.joint_num
+ *     fileInterface.jointNum = len(pyFile.names)
  */
   __pyx_t_1 = __Pyx_PyObject_CallNoArg(((PyObject *)__pyx_ptype_16cython_interface_BVH_file_interface)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 18, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
@@ -2586,7 +2586,7 @@ struct BVH_file_interface *createFileInterface(PyObject *__pyx_v_filePath, PyObj
  * cdef public BVH_file_interface createFileInterface(filePath, jointNames, quater):
  *     fileInterface = BVH_file_interface()
  *     pyFile = BVH_file(filePath, jointNames)             # <<<<<<<<<<<<<<
- *     fileInterface.jointNum = pyFile.joint_num
+ *     fileInterface.jointNum = len(pyFile.names)
  *     fileInterface.frameNum = len(pyFile.anim.rotations)
  */
   __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_BVH_file); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 19, __pyx_L1_error)
@@ -2642,19 +2642,19 @@ struct BVH_file_interface *createFileInterface(PyObject *__pyx_v_filePath, PyObj
   /* "cython_interface.pyx":20
  *     fileInterface = BVH_file_interface()
  *     pyFile = BVH_file(filePath, jointNames)
- *     fileInterface.jointNum = pyFile.joint_num             # <<<<<<<<<<<<<<
+ *     fileInterface.jointNum = len(pyFile.names)             # <<<<<<<<<<<<<<
  *     fileInterface.frameNum = len(pyFile.anim.rotations)
  *     fileInterface.frametime = pyFile.frametime
  */
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_pyFile, __pyx_n_s_joint_num); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 20, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_pyFile, __pyx_n_s_names); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 20, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_4 = __Pyx_PyInt_As_int(__pyx_t_1); if (unlikely((__pyx_t_4 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 20, __pyx_L1_error)
+  __pyx_t_6 = PyObject_Length(__pyx_t_1); if (unlikely(__pyx_t_6 == ((Py_ssize_t)-1))) __PYX_ERR(0, 20, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_v_fileInterface->jointNum = __pyx_t_4;
+  __pyx_v_fileInterface->jointNum = __pyx_t_6;
 
   /* "cython_interface.pyx":21
  *     pyFile = BVH_file(filePath, jointNames)
- *     fileInterface.jointNum = pyFile.joint_num
+ *     fileInterface.jointNum = len(pyFile.names)
  *     fileInterface.frameNum = len(pyFile.anim.rotations)             # <<<<<<<<<<<<<<
  *     fileInterface.frametime = pyFile.frametime
  * 
@@ -2669,7 +2669,7 @@ struct BVH_file_interface *createFileInterface(PyObject *__pyx_v_filePath, PyObj
   __pyx_v_fileInterface->frameNum = __pyx_t_6;
 
   /* "cython_interface.pyx":22
- *     fileInterface.jointNum = pyFile.joint_num
+ *     fileInterface.jointNum = len(pyFile.names)
  *     fileInterface.frameNum = len(pyFile.anim.rotations)
  *     fileInterface.frametime = pyFile.frametime             # <<<<<<<<<<<<<<
  * 
@@ -2755,7 +2755,7 @@ struct BVH_file_interface *createFileInterface(PyObject *__pyx_v_filePath, PyObj
  *     #positions (FrameNum x JointNum x 3)
  *     fileInterface.rootPositions = pyFile.get_root_positions().tolist()             # <<<<<<<<<<<<<<
  * 
- *     #rotations (FrameNum x JointNum x 4)
+ *     #rotations (FrameNum x JointNum x 3/4)
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_pyFile, __pyx_n_s_get_root_positions); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 34, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
@@ -2800,7 +2800,7 @@ struct BVH_file_interface *createFileInterface(PyObject *__pyx_v_filePath, PyObj
 
   /* "cython_interface.pyx":37
  * 
- *     #rotations (FrameNum x JointNum x 4)
+ *     #rotations (FrameNum x JointNum x 3/4)
  *     fileInterface.rotations = pyFile.get_rotations(quater=quater).tolist()             # <<<<<<<<<<<<<<
  * 
  *     return fileInterface
@@ -3441,7 +3441,7 @@ struct BVH_writer_interface *createWriterInterface(PyObject *__pyx_v_staticDataP
  *         writerInterface.staticDataPath = staticDataPath
  *         return writerInterface             # <<<<<<<<<<<<<<
  * 
- * #rotations -> F x J x 4, positions -> F x 3
+ * #rotations -> F x J x 3/4, positions -> F x 3
  */
   __Pyx_XDECREF(((PyObject *)__pyx_r));
   __Pyx_INCREF(((PyObject *)__pyx_v_writerInterface));
@@ -3473,15 +3473,15 @@ struct BVH_writer_interface *createWriterInterface(PyObject *__pyx_v_staticDataP
 
 /* "cython_interface.pyx":56
  * 
- * #rotations -> F x J x 4, positions -> F x 3
+ * #rotations -> F x J x 3/4, positions -> F x 3
  * cdef public void writeBVH_interface(BVH_writer_interface writerInterface, rotations, rootPositions, writePath, frametime, quater):             # <<<<<<<<<<<<<<
- *     tRotations = np.array(rotations)
- *     tRootPositions = np.array(rootPositions)
+ *     nRotations = np.array(rotations)
+ *     nRootPositions = np.array(rootPositions)
  */
 
 void writeBVH_interface(struct BVH_writer_interface *__pyx_v_writerInterface, PyObject *__pyx_v_rotations, PyObject *__pyx_v_rootPositions, PyObject *__pyx_v_writePath, PyObject *__pyx_v_frametime, PyObject *__pyx_v_quater) {
-  PyObject *__pyx_v_tRotations = NULL;
-  PyObject *__pyx_v_tRootPositions = NULL;
+  PyObject *__pyx_v_nRotations = NULL;
+  PyObject *__pyx_v_nRootPositions = NULL;
   PyObject *__pyx_v_pyWriter = NULL;
   PyObject *__pyx_v_order = NULL;
   __Pyx_RefNannyDeclarations
@@ -3495,10 +3495,10 @@ void writeBVH_interface(struct BVH_writer_interface *__pyx_v_writerInterface, Py
   __Pyx_RefNannySetupContext("writeBVH_interface", 0);
 
   /* "cython_interface.pyx":57
- * #rotations -> F x J x 4, positions -> F x 3
+ * #rotations -> F x J x 3/4, positions -> F x 3
  * cdef public void writeBVH_interface(BVH_writer_interface writerInterface, rotations, rootPositions, writePath, frametime, quater):
- *     tRotations = np.array(rotations)             # <<<<<<<<<<<<<<
- *     tRootPositions = np.array(rootPositions)
+ *     nRotations = np.array(rotations)             # <<<<<<<<<<<<<<
+ *     nRootPositions = np.array(rootPositions)
  *     pyWriter = BVH_writer(writerInterface.staticDataPath)
  */
   __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 57, __pyx_L1_error)
@@ -3521,13 +3521,13 @@ void writeBVH_interface(struct BVH_writer_interface *__pyx_v_writerInterface, Py
   if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 57, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_v_tRotations = __pyx_t_1;
+  __pyx_v_nRotations = __pyx_t_1;
   __pyx_t_1 = 0;
 
   /* "cython_interface.pyx":58
  * cdef public void writeBVH_interface(BVH_writer_interface writerInterface, rotations, rootPositions, writePath, frametime, quater):
- *     tRotations = np.array(rotations)
- *     tRootPositions = np.array(rootPositions)             # <<<<<<<<<<<<<<
+ *     nRotations = np.array(rotations)
+ *     nRootPositions = np.array(rootPositions)             # <<<<<<<<<<<<<<
  *     pyWriter = BVH_writer(writerInterface.staticDataPath)
  *     order = 'xyz'
  */
@@ -3551,12 +3551,12 @@ void writeBVH_interface(struct BVH_writer_interface *__pyx_v_writerInterface, Py
   if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 58, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_v_tRootPositions = __pyx_t_1;
+  __pyx_v_nRootPositions = __pyx_t_1;
   __pyx_t_1 = 0;
 
   /* "cython_interface.pyx":59
- *     tRotations = np.array(rotations)
- *     tRootPositions = np.array(rootPositions)
+ *     nRotations = np.array(rotations)
+ *     nRootPositions = np.array(rootPositions)
  *     pyWriter = BVH_writer(writerInterface.staticDataPath)             # <<<<<<<<<<<<<<
  *     order = 'xyz'
  *     if quater:
@@ -3582,7 +3582,7 @@ void writeBVH_interface(struct BVH_writer_interface *__pyx_v_writerInterface, Py
   __pyx_t_1 = 0;
 
   /* "cython_interface.pyx":60
- *     tRootPositions = np.array(rootPositions)
+ *     nRootPositions = np.array(rootPositions)
  *     pyWriter = BVH_writer(writerInterface.staticDataPath)
  *     order = 'xyz'             # <<<<<<<<<<<<<<
  *     if quater:
@@ -3596,7 +3596,7 @@ void writeBVH_interface(struct BVH_writer_interface *__pyx_v_writerInterface, Py
  *     order = 'xyz'
  *     if quater:             # <<<<<<<<<<<<<<
  *         order = 'quaternion'
- *     pyWriter.write(rotations=tRotations, positions=tRootPositions, path=writePath, frametime=frametime, order=order)
+ *     pyWriter.write(rotations=nRotations, positions=nRootPositions, path=writePath, frametime=frametime, order=order)
  */
   __pyx_t_4 = __Pyx_PyObject_IsTrue(__pyx_v_quater); if (unlikely(__pyx_t_4 < 0)) __PYX_ERR(0, 61, __pyx_L1_error)
   if (__pyx_t_4) {
@@ -3605,7 +3605,7 @@ void writeBVH_interface(struct BVH_writer_interface *__pyx_v_writerInterface, Py
  *     order = 'xyz'
  *     if quater:
  *         order = 'quaternion'             # <<<<<<<<<<<<<<
- *     pyWriter.write(rotations=tRotations, positions=tRootPositions, path=writePath, frametime=frametime, order=order)
+ *     pyWriter.write(rotations=nRotations, positions=nRootPositions, path=writePath, frametime=frametime, order=order)
  */
     __Pyx_INCREF(__pyx_n_u_quaternion);
     __Pyx_DECREF_SET(__pyx_v_order, __pyx_n_u_quaternion);
@@ -3615,21 +3615,21 @@ void writeBVH_interface(struct BVH_writer_interface *__pyx_v_writerInterface, Py
  *     order = 'xyz'
  *     if quater:             # <<<<<<<<<<<<<<
  *         order = 'quaternion'
- *     pyWriter.write(rotations=tRotations, positions=tRootPositions, path=writePath, frametime=frametime, order=order)
+ *     pyWriter.write(rotations=nRotations, positions=nRootPositions, path=writePath, frametime=frametime, order=order)
  */
   }
 
   /* "cython_interface.pyx":63
  *     if quater:
  *         order = 'quaternion'
- *     pyWriter.write(rotations=tRotations, positions=tRootPositions, path=writePath, frametime=frametime, order=order)             # <<<<<<<<<<<<<<
+ *     pyWriter.write(rotations=nRotations, positions=nRootPositions, path=writePath, frametime=frametime, order=order)             # <<<<<<<<<<<<<<
  */
   __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_pyWriter, __pyx_n_s_write); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 63, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_t_2 = __Pyx_PyDict_NewPresized(5); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 63, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_rotations, __pyx_v_tRotations) < 0) __PYX_ERR(0, 63, __pyx_L1_error)
-  if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_positions, __pyx_v_tRootPositions) < 0) __PYX_ERR(0, 63, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_rotations, __pyx_v_nRotations) < 0) __PYX_ERR(0, 63, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_positions, __pyx_v_nRootPositions) < 0) __PYX_ERR(0, 63, __pyx_L1_error)
   if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_path, __pyx_v_writePath) < 0) __PYX_ERR(0, 63, __pyx_L1_error)
   if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_frametime, __pyx_v_frametime) < 0) __PYX_ERR(0, 63, __pyx_L1_error)
   if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_order, __pyx_v_order) < 0) __PYX_ERR(0, 63, __pyx_L1_error)
@@ -3641,10 +3641,10 @@ void writeBVH_interface(struct BVH_writer_interface *__pyx_v_writerInterface, Py
 
   /* "cython_interface.pyx":56
  * 
- * #rotations -> F x J x 4, positions -> F x 3
+ * #rotations -> F x J x 3/4, positions -> F x 3
  * cdef public void writeBVH_interface(BVH_writer_interface writerInterface, rotations, rootPositions, writePath, frametime, quater):             # <<<<<<<<<<<<<<
- *     tRotations = np.array(rotations)
- *     tRootPositions = np.array(rootPositions)
+ *     nRotations = np.array(rotations)
+ *     nRootPositions = np.array(rootPositions)
  */
 
   /* function exit code */
@@ -3655,8 +3655,8 @@ void writeBVH_interface(struct BVH_writer_interface *__pyx_v_writerInterface, Py
   __Pyx_XDECREF(__pyx_t_3);
   __Pyx_WriteUnraisable("cython_interface.writeBVH_interface", __pyx_clineno, __pyx_lineno, __pyx_filename, 1, 0);
   __pyx_L0:;
-  __Pyx_XDECREF(__pyx_v_tRotations);
-  __Pyx_XDECREF(__pyx_v_tRootPositions);
+  __Pyx_XDECREF(__pyx_v_nRotations);
+  __Pyx_XDECREF(__pyx_v_nRootPositions);
   __Pyx_XDECREF(__pyx_v_pyWriter);
   __Pyx_XDECREF(__pyx_v_order);
   __Pyx_RefNannyFinishContext();

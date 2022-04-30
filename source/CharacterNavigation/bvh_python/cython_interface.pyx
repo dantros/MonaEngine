@@ -17,7 +17,7 @@ cdef public class BVH_file_interface[object BVH_file_interface, type BVH_file_in
 cdef public BVH_file_interface createFileInterface(filePath, jointNames, quater):
     fileInterface = BVH_file_interface()
     pyFile = BVH_file(filePath, jointNames)
-    fileInterface.jointNum = pyFile.joint_num
+    fileInterface.jointNum = len(pyFile.names)
     fileInterface.frameNum = len(pyFile.anim.rotations)
     fileInterface.frametime = pyFile.frametime
 
@@ -33,7 +33,7 @@ cdef public BVH_file_interface createFileInterface(filePath, jointNames, quater)
     #positions (FrameNum x JointNum x 3)
     fileInterface.rootPositions = pyFile.get_root_positions().tolist()
 
-    #rotations (FrameNum x JointNum x 4)
+    #rotations (FrameNum x JointNum x 3/4)
     fileInterface.rotations = pyFile.get_rotations(quater=quater).tolist()
 
     return fileInterface
@@ -52,12 +52,12 @@ cdef public BVH_writer_interface createWriterInterface(staticDataPath):
         writerInterface.staticDataPath = staticDataPath
         return writerInterface
 
-#rotations -> F x J x 4, positions -> F x 3
+#rotations -> F x J x 3/4, positions -> F x 3
 cdef public void writeBVH_interface(BVH_writer_interface writerInterface, rotations, rootPositions, writePath, frametime, quater):
-    tRotations = np.array(rotations)
-    tRootPositions = np.array(rootPositions)
+    nRotations = np.array(rotations)
+    nRootPositions = np.array(rootPositions)
     pyWriter = BVH_writer(writerInterface.staticDataPath)
     order = 'xyz'
     if quater:
         order = 'quaternion'
-    pyWriter.write(rotations=tRotations, positions=tRootPositions, path=writePath, frametime=frametime, order=order)
+    pyWriter.write(rotations=nRotations, positions=nRootPositions, path=writePath, frametime=frametime, order=order)

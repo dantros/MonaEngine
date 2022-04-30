@@ -46,18 +46,17 @@ namespace Mona{
     }
     void  BVHManager::writeBVH(BVHData data, std::string writePath) {
         BVH_writer_interface* pyWriterPtr = createWriterInterface(PyUnicode_FromString(data.getInputFilePath().data()));
-        int jointNum = pyWriterPtr->jointNum;
         // rotations
         PyObject* frameListRot = PyList_New(data.getFrameNum());
         for (unsigned int i = 0; i < data.getFrameNum(); i++) {
-            PyObject* jointListRot = PyList_New(jointNum);
+            PyObject* jointListRot = PyList_New(data.getJointNum());
             PyList_SET_ITEM(frameListRot, i, jointListRot);
-            for (unsigned int j = 0; j < jointNum; j++) {
+            for (unsigned int j = 0; j < data.getJointNum(); j++) {
                 int rotSize = 4;
                 if (!data.isQuater()) { rotSize = 3; }
                 PyObject* valListRot = PyList_New(rotSize);
                 PyList_SET_ITEM(jointListRot, j, valListRot);
-                for (unsigned int k = 0; k < PyList_Size(valListRot); k++) {
+                for (unsigned int k = 0; k < rotSize; k++) {
                     PyObject* valRot = PyFloat_FromDouble((double)data.getRotations()[i][j][k]);
                     PyList_SET_ITEM(valListRot, k, valRot);
                 }
@@ -112,7 +111,7 @@ namespace Mona{
         // topology
         m_topology = new std::vector<int>(jointNum);
         if (PyList_Check(pyFile->topology)) {
-            for (Py_ssize_t i = 0; i < PyList_Size(pyFile->topology); i++) {
+            for (Py_ssize_t i = 0; i < jointNum; i++) {
                 PyObject* value = PyList_GetItem(pyFile->topology, i);
                 m_topology->push_back((int)PyLong_AsLong(value));
             }
@@ -124,7 +123,7 @@ namespace Mona{
         // jointNames
         m_jointNames = new std::vector<std::string>(jointNum);
         if (PyList_Check(pyFile->jointNames)) {
-            for (Py_ssize_t i = 0; i < PyList_Size(pyFile->jointNames); i++) {
+            for (Py_ssize_t i = 0; i < jointNum; i++) {
                 PyObject* name = PyList_GetItem(pyFile->jointNames, i);
                 m_jointNames->push_back(PyUnicode_AsUTF8(name));
             }
@@ -138,10 +137,10 @@ namespace Mona{
         // offsets
         m_offsets = new float*[jointNum];
         if (PyList_Check(pyFile->offsets)) {
-            for (Py_ssize_t i = 0; i < PyList_Size(pyFile->offsets); i++) {
+            for (Py_ssize_t i = 0; i < jointNum; i++) {
                 PyObject* jointOff = PyList_GetItem(pyFile->offsets, i);
                 m_offsets[i] = new float[3];
-                for (Py_ssize_t j = 0; j < PyList_Size(jointOff); j++) {
+                for (Py_ssize_t j = 0; j < 3; j++) {
                     PyObject* valOff = PyList_GetItem(jointOff, j);
                     m_offsets[i][j] = (float)PyFloat_AsDouble(valOff);
                 }
@@ -155,15 +154,15 @@ namespace Mona{
         // rotations
         m_rotations = new float**[frameNum];
         if (PyList_Check(pyFile->rotations)) {
-            for (Py_ssize_t i = 0; i < PyList_Size(pyFile->rotations); i++) {
+            for (Py_ssize_t i = 0; i <frameNum; i++) {
                 PyObject* frameRot = PyList_GetItem(pyFile->rotations, i);
                 m_rotations[i] = new float*[jointNum];
-                for (Py_ssize_t j = 0; j < PyList_Size(frameRot); j++) {
+                for (Py_ssize_t j = 0; j < jointNum; j++) {
                     PyObject* jointRot = PyList_GetItem(frameRot, j);
                     int rotSize = 4;
                     if (!m_quater) { rotSize = 3; }
                     m_rotations[i][j] = new float[rotSize];
-                    for (Py_ssize_t k = 0; k < PyList_Size(jointRot); k++) {
+                    for (Py_ssize_t k = 0; k < rotSize; k++) {
                         PyObject* valRot = PyList_GetItem(jointRot, k);
                         m_rotations[i][j][k] = (float)PyFloat_AsDouble(valRot);
                     }
@@ -176,13 +175,13 @@ namespace Mona{
 
 
         // positions
-        m_rootPositions = new float* [jointNum];
+        m_rootPositions = new float* [frameNum];
         if (PyList_Check(pyFile->rootPositions)) {
-            for (Py_ssize_t i = 0; i < PyList_Size(pyFile->rootPositions); i++) {
-                PyObject* jointRoot = PyList_GetItem(pyFile->rootPositions, i);
+            for (Py_ssize_t i = 0; i < frameNum; i++) {
+                PyObject* frameRoot = PyList_GetItem(pyFile->rootPositions, i);
                 m_rootPositions[i] = new float[3];
-                for (Py_ssize_t j = 0; j < PyList_Size(jointRoot); j++) {
-                    PyObject* valRoot = PyList_GetItem(jointRoot, j);
+                for (Py_ssize_t j = 0; j < 3; j++) {
+                    PyObject* valRoot = PyList_GetItem(frameRoot, j);
                     m_rootPositions[i][j] = (float)PyFloat_AsDouble(valRoot);
                 }
 

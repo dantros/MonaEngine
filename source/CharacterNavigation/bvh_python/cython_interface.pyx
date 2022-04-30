@@ -33,8 +33,8 @@ cdef public BVH_file_interface createFileInterface(filePath, jointNames):
     #positions (FrameNum x JointNum x 3)
     fileInterface.rootPositions = pyFile.get_root_positions().tolist()
 
-    #rotations (FrameNum x JointNum x 3)
-    fileInterface.rotations = pyFile.anim.rotations[:, pyFile.joints, :].tolist()
+    #rotations (FrameNum x JointNum x 4)
+    fileInterface.rotations = pyFile.get_rotations(quater=True).tolist()
 
     return fileInterface
 
@@ -52,9 +52,9 @@ cdef public BVH_writer_interface createWriterInterface(staticDataPath):
         writerInterface.staticDataPath = staticDataPath
         return writerInterface
 
-#rotations -> F x J x 3, positions -> F x 3
-cdef public void writeBVH_interface(BVH_writer_interface writerInterface, rotations, positions, writePath, frametime):
+#rotations -> F x J x 4, positions -> F x 3
+cdef public void writeBVH_interface(BVH_writer_interface writerInterface, rotations, rootPositions, writePath, frametime):
     tRotations = np.array(rotations)
-    tPositions = np.array(positions)
+    tRootPositions = np.array(rootPositions)
     pyWriter = BVH_writer(writerInterface.staticDataPath)
-    pyWriter.write(rotations=tRotations, positions=tPositions, path=writePath, frametime=frametime)
+    pyWriter.write(rotations=tRotations, positions=tRootPositions, path=writePath, frametime=frametime, order='quaternion')

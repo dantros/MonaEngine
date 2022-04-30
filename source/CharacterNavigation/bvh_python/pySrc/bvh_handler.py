@@ -11,12 +11,22 @@ class BVH_writer():
         self.joint_num = len(self.parent)
 
     # position, rotation with shape T * J * 3
-    def write(self, rotations, positions, path, frametime=1.0/30):
-        order = 'xyz'
-        
-        if rotations.shape[1] < self.joint_num:
-            rootRot = np.zeros((rotations.shape[0], 1, 3))
-            rotations = np.concatenate((rootRot, rotations), 1)
+    def write(self, rotations, positions, path, frametime=1.0/30, order='quaternion'):
+        if order == 'xyz':
+            if rotations.shape[1] < self.joint_num:
+                rootRot = np.zeros((rotations.shape[0], 1, 3))
+                rotations = np.concatenate((rootRot, rotations), 1)
+        elif order == 'quaternion':
+            if rotations.shape[1] < self.joint_num:
+                rootRot = np.zeros((rotations.shape[0], 1, 4))
+                rootRot[:,:,0] = 1
+                rotations = np.concatenate((rootRot, rotations), 1)
+            norm = rotations[:, :, 0] ** 2 + rotations[:, :, 1] ** 2 + rotations[:, :, 2] ** 2 + rotations[:, :, 3] ** 2
+            norm = np.repeat(norm[:, :, np.newaxis], 4, axis=2)
+            rotations /= norm
+            rotations = Quaternions(rotations)
+            rotations = np.degrees(rotations.euler())
+            order = 'xyz'
 
         return self.write_bvh(self.parent, self.offset, rotations, positions, self.names, frametime, order, path)
 
@@ -171,6 +181,12 @@ class BVH_file:
         positions = self.anim.positions
         positions = positions[:, 0, :]
         return np.squeeze(positions)
+    
+    def get_rotations(self, quater=True):
+        rotations = self.anim.rotations[:, self.joints, :]
+        if quater:
+            rotations = Quaternions.from_euler(np.radians(rotations)).qs
+        return rotations
 
     @property
     def offsets(self): #offsets incluye la raiz

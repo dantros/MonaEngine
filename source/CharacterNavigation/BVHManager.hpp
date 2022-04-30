@@ -7,21 +7,32 @@
 
 namespace Mona {
 
-    class BVH_file {
+    class BVHData {
         private:
             friend class BVHManager;
-            BVH_file(std::string filePath);
-            BVH_file(std::string filePath, std::vector<std::string> jointNames);
+            BVHData(std::string filePath);
+            BVHData(std::string filePath, std::vector<std::string> jointNames);
             void initFile(BVH_file_interface* pyFile);
-        public:
-            std::vector<int>* m_topology;
-            std::vector<std::string>* m_jointNames; // si se quiere usar un subset de las joints originales
             float** m_offsets;
             float** m_rootPositions;
             float*** m_rotations;
             int m_jointNum;
             int m_frameNum;
+            int m_frameOffset = 0; // indica el frame en que se insertaria la animacion de esta BVHData
             float m_frametime;
+            std::vector<int>* m_topology;
+            std::vector<std::string>* m_jointNames; // si se quiere usar un subset de las joints originales
+        public:
+            float** getOffsets() { return m_offsets; }
+            float** getRootPositions() { return m_rootPositions; }
+            float*** getRotations() { return m_rotations; }
+            int getJointNum() { return m_jointNum; }
+            int getFrameNum() { return m_frameNum; }
+            int getFrameOffset() { return m_frameOffset; }
+            float getFrametime() { return m_frametime; }
+            std::vector<int>* getTopology() { return m_topology;}
+            std::vector<std::string>* getJointNames() { return m_jointNames; }
+            void setNewData(float*** rotations, float** rootPositions, float frametime, int frameNum, int frameOffset=0);
     };
 
     class BVHManager {
@@ -41,8 +52,8 @@ namespace Mona {
 
             static BVHManager* GetInstance();
             bool initialized = false;
-            BVH_file readBVH(std::string filePath);
-            BVH_file readBVH(std::string filePath, std::vector<std::string> jointNames);
+            BVHData readBVH(std::string filePath);
+            BVHData readBVH(std::string filePath, std::vector<std::string> jointNames);
             void writeBVH(float*** rotations, float** rootPositions, float frametime, int frameNum, std::string staticDataPath, std::string writePath);
 
 

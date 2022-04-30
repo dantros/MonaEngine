@@ -34,9 +34,7 @@ namespace Mona{
         }
         return BVHManager::singleton;
     }
-
-    void BVHManager::DestroyInstance() {
-        delete BVHManager::singleton;
+    BVHManager::~BVHManager(){
         Py_FinalizeEx();
     }
 

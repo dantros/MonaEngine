@@ -78,6 +78,7 @@ class BVH_writer():
             file_string += '\n'
 
         file.write(file_string)
+        file.close()
         return file_string
 
 class BVH_file:

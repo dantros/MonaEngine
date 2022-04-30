@@ -4,7 +4,6 @@
 #include "bvh_python/cython_interface.h"
 #include <string>
 #include <vector>
-#include <algorithm>
 
 namespace Mona {
 
@@ -27,7 +26,8 @@ namespace Mona {
 
     class BVHManager {
         protected:
-            BVHManager() {};
+            BVHManager(){};
+            ~BVHManager();
             static BVHManager* singleton;
         public:
             BVHManager(BVHManager& other) = delete;
@@ -40,7 +40,6 @@ namespace Mona {
              */
 
             static BVHManager* GetInstance();
-            static void DestroyInstance();
             bool initialized = false;
             BVH_file readBVH(std::string filePath);
             BVH_file readBVH(std::string filePath, std::vector<std::string> jointNames);

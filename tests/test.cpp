@@ -13,7 +13,6 @@ int main(){
     std::string staticPath = dir_path + std::string("/input.bvh");
     std::string writePath = dir_path + std::string("/inputCopy.bvh");
     bvhManager->writeBVH(file1.m_rotations, file1.m_rootPositions, file1.m_frametime, file1.m_frameNum, staticPath, writePath);
-    Mona::BVHManager::DestroyInstance();
     while (true) {
 
     }

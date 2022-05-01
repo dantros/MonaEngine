@@ -41,8 +41,9 @@ namespace Mona {
     };
 
     class BVHManager {
-        public:
+        private:
             BVHManager() = default;
+        public:
             BVHManager& operator=(BVHManager const&) = delete;
             static bool initialized;
             static bool exited;

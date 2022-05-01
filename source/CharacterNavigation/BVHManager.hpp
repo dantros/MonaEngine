@@ -4,6 +4,7 @@
 #include "bvh_python/cython_interface.h"
 #include <string>
 #include <vector>
+#include <memory>
 
 namespace Mona {
 
@@ -40,25 +41,20 @@ namespace Mona {
     };
 
     class BVHManager {
-        protected:
-            BVHManager(){};
-            ~BVHManager();
-            static BVHManager* singleton;
         public:
-            BVHManager(BVHManager& other) = delete;
-            void operator=(const BVHManager&) = delete;
-            /**
-             * This is the static method that controls the access to the singleton
-             * instance. On the first run, it creates a singleton object and places it
-             * into the static field. On subsequent runs, it returns the client existing
-             * object stored in the static field.
-             */
-
-            static BVHManager* GetInstance();
-            bool initialized = false;
+            BVHManager() = default;
+            BVHManager& operator=(BVHManager const&) = delete;
+            static bool initialized;
+            static bool exited;
             BVHData readBVH(std::string filePath, bool quater=true);
             BVHData readBVH(std::string filePath, std::vector<std::string> jointNames, bool quater=true);
             void writeBVH(BVHData data, std::string writePath);
+            static void StartUp();
+            static void ShutDown();
+            static BVHManager& GetInstance() noexcept {
+                static BVHManager instance;
+                return instance;
+		    }
 
 
     };

@@ -3,12 +3,11 @@
 #include <algorithm>
 
 namespace Mona{
-    BVHManager* BVHManager::singleton = nullptr;
-    BVHManager* BVHManager::GetInstance() {
-        if (BVHManager::singleton == nullptr) {
-            BVHManager::singleton = new BVHManager();
-        }
-        if (!BVHManager::singleton->initialized) {
+    bool BVHManager::initialized = false;
+    bool BVHManager::exited = false;
+
+    void BVHManager::StartUp() {
+        if (!BVHManager::initialized) {
             if (PyImport_AppendInittab("cython_interface", PyInit_cython_interface) != 0) {
                 fprintf(stderr, "Unable to extend Python inittab");
             }
@@ -30,12 +29,14 @@ namespace Mona{
                     fprintf(stderr, "Unknown error");
                 }
             }
-            BVHManager::singleton->initialized = true;
+        BVHManager:initialized = true;
         }
-        return BVHManager::singleton;
     }
-    BVHManager::~BVHManager(){
-        Py_FinalizeEx();
+    void BVHManager::ShutDown() {
+        if (!BVHManager::exited) {
+            Py_FinalizeEx();
+            BVHManager::exited = true;
+        }        
     }
 
     BVHData BVHManager::readBVH(std::string filePath, bool quater) {

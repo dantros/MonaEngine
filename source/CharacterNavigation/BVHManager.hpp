@@ -11,6 +11,7 @@ namespace Mona {
     class BVHData {
         private:
             friend class BVHManager;
+            friend class IKRig;
             BVHData(std::string filePath, bool quater = true);
             BVHData(std::string filePath, std::vector<std::string> jointNames, bool quater = true);
             void initFile(BVH_file_interface* pyFile);

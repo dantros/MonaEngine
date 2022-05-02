@@ -1,4 +1,7 @@
 set(MONA_HEADERS 
+				CharacterNavigation/EnvironmentData.hpp
+				CharacterNavigation/IKRig.hpp
+				CharacterNavigation/IK.hpp
 				CharacterNavigation/BVHManager.hpp
 				CharacterNavigation/bvh_python/cython_interface.h
 				Core/Common.hpp 
@@ -71,7 +74,10 @@ set(MONA_HEADERS
 				DebugDrawing/DebugDrawingSystem.hpp
 				DebugDrawing/BulletDebugDraw.hpp
 				Utilities/BasicCameraControllers.hpp)
-set(MONA_SOURCES 
+set(MONA_SOURCES 		
+				CharacterNavigation/EnvironmentData.cpp
+				CharacterNavigation/IKRig.cpp
+				CharacterNavigation/IK.cpp
 				CharacterNavigation/BVHManager.cpp
 				CharacterNavigation/bvh_python/cython_interface.cpp
 				Core/Config.cpp

@@ -1,4 +1,5 @@
-set(MONA_HEADERS 
+set(MONA_HEADERS
+				CharacterNavigation/IKNavigationComponent.hpp
 				CharacterNavigation/EnvironmentData.hpp
 				CharacterNavigation/IKRig.hpp
 				CharacterNavigation/IK.hpp

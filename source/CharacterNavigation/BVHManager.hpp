@@ -5,12 +5,15 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <Eigen/Dense>
 
 namespace Mona {
+    typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> MatrixXf;
+    typedef Eigen::Matrix<float, 1, Eigen::Dynamic> VectorXf;
 
     struct BVHDynamicData {
-        float** rootPositions;
-        float*** rotations;
+        std::vector<VectorXf> rootPositions;
+        std::vector<MatrixXf> rotations;
         int jointNum;
         int frameNum;
         float frametime;
@@ -23,29 +26,32 @@ namespace Mona {
             BVHData(std::string filePath);
             BVHData(std::string filePath, std::vector<std::string> jointNames);
             void initFile(BVH_file_interface* pyFile);
-            float** m_offsets;
-            float** m_rootPositions;
-            float*** m_rotations;
+            MatrixXf m_offsets;
+            std::vector<VectorXf> m_rootPositions;
+            std::vector<MatrixXf> m_rotations;
             int m_jointNum;
             int m_frameNum;
             float m_frametime;
             std::string m_inputFilePath;
             std::vector<int> m_topology;
             std::vector<std::string> m_jointNames; // si se quiere usar un subset de las joints originales
-            BVHDynamicData m_dynamicData;
+            std::vector<VectorXf> m_rootPositions_dmic;
+            std::vector<MatrixXf> m_rotations_dmic;
+            float m_frametime_dmic;
         public:
-            float** getOffsets() { return m_offsets; }
-            float** getRootPositions() { return m_rootPositions; }
-            float*** getRotations() { return m_rotations; }
+            MatrixXf getOffsets() { return m_offsets; }
+            std::vector<VectorXf> getRootPositions() { return m_rootPositions; }
+            std::vector<MatrixXf> getRotations() { return m_rotations; }
             int getJointNum() { return m_jointNum; }
             int getFrameNum() { return m_frameNum; }
             float getFrametime() { return m_frametime; }
             std::vector<int> getTopology() { return m_topology;}
             std::vector<std::string> getJointNames() { return m_jointNames; }
             std::string getInputFilePath() { return m_inputFilePath;  }
-            BVHDynamicData getDynamicData() { return m_dynamicData;  }
-            void setDynamicData(BVHDynamicData data);
-            ~BVHData();
+            std::vector<VectorXf> getDynamicRootPositions() { return m_rootPositions_dmic; }
+            std::vector<MatrixXf> getDynamicRotations() { return m_rotations_dmic; }
+            float getDynamicFrametime() { return m_frametime_dmic; }
+            void setDynamicData(std::vector<MatrixXf> rotations, std::vector<VectorXf> rootPositions, float frametime);
     };
 
     class BVHManager {

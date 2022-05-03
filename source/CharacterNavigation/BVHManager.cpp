@@ -58,7 +58,7 @@ namespace Mona{
                 PyObject* valListRot = PyList_New(4);
                 PyList_SET_ITEM(jointListRot, j, valListRot);
                 for (unsigned int k = 0; k < 4; k++) {
-                    PyObject* valRot = PyFloat_FromDouble((double)data->getDynamicData().rotations[i][j][k]);
+                    PyObject* valRot = PyFloat_FromDouble((double)data->getDynamicRotations()[i](j,k));
                     PyList_SET_ITEM(valListRot, k, valRot);
                 }
             }
@@ -71,11 +71,11 @@ namespace Mona{
             PyObject* rootPos = PyList_New(3);
             PyList_SET_ITEM(frameListPos, i, rootPos);
             for (unsigned int j = 0; j < 3; j++) {
-                PyObject* valRootPos = PyFloat_FromDouble((double)data->getDynamicData().rootPositions[i][j]);
+                PyObject* valRootPos = PyFloat_FromDouble((double)data->getDynamicRootPositions()[i](j));
                 PyList_SET_ITEM(rootPos, j, valRootPos);
             }
         }
-        writeBVH_interface(pyWriterPtr, frameListRot, frameListPos, PyUnicode_FromString(writePath.data()), PyFloat_FromDouble((double)data->getDynamicData().frametime), PyBool_FromLong(1));
+        writeBVH_interface(pyWriterPtr, frameListRot, frameListPos, PyUnicode_FromString(writePath.data()), PyFloat_FromDouble((double)data->getDynamicFrametime()), PyBool_FromLong(1));
     }
 
 
@@ -96,22 +96,14 @@ namespace Mona{
         }
         BVH_file_interface* pyFilePtr = createFileInterface(PyUnicode_FromString(filePath.data()), listObj, PyBool_FromLong(1));
         initFile(pyFilePtr);
-        m_dynamicData.frameNum = m_frameNum;
-        m_dynamicData.frametime = m_frametime;
-        m_dynamicData.jointNum = m_jointNum;
-        m_dynamicData.rootPositions = m_rootPositions;
-        m_dynamicData.rotations = m_rotations;
+        setDynamicData(m_rotations, m_rootPositions, m_frametime);
     }
 
     BVHData::BVHData(std::string filePath) {
         m_inputFilePath = filePath;
         BVH_file_interface* pyFilePtr = createFileInterface(PyUnicode_FromString(filePath.data()), PyBool_FromLong(0), PyBool_FromLong(1));
         initFile(pyFilePtr);
-        m_dynamicData.frameNum = m_frameNum;
-        m_dynamicData.frametime = m_frametime;
-        m_dynamicData.jointNum = m_jointNum;
-        m_dynamicData.rootPositions = m_rootPositions;
-        m_dynamicData.rotations = m_rotations;
+        setDynamicData(m_rotations, m_rootPositions, m_frametime);
     }
 
     void BVHData::initFile(BVH_file_interface* pyFile) {
@@ -127,7 +119,7 @@ namespace Mona{
         if (PyList_Check(pyFile->topology)) {
             for (Py_ssize_t i = 0; i < jointNum; i++) {
                 PyObject* value = PyList_GetItem(pyFile->topology, i);
-                m_topology.push_back((int)PyLong_AsLong(value));
+                m_topology[i] = (int)PyLong_AsLong(value);
             }
         }
         else {
@@ -139,7 +131,7 @@ namespace Mona{
         if (PyList_Check(pyFile->jointNames)) {
             for (Py_ssize_t i = 0; i < jointNum; i++) {
                 PyObject* name = PyList_GetItem(pyFile->jointNames, i);
-                m_jointNames.push_back(PyUnicode_AsUTF8(name));
+                m_jointNames[i]= PyUnicode_AsUTF8(name);
             }
         }
         else {
@@ -149,14 +141,13 @@ namespace Mona{
         
 
         // offsets
-        m_offsets = new float*[jointNum];
+        m_offsets = MatrixXf(jointNum, 3);//new float*[jointNum];
         if (PyList_Check(pyFile->offsets)) {
             for (Py_ssize_t i = 0; i < jointNum; i++) {
                 PyObject* jointOff = PyList_GetItem(pyFile->offsets, i);
-                m_offsets[i] = new float[3];
                 for (Py_ssize_t j = 0; j < 3; j++) {
                     PyObject* valOff = PyList_GetItem(jointOff, j);
-                    m_offsets[i][j] = (float)PyFloat_AsDouble(valOff);
+                    m_offsets(i,j) = (float)PyFloat_AsDouble(valOff);
                 }
 
             }
@@ -166,17 +157,16 @@ namespace Mona{
         }
 
         // rotations
-        m_rotations = new float**[frameNum];
+        m_rotations = std::vector<MatrixXf>(frameNum);//new float**[frameNum];
         if (PyList_Check(pyFile->rotations)) {
             for (Py_ssize_t i = 0; i <frameNum; i++) {
                 PyObject* frameRot = PyList_GetItem(pyFile->rotations, i);
-                m_rotations[i] = new float*[jointNum];
+                m_rotations[i] = MatrixXf(jointNum, 4);// = new float* [jointNum];
                 for (Py_ssize_t j = 0; j < jointNum; j++) {
                     PyObject* jointRot = PyList_GetItem(frameRot, j);
-                    m_rotations[i][j] = new float[4];
                     for (Py_ssize_t k = 0; k < 4; k++) {
                         PyObject* valRot = PyList_GetItem(jointRot, k);
-                        m_rotations[i][j][k] = (float)PyFloat_AsDouble(valRot);
+                        m_rotations[i](j,k) = (float)PyFloat_AsDouble(valRot);
                     }
                 }
             }
@@ -187,14 +177,14 @@ namespace Mona{
 
 
         // positions
-        m_rootPositions = new float* [frameNum];
+        m_rootPositions = std::vector<VectorXf>(frameNum); //new float* [frameNum];
         if (PyList_Check(pyFile->rootPositions)) {
             for (Py_ssize_t i = 0; i < frameNum; i++) {
                 PyObject* frameRoot = PyList_GetItem(pyFile->rootPositions, i);
-                m_rootPositions[i] = new float[3];
+                m_rootPositions[i] = VectorXf(3); // = new float[3];
                 for (Py_ssize_t j = 0; j < 3; j++) {
                     PyObject* valRoot = PyList_GetItem(frameRoot, j);
-                    m_rootPositions[i][j] = (float)PyFloat_AsDouble(valRoot);
+                    m_rootPositions[i](j) = (float)PyFloat_AsDouble(valRoot);
                 }
 
             }
@@ -204,29 +194,21 @@ namespace Mona{
         }
     }
 
-    void BVHData::setDynamicData(BVHDynamicData data) {
-        if (data.jointNum == m_jointNum) {
-            m_dynamicData = data;
+    void BVHData::setDynamicData(std::vector<MatrixXf> rotations, std::vector<VectorXf> rootPositions, float frametime) {
+        if (rotations.size() != rootPositions.size() || rotations.size() != m_frameNum) {
+            throw new std::exception("Dynamic data must fit static data!");
         }
-        else {
-            throw new std::exception("Joint number of dynamic data must fit static data!");
-        }
-    }
-    BVHData::~BVHData() {
-        for (int i = 0; i < m_jointNum; i++) {
-            delete[] m_offsets[i];
-        }
-        delete[] m_offsets;
-
         for (int i = 0; i < m_frameNum; i++) {
-            for (int j = 0; j < m_jointNum; j++) {
-                delete[] m_rotations[i][j];
+            if (rotations[i].rows() != m_jointNum || rotations[i].cols() != 4) {
+                throw new std::exception("Dynamic data must fit static data!");
             }
-            delete[] m_rotations[i];
-            delete[] m_rootPositions[i];
+            if (rootPositions[i].size() != 3) {
+                throw new std::exception("Dynamic data must fit static data!");
+            }
         }
-        delete[] m_rotations;
-        delete[] m_rootPositions;
+        m_rootPositions_dmic = rootPositions;
+        m_rotations_dmic = rotations;
+        m_frametime_dmic = frametime;
     }
 
 }

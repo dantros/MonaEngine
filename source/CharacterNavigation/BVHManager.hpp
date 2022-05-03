@@ -8,12 +8,9 @@
 
 namespace Mona {
 
-    struct BVHDataDict {
-        PyObject* offsets;
-        PyObject* rootPositions;
-        PyObject* rotations;
-        PyObject* jointNames;
-        PyObject* topology;
+    struct BVHDynamicData {
+        float** rootPositions;
+        float*** rotations;
         int jointNum;
         int frameNum;
         float frametime;
@@ -33,8 +30,9 @@ namespace Mona {
             int m_frameNum;
             float m_frametime;
             std::string m_inputFilePath;
-            std::vector<int>* m_topology;
-            std::vector<std::string>* m_jointNames; // si se quiere usar un subset de las joints originales
+            std::vector<int> m_topology;
+            std::vector<std::string> m_jointNames; // si se quiere usar un subset de las joints originales
+            BVHDynamicData m_dynamicData;
         public:
             float** getOffsets() { return m_offsets; }
             float** getRootPositions() { return m_rootPositions; }
@@ -42,22 +40,23 @@ namespace Mona {
             int getJointNum() { return m_jointNum; }
             int getFrameNum() { return m_frameNum; }
             float getFrametime() { return m_frametime; }
-            std::vector<int>* getTopology() { return m_topology;}
-            std::vector<std::string>* getJointNames() { return m_jointNames; }
+            std::vector<int> getTopology() { return m_topology;}
+            std::vector<std::string> getJointNames() { return m_jointNames; }
             std::string getInputFilePath() { return m_inputFilePath;  }
+            BVHDynamicData getDynamicData() { return m_dynamicData;  }
+            void setDynamicData(BVHDynamicData data);
+            ~BVHData();
     };
 
     class BVHManager {
         private:
             BVHManager() = default;
-            static bool initialized;
-            static bool exited;
+            std::vector<BVHData*> m_readDataVector;
         public:
             BVHManager& operator=(BVHManager const&) = delete;
-            BVHData readBVH(std::string filePath);
-            BVHData readBVH(std::string filePath, std::vector<std::string> jointNames);
-            void writeBVH(BVHData data, std::string writePath);
-            BVHDataDict retrieveData(BVH_file_interface* pyFile);
+            static BVHData* readBVH(std::string filePath);
+            static BVHData* readBVH(std::string filePath, std::vector<std::string> jointNames);
+            void writeBVHDynamicData(BVHData* data, std::string writePath);
             static void StartUp();
             static void ShutDown();
             static BVHManager& GetInstance() noexcept {

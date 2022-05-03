@@ -205,7 +205,7 @@ namespace Mona{
     }
 
     void BVHData::setDynamicData(BVHDynamicData data) {
-        if (data.jointNum == m_frameNum) {
+        if (data.jointNum == m_jointNum) {
             m_dynamicData = data;
         }
         else {

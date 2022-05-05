@@ -19,7 +19,7 @@ for f in files:
     sourcepath = data_path + f
     dumppath = data_path + f.split(".bvh")[0] + ".fbx"
 
-    bpy.ops.import_anim.bvh(filepath=sourcepath, global_scale=1, frame_start=1, use_fps_scale=False, use_cyclic=False, rotate_mode='NATIVE', axis_forward='-Z', axis_up='Y')
+    bpy.ops.import_anim.bvh(filepath=sourcepath, rotate_mode='NATIVE', axis_forward='-Z', axis_up='Y')
 
     bpy.ops.export_scene.fbx(filepath=dumppath, axis_forward='-Z', axis_up='Y', add_leaf_bones=False, bake_anim_simplify_factor=0)
     

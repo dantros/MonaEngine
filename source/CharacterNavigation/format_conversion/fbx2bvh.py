@@ -19,7 +19,7 @@ for f in files:
     sourcepath = data_path + f
     dumppath = data_path + f.split(".fbx")[0] + ".bvh"
 
-    bpy.ops.import_scene.fbx(filepath=sourcepath)
+    bpy.ops.import_scene.fbx(filepath=sourcepath, axis_forward='-Z', axis_up='Y', use_anim=True)
 
 
     frame_start = 9999

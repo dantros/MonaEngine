@@ -1,4 +1,5 @@
 set(MONA_HEADERS
+				CharacterNavigation/Retargeting.hpp
 				CharacterNavigation/IKNavigationComponent.hpp
 				CharacterNavigation/EnvironmentData.hpp
 				CharacterNavigation/IKRig.hpp
@@ -74,8 +75,10 @@ set(MONA_HEADERS
 				Audio/AudioSourceComponentLifetimePolicy.hpp
 				DebugDrawing/DebugDrawingSystem.hpp
 				DebugDrawing/BulletDebugDraw.hpp
-				Utilities/BasicCameraControllers.hpp)
-set(MONA_SOURCES 		
+				Utilities/BasicCameraControllers.hpp
+				Utilities/FuncUtils.hpp)
+set(MONA_SOURCES
+				CharacterNavigation/Retargeting.cpp
 				CharacterNavigation/EnvironmentData.cpp
 				CharacterNavigation/IKRig.cpp
 				CharacterNavigation/IK.cpp

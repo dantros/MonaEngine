@@ -7,6 +7,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include "../Utilities/FuncUtils.hpp"
 namespace Mona {
 
 	Skeleton::Skeleton(const std::string& filePath) {
@@ -91,6 +92,13 @@ namespace Mona {
 
 		}
 
+		// Se guarda el nombre del modelo
+		std::string fileName = filePath;
+		size_t pos = filePath.find_last_of("/\\");
+		if (pos != std::string::npos) {
+			fileName = filePath.substr(pos + 1);
+		}
+		m_modelName = funcUtils::splitString(fileName, '.')[0];
 	}
 	
 }

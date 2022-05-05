@@ -11,14 +11,6 @@ namespace Mona {
     typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> MatrixXf;
     typedef Eigen::Matrix<float, 1, Eigen::Dynamic> VectorXf;
 
-    struct BVHDynamicData {
-        std::vector<VectorXf> rootPositions;
-        std::vector<MatrixXf> rotations;
-        int jointNum;
-        int frameNum;
-        float frametime;
-    };
-
     class BVHData {
         private:
             friend class BVHManager;

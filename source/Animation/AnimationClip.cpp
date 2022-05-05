@@ -7,6 +7,7 @@
 #include "../Core/AssimpTransformations.hpp"
 #include "../Core/Log.hpp"
 #include "Skeleton.hpp"
+#include "../Utilities/FuncUtils.hpp"
 namespace Mona {
 	AnimationClip::AnimationClip(const std::string& filePath,
 		std::shared_ptr<Skeleton> skeleton,
@@ -63,6 +64,14 @@ namespace Mona {
 		SetSkeleton(skeleton);
 		if (removeRootMotion)
 			RemoveRootMotion();
+
+		// Se guarda el nombre de la animacion
+		std::string fileName = filePath;
+		size_t pos = filePath.find_last_of("/\\");
+		if (pos != std::string::npos) {
+			fileName = filePath.substr(pos + 1);
+		}		
+		m_animationName = funcUtils::splitString(fileName, '.')[0];
 	}
 
 	float AnimationClip::Sample(std::vector<JointPose>& outPose, float time, bool isLooping) {

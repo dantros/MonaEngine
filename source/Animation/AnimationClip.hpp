@@ -12,6 +12,7 @@ namespace Mona {
 	class AnimationClip {
 	public:
 		friend class AnimationClipManager;
+		friend class IKRig;
 		using jointIndex = uint32_t;
 		struct AnimationTrack {
 			std::vector<glm::vec3> positions;
@@ -43,6 +44,7 @@ namespace Mona {
 		std::vector<jointIndex> m_trackJointIndices;
 		std::shared_ptr<Skeleton> m_skeletonPtr;
 		float m_duration = 1.0f;
+		std::string m_animationName;
 	};
 }
 #endif

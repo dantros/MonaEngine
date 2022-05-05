@@ -61,6 +61,7 @@ namespace Mona {
 		std::vector<glm::mat4> m_invBindPoseMatrices;
 		std::vector<std::string> m_jointNames;
 		std::vector<std::int32_t> m_parentIndices;
+		std::string m_modelName;
 	};
 }
 #endif

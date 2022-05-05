@@ -9,6 +9,7 @@ import sys
 sys.path.append(os.getcwd())
 sys.path.append('../')
 from os import listdir
+import math
 
 data_path = './'
 
@@ -20,18 +21,19 @@ for f in files:
 
     bpy.ops.import_scene.fbx(filepath=sourcepath)
 
+
     frame_start = 9999
     frame_end = -9999
     action = bpy.data.actions[-1]
     if action.frame_range[1] > frame_end:
         frame_end = action.frame_range[1]
     if action.frame_range[0] < frame_start:
-        frame_start = action.frame_range[0]
+        frame_start = math.floor(action.frame_range[0])
 
-    frame_end = np.max([60, frame_end])
+    frame_end = math.floor(frame_end)
     bpy.ops.export_anim.bvh(filepath=dumppath,
                             frame_start=frame_start,
-                            frame_end=frame_end, root_transform_only=True)
+                            frame_end=frame_end, root_transform_only=True, rotate_mode='XYZ')
     bpy.data.actions.remove(bpy.data.actions[-1])
 
     print(data_path + f + " processed.")

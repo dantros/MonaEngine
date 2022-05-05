@@ -9,6 +9,7 @@ import sys
 sys.path.append(os.getcwd())
 sys.path.append('../')
 from os import listdir
+import math
 
 data_path = './'
 
@@ -18,21 +19,14 @@ for f in files:
     sourcepath = data_path + f
     dumppath = data_path + f.split(".bvh")[0] + ".fbx"
 
-    bpy.ops.import_scene.fbx(filepath=sourcepath)
+    bpy.ops.import_anim.bvh(filepath=sourcepath, global_scale=1, frame_start=1, use_fps_scale=False, use_cyclic=False, rotate_mode='NATIVE', axis_forward='-Z', axis_up='Y')
 
-    frame_start = 9999
-    frame_end = -9999
-    action = bpy.data.actions[-1]
-    if action.frame_range[1] > frame_end:
-        frame_end = action.frame_range[1]
-    if action.frame_range[0] < frame_start:
-        frame_start = action.frame_range[0]
-
-    frame_end = np.max([60, frame_end])
-    bpy.ops.export_anim.fbx(filepath=dumppath,
-                            frame_start=frame_start,
-                            frame_end=frame_end, root_transform_only=True)
-    bpy.data.actions.remove(bpy.data.actions[-1])
+    bpy.ops.export_scene.fbx(filepath=dumppath, axis_forward='-Z', axis_up='Y', add_leaf_bones=False, bake_anim_simplify_factor=0)
+    
+    
+    bpy.ops.object.mode_set(mode='OBJECT')
+    bpy.ops.object.select_all(action='SELECT')
+    bpy.ops.object.delete()
 
     print(data_path + f + " processed.")
 

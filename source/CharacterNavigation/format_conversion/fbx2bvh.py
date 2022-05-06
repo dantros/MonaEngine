@@ -19,18 +19,13 @@ for f in files:
     sourcepath = data_path + f
     dumppath = data_path + f.split(".fbx")[0] + ".bvh"
 
-    bpy.ops.import_scene.fbx(filepath=sourcepath, axis_forward='-Z', axis_up='Y', use_anim=True)
+    bpy.ops.import_scene.fbx(filepath=sourcepath, axis_forward='Y', axis_up='Z')
 
 
-    frame_start = 9999
-    frame_end = -9999
     action = bpy.data.actions[-1]
-    if action.frame_range[1] > frame_end:
-        frame_end = action.frame_range[1]
-    if action.frame_range[0] < frame_start:
-        frame_start = math.floor(action.frame_range[0])
+    frame_start = math.floor(action.frame_range[0])
+    frame_end = math.floor(action.frame_range[1])
 
-    frame_end = math.floor(frame_end)
     bpy.ops.export_anim.bvh(filepath=dumppath,
                             frame_start=frame_start,
                             frame_end=frame_end, root_transform_only=True, rotate_mode='XYZ')

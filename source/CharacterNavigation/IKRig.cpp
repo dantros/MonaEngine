@@ -17,6 +17,7 @@ namespace Mona {
 			rotations[jointIndex] = clip->m_animationTracks[i].positions[frame];
 			scales[jointIndex] = clip->m_animationTracks[i].positions[frame];
 		}
+		return std::vector<MatrixXf>(0);
 	}
 
 

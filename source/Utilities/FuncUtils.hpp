@@ -2,6 +2,7 @@
 #ifndef FUNCUTILS_HPP
 #define FUNCUTILS_HPP
 #include <vector>
+#include <sstream>
 
 namespace Mona {
 
@@ -34,7 +35,38 @@ namespace Mona {
             }
             return tokens;
         }
-		
+
+        template < typename T>
+        std::string vec3vecToString(std::vector<T> vec) {
+            std::string result = "[ ";
+            for (int i = 0; i < vec.size(); i++) {
+                if (i < vec.size() - 1) {
+                    result += "[" + std::to_string(vec[i][0]) + ", " + std::to_string(vec[i][1]) + ", " + std::to_string(vec[i][2]) + "]" + ", ";
+                }
+                else {
+                    result += "[" + std::to_string(vec[i][0]) + ", " + std::to_string(vec[i][1]) + ", " + std::to_string(vec[i][2]) + "]";
+                }
+                
+            }
+            result += " ]";
+            return result;
+        }
+
+        template < typename T>
+        std::string vec4vecToString(std::vector<T> vec) {
+            std::string result = "[ ";
+            for (int i = 0; i < vec.size(); i++) {
+                if (i < vec.size() - 1) {
+                    result += "[" + std::to_string(vec[i][0]) + ", " + std::to_string(vec[i][1]) + ", " + std::to_string(vec[i][2]) + ", " + std::to_string(vec[i][3]) + "]" + ", ";
+                }
+                else {
+                    result += "[" + std::to_string(vec[i][0]) + ", " + std::to_string(vec[i][1]) + ", " + std::to_string(vec[i][2]) + ", " + std::to_string(vec[i][3]) + "]";
+                }
+
+            }
+            result += " ]";
+            return result;
+        }
 	}
     
 }

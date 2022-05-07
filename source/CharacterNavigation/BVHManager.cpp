@@ -2,6 +2,8 @@
 #include <stdexcept>
 #include <algorithm>
 #include <iostream>
+#include <filesystem>
+#include "../Core/Log.hpp"
 
 namespace Mona{
 
@@ -37,17 +39,26 @@ namespace Mona{
         Py_FinalizeEx();
     }
 
-    BVHData* BVHManager::readBVH(std::string filePath) {
-        BVHData* data = new BVHData(filePath);
+    BVHData* BVHManager::readBVH(std::string modelName, std::string animName) {
+        BVHData* data = new BVHData(modelName, animName);
         GetInstance().m_readDataVector.push_back(data);
         return data;
     }
-    BVHData* BVHManager::readBVH(std::string filePath, std::vector<std::string> jointNames) {
-        BVHData* data = new BVHData(filePath);
+    BVHData* BVHManager::readBVH(std::string modelName, std::string animName, std::vector<std::string> jointNames) {
+        BVHData* data = new BVHData(modelName, animName, jointNames);
         GetInstance().m_readDataVector.push_back(data);
         return data;
     }
-    void  BVHManager::writeBVHDynamicData(BVHData* data, std::string writePath) {
+    void BVHManager::writeBVHDynamicData(BVHData* data, std::string outAnimName) {
+        /*std::string relPath = std::string("Assets/CharacterNavigation/") + data->getModelName();
+        std::string modelDir = SourcePath(relPath).string();
+        if (!std::filesystem::exists(modelDir)) {
+            if (!std::filesystem::create_directory(modelDir)) {
+                MONA_LOG_ERROR("BVHFile Error: Could not create directory -> {0}", modelDir);
+            }
+        }*/
+        std::string writePath = BVHData::_getFilePath(data->getModelName(), outAnimName);
+        
         BVH_writer_interface* pyWriterPtr = createWriterInterface(PyUnicode_FromString(data->getInputFilePath().data()));
         // rotations
         PyObject* frameListRot = PyList_New(data->getFrameNum());
@@ -82,15 +93,21 @@ namespace Mona{
 
     //BVHData
 
-    BVHData::BVHData(std::string filePath, std::vector<std::string> jointNames){
-        m_inputFilePath = filePath;
+    BVHData::BVHData(std::string modelName, std::string animName, std::vector<std::string> jointNames){
+        std::string filePath = _getFilePath(modelName, animName);
+        if (!std::filesystem::exists(filePath)) { 
+            MONA_LOG_ERROR("BVHFile Error: Path does not exist -> {0}", filePath);
+            return;
+        }
+        m_modelName = modelName;
+        m_animName = animName;
         PyObject* listObj = PyList_New(jointNames.size());
-        if (!listObj) throw new std::exception("Unable to allocate memory for Python list");
+        if (!listObj) MONA_LOG_ERROR("Unable to allocate memory for Python list");
         for (unsigned int i = 0; i < jointNames.size(); i++) {
             PyObject* name = PyUnicode_FromString(jointNames[i].data());
             if (!name) {
                 Py_DECREF(listObj);
-                throw new std::exception("Unable to allocate memory for Python list");
+                MONA_LOG_ERROR("Unable to allocate memory for Python list");
             }
             PyList_SET_ITEM(listObj, i, name);
         }
@@ -99,8 +116,14 @@ namespace Mona{
         setDynamicData(m_rotations, m_rootPositions, m_frametime);
     }
 
-    BVHData::BVHData(std::string filePath) {
-        m_inputFilePath = filePath;
+    BVHData::BVHData(std::string modelName, std::string animName) {
+        std::string filePath = _getFilePath(modelName, animName);
+        if (!std::filesystem::exists(filePath)) { 
+            MONA_LOG_ERROR("BVHFile Error: Path does not exist -> {0}", filePath);
+            return;
+        }
+        m_modelName = modelName;
+        m_animName = animName;
         BVH_file_interface* pyFilePtr = createFileInterface(PyUnicode_FromString(filePath.data()), PyBool_FromLong(0), PyBool_FromLong(1));
         initFile(pyFilePtr);
         setDynamicData(m_rotations, m_rootPositions, m_frametime);
@@ -123,7 +146,7 @@ namespace Mona{
             }
         }
         else {
-            throw new std::exception("Passed PyObject pointer was not a list!");
+            MONA_LOG_ERROR("Passed PyObject pointer was not a list!");
         }
 
         // jointNames
@@ -135,13 +158,13 @@ namespace Mona{
             }
         }
         else {
-            throw new std::exception("Passed PyObject pointer was not a list!");
+            MONA_LOG_ERROR("Passed PyObject pointer was not a list!");
         }
         
         
 
         // offsets
-        m_offsets = MatrixXf(jointNum, 3);//new float*[jointNum];
+        m_offsets = MatrixXf(jointNum, 3);
         if (PyList_Check(pyFile->offsets)) {
             for (Py_ssize_t i = 0; i < jointNum; i++) {
                 PyObject* jointOff = PyList_GetItem(pyFile->offsets, i);
@@ -153,7 +176,7 @@ namespace Mona{
             }
         }
         else {
-            throw new std::exception("Passed PyObject pointer was not a list!");
+            MONA_LOG_ERROR("Passed PyObject pointer was not a list!");
         }
 
         // rotations
@@ -161,7 +184,7 @@ namespace Mona{
         if (PyList_Check(pyFile->rotations)) {
             for (Py_ssize_t i = 0; i <frameNum; i++) {
                 PyObject* frameRot = PyList_GetItem(pyFile->rotations, i);
-                m_rotations[i] = MatrixXf(jointNum, 4);// = new float* [jointNum];
+                m_rotations[i] = MatrixXf(jointNum, 4);
                 for (Py_ssize_t j = 0; j < jointNum; j++) {
                     PyObject* jointRot = PyList_GetItem(frameRot, j);
                     for (Py_ssize_t k = 0; k < 4; k++) {
@@ -172,16 +195,16 @@ namespace Mona{
             }
         }
         else {
-            throw new std::exception("Passed PyObject pointer was not a list!");
+            MONA_LOG_ERROR("Passed PyObject pointer was not a list!");
         }
 
 
         // positions
-        m_rootPositions = std::vector<VectorXf>(frameNum); //new float* [frameNum];
+        m_rootPositions = std::vector<VectorXf>(frameNum);
         if (PyList_Check(pyFile->rootPositions)) {
             for (Py_ssize_t i = 0; i < frameNum; i++) {
                 PyObject* frameRoot = PyList_GetItem(pyFile->rootPositions, i);
-                m_rootPositions[i] = VectorXf(3); // = new float[3];
+                m_rootPositions[i] = VectorXf(3);
                 for (Py_ssize_t j = 0; j < 3; j++) {
                     PyObject* valRoot = PyList_GetItem(frameRoot, j);
                     m_rootPositions[i](j) = (float)PyFloat_AsDouble(valRoot);
@@ -190,20 +213,20 @@ namespace Mona{
             }
         }
         else {
-            throw new std::exception("Passed PyObject pointer was not a list!");
+            MONA_LOG_ERROR("Passed PyObject pointer was not a list!");
         }
     }
 
     void BVHData::setDynamicData(std::vector<MatrixXf> rotations, std::vector<VectorXf> rootPositions, float frametime) {
         if (rotations.size() != rootPositions.size() || rotations.size() != m_frameNum) {
-            throw new std::exception("Dynamic data must fit static data!");
+            MONA_LOG_ERROR("Dynamic data must fit static data!");
         }
         for (int i = 0; i < m_frameNum; i++) {
             if (rotations[i].rows() != m_jointNum || rotations[i].cols() != 4) {
-                throw new std::exception("Dynamic data must fit static data!");
+                MONA_LOG_ERROR("Dynamic data must fit static data!");
             }
             if (rootPositions[i].size() != 3) {
-                throw new std::exception("Dynamic data must fit static data!");
+                MONA_LOG_ERROR("Dynamic data must fit static data!");
             }
         }
         m_rootPositions_dmic = rootPositions;

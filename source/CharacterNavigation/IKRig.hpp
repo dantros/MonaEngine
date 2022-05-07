@@ -10,7 +10,9 @@ namespace Mona{
         public:
             IKRig();
             AnimationController m_animationController;
-            BVHData m_bvhData;
+            std::vector<BVHData*> bvhAnims;
+            int currentClipIndex;
+            int targetClipIndex;
             void setClipAnimData(std::shared_ptr<AnimationClip> clip, int firstFrame, int lastFrame);
     };
 

@@ -10,9 +10,8 @@ int main(){
     std::string file_path = __FILE__;
     std::string dir_path = file_path.substr(0, file_path.rfind("\\"));
     std::replace(dir_path.begin(), dir_path.end(), '\\', '/');
-    Mona::BVHData* file2 = bvhManager.readBVH(dir_path + std::string("/input.bvh"));
-    std::string writePath2 = dir_path + std::string("/quater_result.bvh");
-    bvhManager.writeBVHDynamicData(file2, writePath2);
+    Mona::BVHData* file2 = bvhManager.readBVH("testModel", "input");
+    bvhManager.writeBVHDynamicData(file2, "outAnim");
     Mona::BVHManager::ShutDown();
     std::cout << "ready" << std::endl;
     return 0;

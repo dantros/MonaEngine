@@ -5,12 +5,25 @@
 #include "BVHManager.hpp"
 
 namespace Mona{
-
+    struct RigData {
+        std::string spineStartJointName;
+        std::string spineEndJointName;
+        std::string leftLegStartJointName;
+        std::string leftLegEndJointName;
+        std::string rightLegStartJointName;
+        std::string rightLegEndJointName;
+        std::string leftArmStartJointName;
+        std::string rightArmEndJointName;
+        bool adjustFeet_IK;
+        std::string leftFootStartJointName;
+        std::string rightFootEndJointName;
+        std::vector<std::pair<std::string, float>> weightModifiers;
+    };
     class IKRig{
         public:
-            IKRig();
+            IKRig(std::vector<BVHData*> m_bvhAnims, RigData rigData);
             AnimationController m_animationController;
-            std::vector<BVHData*> bvhAnims;
+            std::vector<BVHData*> m_bvhAnims;
             int currentClipIndex;
             int targetClipIndex;
             void setClipAnimData(std::shared_ptr<AnimationClip> clip, int firstFrame, int lastFrame);

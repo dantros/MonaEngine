@@ -211,5 +211,16 @@ namespace Mona{
         m_frametime_dmic = frametime;
     }
 
+    std::vector<JointPose> BVHData::getFramePoses(int frame) {
+        std::vector<JointPose> poses(m_jointNum);
+        for (int i = 0; i < m_jointNum; i++) {
+            glm::vec3 tr(m_offsets(i,0), m_offsets(i,1), m_offsets(i,2));
+            glm::vec3 scl(1, 1, 1);
+            glm::fquat rot(m_rotations_dmic[frame](i, 0), m_rotations_dmic[frame](i, 1), m_rotations_dmic[frame](i, 2), m_rotations_dmic[frame](i, 3));
+            poses[i] = JointPose(rot, tr, scl);
+        }
+        return poses;
+    }
+
 }
 

@@ -6,6 +6,8 @@
 #include <vector>
 #include <memory>
 #include <Eigen/Dense>
+#include "../Animation/AnimationController.hpp"
+#include "../Utilities/FuncUtils.hpp"
 
 namespace Mona {
     typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> MatrixXf;
@@ -44,6 +46,8 @@ namespace Mona {
             std::vector<MatrixXf> getDynamicRotations() { return m_rotations_dmic; }
             float getDynamicFrametime() { return m_frametime_dmic; }
             void setDynamicData(std::vector<MatrixXf> rotations, std::vector<VectorXf> rootPositions, float frametime);
+            std::vector<JointPose> getFramePoses(int frame);
+
     };
 
     class BVHManager {

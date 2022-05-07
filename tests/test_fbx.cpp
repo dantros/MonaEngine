@@ -70,8 +70,10 @@ int main() {
 
 		}
 	}
-	std::cout << "keyframes: " << m_animationTracks[1].scaleTimeStamps.size();
-	std::cout << Mona::funcUtils::vec3vecToString<glm::vec3>(m_animationTracks[1].scales);
+	std::cout << "keyframes: " << m_animationTracks[1].scaleTimeStamps.size() << std::endl;
+	std::cout << "scales" << Mona::funcUtils::vec3vecToString<glm::vec3>(m_animationTracks[1].scales) << std::endl;
+	std::cout << "positions" << Mona::funcUtils::vec3vecToString<glm::vec3>(m_animationTracks[1].positions) << std::endl;
+	std::cout << "rotations" << Mona::funcUtils::vec4vecToString<glm::fquat>(m_animationTracks[1].rotations) << std::endl;
 
 	while (true) {
 

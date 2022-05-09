@@ -48,6 +48,7 @@ namespace Mona {
 	using SpotLightHandle = ComponentHandle<SpotLightComponent>;
 	using PointLightHandle = ComponentHandle<PointLightComponent>;
 	using SkeletalMeshHandle = ComponentHandle<SkeletalMeshComponent>;
+	using IKNavigationHandle = ComponentHandle<IKNavigationComponent>;
 
 
 

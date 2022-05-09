@@ -1,6 +1,7 @@
 #pragma once
 #ifndef FUNCUTILS_HPP
 #define FUNCUTILS_HPP
+
 #include <vector>
 #include <sstream>
 

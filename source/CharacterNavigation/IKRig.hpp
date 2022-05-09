@@ -1,6 +1,7 @@
 #pragma once
 #ifndef IKRIG_HPP
 #define IKRIG_HPP
+
 #include <memory>
 #include "BVHManager.hpp"
 
@@ -8,6 +9,7 @@ namespace Mona{
     struct ChainData {
         std::string startJointName;
         std::string endJointName;
+        std::vector<std::pair<std::string, float>> weightModifiers;
     };
     struct RigData {
         ChainData spine;
@@ -17,7 +19,6 @@ namespace Mona{
         ChainData rightArm;
         ChainData leftFoot;
         ChainData rightFoot;
-        std::vector<std::pair<std::string, float>> weightModifiers;
     };
     class IKRig{
         public:

@@ -1,6 +1,5 @@
 #include "Skeleton.hpp"
 #include <stack>
-#include "Skeleton.hpp"
 #include "../Rendering/Renderer.hpp"
 #include "../Core/Log.hpp"
 #include "../Core/AssimpTransformations.hpp"

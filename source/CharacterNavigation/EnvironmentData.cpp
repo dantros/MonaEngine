@@ -1,5 +1,5 @@
 #include "EnvironmentData.hpp"
-
+#if 0
 namespace Mona{
 
     void EnvironmentData::addTerrain(StaticMeshHandle& terrainHandle) {
@@ -29,13 +29,5 @@ namespace Mona{
         auto mesh = terrainHandle;
     }
 
-
-
-
-
-
-
-
-
-
 }
+#endif

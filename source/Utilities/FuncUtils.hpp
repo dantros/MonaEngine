@@ -9,7 +9,7 @@ namespace Mona {
 
 	namespace funcUtils{
         template < typename T>
-        int findIndex(const std::vector<T>& vecOfElements, const T& element)
+        inline int findIndex(const std::vector<T>& vecOfElements, const T& element)
         {
             int result;
             // Find given element in vector
@@ -25,7 +25,7 @@ namespace Mona {
             return result;
         }
 
-        std::vector<std::string> splitString(const std::string& s, char delimiter)
+        inline std::vector<std::string> splitString(const std::string& s, char delimiter)
         {
             std::vector<std::string> tokens;
             std::string token;
@@ -38,7 +38,8 @@ namespace Mona {
         }
 
         template < typename T>
-        std::string vec3vecToString(std::vector<T> vec) {
+        inline std::string vec3vecToString(std::vector<T> vec) 
+        {
             std::string result = "[ ";
             for (int i = 0; i < vec.size(); i++) {
                 if (i < vec.size() - 1) {
@@ -54,7 +55,8 @@ namespace Mona {
         }
 
         template < typename T>
-        std::string vec4vecToString(std::vector<T> vec) {
+        inline std::string vec4vecToString(std::vector<T> vec) 
+        {
             std::string result = "[ ";
             for (int i = 0; i < vec.size(); i++) {
                 if (i < vec.size() - 1) {
@@ -71,15 +73,6 @@ namespace Mona {
 	}
     
 }
-
-
-
-
-
-
-
-
-
 
 
 #endif

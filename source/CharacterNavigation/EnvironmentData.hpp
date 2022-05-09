@@ -2,6 +2,7 @@
 #ifndef ENVIRONMENTDATA_HPP
 #define ENVIRONMENTDATA_HPP
 
+#if 0
 #include <vector>
 #include "../World/ComponentHandle.hpp"
 #include "../World/World.hpp"
@@ -33,4 +34,5 @@ namespace Mona {
 
 
 
+#endif
 #endif

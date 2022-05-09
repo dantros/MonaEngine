@@ -36,7 +36,7 @@ namespace Mona {
 		m_componentManagers[SpotLightComponent::componentIndex].reset(new ComponentManager<SpotLightComponent>());
 		m_componentManagers[PointLightComponent::componentIndex].reset(new ComponentManager<PointLightComponent>());
 		m_componentManagers[SkeletalMeshComponent::componentIndex].reset(new ComponentManager<SkeletalMeshComponent>());
-		//m_componentManagers[IKNavigationComponent::componentIndex].reset(new ComponentManager<IKNavigationComponent>());
+		m_componentManagers[IKNavigationComponent::componentIndex].reset(new ComponentManager<IKNavigationComponent>());
 		m_debugDrawingSystem.reset(new DebugDrawingSystem());
 		
 		auto& transformDataManager = GetComponentManager<TransformComponent>();

@@ -28,6 +28,7 @@
 #include "../Animation/AnimationSystem.hpp"
 #include "../Animation/SkeletalMeshComponent.hpp"
 #include "../Animation/JointPose.hpp"
+#include "../CharacterNavigation/IKNavigationComponent.hpp"
 
 #include <memory>
 #include <array>

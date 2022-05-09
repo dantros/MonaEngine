@@ -1,5 +1,4 @@
 #include "EnvironmentData.hpp"
-#if 0
 namespace Mona{
 
     void EnvironmentData::addTerrain(StaticMeshHandle& terrainHandle) {
@@ -27,7 +26,7 @@ namespace Mona{
 
     float EnvironmentData::terrainHeight(StaticMeshHandle terrainHandle){
         auto mesh = terrainHandle;
+        return 0;
     }
 
 }
-#endif

@@ -1,6 +1,6 @@
 #include "Mesh.hpp"
 
-#include "../CharacterNavigation/EnvironmentData.hpp"
+#include "../CharacterNavigation/MeshData.hpp"
 #include "../Core/Log.hpp"
 #include "../Core/AssimpTransformations.hpp"
 #include <glm/glm.hpp>
@@ -58,7 +58,7 @@ namespace Mona {
 		size_t numVertices = 0;
 		size_t numFaces = 0;
 		//El primer paso consiste en contar el numero de vertices y caras totales
-		//de esta manera se puede reservar memoria inmediatamente evitando realocación de memoria
+		//de esta manera se puede reservar memoria inmediatamente evitando realocaciï¿½n de memoria
 		for (uint32_t i = 0; i < scene->mNumMeshes; i++) {
 			numVertices += scene->mMeshes[i]->mNumVertices;
 			numFaces += scene->mMeshes[i]->mNumFaces;
@@ -70,7 +70,7 @@ namespace Mona {
 		//El grafo de la escena se reccorre usando DFS (Depth Search First) usando dos stacks.
 		std::stack<const aiNode*> sceneNodes;
 		std::stack<aiMatrix4x4> sceneTransforms;
-		//Luego pusheamos información asociada a la raiz del grafo
+		//Luego pusheamos informaciï¿½n asociada a la raiz del grafo
 		sceneNodes.push(scene->mRootNode);
 		sceneTransforms.push(scene->mRootNode->mTransformation);
 		unsigned int offset = 0;
@@ -126,7 +126,7 @@ namespace Mona {
 			}
 
 			for (uint32_t j = 0; j < currentNode->mNumChildren; j++) {
-				//Pusheamos los hijos y acumulamos la matrix de transformación
+				//Pusheamos los hijos y acumulamos la matrix de transformaciï¿½n
 				sceneNodes.push(currentNode->mChildren[j]);
 				sceneTransforms.push(currentNode->mChildren[j]->mTransformation * currentTransform);
 			}
@@ -158,7 +158,7 @@ namespace Mona {
 
 		if (meshData != nullptr) {
 			std::vector<Vector3f> vertexPositions;
-			std::vector<std::vector<unsigned int>> groupedFaces;
+			std::vector<Vector3ui> groupedFaces;
 			vertexPositions.reserve(numVertices);
 			groupedFaces.reserve(numFaces);
 			for (int i = 0; i < numVertices; i++) {
@@ -167,7 +167,7 @@ namespace Mona {
 				vertexPositions.push_back(v);
 			}
 			for (int i = 0; i < numFaces; i+=3) {
-				std::vector<unsigned int> f = { faces[i], faces[i + 1], faces[i + 2] };
+				Vector3ui f = { faces[i], faces[i + 1], faces[i + 2] };
 				groupedFaces.push_back(f);
 			}
 			meshData->init(vertexPositions, groupedFaces);
@@ -331,7 +331,7 @@ namespace Mona {
 	}
 
 	void Mesh::CreateSphere() noexcept {
-		//Esta implementación de la creacion procedural de la malla de una esfera
+		//Esta implementaciï¿½n de la creacion procedural de la malla de una esfera
 		//esta basada en: http://www.songho.ca/opengl/gl_sphere.html
 
 		//Cada vertice debe tener la forma

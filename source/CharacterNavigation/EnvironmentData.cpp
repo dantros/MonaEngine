@@ -1,32 +1,41 @@
 #include "EnvironmentData.hpp"
+#include <limits>
+#include <algorithm>
 namespace Mona{
 
-    void EnvironmentData::addTerrain(StaticMeshHandle& terrainHandle) {
-        auto inputGO = m_world.GetOwner(terrainHandle).GetInnerHandle();
-        for (int i = 0; i < m_terrainHandles.size(); i++) {
-            auto gameObject = m_world.GetOwner(m_terrainHandles[i]).GetInnerHandle();
-            if (inputGO.m_generation==gameObject.m_generation && inputGO.m_index==gameObject.m_index){
-                return;
-            }
+    VertexData::VertexData(std::vector<Vector3f> vArray) {
+        m_id = lastId + 1;
+        lastId = m_id;
+        m_vertexArray = vArray;
+        std::vector<IndexedVertex> indexedArr;
+        for (int i = 0; i < vArray.size(); i++) {
+            indexedArr.push_back(IndexedVertex(i, vArray[i]));
         }
-        m_terrainHandles.push_back(terrainHandle);
-    }
-
-    int EnvironmentData::removeTerrain(StaticMeshHandle& terrainHandle){
-        auto inputGO = m_world.GetOwner(terrainHandle).GetInnerHandle();
-        for (int i = 0; i < m_terrainHandles.size(); i++) {
-            auto gameObject = m_world.GetOwner(m_terrainHandles[i]).GetInnerHandle();
-            if (inputGO.m_generation==gameObject.m_generation && inputGO.m_index==gameObject.m_index){
-                m_terrainHandles.erase(m_terrainHandles.begin()+i);
-                return i;
-            }
+        std::sort(indexedArr.begin(), indexedArr.end(), IndexedVertex::compareX);
+        for (int i = 0; i < indexedArr.size(); i++) {
+            m_orderedX.push_back(indexedArr[i].index);
         }
-        return -1;
-    }
+        std::sort(indexedArr.begin(), indexedArr.end(), IndexedVertex::compareY);
+        for (int i = 0; i < indexedArr.size(); i++) {
+            m_orderedY.push_back(indexedArr[i].index);
+        }
 
-    float EnvironmentData::terrainHeight(StaticMeshHandle terrainHandle){
-        auto mesh = terrainHandle;
-        return 0;
+        m_minX = std::numeric_limits<float>::max();
+        m_minY = std::numeric_limits<float>::max();
+        m_maxX = std::numeric_limits<float>::min();
+        m_maxY = std::numeric_limits<float>::min();
+
+        // guardar valores minimos y maximos
+        for (int i = 0; i < vArray.size(); i++) {
+            
+            int x = vArray[i][0];
+            int y = vArray[i][1];
+            if (x < m_minX) { m_minX = x; }
+            if (y < m_minY) { m_minY = y; }
+            if (x > m_maxX) { m_maxX = x; }
+            if (y > m_maxY) { m_maxY = y; }
+
+        }       
     }
 
 }

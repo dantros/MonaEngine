@@ -36,7 +36,6 @@ namespace Mona {
 			void init(std::vector<Vector3f>& vertices, std::vector<Triangle>& faces);
 			bool isValid() { return m_isValid; }
 	};
-	int MeshData::lastId = 0;
 
 	class EnvironmentData {
 		private:

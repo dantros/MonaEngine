@@ -3,9 +3,9 @@
 #define MESH_HPP
 #include <cstdint>
 #include <string>
-#include "../CharacterNavigation/EnvironmentData.hpp"
 
 namespace Mona {
+	class MeshData;
 	class Mesh {
 		friend class MeshManager;
 		

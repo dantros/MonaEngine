@@ -1,5 +1,6 @@
 #include "Mesh.hpp"
 
+#include "../CharacterNavigation/EnvironmentData.hpp"
 #include "../Core/Log.hpp"
 #include "../Core/AssimpTransformations.hpp"
 #include <glm/glm.hpp>

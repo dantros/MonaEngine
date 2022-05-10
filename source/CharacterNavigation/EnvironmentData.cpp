@@ -10,6 +10,7 @@ namespace Mona{
         static bool compareX(IndexedVertex& v1, IndexedVertex& v2) { return v1.vertex[0] < v2.vertex[0]; }
         static bool compareY(IndexedVertex& v1, IndexedVertex& v2) { return v1.vertex[1] < v2.vertex[1]; }
     };
+    int MeshData::lastId = 0;
 
     void MeshData::init(std::vector<Vector3f>& vertices, std::vector<Triangle>& faces) {
         m_id = lastId + 1;
@@ -116,6 +117,7 @@ namespace Mona{
         MONA_ASSERT(terrain.withinBoundaries(x, y), "Vertex must be within boundaries of the mesh");
         float xStartFrac = (x - terrain.m_minX) / (terrain.m_maxX - terrain.m_minX);
         int xStartInd = terrain.m_vertices.size() * xStartFrac;
+        return 0;
     }
 
 }

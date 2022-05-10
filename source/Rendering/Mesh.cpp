@@ -158,19 +158,19 @@ namespace Mona {
 
 		if (meshData != nullptr) {
 			std::vector<Vector3f> vertexPositions;
-			std::vector<Triangle> triangles;
+			std::vector<std::vector<unsigned int>> groupedFaces;
 			vertexPositions.reserve(numVertices);
-			triangles.reserve(numFaces);
+			groupedFaces.reserve(numFaces);
 			for (int i = 0; i < numVertices; i++) {
 				glm::vec3 currPos = vertices[i].position;
 				Vector3f v = Vector3f(currPos[0], currPos[1], currPos[2]);
 				vertexPositions.push_back(v);
 			}
 			for (int i = 0; i < numFaces; i+=3) {
-				Triangle t = { faces[i], faces[i + 1], faces[i + 2] };
-				triangles.push_back(t);
+				std::vector<unsigned int> f = { faces[i], faces[i + 1], faces[i + 2] };
+				groupedFaces.push_back(f);
 			}
-			meshData->init(vertexPositions, triangles);
+			meshData->init(vertexPositions, groupedFaces);
 		}
 		
 	}

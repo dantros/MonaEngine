@@ -194,20 +194,21 @@ namespace Mona{
         //triangles are ordered. first one shares v1 and v2 with t, second one v2 and v3, third one v3 and v1.
     }
 
-    int MeshData::goesThroughTriangle(Vertex v1, Vertex v2, Triangle triangle) { //checks if line (starting in vertex of triangle) goes through triangle (1), coincides with edge(0) or passes outside(-1)
+    int MeshData::goesThroughTriangle(Vertex v1, Vertex v2, Triangle triangle) { //checks if line (starting in vertex of triangle) goes through triangle (-1), coincides with edge(next vertex -> 0,1,2), passes outside(-2)
         int initialVIndex;
         if (v1 == m_vertices[triangle.vertices[0]]) { initialVIndex = 0; }
         else if (v1 == m_vertices[triangle.vertices[1]]) { initialVIndex = 1; }
         else if (v1 == m_vertices[triangle.vertices[2]]){ initialVIndex = 2; }
         else {
             MONA_LOG_ERROR("Starting vertex not in triangle");
-            return -2;
+            return std::numeric_limits<int>::min();
         }
         int orientation1 = orientationTest(v1, v2, m_vertices[triangle.vertices[(initialVIndex + 1) % 3]]);
         int orientation2 = orientationTest(v1, v2, m_vertices[triangle.vertices[(initialVIndex + 2) % 3]]);
-        if (orientation1 == -1 && orientation2 == 1) { return 1; }
-        else if (orientation1 == 0 && orientation2 == 1 || orientation2 == 0 && orientation1 == -1) { return 0; }
-        return -1;
+        if (orientation1 == -1 && orientation2 == 1) { return -1; }
+        else if (orientation1 == 0 && orientation2 == 1) { return (initialVIndex + 1) % 3; }
+        else if (orientation2 == 0 && orientation1 == -1) { return (initialVIndex + 2) % 3; }
+        return -2;
     }
 
 }

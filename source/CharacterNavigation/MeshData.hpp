@@ -17,12 +17,16 @@ namespace Mona {
 	struct Triangle {
 		std::vector<Index> vertices;
 		std::vector<Triangle*> neighbors;
+		friend bool operator!= (const Triangle& t1, const Triangle& t2);
+		friend bool operator== (const Triangle& t1, const Triangle& t2);
 	};
 
 	struct Vertex {
 		float x;
 		float y;
 		float z;
+		friend bool operator!= (const Vertex& v1, const Vertex& v2);
+		friend bool operator== (const Vertex& v1, const Vertex& v2);
 	};
 
 	class MeshData{
@@ -51,6 +55,8 @@ namespace Mona {
 			void orderTriangle(Triangle* t);
 			void init(std::vector<Vector3f>& vertices, std::vector<Vector3ui>& faces);
 			bool isValid() { return m_isValid; }
+			Triangle* getTriangle(float x, float y);
+			int goesThroughTriangle(Vertex v1, Vertex v2, Triangle triangle);
 	};
 
 }

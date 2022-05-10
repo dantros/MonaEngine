@@ -1,6 +1,6 @@
 #pragma once
-#ifndef MESHDATA_HPP
-#define MESHDATA_HPP
+#ifndef HEIGHTMAP_HPP
+#define HEIGHTMAP_HPP
 
 #include <vector>
 #include <Eigen/Dense>
@@ -29,7 +29,7 @@ namespace Mona {
 		friend bool operator== (const Vertex& v1, const Vertex& v2);
 	};
 
-	class MeshData{
+	class HeightMap{
 		friend class EnvironmentData;
 		private:
 			static int lastId;
@@ -45,7 +45,7 @@ namespace Mona {
 			std::vector<Triangle> m_triangles;
 
 		public:
-			MeshData() = default;
+			HeightMap() = default;
 			int getID() { return m_id; }
 			bool withinBoundaries(float x, float y);
 			int orientationTest(Vertex v1, Vertex v2, Vertex testV); // se ignora coordenada z

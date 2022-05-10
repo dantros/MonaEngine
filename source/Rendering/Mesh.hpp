@@ -5,7 +5,7 @@
 #include <string>
 
 namespace Mona {
-	class MeshData;
+	class HeightMap;
 	class Mesh {
 		friend class MeshManager;
 		
@@ -20,7 +20,7 @@ namespace Mona {
 		uint32_t GetVertexArrayID() const noexcept { return m_vertexArrayID; }
 		uint32_t GetIndexBufferCount() const noexcept { return m_indexBufferCount; }
 	private:
-		Mesh(const std::string& filePath, bool flipUVs = false, MeshData* meshData = nullptr);
+		Mesh(const std::string& filePath, bool flipUVs = false, HeightMap* heightMap = nullptr);
 		Mesh(PrimitiveType type);
 
 		void ClearData() noexcept;

@@ -1,4 +1,4 @@
-#include "MeshData.hpp"
+#include "HeightMap.hpp"
 #include <limits>
 #include <algorithm>
 #include "../Core/Log.hpp"
@@ -6,7 +6,7 @@
 
 namespace Mona{
 
-    int MeshData::lastId = 0;
+    int HeightMap::lastId = 0;
 
     // operators
     bool operator!= (const Vertex& v1, const Vertex& v2) {
@@ -29,13 +29,13 @@ namespace Mona{
         static bool compareY(IndexedVertex& v1, IndexedVertex& v2) { return v1.vertex.y < v2.vertex.y; }
     };
 
-    int MeshData::sharedVertices(Triangle t1, Triangle t2) {
+    int HeightMap::sharedVertices(Triangle t1, Triangle t2) {
         int comp1 = t1.vertices[0] == t2.vertices[0] + t1.vertices[1] == t2.vertices[1] + t1.vertices[2] == t2.vertices[2];
         int comp2 = t1.vertices[0] == t2.vertices[1] + t1.vertices[1] == t2.vertices[2] + t1.vertices[2] == t2.vertices[0];
         return comp1 + comp2;
     }
 
-    void MeshData::init(std::vector<Vector3f>& vertices, std::vector<Vector3ui>& faces) {
+    void HeightMap::init(std::vector<Vector3f>& vertices, std::vector<Vector3ui>& faces) {
         m_id = lastId + 1;
         lastId = m_id;
         m_vertices.reserve(vertices.size());
@@ -106,11 +106,11 @@ namespace Mona{
 
     }
 
-    bool MeshData::withinBoundaries(float x, float y) {
+    bool HeightMap::withinBoundaries(float x, float y) {
         return m_minX <= x && x <= m_maxX && m_minY <= y && y <= m_maxY;
     }
 
-    int MeshData::orientationTest(Vertex v1, Vertex v2, Vertex testV) { //arista de v1 a v2, +1 si el punto esta a arriba, -1 abajo,0 si es colineal, error si v1 y v2 iguales
+    int HeightMap::orientationTest(Vertex v1, Vertex v2, Vertex testV) { //arista de v1 a v2, +1 si el punto esta a arriba, -1 abajo,0 si es colineal, error si v1 y v2 iguales
         float x1 = v1.x;
         float y1 = v1.y;
         float x2 = v2.x;
@@ -142,7 +142,7 @@ namespace Mona{
         else { return 0; }
     }
 
-    bool MeshData::triangleContainsPoint(Triangle t, Vertex p) {
+    bool HeightMap::triangleContainsPoint(Triangle t, Vertex p) {
         int orientationV1V2 = orientationTest(m_vertices[t.vertices[0]], m_vertices[t.vertices[1]], p);
         int orientationV2V3 = orientationTest(m_vertices[t.vertices[1]], m_vertices[t.vertices[2]], p);
         int orientationV3V1 = orientationTest(m_vertices[t.vertices[2]], m_vertices[t.vertices[0]], p);
@@ -156,7 +156,7 @@ namespace Mona{
         return false;
     }
 
-    void MeshData::orderVerticesCCW(std::vector<Index>* vertices) {
+    void HeightMap::orderVerticesCCW(std::vector<Index>* vertices) {
         int orientation = orientationTest(m_vertices[(*vertices)[0]], m_vertices[(*vertices)[1]], m_vertices[(*vertices)[2]]);
         if (orientation == 1) {
             return; // ya ordenados
@@ -173,7 +173,7 @@ namespace Mona{
         }
     }
 
-    void MeshData::orderTriangle(Triangle* t) {
+    void HeightMap::orderTriangle(Triangle* t) {
         orderVerticesCCW(&(t->vertices));
         std::vector<Triangle*> orderedTriangles = { nullptr, nullptr, nullptr };
         for (int i = 0; i < 3; i++) {
@@ -194,7 +194,7 @@ namespace Mona{
         //triangles are ordered. first one shares v1 and v2 with t, second one v2 and v3, third one v3 and v1.
     }
 
-    int MeshData::goesThroughTriangle(Vertex v1, Vertex v2, Triangle triangle) { //checks if line (starting in vertex of triangle) goes through triangle (-1), coincides with edge(next vertex -> 0,1,2), passes outside(-2)
+    int HeightMap::goesThroughTriangle(Vertex v1, Vertex v2, Triangle triangle) { //checks if line (starting in vertex of triangle) goes through triangle (-1), coincides with edge(next vertex -> 0,1,2), passes outside(-2)
         int initialVIndex;
         if (v1 == m_vertices[triangle.vertices[0]]) { initialVIndex = 0; }
         else if (v1 == m_vertices[triangle.vertices[1]]) { initialVIndex = 1; }

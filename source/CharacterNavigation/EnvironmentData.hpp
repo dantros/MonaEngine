@@ -2,19 +2,19 @@
 #ifndef ENVIRONMENTDATA_HPP
 #define ENVIRONMENTDATA_HPP
 
-#include "MeshData.hpp"
+#include "HeightMap.hpp"
 
 namespace Mona {
 
 	class EnvironmentData {
 		private:
-			std::vector<MeshData> m_terrains;
-			std::vector<MeshData> m_obstacles;
-			float _getTerrainHeight(float x, float y, MeshData terrain);
+			std::vector<HeightMap> m_terrains;
+			std::vector<HeightMap> m_obstacles;
+			float _getTerrainHeight(float x, float y, HeightMap terrain);
 		public:
 			float getTerrainHeight(float x, float y);
-			void addTerrain(MeshData& terrain);
-			int removeTerrain(MeshData& terrain);
+			void addTerrain(HeightMap& terrain);
+			int removeTerrain(HeightMap& terrain);
 
 	};
 

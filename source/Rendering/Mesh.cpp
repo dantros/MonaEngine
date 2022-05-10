@@ -1,6 +1,6 @@
 #include "Mesh.hpp"
 
-#include "../CharacterNavigation/MeshData.hpp"
+#include "../CharacterNavigation/HeightMap.hpp"
 #include "../Core/Log.hpp"
 #include "../Core/AssimpTransformations.hpp"
 #include <glm/glm.hpp>
@@ -34,7 +34,7 @@ namespace Mona {
 		m_vertexArrayID = 0;
 	}
 	
-	Mesh::Mesh(const std::string& filePath, bool flipUVs, MeshData* meshData) :
+	Mesh::Mesh(const std::string& filePath, bool flipUVs, HeightMap* heightMap) :
 		m_vertexArrayID(0),
 		m_vertexBufferID(0),
 		m_indexBufferID(0),
@@ -156,7 +156,7 @@ namespace Mona {
 		glEnableVertexAttribArray(4);
 		glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), (void*)offsetof(MeshVertex, bitangent));
 
-		if (meshData != nullptr) {
+		if (heightMap != nullptr) {
 			std::vector<Vector3f> vertexPositions;
 			std::vector<Vector3ui> groupedFaces;
 			vertexPositions.reserve(numVertices);
@@ -170,7 +170,7 @@ namespace Mona {
 				Vector3ui f = { faces[i], faces[i + 1], faces[i + 2] };
 				groupedFaces.push_back(f);
 			}
-			meshData->init(vertexPositions, groupedFaces);
+			heightMap->init(vertexPositions, groupedFaces);
 		}
 		
 	}

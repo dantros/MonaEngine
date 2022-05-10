@@ -33,7 +33,7 @@ namespace Mona {
 		m_vertexArrayID = 0;
 	}
 	
-	Mesh::Mesh(const std::string& filePath, bool flipUVs) :
+	Mesh::Mesh(const std::string& filePath, bool flipUVs, MeshData* meshData) :
 		m_vertexArrayID(0),
 		m_vertexBufferID(0),
 		m_indexBufferID(0),
@@ -154,6 +154,23 @@ namespace Mona {
 		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), (void*)offsetof(MeshVertex, tangent));
 		glEnableVertexAttribArray(4);
 		glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), (void*)offsetof(MeshVertex, bitangent));
+
+		if (meshData != nullptr) {
+			std::vector<Vector3f> vertexPositions;
+			std::vector<Triangle> triangles;
+			vertexPositions.reserve(numVertices);
+			triangles.reserve(numFaces);
+			for (int i = 0; i < numVertices; i++) {
+				glm::vec3 currPos = vertices[i].position;
+				Vector3f v = Vector3f(currPos[0], currPos[1], currPos[2]);
+				vertexPositions.push_back(v);
+			}
+			for (int i = 0; i < numFaces; i+=3) {
+				Triangle t = { faces[i], faces[i + 1], faces[i + 2] };
+				triangles.push_back(t);
+			}
+			meshData->init(vertexPositions, triangles);
+		}
 		
 	}
 

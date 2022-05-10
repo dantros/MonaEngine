@@ -3,6 +3,7 @@
 #define MESH_HPP
 #include <cstdint>
 #include <string>
+#include "../CharacterNavigation/EnvironmentData.hpp"
 
 namespace Mona {
 	class Mesh {
@@ -19,7 +20,7 @@ namespace Mona {
 		uint32_t GetVertexArrayID() const noexcept { return m_vertexArrayID; }
 		uint32_t GetIndexBufferCount() const noexcept { return m_indexBufferCount; }
 	private:
-		Mesh(const std::string& filePath, bool flipUVs = false);
+		Mesh(const std::string& filePath, bool flipUVs = false, MeshData* meshData = nullptr);
 		Mesh(PrimitiveType type);
 
 		void ClearData() noexcept;

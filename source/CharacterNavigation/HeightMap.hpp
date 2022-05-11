@@ -14,7 +14,6 @@ namespace Mona {
 	typedef Eigen::Matrix<unsigned int, 1, 3> Vector3ui;
 	typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> MatrixXf;
 	typedef unsigned int vIndex;
-	typedef int vNum;
 
 	struct Triangle {
 		std::vector<vIndex> vertices;

@@ -222,63 +222,54 @@ namespace Mona{
         int orientationV1 = orientationTest(start, end, m_vertices[triangle->vertices[0]]);
         int orientationV2 = orientationTest(start, end, m_vertices[triangle->vertices[1]]);
         int orientationV3 = orientationTest(start, end, m_vertices[triangle->vertices[2]]);
-        // next t is t1
-        //  through t2
-        if (orientationV1 == -1 && orientationV2 == 1 && orientationV3 == -1) {
-            return triangle->neighbors[0];
-        }
-        //  through t3
-        if (orientationV1 == -1 && orientationV2 == 1 && orientationV3 == 1) {
-            return triangle->neighbors[0];
-        }
-        //  through v3
-        if (orientationV1 == -1 && orientationV2 == 1 && orientationV3 == 0) {
-            return triangle->neighbors[0];
-        }
-        
-        // next t is t2
-        //  through t1
-        if (orientationV1 == 1 && orientationV2 == -1 && orientationV3 == 1) {
-            return triangle->neighbors[1];
-        }
-        //  through t3
-        if (orientationV1 == -1 && orientationV2 == -1 && orientationV3 == 1) {
-            return triangle->neighbors[1];
-        }
-        //  through v1
-        if (orientationV1 == 0 && orientationV2 == -1 && orientationV3 == 1) {
-            return triangle->neighbors[1];
-        }
-        
-        // next t is t3
-        //  through t1
-        if (orientationV1 == 1 && orientationV2 == -1 && orientationV3 == -1) {
-            return triangle->neighbors[2];
-        }
-        //  through t2
-        if (orientationV1 == 1 && orientationV2 == 1 && orientationV3 == -1) {
-            return triangle->neighbors[2];
-        }
-        //  through v2
-        if (orientationV1 == 1 && orientationV2 == 0 && orientationV3 == -1) {
-            return triangle->neighbors[2];
-        }
-        
-        // line goes through vertex
         std::vector<int> orientations = { orientationV1, orientationV2, orientationV3 };
+        // line goes through an edge
         for (int v = 0; v < 3; v++) {
-            if (orientations[v] == 0) {
-                vIndex currV = triangle->vertices[v];
-                for (int i = 0; i < m_triangleMap[currV].size(); i++) {
-                    Triangle* currT = m_triangleMap[currV][i];
-                    if (currT != triangle && goesThroughTriangle(currV, end, currT)) {
-                        return currT;
-                    }
-                }
-                return nullptr; // la linea sale de la malla
+            int nextV_first = (v + 1) % 3;
+            int nextV_second = (v + 2) % 3;
+            // enters through t associated with nextV_first
+            if (orientations[v] == -1 && orientations[nextV_first] == 1 && orientations[nextV_second] == -1) {
+                return triangle->neighbors[v];
+            }
+            // enters through t associated with nextV_second
+            if (orientations[v] == -1 && orientations[nextV_first] == 1 && orientations[nextV_second] == 1) {
+                return triangle->neighbors[v];
+            }
+            // enters through nextV_second
+            if (orientations[v] == -1 && orientations[nextV_first] == 1 && orientations[nextV_second] == 0) {
+                return triangle->neighbors[v];
             }
         }
-
+        // chech if line goes through vertex
+        int outVNum = -1;
+        //  coincides with edge
+        for (int v = 0; v < 3; v++) {
+            int nextV_first = (v + 1) % 3;
+            int nextV_second = (v + 2) % 3;
+            if (orientations[v] == 0 && orientations[nextV_first] == 0 && orientations[nextV_second] == 1) {
+                outVNum = nextV_first;
+                break;
+            }
+        }
+        //  does not coincide with edge
+        if (outVNum == -1) {
+            for (int v = 0; v < 3; v++) {
+                if (orientations[v] == 0) {
+                    outVNum = v;
+                    break;
+                }
+            }
+        }
+        
+        if (outVNum != -1) {
+            vIndex outV = triangle->vertices[outVNum];
+            for (int i = 0; i < m_triangleMap[outV].size(); i++) {
+                Triangle* currT = m_triangleMap[outV][i];
+                if (currT != triangle && goesThroughTriangle(outV, end, currT)) {
+                    return currT;
+                }
+            }
+        }
         return nullptr; // la linea sale de la malla
         
         
@@ -292,6 +283,8 @@ namespace Mona{
 
 
         // interpolar altura
+
+        return 0;
     }
 
 }

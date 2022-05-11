@@ -1,5 +1,7 @@
 #include "MeshManager.hpp"
 #include "../Animation/SkinnedMesh.hpp"
+#include <cstdlib>
+#include <ctime>
 namespace Mona {
 	
 	std::string PrimitiveEnumToString(Mesh::PrimitiveType type) {
@@ -20,6 +22,18 @@ namespace Mona {
 		}
 	}
 
+	std::shared_ptr<Mesh> MeshManager::GenerateTerrain(const glm::vec3& cornerBottomLeft, const glm::vec3& cornerTopRight, 
+		int numVerticesWidth, int numVericesHeight, float (*heightFunc)(float, float), HeightMap* heightMap) noexcept {
+		std::srand(std::time(nullptr)); // use current time as seed for random generator
+		int random_variable = std::rand();
+		const std::string& id = std::to_string(random_variable);
+		Mesh* meshPtr = new Mesh(cornerBottomLeft, cornerTopRight, numVerticesWidth, numVericesHeight, heightFunc, heightMap);
+		std::shared_ptr<Mesh> sharedPtr = std::shared_ptr<Mesh>(meshPtr);
+		//Antes de retornar la malla recien cargada, insertamos esta al mapa para que cargas futuras sean mucho mas rapidas.
+		m_meshMap.insert({ id, sharedPtr });
+		return sharedPtr;
+	}
+
 	std::shared_ptr<Mesh> MeshManager::LoadMesh(Mesh::PrimitiveType type) noexcept
 	{
 		const std::string primName = PrimitiveEnumToString(type);
@@ -35,7 +49,7 @@ namespace Mona {
 		return sharedPtr;
 	}
 
-	std::shared_ptr<Mesh> MeshManager::LoadMesh(const std::filesystem::path& filePath, bool flipUVs) noexcept {
+	std::shared_ptr<Mesh> MeshManager::LoadMesh(const std::filesystem::path& filePath, bool flipUVs, HeightMap* heightMap) noexcept {
 		const std::string& stringPath = filePath.string();
 		//En caso de que ya exista una entrada en el mapa de mallas con el mismo path, entonces se retorna inmediatamente
 		//dicha malla.
@@ -43,7 +57,7 @@ namespace Mona {
 		if (it != m_meshMap.end()) {
 			return it->second;
 		}
-		Mesh* meshPtr = new Mesh(stringPath, flipUVs);
+		Mesh* meshPtr = new Mesh(stringPath, flipUVs, heightMap);
 		std::shared_ptr<Mesh> sharedPtr = std::shared_ptr<Mesh>(meshPtr);
 		//Antes de retornar la malla recien cargada, insertamos esta al mapa para que cargas futuras sean mucho mas rapidas.
 		m_meshMap.insert({ stringPath, sharedPtr });

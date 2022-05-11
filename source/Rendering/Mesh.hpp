@@ -3,6 +3,7 @@
 #define MESH_HPP
 #include <cstdint>
 #include <string>
+#include <glm/glm.hpp>
 
 namespace Mona {
 	class HeightMap;
@@ -22,6 +23,8 @@ namespace Mona {
 	private:
 		Mesh(const std::string& filePath, bool flipUVs = false, HeightMap* heightMap = nullptr);
 		Mesh(PrimitiveType type);
+		Mesh(const glm::vec3& cornerBottomLeft, const glm::vec3& cornerTopRight,
+			int numVerticesWidth, int numVericesHeight, float (*heightFunc)(float, float), HeightMap* heightMap = nullptr);
 
 		void ClearData() noexcept;
 		void CreateSphere() noexcept;

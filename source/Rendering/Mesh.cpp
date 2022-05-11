@@ -33,7 +33,7 @@ namespace Mona {
 		glDeleteVertexArrays(1, &m_vertexArrayID);
 		m_vertexArrayID = 0;
 	}
-	
+
 	Mesh::Mesh(const std::string& filePath, bool flipUVs, HeightMap* heightMap) :
 		m_vertexArrayID(0),
 		m_vertexBufferID(0),
@@ -205,6 +205,16 @@ namespace Mona {
 				break;
 			}
 		}
+	}
+
+	Mesh::Mesh(const glm::vec3& cornerBottomLeft, const glm::vec3& cornerTopRight, 
+		int numVerticesWidth, int numVericesHeight, float (*heightFunc)(float, float), HeightMap* heightMap):
+		m_vertexArrayID(0),
+		m_vertexBufferID(0),
+		m_indexBufferID(0),
+		m_indexBufferCount(0)
+	{
+
 	}
 
 	void Mesh::CreateCube() noexcept {

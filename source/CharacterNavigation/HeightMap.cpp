@@ -270,43 +270,33 @@ namespace Mona{
     }
 
     vIndex HeightMap::findCloseVertex(float x, float y) {
-        int subArraySize = m_vertices.size();
-        int xIndex = m_vertices.size()-1; // parte al final del subarreglo
-        while (subArraySize > 1) {
-            bool balance = subArraySize % 2 != 0;
-            subArraySize = subArraySize / 2;
+        std::vector<vIndex> ansXY;
+        std::vector<std::vector<vIndex>*> arrays = { &m_orderedX, &m_orderedY };
 
-            xIndex = xIndex - subArraySize + !balance;
-            if (x < m_vertices[m_orderedX[xIndex]][0]) { 
-                xIndex -= 1; 
-            }
-            else { 
-                xIndex += subArraySize;
-                subArraySize += balance;
-            }            
-        }
+        for (int i = 0; i < 2; i++) {
+            int subArraySize = m_vertices.size();
+            int foundIndex = m_vertices.size() - 1; // parte al final del subarreglo
+            while (subArraySize > 1) {
+                bool balance = subArraySize % 2 != 0;
+                subArraySize = subArraySize / 2;
 
-        subArraySize = m_vertices.size();
-        int yIndex = m_vertices.size() - 1; // parte al final del subarreglo
-        while (subArraySize > 1) {
-            bool balance = subArraySize % 2 != 0;
-            subArraySize = subArraySize / 2;
-
-            yIndex = yIndex - subArraySize + !balance;
-            if (y < m_vertices[m_orderedY[yIndex]][1]) {
-                yIndex -= 1;
+                foundIndex = foundIndex - subArraySize + !balance;
+                if (x < m_vertices[(*arrays[i])[foundIndex]][0]) {
+                    foundIndex -= 1;
+                }
+                else {
+                    foundIndex += subArraySize;
+                    subArraySize += balance;
+                }
             }
-            else {
-                yIndex += subArraySize;
-                subArraySize += balance;
-            }
+            ansXY.push_back(foundIndex);
         }
 
         int rightX = 0;
         int leftX = 0;
         int rightY = 0;
         int leftY = 0;
-        float minDist = (m_vertices[xIndex] - m_vertices[yIndex]).squaredNorm();
+        float minDist = (m_vertices[ansXY[0]] - m_vertices[ansXY[1]]).squaredNorm();
 
 
         return 0;

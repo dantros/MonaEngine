@@ -41,19 +41,25 @@ namespace Mona{
         m_vertices.reserve(vertices.size());
         m_triangles.reserve(faces.size());
         
-        // guardar vertices
+        // guardar vertices e inicializar mapa de vertices->triangulos
         for (int i = 0; i < vertices.size(); i++) {
             Vertex v = Vertex(vertices[i][0], vertices[i][1], vertices[i][2]);
             m_vertices.push_back(v);
+
+            m_triangleMap[i] = std::vector<Triangle*>();
         }
         // asginar vertices a triangulos
         for (int i = 0; i < faces.size(); i++) {
             Triangle t;
-            Index ind1 = faces[i][0];
-            Index ind2 = faces[i][1];
-            Index ind3 = faces[i][2];
+            vIndex ind1 = faces[i][0];
+            vIndex ind2 = faces[i][1];
+            vIndex ind3 = faces[i][2];
             t.vertices = { ind1, ind2, ind3 };
             m_triangles.push_back(t);
+
+            m_triangleMap[ind1].push_back(&t);
+            m_triangleMap[ind2].push_back(&t);
+            m_triangleMap[ind3].push_back(&t);
         }
 
         // vincular triangulos con sus vecinos
@@ -110,7 +116,7 @@ namespace Mona{
         return m_minX <= x && x <= m_maxX && m_minY <= y && y <= m_maxY;
     }
 
-    int HeightMap::orientationTest(Vertex v1, Vertex v2, Vertex testV) { //arista de v1 a v2, +1 si el punto esta a arriba, -1 abajo,0 si es colineal, error si v1 y v2 iguales
+    int HeightMap::orientationTest(Vertex v1, Vertex v2, Vertex testV) { //arista de v1 a v2, +1 si el punto esta a arriba, -1 abajo,0 si es colineal, error(-2) si v1 y v2 iguales
         float x1 = v1.x;
         float y1 = v1.y;
         float x2 = v2.x;
@@ -127,6 +133,7 @@ namespace Mona{
 
         if (x1 == x2 and y1 == y2) {
             MONA_LOG_ERROR("vertices are equal!");
+            return -2;
         }
         if (x1 == x2) {
             if (y1 > y2) { orientationV1V2 = -1; }
@@ -156,20 +163,20 @@ namespace Mona{
         return false;
     }
 
-    void HeightMap::orderVerticesCCW(std::vector<Index>* vertices) {
+    void HeightMap::orderVerticesCCW(std::vector<vIndex>* vertices) {
         int orientation = orientationTest(m_vertices[(*vertices)[0]], m_vertices[(*vertices)[1]], m_vertices[(*vertices)[2]]);
         if (orientation == 1) {
             return; // ya ordenados
         }
         else if (orientation == -1) {
-            std::vector<Index> temp = { (*vertices)[0], (*vertices)[1], (*vertices)[2] };
+            std::vector<vIndex> temp = { (*vertices)[0], (*vertices)[1], (*vertices)[2] };
             (*vertices)[0] = temp[1];
             (*vertices)[1] = temp[0];
             (*vertices)[2] = temp[2];
             return;
         }
         else {
-            MONA_LOG_ERROR("Not a triangle");
+            MONA_LOG_ERROR("Not a triangle or projection of vertical triangle");
         }
     }
 
@@ -179,13 +186,13 @@ namespace Mona{
         for (int i = 0; i < 3; i++) {
             Triangle* connectedT = t->neighbors[i];
             if (connectedT != nullptr) {
-                if (funcUtils::findIndex<Index>(connectedT->vertices, t->vertices[0]) != -1 && funcUtils::findIndex<Index>(connectedT->vertices, t->vertices[1]) != -1) {
+                if (funcUtils::findIndex<vIndex>(connectedT->vertices, t->vertices[0]) != -1 && funcUtils::findIndex<vIndex>(connectedT->vertices, t->vertices[1]) != -1) {
                     orderedTriangles[0] = connectedT;
                 }
-                else if (funcUtils::findIndex<Index>(connectedT->vertices, t->vertices[1]) != -1 && funcUtils::findIndex<Index>(connectedT->vertices, t->vertices[2]) != -1) {
+                else if (funcUtils::findIndex<vIndex>(connectedT->vertices, t->vertices[1]) != -1 && funcUtils::findIndex<vIndex>(connectedT->vertices, t->vertices[2]) != -1) {
                     orderedTriangles[1] = connectedT;
                 }
-                else if (funcUtils::findIndex<Index>(connectedT->vertices, t->vertices[2]) != -1 && funcUtils::findIndex<Index>(connectedT->vertices, t->vertices[0]) != -1) {
+                else if (funcUtils::findIndex<vIndex>(connectedT->vertices, t->vertices[2]) != -1 && funcUtils::findIndex<vIndex>(connectedT->vertices, t->vertices[0]) != -1) {
                     orderedTriangles[2] = connectedT;
                 }
             }
@@ -194,21 +201,82 @@ namespace Mona{
         //triangles are ordered. first one shares v1 and v2 with t, second one v2 and v3, third one v3 and v1.
     }
 
-    int HeightMap::goesThroughTriangle(Vertex v1, Vertex v2, Triangle triangle) { //checks if line (starting in vertex of triangle) goes through triangle (-1), coincides with edge(next vertex -> 0,1,2), passes outside(-2)
-        int initialVIndex;
-        if (v1 == m_vertices[triangle.vertices[0]]) { initialVIndex = 0; }
-        else if (v1 == m_vertices[triangle.vertices[1]]) { initialVIndex = 1; }
-        else if (v1 == m_vertices[triangle.vertices[2]]){ initialVIndex = 2; }
+    vNum HeightMap::goesThroughTriangle(vIndex start, Vertex end, Triangle triangle) { //checks if line (starting in vertex of triangle) coincides with edge(next vertex -> 0,1,2), goes through triangle (3) or passes outside(-1)
+        vNum initialVNum;
+        if (start == triangle.vertices[0]) { initialVNum = 0; }
+        else if (start == triangle.vertices[1]) { initialVNum = 1; }
+        else if (start == triangle.vertices[2]){ initialVNum = 2; }
         else {
             MONA_LOG_ERROR("Starting vertex not in triangle");
-            return std::numeric_limits<int>::min();
+            return -2;
         }
-        int orientation1 = orientationTest(v1, v2, m_vertices[triangle.vertices[(initialVIndex + 1) % 3]]);
-        int orientation2 = orientationTest(v1, v2, m_vertices[triangle.vertices[(initialVIndex + 2) % 3]]);
-        if (orientation1 == -1 && orientation2 == 1) { return -1; }
-        else if (orientation1 == 0 && orientation2 == 1) { return (initialVIndex + 1) % 3; }
-        else if (orientation2 == 0 && orientation1 == -1) { return (initialVIndex + 2) % 3; }
-        return -2;
+        int orientation1 = orientationTest(m_vertices[start], end, m_vertices[triangle.vertices[(initialVNum + 1) % 3]]);
+        int orientation2 = orientationTest(m_vertices[start], end, m_vertices[triangle.vertices[(initialVNum + 2) % 3]]);
+        if (orientation1 == -1 && orientation2 == 1) { return 3; }
+        else if (orientation1 == 0 && orientation2 == 1) { return (initialVNum + 1) % 3; }
+        else if (orientation2 == 0 && orientation1 == -1) { return (initialVNum + 2) % 3; }
+        return -1;
+    }
+
+    Triangle* HeightMap::nextTriangle(Vertex start, Vertex end, Triangle triangle) { // through which triangle does the line continue
+        int orientationV1 = orientationTest(start, end, m_vertices[triangle.vertices[0]]);
+        int orientationV2 = orientationTest(start, end, m_vertices[triangle.vertices[1]]);
+        int orientationV3 = orientationTest(start, end, m_vertices[triangle.vertices[2]]);
+        // next t is t1
+        //  through t2
+        if (orientationV1 == -1 && orientationV2 == 1 && orientationV3 == -1) {
+            return triangle.neighbors[0];
+        }
+        //  through t3
+        if (orientationV1 == -1 && orientationV2 == 1 && orientationV3 == 1) {
+            return triangle.neighbors[0];
+        }
+        //  through v3
+        if (orientationV1 == -1 && orientationV2 == 1 && orientationV3 == 0) {
+            return triangle.neighbors[0];
+        }
+        
+        // next t is t2
+        //  through t1
+        if (orientationV1 == 1 && orientationV2 == -1 && orientationV3 == 1) {
+            return triangle.neighbors[1];
+        }
+        //  through t3
+        if (orientationV1 == -1 && orientationV2 == -1 && orientationV3 == 1) {
+            return triangle.neighbors[1];
+        }
+        //  through v1
+        if (orientationV1 == 0 && orientationV2 == -1 && orientationV3 == 1) {
+            return triangle.neighbors[1];
+        }
+        
+        // next t is t3
+        //  through t1
+        if (orientationV1 == 1 && orientationV2 == -1 && orientationV3 == -1) {
+            return triangle.neighbors[2];
+        }
+        //  through t2
+        if (orientationV1 == 1 && orientationV2 == 1 && orientationV3 == -1) {
+            return triangle.neighbors[2];
+        }
+        //  through v2
+        if (orientationV1 == 1 && orientationV2 == 0 && orientationV3 == -1) {
+            return triangle.neighbors[2];
+        }
+        
+
+        // line goes through vertex
+        
+    }
+
+    float HeightMap::getHeight(float x, float y) {
+        // encontrar vertice cercano
+
+
+        // encontrar triangulo contenedor
+
+
+        // interpolar altura
     }
 
 }

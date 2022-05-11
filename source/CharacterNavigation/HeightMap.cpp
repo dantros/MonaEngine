@@ -273,11 +273,10 @@ namespace Mona{
         int subArraySize = m_vertices.size();
         int xIndex = m_vertices.size()-1; // parte al final del subarreglo
         while (subArraySize > 1) {
-            int balance = 0;
-            if (subArraySize % 2 != 0) { balance = 1; }
+            bool balance = subArraySize % 2 != 0;
             subArraySize = subArraySize / 2;
 
-            xIndex = xIndex - subArraySize;
+            xIndex = xIndex - subArraySize + !balance;
             if (x < m_vertices[m_orderedX[xIndex]][0]) { 
                 xIndex -= 1; 
             }
@@ -290,11 +289,10 @@ namespace Mona{
         subArraySize = m_vertices.size();
         int yIndex = m_vertices.size() - 1; // parte al final del subarreglo
         while (subArraySize > 1) {
-            int balance = 0;
-            if (subArraySize % 2 != 0) { balance = 1; }
+            bool balance = subArraySize % 2 != 0;
             subArraySize = subArraySize / 2;
 
-            yIndex = yIndex - subArraySize;
+            yIndex = yIndex - subArraySize + !balance;
             if (y < m_vertices[m_orderedY[yIndex]][1]) {
                 yIndex -= 1;
             }

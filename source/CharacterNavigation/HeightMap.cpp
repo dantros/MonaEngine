@@ -9,12 +9,6 @@ namespace Mona{
     int HeightMap::lastId = 0;
 
     // operators
-    bool operator!= (const Vertex& v1, const Vertex& v2) {
-        return v1.x != v2.x || v1.y != v2.y || v1.z != v2.z;
-    }
-    bool operator== (const Vertex& v1, const Vertex& v2) {
-        return v1.x == v2.x && v1.y == v2.y && v1.z == v2.z;
-    }
     bool operator!= (const Triangle& t1, const Triangle& t2) {
         return t1.vertices != t2.vertices;
     }
@@ -25,8 +19,8 @@ namespace Mona{
     struct IndexedVertex {
         int index;
         Vertex vertex;
-        static bool compareX(IndexedVertex& v1, IndexedVertex& v2) { return v1.vertex.x < v2.vertex.x; }
-        static bool compareY(IndexedVertex& v1, IndexedVertex& v2) { return v1.vertex.y < v2.vertex.y; }
+        static bool compareX(IndexedVertex& v1, IndexedVertex& v2) { return v1.vertex[0] < v2.vertex[0]; }
+        static bool compareY(IndexedVertex& v1, IndexedVertex& v2) { return v1.vertex[1] < v2.vertex[1]; }
     };
 
     int HeightMap::sharedVertices(Triangle t1, Triangle t2) {
@@ -117,17 +111,17 @@ namespace Mona{
     }
 
     int HeightMap::orientationTest(Vertex v1, Vertex v2, Vertex testV) { //arista de v1 a v2, +1 si el punto esta a arriba, -1 abajo,0 si es colineal, error(-2) si v1 y v2 iguales
-        float x1 = v1.x;
-        float y1 = v1.y;
-        float x2 = v2.x;
-        float y2 = v2.y;
+        float x1 = v1[0];
+        float y1 = v1[1];
+        float x2 = v2[0];
+        float y2 = v2[1];
 
         int orientationV1V2 = 1;
         if (x1 > x2) {
             orientationV1V2 = -1;
         }
 
-        if (testV.x == v1.x && testV.y == v1.y || testV.x == v2.x && testV.y == v2.y) {
+        if (testV[0] == v1[0] && testV[1] == v1[1] || testV[0] == v2[0] && testV[1] == v2[1]) {
             return 0;
         }
 
@@ -137,15 +131,15 @@ namespace Mona{
         }
         if (x1 == x2) {
             if (y1 > y2) { orientationV1V2 = -1; }
-            if (testV.x == x1) { return 0; }
-            else if (testV.x > x1) { return -1 * orientationV1V2; }
+            if (testV[0] == x1) { return 0; }
+            else if (testV[0] > x1) { return -1 * orientationV1V2; }
             else { return 1 * orientationV1V2; }
         }
 
 
-        float yOnLine = ((y2 - y1) / (x2 - x1)) * (testV.x - x1) + y1;
-        if (testV.y > yOnLine) { return 1 * orientationV1V2; }
-        else if (testV.y < yOnLine) { return -1 * orientationV1V2; }
+        float yOnLine = ((y2 - y1) / (x2 - x1)) * (testV[0] - x1) + y1;
+        if (testV[1] > yOnLine) { return 1 * orientationV1V2; }
+        else if (testV[1] < yOnLine) { return -1 * orientationV1V2; }
         else { return 0; }
     }
 
@@ -275,16 +269,66 @@ namespace Mona{
         
     }
 
-    float HeightMap::getHeight(float x, float y) {
-        // encontrar vertice cercano
+    vIndex HeightMap::findCloseVertex(float x, float y) {
+        int subArraySize = m_vertices.size();
+        int xIndex = m_vertices.size()-1; // parte al final del subarreglo
+        while (subArraySize > 1) {
+            int balance = 0;
+            if (subArraySize % 2 != 0) { balance = 1; }
+            subArraySize = subArraySize / 2;
 
+            xIndex = xIndex - subArraySize;
+            if (x < m_vertices[m_orderedX[xIndex]][0]) { 
+                xIndex -= 1; 
+            }
+            else { 
+                xIndex += subArraySize;
+                subArraySize += balance;
+            }            
+        }
+
+        subArraySize = m_vertices.size();
+        int yIndex = m_vertices.size() - 1; // parte al final del subarreglo
+        while (subArraySize > 1) {
+            int balance = 0;
+            if (subArraySize % 2 != 0) { balance = 1; }
+            subArraySize = subArraySize / 2;
+
+            yIndex = yIndex - subArraySize;
+            if (y < m_vertices[m_orderedY[yIndex]][1]) {
+                yIndex -= 1;
+            }
+            else {
+                yIndex += subArraySize;
+                subArraySize += balance;
+            }
+        }
+
+        int rightX = 0;
+        int leftX = 0;
+        int rightY = 0;
+        int leftY = 0;
+        float minDist = (m_vertices[xIndex] - m_vertices[yIndex]).squaredNorm();
+
+
+        return 0;
+    }
+
+    float HeightMap::getHeight(float x, float y) {
+        if (!withinBoundaries(x, y)) {
+            MONA_LOG_WARNING("Point is out of bounds");
+            return std::numeric_limits<float>::min();
+        }
+        // encontrar vertice cercano
+        vIndex closest = findCloseVertex(x, y);
 
         // encontrar triangulo contenedor
 
 
         // interpolar altura
 
-        return 0;
+        MONA_LOG_WARNING("Point is out of bounds");
+        return std::numeric_limits<float>::min();
     }
 
 }

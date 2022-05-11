@@ -13,6 +13,7 @@ namespace Mona {
 	typedef Eigen::Matrix<float, 1, 2> Vector2f;
 	typedef Eigen::Matrix<unsigned int, 1, 3> Vector3ui;
 	typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> MatrixXf;
+	typedef Eigen::Matrix<float, 1, 3> Vertex;
 	typedef unsigned int vIndex;
 
 	struct Triangle {
@@ -20,14 +21,6 @@ namespace Mona {
 		std::vector<Triangle*> neighbors;
 		friend bool operator!= (const Triangle& t1, const Triangle& t2);
 		friend bool operator== (const Triangle& t1, const Triangle& t2);
-	};
-
-	struct Vertex {
-		float x;
-		float y;
-		float z;
-		friend bool operator!= (const Vertex& v1, const Vertex& v2);
-		friend bool operator== (const Vertex& v1, const Vertex& v2);
 	};
 
 	class HeightMap{
@@ -57,6 +50,7 @@ namespace Mona {
 			void orderTriangle(Triangle* t);
 			void init(std::vector<Vector3f>& vertices, std::vector<Vector3ui>& faces);
 			bool isValid() { return m_isValid; }
+			vIndex findCloseVertex(float x, float y);
 			float getHeight(float x, float y);
 			bool goesThroughTriangle(vIndex start, Vertex end, Triangle* triangle);
 			Triangle* nextTriangle(Vertex start, Vertex end, Triangle* triangle);

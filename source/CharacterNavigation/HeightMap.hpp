@@ -59,8 +59,8 @@ namespace Mona {
 			void init(std::vector<Vector3f>& vertices, std::vector<Vector3ui>& faces);
 			bool isValid() { return m_isValid; }
 			float getHeight(float x, float y);
-			vNum goesThroughTriangle(vIndex start, Vertex end, Triangle triangle);
-			Triangle* nextTriangle(Vertex start, Vertex end, Triangle triangle);
+			bool goesThroughTriangle(vIndex start, Vertex end, Triangle* triangle);
+			Triangle* nextTriangle(Vertex start, Vertex end, Triangle* triangle);
 	};
 
 }

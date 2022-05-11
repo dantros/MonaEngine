@@ -201,71 +201,86 @@ namespace Mona{
         //triangles are ordered. first one shares v1 and v2 with t, second one v2 and v3, third one v3 and v1.
     }
 
-    vNum HeightMap::goesThroughTriangle(vIndex start, Vertex end, Triangle triangle) { //checks if line (starting in vertex of triangle) coincides with edge(next vertex -> 0,1,2), goes through triangle (3) or passes outside(-1)
-        vNum initialVNum;
-        if (start == triangle.vertices[0]) { initialVNum = 0; }
-        else if (start == triangle.vertices[1]) { initialVNum = 1; }
-        else if (start == triangle.vertices[2]){ initialVNum = 2; }
+    bool HeightMap::goesThroughTriangle(vIndex start, Vertex end, Triangle* triangle) { //checks if line (starting in vertex of triangle) goes through triangle(or coincides with edge) or passes outside
+        int initialVNum;
+        if (start == triangle->vertices[0]) { initialVNum = 0; }
+        else if (start == triangle->vertices[1]) { initialVNum = 1; }
+        else if (start == triangle->vertices[2]){ initialVNum = 2; }
         else {
             MONA_LOG_ERROR("Starting vertex not in triangle");
-            return -2;
+            return false;
         }
-        int orientation1 = orientationTest(m_vertices[start], end, m_vertices[triangle.vertices[(initialVNum + 1) % 3]]);
-        int orientation2 = orientationTest(m_vertices[start], end, m_vertices[triangle.vertices[(initialVNum + 2) % 3]]);
-        if (orientation1 == -1 && orientation2 == 1) { return 3; }
-        else if (orientation1 == 0 && orientation2 == 1) { return (initialVNum + 1) % 3; }
-        else if (orientation2 == 0 && orientation1 == -1) { return (initialVNum + 2) % 3; }
-        return -1;
+        int orientation1 = orientationTest(m_vertices[start], end, m_vertices[triangle->vertices[(initialVNum + 1) % 3]]);
+        int orientation2 = orientationTest(m_vertices[start], end, m_vertices[triangle->vertices[(initialVNum + 2) % 3]]);
+        if (orientation1 == -1 && orientation2 == 1) { return true; } // passes inside
+        else if (orientation1 == 0 && orientation2 == 1) { return true; } //coincides with edge v1v2
+        else if (orientation2 == 0 && orientation1 == -1) { return true; } // coincides with edge v3v1
+        return false; // passes outside
     }
 
-    Triangle* HeightMap::nextTriangle(Vertex start, Vertex end, Triangle triangle) { // through which triangle does the line continue
-        int orientationV1 = orientationTest(start, end, m_vertices[triangle.vertices[0]]);
-        int orientationV2 = orientationTest(start, end, m_vertices[triangle.vertices[1]]);
-        int orientationV3 = orientationTest(start, end, m_vertices[triangle.vertices[2]]);
+    Triangle* HeightMap::nextTriangle(Vertex start, Vertex end, Triangle* triangle) { // through which triangle does the line continue
+        int orientationV1 = orientationTest(start, end, m_vertices[triangle->vertices[0]]);
+        int orientationV2 = orientationTest(start, end, m_vertices[triangle->vertices[1]]);
+        int orientationV3 = orientationTest(start, end, m_vertices[triangle->vertices[2]]);
         // next t is t1
         //  through t2
         if (orientationV1 == -1 && orientationV2 == 1 && orientationV3 == -1) {
-            return triangle.neighbors[0];
+            return triangle->neighbors[0];
         }
         //  through t3
         if (orientationV1 == -1 && orientationV2 == 1 && orientationV3 == 1) {
-            return triangle.neighbors[0];
+            return triangle->neighbors[0];
         }
         //  through v3
         if (orientationV1 == -1 && orientationV2 == 1 && orientationV3 == 0) {
-            return triangle.neighbors[0];
+            return triangle->neighbors[0];
         }
         
         // next t is t2
         //  through t1
         if (orientationV1 == 1 && orientationV2 == -1 && orientationV3 == 1) {
-            return triangle.neighbors[1];
+            return triangle->neighbors[1];
         }
         //  through t3
         if (orientationV1 == -1 && orientationV2 == -1 && orientationV3 == 1) {
-            return triangle.neighbors[1];
+            return triangle->neighbors[1];
         }
         //  through v1
         if (orientationV1 == 0 && orientationV2 == -1 && orientationV3 == 1) {
-            return triangle.neighbors[1];
+            return triangle->neighbors[1];
         }
         
         // next t is t3
         //  through t1
         if (orientationV1 == 1 && orientationV2 == -1 && orientationV3 == -1) {
-            return triangle.neighbors[2];
+            return triangle->neighbors[2];
         }
         //  through t2
         if (orientationV1 == 1 && orientationV2 == 1 && orientationV3 == -1) {
-            return triangle.neighbors[2];
+            return triangle->neighbors[2];
         }
         //  through v2
         if (orientationV1 == 1 && orientationV2 == 0 && orientationV3 == -1) {
-            return triangle.neighbors[2];
+            return triangle->neighbors[2];
         }
         
-
         // line goes through vertex
+        std::vector<int> orientations = { orientationV1, orientationV2, orientationV3 };
+        for (int v = 0; v < 3; v++) {
+            if (orientations[v] == 0) {
+                vIndex currV = triangle->vertices[v];
+                for (int i = 0; i < m_triangleMap[currV].size(); i++) {
+                    Triangle* currT = m_triangleMap[currV][i];
+                    if (currT != triangle && goesThroughTriangle(currV, end, currT)) {
+                        return currT;
+                    }
+                }
+                return nullptr; // la linea sale de la malla
+            }
+        }
+
+        return nullptr; // la linea sale de la malla
+        
         
     }
 

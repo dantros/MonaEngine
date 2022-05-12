@@ -19,17 +19,17 @@ namespace Mona{
     struct IndexedVertex {
         int index;
         Vertex vertex;
-        static bool compareX(IndexedVertex& v1, IndexedVertex& v2) { return v1.vertex[0] < v2.vertex[0]; }
-        static bool compareY(IndexedVertex& v1, IndexedVertex& v2) { return v1.vertex[1] < v2.vertex[1]; }
+        static bool compareX(const IndexedVertex& v1, const IndexedVertex& v2) { return v1.vertex[0] < v2.vertex[0]; }
+        static bool compareY(const IndexedVertex& v1, const IndexedVertex& v2) { return v1.vertex[1] < v2.vertex[1]; }
     };
 
-    int HeightMap::sharedVertices(Triangle t1, Triangle t2) {
-        int comp1 = t1.vertices[0] == t2.vertices[0] + t1.vertices[1] == t2.vertices[1] + t1.vertices[2] == t2.vertices[2];
-        int comp2 = t1.vertices[0] == t2.vertices[1] + t1.vertices[1] == t2.vertices[2] + t1.vertices[2] == t2.vertices[0];
+    int HeightMap::sharedVertices(Triangle* t1, Triangle* t2) {
+        int comp1 = t1->vertices[0] == t2->vertices[0] + t1->vertices[1] == t2->vertices[1] + t1->vertices[2] == t2->vertices[2];
+        int comp2 = t1->vertices[0] == t2->vertices[1] + t1->vertices[1] == t2->vertices[2] + t1->vertices[2] == t2->vertices[0];
         return comp1 + comp2;
     }
 
-    void HeightMap::init(std::vector<Vector3f>& vertices, std::vector<Vector3ui>& faces) {
+    void HeightMap::init(const std::vector<Vector3f>& vertices, const std::vector<Vector3ui>& faces) {
         m_id = lastId + 1;
         lastId = m_id;
         m_vertices.reserve(vertices.size());
@@ -67,7 +67,7 @@ namespace Mona{
                 if (funcUtils::findIndex(trI.neighbors, &trJ) != -1) {
                     continue; // ya esta trJ en los vecinos de trI
                 }
-                if (sharedVertices(trI, trJ) == 2) {
+                if (sharedVertices(&trI, &trJ) == 2) {
                     for (int k = 0; k < 3; k++) {
                         if (trI.neighbors[k] == nullptr) { // se asigna al primer lugar vacio
                             trI.neighbors[k] = &trJ;
@@ -110,7 +110,7 @@ namespace Mona{
         return m_minX <= x && x <= m_maxX && m_minY <= y && y <= m_maxY;
     }
 
-    int HeightMap::orientationTest(Vertex v1, Vertex v2, Vertex testV) { //arista de v1 a v2, +1 si el punto esta a arriba, -1 abajo,0 si es colineal, error(-2) si v1 y v2 iguales
+    int HeightMap::orientationTest(const Vertex& v1, const Vertex& v2, const Vertex& testV) { //arista de v1 a v2, +1 si el punto esta a arriba, -1 abajo,0 si es colineal, error(-2) si v1 y v2 iguales
         float x1 = v1[0];
         float y1 = v1[1];
         float x2 = v2[0];
@@ -143,10 +143,10 @@ namespace Mona{
         else { return 0; }
     }
 
-    bool HeightMap::triangleContainsPoint(Triangle t, Vertex p) {
-        int orientationV1V2 = orientationTest(m_vertices[t.vertices[0]], m_vertices[t.vertices[1]], p);
-        int orientationV2V3 = orientationTest(m_vertices[t.vertices[1]], m_vertices[t.vertices[2]], p);
-        int orientationV3V1 = orientationTest(m_vertices[t.vertices[2]], m_vertices[t.vertices[0]], p);
+    bool HeightMap::triangleContainsPoint(Triangle* t, const Vertex& p) {
+        int orientationV1V2 = orientationTest(m_vertices[t->vertices[0]], m_vertices[t->vertices[1]], p);
+        int orientationV2V3 = orientationTest(m_vertices[t->vertices[1]], m_vertices[t->vertices[2]], p);
+        int orientationV3V1 = orientationTest(m_vertices[t->vertices[2]], m_vertices[t->vertices[0]], p);
         if (orientationV1V2 + orientationV2V3 + orientationV3V1 == 3) { return true; } //case 1: point inside triangle
         else if ((orientationV1V2 + orientationV2V3 + orientationV3V1) == 2) {
             if (orientationV1V2 == 0 || orientationV2V3 == 0 || orientationV3V1 == 0) { return true; } //case 2: point on edge
@@ -170,7 +170,7 @@ namespace Mona{
             return;
         }
         else {
-            MONA_LOG_ERROR("Not a triangle or projection of vertical triangle");
+            MONA_LOG_ERROR("Not a triangle, or projection of vertical triangle");
         }
     }
 
@@ -296,6 +296,7 @@ namespace Mona{
         int endX = ansXY[0];
         int startY = ansXY[1];
         int endY = ansXY[1];
+        // Expand both subarrays gradually trying to find a coincidence in vertex indexes.
         while (startX > 0 || endX < m_vertices.size()-1 || startY > 0 || endY < m_vertices.size()-1) {
             if (startX > 0) { 
                 startX -= 1;
@@ -326,21 +327,80 @@ namespace Mona{
         return -1;
     }
 
+    float HeightMap::getInterpolatedHeight(Triangle* t, float x, float y) {
+        Vertex v1 = m_vertices[t->vertices[0]];
+        Vertex v2 = m_vertices[t->vertices[1]];
+        Vertex v3 = m_vertices[t->vertices[2]];
+        float minX = std::min(v1[0], v2[0], v3[0]);
+        float maxX = std::max(v1[0], v2[0], v3[0]);
+        MONA_ASSERT(minX <= x && x <= maxX, "Target point not inside found triangle.");
+        std::vector vertices = { v1, v2, v3 };
+        Vertex targetPoint = Vertex(x, y, 0);
+        //  check if points coincides with edge or vertex
+        for (int i = 0; i < 3; i++) {
+            if (orientationTest(vertices[i], vertices[(i + 1) % 3], targetPoint) == 0) {
+                Vector2f edgeStart = { vertices[i][0], vertices[i][1] };
+                Vector2f edgeEnd = { vertices[(i + 1) % 3][0], vertices[(i + 1) % 3][1] };
+                Vector2f target = { x, y };
+                float distTotal = (edgeEnd - edgeStart).norm();
+                float distTarget = (target - edgeStart).norm();
+                float frac = distTarget / distTotal;
+                return vertices[i][2] + (vertices[(i + 1) % 3][2] - vertices[i][2]) * frac;
+            }
+        }
+
+
+
+        // find edge to project point onto
+        std::pair<Vertex, Vertex> edge1;
+        int edge1VNum = -1;
+        for (int i = 0; i < 3; i++) {
+            if (vertices[i][0] <= x && x <= vertices[(i + 1) % 3][0]) {
+                edge1 = std::pair<Vertex, Vertex>(vertices[i], vertices[(i + 1) % 3]);
+                edge1VNum = i;
+            }
+        }
+        MONA_ASSERT(edge1VNum != -1, "Should have found an index");
+
+
+        Vertex topRight;
+
+
+        float xPercentage = (x - minX) / (maxX - minX);
+        if (xPercentage < 0) { xPercentage = 0; }
+
+        return 0;
+    }
+
     float HeightMap::getHeight(float x, float y) {
         if (!withinBoundaries(x, y)) {
             MONA_LOG_WARNING("Point is out of bounds");
             return std::numeric_limits<float>::min();
         }
         // encontrar vertice cercano
-        vIndex closest = findCloseVertex(x, y);
+        vIndex closeV = findCloseVertex(x, y);
+        if (closeV == -1) {
+            MONA_LOG_ERROR("Could not find close vertex");
+            return std::numeric_limits<float>::min();
+        }
 
         // encontrar triangulo contenedor
-
-
+        Triangle* foundT = nullptr;
+        Triangle* currentT = m_triangleMap[closeV][0];
+        Vertex targetPoint = Vertex(x, y, 0);
+        while (!triangleContainsPoint(currentT, targetPoint)) {
+            Triangle* nextT = nextTriangle(m_vertices[closeV], targetPoint, currentT);
+            if (nextT == nullptr) {
+                MONA_LOG_WARNING("Point is out of bounds");
+                return std::numeric_limits<float>::min();
+            }
+            currentT = nextT;
+        }
+        foundT = currentT;
         // interpolar altura
+        return getInterpolatedHeight(foundT, x, y);
 
-        MONA_LOG_WARNING("Point is out of bounds");
-        return std::numeric_limits<float>::min();
+
     }
 
 }

@@ -43,17 +43,18 @@ namespace Mona {
 			HeightMap() = default;
 			int getID() { return m_id; }
 			bool withinBoundaries(float x, float y);
-			int orientationTest(Vertex v1, Vertex v2, Vertex testV); // se ignora coordenada z
-			bool triangleContainsPoint(Triangle t, Vertex p); // se ignora coordenada z
-			int sharedVertices(Triangle t1, Triangle t2);
+			int orientationTest(const Vertex& v1, const Vertex& v2, const Vertex& testV); // se ignora coordenada z
+			bool triangleContainsPoint(Triangle* t, const Vertex& p); // se ignora coordenada z
+			int sharedVertices(Triangle* t1, Triangle* t2);
 			void orderVerticesCCW(std::vector<vIndex>* vertices);
 			void orderTriangle(Triangle* t);
-			void init(std::vector<Vector3f>& vertices, std::vector<Vector3ui>& faces);
+			void init(const std::vector<Vector3f>& vertices, const std::vector<Vector3ui>& faces);
 			bool isValid() { return m_isValid; }
 			vIndex findCloseVertex(float x, float y);
 			float getHeight(float x, float y);
 			bool goesThroughTriangle(vIndex start, Vertex end, Triangle* triangle);
 			Triangle* nextTriangle(Vertex start, Vertex end, Triangle* triangle);
+			float getInterpolatedHeight(Triangle* t, float x, float y);
 	};
 
 }

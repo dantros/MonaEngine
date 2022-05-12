@@ -151,7 +151,7 @@ namespace Mona{
         else if ((orientationV1V2 + orientationV2V3 + orientationV3V1) == 2) {
             if (orientationV1V2 == 0 || orientationV2V3 == 0 || orientationV3V1 == 0) { return true; } //case 2: point on edge
         }
-        else if (orientationV1V2 == orientationV2V3 == 0 or orientationV1V2 == orientationV3V1 == 0 or orientationV2V3 == orientationV3V1 == 0) {
+        else if ((orientationV1V2==0 && orientationV2V3==0) or (orientationV1V2==0 && orientationV3V1==0) or (orientationV2V3==0 && orientationV3V1==0)) {
             return true; //case 0: point is a vertex
         }
         return false;

@@ -207,14 +207,54 @@ namespace Mona {
 		}
 	}
 
-	Mesh::Mesh(const glm::vec3& cornerBottomLeft, const glm::vec3& cornerTopRight, 
-		int numVerticesWidth, int numVericesHeight, float (*heightFunc)(float, float), HeightMap* heightMap):
+	glm::vec3 surfaceColor(glm::vec3 baseColor, float modifier) {
+		return { baseColor[0] * modifier, baseColor[1] * modifier / 2, baseColor[2] };
+	}
+		
+	Mesh::Mesh(const glm::vec2& bottomLeft, const glm::vec2& topRight, int numInnerVerticesWidth, int numInnerVerticesHeight,
+		float (*heightFunc)(float, float), const glm::vec3& color, HeightMap* heightMap):
 		m_vertexArrayID(0),
 		m_vertexBufferID(0),
 		m_indexBufferID(0),
 		m_indexBufferCount(0)
 	{
+		// v = {pos_x, pos_y, pos_z, normal_x, normal_y, normal_z, color_x, color_y, color_z,}
+		std::vector<float> vertices;
+		std::vector<unsigned int> faces;
+		size_t numVertices = 0;
+		size_t numFaces = 0;
 
+		float stepX = (topRight[0] - bottomLeft[0]) / (numInnerVerticesWidth + 1);
+		float stepY = (topRight[1] - bottomLeft[1]) / (numInnerVerticesHeight + 1);
+		for (int i = 0; i < numInnerVerticesWidth + 2; i++) {
+			float x = bottomLeft[0] + stepX * i;
+			for (int j = 0; j < numInnerVerticesHeight + 2; j++) {
+				float y = bottomLeft[1] + stepY * j;
+				float z = heightFunc(x, y);
+				vertices.insert(vertices.end(), { x, y, z,  0, 0, 0 ,color[0], color[1], color[2]}); // falta rellenar las normales
+			}
+		}
+
+		// indexing func
+		auto index = [&](int i, int j)
+		{
+			return i * (numInnerVerticesHeight + 2) + j;
+		};
+    
+		// We generate quads for each cell connecting 4 neighbor vertices
+		for (int i = 0; i < numInnerVerticesWidth + 1; i++){
+			for (int j = 0; j < numInnerVerticesHeight + 1; j++) {
+				// Getting indices for all vertices in this quad
+				unsigned int isw = index(i, j);
+				unsigned int ise = index(i + 1, j);
+				unsigned int ine = index(i + 1, j + 1);
+				unsigned int inw = index(i, j + 1);
+
+				faces.insert(faces.end(), { isw, ise, ine, ine, inw, isw }); // falta rellenar las normales
+			}
+		}
+
+            
 	}
 
 	void Mesh::CreateCube() noexcept {

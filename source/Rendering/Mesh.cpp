@@ -231,6 +231,7 @@ namespace Mona {
 			for (int j = 0; j < numInnerVerticesHeight + 2; j++) {
 				float y = bottomLeft[1] + stepY * j;
 				float z = heightFunc(x, y);
+				numVertices += 1;
 				vertices.insert(vertices.end(), { x, y, z,  0, 0, 0 ,color[0], color[1], color[2]}); // falta rellenar las normales
 			}
 		}
@@ -250,11 +251,51 @@ namespace Mona {
 				unsigned int ine = index(i + 1, j + 1);
 				unsigned int inw = index(i, j + 1);
 
+				numFaces += 2;
 				faces.insert(faces.end(), { isw, ise, ine, ine, inw, isw }); // falta rellenar las normales
 			}
 		}
 
-            
+		//Comienza el paso de los datos en CPU a GPU usando OpenGL
+		m_indexBufferCount = static_cast<uint32_t>(faces.size());
+		glGenVertexArrays(1, &m_vertexArrayID);
+		glBindVertexArray(m_vertexArrayID);
+
+		glGenBuffers(1, &m_vertexBufferID);
+		glGenBuffers(1, &m_indexBufferID);
+		glBindBuffer(GL_ARRAY_BUFFER, m_vertexBufferID);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float)*vertices.size(), vertices.data(), GL_STATIC_DRAW);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexBufferID);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * faces.size(), faces.data(), GL_STATIC_DRAW);
+		//Un vertice de la malla se ve como
+		// v = {pos_x, pos_y, pos_z, normal_x, normal_y, normal_z, uv_u, uv_v, tangent_x, tangent_y, tangent_z}
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(3 * sizeof(float)));
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(6 * sizeof(float)));
+
+		if (heightMap != nullptr) {
+			std::vector<Vector3f> vertexPositions;
+			std::vector<Vector3ui> groupedFaces;
+			vertexPositions.reserve(numVertices);
+			groupedFaces.reserve(numFaces);
+			for (int i = 0; i < numInnerVerticesWidth + 1; i++) {
+				for (int j = 0; j < numInnerVerticesHeight + 1; j++) {
+					Vector3f v(vertices[index(i, j)], vertices[index(i, j + 1)], vertices[index(i, j + 2)]);
+					vertexPositions.push_back(v);
+				}
+			}
+			for (int i = 0; i < numFaces; i += 3) {
+				Vector3ui f = { faces[i], faces[i + 1], faces[i + 2] };
+				groupedFaces.push_back(f);
+			}
+			heightMap->init(vertexPositions, groupedFaces);
+
+				
+			}
+			
 	}
 
 	void Mesh::CreateCube() noexcept {

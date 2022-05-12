@@ -327,49 +327,52 @@ namespace Mona{
         return -1;
     }
 
+    Vertex interpolateVertex(Vertex v1, Vertex v2, float fraction) {
+        float deltaX = (v2[0] - v1[0]) * fraction;
+        float deltaY = (v2[1] - v1[1]) * fraction;
+        float deltaZ = (v2[2] - v1[2]) * fraction;
+
+        return Vertex(v1[0] + deltaX, v2[1] + deltaY, v2[2] + deltaZ);
+    }
+
     float HeightMap::getInterpolatedHeight(Triangle* t, float x, float y) {
         Vertex v1 = m_vertices[t->vertices[0]];
         Vertex v2 = m_vertices[t->vertices[1]];
         Vertex v3 = m_vertices[t->vertices[2]];
-        float minX = std::min(v1[0], v2[0], v3[0]);
-        float maxX = std::max(v1[0], v2[0], v3[0]);
-        MONA_ASSERT(minX <= x && x <= maxX, "Target point not inside found triangle.");
+        float minX = std::min(std::min(v1[0], v2[0]), v3[0]);
+        float maxX = std::max(std::max(v1[0], v2[0]), v3[0]);
+        if (minX <= x && x <= maxX) {
+            MONA_LOG_ERROR("Target point not inside found triangle.");
+            return std::numeric_limits<float>::min();
+        }
         std::vector vertices = { v1, v2, v3 };
         Vertex targetPoint = Vertex(x, y, 0);
         //  check if points coincides with edge or vertex
         for (int i = 0; i < 3; i++) {
             if (orientationTest(vertices[i], vertices[(i + 1) % 3], targetPoint) == 0) {
-                Vector2f edgeStart = { vertices[i][0], vertices[i][1] };
-                Vector2f edgeEnd = { vertices[(i + 1) % 3][0], vertices[(i + 1) % 3][1] };
-                Vector2f target = { x, y };
-                float distTotal = (edgeEnd - edgeStart).norm();
-                float distTarget = (target - edgeStart).norm();
-                float frac = distTarget / distTotal;
-                return vertices[i][2] + (vertices[(i + 1) % 3][2] - vertices[i][2]) * frac;
+                float frac = (x - vertices[i][0]) / (vertices[(i + 1) % 3][0] - vertices[i][0]);
+                return interpolateVertex(vertices[i], vertices[(i + 1) % 3], frac)[2];
             }
         }
-
-
-
-        // find edge to project point onto
-        std::pair<Vertex, Vertex> edge1;
-        int edge1VNum = -1;
+        // find edges to project point onto
+        std::vector<std::pair<Vertex, Vertex>> edges;
         for (int i = 0; i < 3; i++) {
             if (vertices[i][0] <= x && x <= vertices[(i + 1) % 3][0]) {
-                edge1 = std::pair<Vertex, Vertex>(vertices[i], vertices[(i + 1) % 3]);
-                edge1VNum = i;
+                edges.push_back(std::pair<Vertex, Vertex>(vertices[i], vertices[(i + 1) % 3]));
             }
         }
-        MONA_ASSERT(edge1VNum != -1, "Should have found an index");
+        if (edges.size() != 2) {
+            MONA_LOG_ERROR("Should have found two edges");
+            return std::numeric_limits<float>::min();
+        }
+        
+        float frac1 = (x - edges[0].first[0]) / (edges[0].second[0] - edges[0].first[0]);
+        float frac2 = (x - edges[1].first[0]) / (edges[1].second[0] - edges[1].first[0]);
+        Vertex interpolated1 = interpolateVertex(edges[0].first, edges[0].second, frac1);
+        Vertex interpolated2 = interpolateVertex(edges[1].first, edges[1].second, frac2);
 
-
-        Vertex topRight;
-
-
-        float xPercentage = (x - minX) / (maxX - minX);
-        if (xPercentage < 0) { xPercentage = 0; }
-
-        return 0;
+        float fracFinal = (y - interpolated1[1]) / (interpolated2[1] - interpolated1[1]);
+        return interpolateVertex(interpolated1, interpolated2, fracFinal)[2];
     }
 
     float HeightMap::getHeight(float x, float y) {

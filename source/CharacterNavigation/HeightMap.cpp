@@ -291,15 +291,39 @@ namespace Mona{
             }
             ansXY.push_back(foundIndex);
         }
+        if (m_orderedX[ansXY[0]] == m_orderedY[ansXY[1]]) { return m_orderedX[ansXY[0]]; }
+        int startX = ansXY[0];
+        int endX = ansXY[0];
+        int startY = ansXY[1];
+        int endY = ansXY[1];
+        while (startX > 0 || endX < m_vertices.size()-1 || startY > 0 || endY < m_vertices.size()-1) {
+            if (startX > 0) { 
+                startX -= 1;
+                if (funcUtils::findIndexSubArray(m_orderedY, m_orderedX[startX], startY, endY) != -1) { 
+                    return m_orderedX[startX]; 
+                }
+            }
+            if (endX < m_vertices.size()-1) { 
+                endX += 1;
+                if (funcUtils::findIndexSubArray(m_orderedY, m_orderedX[endX], startY, endY) != -1) {
+                    return m_orderedX[startX];
+                }
+            }
+            if (startY > 0) { 
+                startY -= 1;
+                if (funcUtils::findIndexSubArray(m_orderedX, m_orderedY[startY], startX, endX) != -1) {
+                    return m_orderedY[startY];
+                }
+            }
+            if (endY < m_vertices.size()-1) { 
+                endY += 1;
+                if (funcUtils::findIndexSubArray(m_orderedX, m_orderedY[endY], startX, endX) != -1) {
+                    return m_orderedY[startY];
+                }
+            }        
+        }
 
-        int rightX = 0;
-        int leftX = 0;
-        int rightY = 0;
-        int leftY = 0;
-        float minDist = (m_vertices[ansXY[0]] - m_vertices[ansXY[1]]).squaredNorm();
-
-
-        return 0;
+        return -1;
     }
 
     float HeightMap::getHeight(float x, float y) {

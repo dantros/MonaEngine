@@ -14,14 +14,26 @@ namespace Mona {
             int result;
             // Find given element in vector
             auto it = std::find(vecOfElements.begin(), vecOfElements.end(), element);
-            if (it != vecOfElements.end())
-            {
-                result = std::distance(vecOfElements.begin(), it);
-            }
-            else
-            {
-                result = -1;
-            }
+            if (it != vecOfElements.end()) { result = std::distance(vecOfElements.begin(), it); }
+            else { result = -1; }
+            return result;
+        }
+
+        template < typename T>
+        inline int findIndexSubArray(const std::vector<T>& vecOfElements, const T& element, int indexStart, int indexEnd)
+        {
+            if (indexStart < 0 || indexStart >= vecOfElements.size() || indexEnd < 0 || indexEnd >= vecOfElements.size()) {
+                MONA_LOG_ERROR("Index out of bounds");
+                return -1;
+            };
+            if (indexEnd < indexStart) { return -1; }
+            int result;
+            // Find given element in vector
+            auto start = vecOfElements.begin() + indexStart;
+            auto end = vecOfElements.begin() + indexEnd + 1;
+            auto it = std::find(start, end, element);
+            if (it != end) { result = std::distance(vecOfElements.begin(), it); }
+            else { result = -1; }
             return result;
         }
 

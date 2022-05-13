@@ -2,6 +2,7 @@
 #include <glm/glm.hpp>
 #include <numbers>
 #include <iostream>
+#include <chrono>
 
 namespace Mona {
 	void generateTerrain(const glm::vec2& bottomLeft, const glm::vec2& topRight, int numInnerVerticesWidth, int numInnerVerticesHeight,
@@ -82,9 +83,14 @@ int main()
 		return float(1.0);
 	};
 	Mona::HeightMap hm;
-	Mona::generateTerrain({ 0,0 }, { 10,10 }, 10, 20, heightFun, &hm);
+	Mona::generateTerrain({ 0,0 }, { 10,10 }, 200, 200, heightFun, &hm);
 
-	std::cout << "altura: " << hm.getHeight(5, 5);
+	auto start = std::chrono::high_resolution_clock::now();
+	std::cout << "altura: " << hm.getHeight(5, 5) << std::endl;
+	auto stop = std::chrono::high_resolution_clock::now();
+	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+
+	std::cout << "time diff calcular altura: " << duration << std::endl;
 	
 	return 0;
 

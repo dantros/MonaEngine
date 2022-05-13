@@ -19,7 +19,7 @@ namespace Mona {
 		std::shared_ptr<Mesh> LoadMesh(Mesh::PrimitiveType type) noexcept;
 		std::shared_ptr<Mesh> LoadMesh(const std::filesystem::path& filePath, bool flipUVs = false, HeightMap* heightMap=nullptr) noexcept;
 		std::shared_ptr<Mesh> GenerateTerrain(const glm::vec2& bottomLeft, const glm::vec2& topRight, int numInnerVerticesWidth, int numInnerVerticesHeight,
-			float (*heightFunc)(float, float), const glm::vec3& color, HeightMap* heightMap=nullptr) noexcept;
+			float (*heightFunc)(float, float), HeightMap* heightMap=nullptr) noexcept;
 		std::shared_ptr<SkinnedMesh> LoadSkinnedMesh(std::shared_ptr<Skeleton> skeleton,
 			const std::filesystem::path& filePath,
 			bool flipUVs = false) noexcept;

@@ -23,11 +23,11 @@ namespace Mona {
 	}
 
 	std::shared_ptr<Mesh> MeshManager::GenerateTerrain(const glm::vec2& bottomLeft, const glm::vec2& topRight,
-		int numInnerVerticesWidth, int numInnerVerticesHeight, float (*heightFunc)(float, float), const glm::vec3& color, HeightMap* heightMap) noexcept {
+		int numInnerVerticesWidth, int numInnerVerticesHeight, float (*heightFunc)(float, float), HeightMap* heightMap) noexcept {
 		std::srand(std::time(nullptr)); // use current time as seed for random generator
 		int random_variable = std::rand();
 		const std::string& id = std::to_string(random_variable);
-		Mesh* meshPtr = new Mesh(bottomLeft, topRight, numInnerVerticesWidth, numInnerVerticesHeight, heightFunc, color, heightMap);
+		Mesh* meshPtr = new Mesh(bottomLeft, topRight, numInnerVerticesWidth, numInnerVerticesHeight, heightFunc, heightMap);
 		std::shared_ptr<Mesh> sharedPtr = std::shared_ptr<Mesh>(meshPtr);
 		//Antes de retornar la malla recien cargada, insertamos esta al mapa para que cargas futuras sean mucho mas rapidas.
 		m_meshMap.insert({ id, sharedPtr });

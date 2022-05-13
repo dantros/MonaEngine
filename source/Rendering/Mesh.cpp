@@ -10,6 +10,7 @@
 #include <vector>
 #include <stack>
 #include <glad/glad.h>
+#include <iostream>
 namespace Mona {
 
 	struct MeshVertex {
@@ -212,13 +213,14 @@ namespace Mona {
 	}
 		
 	Mesh::Mesh(const glm::vec2& bottomLeft, const glm::vec2& topRight, int numInnerVerticesWidth, int numInnerVerticesHeight,
-		float (*heightFunc)(float, float), const glm::vec3& color, HeightMap* heightMap):
+		float (*heightFunc)(float, float), HeightMap* heightMap):
 		m_vertexArrayID(0),
 		m_vertexBufferID(0),
 		m_indexBufferID(0),
 		m_indexBufferCount(0)
 	{
-		// v = {pos_x, pos_y, pos_z, normal_x, normal_y, normal_z, color_x, color_y, color_z,}
+		//Un vertice de la malla se ve como
+		// v = {pos_x, pos_y, pos_z, normal_x, normal_y, normal_z, uv_u, uv_v, tangent_x, tangent_y, tangent_z}
 		std::vector<float> vertices;
 		std::vector<unsigned int> faces;
 		size_t numVertices = 0;
@@ -232,7 +234,7 @@ namespace Mona {
 				float y = bottomLeft[1] + stepY * j;
 				float z = heightFunc(x, y);
 				numVertices += 1;
-				vertices.insert(vertices.end(), { x, y, z,  0, 0, 0 ,color[0], color[1], color[2]}); // falta rellenar las normales
+				vertices.insert(vertices.end(), { x, y, z, 0, 0, 0, 0, 0, 0, 0, 0 } ); // falta rellenar valores
 			}
 		}
 
@@ -255,6 +257,59 @@ namespace Mona {
 				faces.insert(faces.end(), { isw, ise, ine, ine, inw, isw }); // falta rellenar las normales
 			}
 		}
+		std::vector<Vector3f> vertexPositions;
+		std::vector<Vector3ui> groupedFaces;
+		std::unordered_map<int, std::vector<Vector3f>> oneFacePerVertex;
+		vertexPositions.reserve(numVertices);
+		oneFacePerVertex.reserve(numVertices);
+		groupedFaces.reserve(faces.size());
+		for (int i = 0; i < vertices.size(); i += 11) {
+			Vector3f v(vertices[i], vertices[i + 1], vertices[i + 2]);
+			vertexPositions.push_back(v);
+		}
+		for (int i = 0; i < faces.size(); i += 3) {
+			Vector3ui f = { faces[i], faces[i + 1], faces[i + 2] };
+			groupedFaces.push_back(f);
+			// Guardamos una cara por cada vertice para extraer normales y tangentes
+			if (oneFacePerVertex[faces[i]].empty()) {
+				oneFacePerVertex[faces[i]].push_back(vertexPositions[faces[i]]);
+				oneFacePerVertex[faces[i]].push_back(vertexPositions[faces[i+1]]);
+				oneFacePerVertex[faces[i]].push_back(vertexPositions[faces[i+2]]);
+			}
+			if (oneFacePerVertex[faces[i+1]].empty()) {
+				oneFacePerVertex[faces[i+1]].push_back(vertexPositions[faces[i]]);
+				oneFacePerVertex[faces[i+1]].push_back(vertexPositions[faces[i + 1]]);
+				oneFacePerVertex[faces[i+1]].push_back(vertexPositions[faces[i + 2]]);
+			}
+			if (oneFacePerVertex[faces[i+2]].empty()) {
+				oneFacePerVertex[faces[i+2]].push_back(vertexPositions[faces[i]]);
+				oneFacePerVertex[faces[i+2]].push_back(vertexPositions[faces[i + 1]]);
+				oneFacePerVertex[faces[i+2]].push_back(vertexPositions[faces[i + 2]]);
+			}
+		}
+
+		// Rellenar valores faltantes en vertices
+		for (int i = 0; i < vertices.size(); i += 11) {
+			int vertexIndex = i / 11;
+			Vector3f v1 = oneFacePerVertex[vertexIndex][0];
+			Vector3f v2 = oneFacePerVertex[vertexIndex][1];
+			Vector3f v3 = oneFacePerVertex[vertexIndex][2];
+			Vector3f normal = (v2 - v1).cross(v3 - v1).normalized();
+			vertices[i + 3] = normal[0];
+			vertices[i + 4] = normal[1];
+			vertices[i + 5] = normal[2];
+			// uv
+			vertices[i + 6] = 0.0f;
+			vertices[i + 7] = 0.0f;
+			Vector3f tangent = (v2 - v1).normalized();
+			vertices[i + 8] = tangent[0];
+			vertices[i + 9] = tangent[1];
+			vertices[i + 10] = tangent[2];
+		}
+
+		if (heightMap != nullptr) {
+			heightMap->init(vertexPositions, groupedFaces);
+		}
 
 		//Comienza el paso de los datos en CPU a GPU usando OpenGL
 		m_indexBufferCount = static_cast<uint32_t>(faces.size());
@@ -270,29 +325,15 @@ namespace Mona {
 		//Un vertice de la malla se ve como
 		// v = {pos_x, pos_y, pos_z, normal_x, normal_y, normal_z, uv_u, uv_v, tangent_x, tangent_y, tangent_z}
 		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*)0);
 		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(3 * sizeof(float)));
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*)(3 * sizeof(float)));
 		glEnableVertexAttribArray(2);
-		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(6 * sizeof(float)));
-
-		if (heightMap != nullptr) {
-			std::vector<Vector3f> vertexPositions;
-			std::vector<Vector3ui> groupedFaces;
-			vertexPositions.reserve(numVertices);
-			groupedFaces.reserve(faces.size());
-			for (int i = 0; i < vertices.size(); i += 9) {
-				Vector3f v(vertices[i], vertices[i + 1], vertices[i + 2]);
-				vertexPositions.push_back(v);
-			}
-			for (int i = 0; i < faces.size(); i += 3) {
-				Vector3ui f = { faces[i], faces[i + 1], faces[i + 2] };
-				groupedFaces.push_back(f);
-			}
-			heightMap->init(vertexPositions, groupedFaces);
-
-				
-			}
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*)(6 * sizeof(float)));
+		glEnableVertexAttribArray(3);
+		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*)(8 * sizeof(float)));
+		glEnableVertexAttribArray(4);
+		glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*)(11 * sizeof(float)));
 			
 	}
 

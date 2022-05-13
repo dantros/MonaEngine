@@ -3,6 +3,7 @@
 #include <algorithm>
 #include "../Core/Log.hpp"
 #include "../Utilities/FuncUtils.hpp"
+#include <iostream>
 
 namespace Mona{
 
@@ -283,25 +284,27 @@ namespace Mona{
     }
 
     vIndex HeightMap::findCloseVertex(float x, float y) {
-        std::vector<vIndex> ansXY;
+        std::vector<int> ansXY;
         std::vector<std::vector<vIndex>*> arrays = { &m_orderedX, &m_orderedY };
+        std::vector<float> values = { x, y };
 
         for (int i = 0; i < 2; i++) {
             int subArraySize = m_vertices.size();
             int foundIndex = m_vertices.size() - 1; // parte al final del subarreglo
             while (subArraySize > 1) {
-                bool balance = subArraySize % 2 != 0;
+                bool odd = (subArraySize % 2) != 0;
                 subArraySize = subArraySize / 2;
 
-                foundIndex = foundIndex - subArraySize + !balance;
-                if (x < m_vertices[(*arrays[i])[foundIndex]][0]) {
+                foundIndex = foundIndex - subArraySize + !odd;
+                if (values[i] < m_vertices[(*arrays[i])[foundIndex]][i]) {
                     foundIndex -= 1;
                 }
                 else {
-                    foundIndex += subArraySize;
-                    subArraySize += balance;
+                    foundIndex += subArraySize - !odd;
+                    subArraySize += odd;
                 }
             }
+
             ansXY.push_back(foundIndex);
         }
         if (m_orderedX[ansXY[0]] == m_orderedY[ansXY[1]]) { return m_orderedX[ansXY[0]]; }
@@ -317,22 +320,22 @@ namespace Mona{
                     return m_orderedX[startX]; 
                 }
             }
-            if (endX < m_vertices.size()-1) { 
-                endX += 1;
-                if (funcUtils::findIndexSubArray(m_orderedY, m_orderedX[endX], startY, endY) != -1) {
-                    return m_orderedX[startX];
-                }
-            }
-            if (startY > 0) { 
+            if (startY > 0) {
                 startY -= 1;
                 if (funcUtils::findIndexSubArray(m_orderedX, m_orderedY[startY], startX, endX) != -1) {
                     return m_orderedY[startY];
                 }
             }
+            if (endX < m_vertices.size()-1) { 
+                endX += 1;
+                if (funcUtils::findIndexSubArray(m_orderedY, m_orderedX[endX], startY, endY) != -1) {
+                    return m_orderedX[endX];
+                }
+            }
             if (endY < m_vertices.size()-1) { 
                 endY += 1;
                 if (funcUtils::findIndexSubArray(m_orderedX, m_orderedY[endY], startX, endX) != -1) {
-                    return m_orderedY[startY];
+                    return m_orderedY[endY];
                 }
             }        
         }
@@ -399,6 +402,25 @@ namespace Mona{
             MONA_LOG_ERROR("Could not find close vertex");
             return std::numeric_limits<float>::min();
         }
+
+        Vector2f v2 = { m_vertices[closeV][0], m_vertices[closeV][1] };
+        Vector2f t = { x, y };
+        std::cout << "found closeV: " << closeV << std::endl;
+        std::cout << "distance closeV: " << (t-v2).norm() << std::endl;
+        float minDistance = std::numeric_limits<float>::max();
+        vIndex realCloseV;
+        for (int i = 0; i < m_vertices.size(); i++) {
+            Vector2f v2 = { m_vertices[i][0], m_vertices[i][1] };
+            Vector2f t = { x, y };
+
+            float norm = (v2 - t).norm();
+            if (norm < minDistance) {
+                minDistance = norm;
+                realCloseV = i;
+            }
+        }
+        std::cout << "real closeV: " << realCloseV << std::endl;
+        std::cout << "distance real closeV: " << minDistance << std::endl;
 
         // encontrar triangulo contenedor
         Triangle* foundT = nullptr;

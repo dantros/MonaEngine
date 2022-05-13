@@ -1,7 +1,7 @@
 #include "CharacterNavigation/HeightMap.hpp"
 #include <glm/glm.hpp>
 #include <numbers>
-
+#include <iostream>
 
 namespace Mona {
 	void generateTerrain(const glm::vec2& bottomLeft, const glm::vec2& topRight, int numInnerVerticesWidth, int numInnerVerticesHeight,
@@ -76,12 +76,15 @@ float gaussian(float x, float y, float s, float sigma, glm::vec2 mu) {
 
 int main()
 {
+
 	auto heightFun = [](float x, float y) {
 		return (gaussian(x, y, 30, 5, { -10, 0 }) + gaussian(x, y, 50, 3, { 10, 0 }));
 	};
 	Mona::HeightMap hm;
 	Mona::generateTerrain({ 0,0 }, { 10,10 }, 10, 20, heightFun, &hm);
 
+	std::cout << "altura: " << hm.getHeight(5, 5);
+	
 	return 0;
 
 }

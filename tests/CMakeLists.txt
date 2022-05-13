@@ -9,3 +9,5 @@ endfunction(Add_Test)
 
 Add_Test(test_fbx test_fbx.cpp)
 Add_Test(test test.cpp)
+Add_Test(test_terrain test_terrain.cpp)
+Add_Test(test_terrainRender test_terrainRender.cpp)

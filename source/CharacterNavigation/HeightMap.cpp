@@ -18,15 +18,21 @@ namespace Mona{
 
     struct IndexedVertex {
         int index;
-        Vertex vertex;
-        static bool compareX(const IndexedVertex& v1, const IndexedVertex& v2) { return v1.vertex[0] < v2.vertex[0]; }
-        static bool compareY(const IndexedVertex& v1, const IndexedVertex& v2) { return v1.vertex[1] < v2.vertex[1]; }
+        Vertex* vertex;
+        static bool compareX(const IndexedVertex& v1, const IndexedVertex& v2) { return (*v1.vertex)[0] < (*v2.vertex)[0]; }
+        static bool compareY(const IndexedVertex& v1, const IndexedVertex& v2) { return (*v1.vertex)[1] < (*v2.vertex)[1]; }
     };
 
     int HeightMap::sharedVertices(Triangle* t1, Triangle* t2) {
-        int comp1 = t1->vertices[0] == t2->vertices[0] + t1->vertices[1] == t2->vertices[1] + t1->vertices[2] == t2->vertices[2];
-        int comp2 = t1->vertices[0] == t2->vertices[1] + t1->vertices[1] == t2->vertices[2] + t1->vertices[2] == t2->vertices[0];
-        return comp1 + comp2;
+        int shared = 0;
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (t1->vertices[i] == t2->vertices[j]) {
+                    shared += 1;
+                }
+            }
+        }
+        return shared;
     }
 
     void HeightMap::init(const std::vector<Vector3f>& vertices, const std::vector<Vector3ui>& faces) {
@@ -58,25 +64,25 @@ namespace Mona{
 
         // vincular triangulos con sus vecinos
         for (int i = 0; i < m_triangles.size(); i++) {
-            Triangle trI = m_triangles[i];
+            Triangle* trI = &m_triangles[i];
             for (int j = i+1; j < m_triangles.size(); j++){ // se comienza desde i+1 porque los anteriores ya fueron vinculados (vinculos bilaterales)
-                Triangle trJ = m_triangles[j];
-                if (trI.neighbors[0] != nullptr && trI.neighbors[1] != nullptr && trI.neighbors[2] != nullptr) {
+                Triangle* trJ = &m_triangles[j];
+                if (trI->neighbors[0] != nullptr && trI->neighbors[1] != nullptr && trI->neighbors[2] != nullptr) {
                     break; // todos los vecinos encontrados
                 }
-                if (funcUtils::findIndex(trI.neighbors, &trJ) != -1) {
+                if (funcUtils::findIndex(trI->neighbors, trJ) != -1) {
                     continue; // ya esta trJ en los vecinos de trI
                 }
-                if (sharedVertices(&trI, &trJ) == 2) {
+                if (sharedVertices(trI, trJ) == 2) {
                     for (int k = 0; k < 3; k++) {
-                        if (trI.neighbors[k] == nullptr) { // se asigna al primer lugar vacio
-                            trI.neighbors[k] = &trJ;
+                        if (trI->neighbors[k] == nullptr) { // se asigna al primer lugar vacio
+                            trI->neighbors[k] = trJ;
                             break;
                         }
                     }
                     for (int k = 0; k < 3; k++) {
-                        if (trJ.neighbors[k] == nullptr) { // se asigna al primer lugar vacio
-                            trJ.neighbors[k] = &trI;
+                        if (trJ->neighbors[k] == nullptr) { // se asigna al primer lugar vacio
+                            trJ->neighbors[k] = trI;
                             break;
                         }
                     }
@@ -91,6 +97,9 @@ namespace Mona{
 
         std::vector<IndexedVertex> indexedArr;
         indexedArr.reserve(vertices.size());
+        for (int i = 0; i < m_vertices.size(); i++) {
+            indexedArr.push_back(IndexedVertex(i, &m_vertices[i]));
+        }
         m_orderedX.reserve(vertices.size());
         m_orderedY.reserve(vertices.size());
         // generamos arreglos que ordenan los vertices segun su valor en X y en Y
@@ -102,6 +111,10 @@ namespace Mona{
         for (int i = 0; i < indexedArr.size(); i++) {
             m_orderedY.push_back(indexedArr[i].index);
         }
+        m_minX = m_vertices[m_orderedX[0]][0];
+        m_minY = m_vertices[m_orderedY[0]][1];
+        m_maxX = m_vertices[m_orderedX[m_orderedX.size()-1]][0];
+        m_maxY = m_vertices[m_orderedY[m_orderedY.size()-1]][1];
         m_isValid = true;
 
     }

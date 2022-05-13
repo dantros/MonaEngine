@@ -18,7 +18,7 @@ namespace Mona {
 
 	struct Triangle {
 		std::vector<vIndex> vertices;
-		std::vector<Triangle*> neighbors;
+		std::vector<Triangle*> neighbors = { nullptr, nullptr, nullptr };
 		friend bool operator!= (const Triangle& t1, const Triangle& t2);
 		friend bool operator== (const Triangle& t1, const Triangle& t2);
 	};

@@ -160,13 +160,13 @@ namespace Mona {
 			std::vector<Vector3f> vertexPositions;
 			std::vector<Vector3ui> groupedFaces;
 			vertexPositions.reserve(numVertices);
-			groupedFaces.reserve(numFaces);
+			groupedFaces.reserve(faces.size());
 			for (int i = 0; i < numVertices; i++) {
 				glm::vec3 currPos = vertices[i].position;
 				Vector3f v = Vector3f(currPos[0], currPos[1], currPos[2]);
 				vertexPositions.push_back(v);
 			}
-			for (int i = 0; i < numFaces; i+=3) {
+			for (int i = 0; i < faces.size(); i+=3) {
 				Vector3ui f = { faces[i], faces[i + 1], faces[i + 2] };
 				groupedFaces.push_back(f);
 			}
@@ -264,9 +264,9 @@ namespace Mona {
 		glGenBuffers(1, &m_vertexBufferID);
 		glGenBuffers(1, &m_indexBufferID);
 		glBindBuffer(GL_ARRAY_BUFFER, m_vertexBufferID);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float)*vertices.size(), vertices.data(), GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float)* static_cast<unsigned int>(vertices.size()), vertices.data(), GL_STATIC_DRAW);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexBufferID);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * faces.size(), faces.data(), GL_STATIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * static_cast<unsigned int>(faces.size()), faces.data(), GL_STATIC_DRAW);
 		//Un vertice de la malla se ve como
 		// v = {pos_x, pos_y, pos_z, normal_x, normal_y, normal_z, uv_u, uv_v, tangent_x, tangent_y, tangent_z}
 		glEnableVertexAttribArray(0);
@@ -280,14 +280,14 @@ namespace Mona {
 			std::vector<Vector3f> vertexPositions;
 			std::vector<Vector3ui> groupedFaces;
 			vertexPositions.reserve(numVertices);
-			groupedFaces.reserve(numFaces);
-			for (int i = 0; i < numInnerVerticesWidth + 1; i++) {
-				for (int j = 0; j < numInnerVerticesHeight + 1; j++) {
+			groupedFaces.reserve(faces.size());
+			for (int i = 0; i < numInnerVerticesWidth + 2; i++) {
+				for (int j = 0; j < numInnerVerticesHeight + 2; j++) {
 					Vector3f v(vertices[index(i, j)], vertices[index(i, j + 1)], vertices[index(i, j + 2)]);
 					vertexPositions.push_back(v);
 				}
 			}
-			for (int i = 0; i < numFaces; i += 3) {
+			for (int i = 0; i < faces.size(); i += 3) {
 				Vector3ui f = { faces[i], faces[i + 1], faces[i + 2] };
 				groupedFaces.push_back(f);
 			}

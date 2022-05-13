@@ -4,6 +4,7 @@
 #include "../Core/Log.hpp"
 #include "../Utilities/FuncUtils.hpp"
 #include <iostream>
+#include <intrin.h>
 
 namespace Mona{
 
@@ -58,9 +59,9 @@ namespace Mona{
             t.vertices = { ind1, ind2, ind3 };
             m_triangles.push_back(t);
 
-            m_triangleMap[ind1].push_back(&t);
-            m_triangleMap[ind2].push_back(&t);
-            m_triangleMap[ind3].push_back(&t);
+            m_triangleMap[ind1].push_back(&m_triangles[i]);
+            m_triangleMap[ind2].push_back(&m_triangles[i]);
+            m_triangleMap[ind3].push_back(&m_triangles[i]);
         }
 
         // vincular triangulos con sus vecinos
@@ -185,6 +186,8 @@ namespace Mona{
         }
         else {
             MONA_LOG_ERROR("Not a triangle, or projection of vertical triangle");
+            __debugbreak();
+
         }
     }
 
@@ -357,7 +360,7 @@ namespace Mona{
         Vertex v3 = m_vertices[t->vertices[2]];
         float minX = std::min(std::min(v1[0], v2[0]), v3[0]);
         float maxX = std::max(std::max(v1[0], v2[0]), v3[0]);
-        if (minX <= x && x <= maxX) {
+        if (x <minX || maxX < x) {
             MONA_LOG_ERROR("Target point not inside found triangle.");
             return std::numeric_limits<float>::min();
         }

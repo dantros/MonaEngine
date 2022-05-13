@@ -82,7 +82,7 @@ int main()
 		return float(1.0);
 	};
 	Mona::HeightMap hm;
-	Mona::generateTerrain({ 0,0 }, { 10,10 }, 10, 20, heightFun1, &hm);
+	Mona::generateTerrain({ 0,0 }, { 10,10 }, 10, 20, heightFun, &hm);
 
 	std::cout << "altura: " << hm.getHeight(5, 5);
 	

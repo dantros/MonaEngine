@@ -403,25 +403,6 @@ namespace Mona{
             return std::numeric_limits<float>::min();
         }
 
-        Vector2f v2 = { m_vertices[closeV][0], m_vertices[closeV][1] };
-        Vector2f t = { x, y };
-        std::cout << "found closeV: " << closeV << std::endl;
-        std::cout << "distance closeV: " << (t-v2).norm() << std::endl;
-        float minDistance = std::numeric_limits<float>::max();
-        vIndex realCloseV;
-        for (int i = 0; i < m_vertices.size(); i++) {
-            Vector2f v2 = { m_vertices[i][0], m_vertices[i][1] };
-            Vector2f t = { x, y };
-
-            float norm = (v2 - t).norm();
-            if (norm < minDistance) {
-                minDistance = norm;
-                realCloseV = i;
-            }
-        }
-        std::cout << "real closeV: " << realCloseV << std::endl;
-        std::cout << "distance real closeV: " << minDistance << std::endl;
-
         // encontrar triangulo contenedor
         Triangle* foundT = nullptr;
         Triangle* currentT = m_triangleMap[closeV][0];

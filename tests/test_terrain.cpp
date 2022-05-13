@@ -51,11 +51,9 @@ namespace Mona {
 			std::vector<Vector3ui> groupedFaces;
 			vertexPositions.reserve(numVertices);
 			groupedFaces.reserve(numFaces);
-			for (int i = 0; i < numInnerVerticesWidth + 2; i++) {
-				for (int j = 0; j < numInnerVerticesHeight + 2; j++) {
-					Vector3f v(vertices[index(i, j)], vertices[index(i, j + 1)], vertices[index(i, j + 2)]);
-					vertexPositions.push_back(v);
-				}
+			for (int i = 0; i < vertices.size(); i+=3) {
+				Vector3f v(vertices[i], vertices[i + 1], vertices[i + 2]);
+				vertexPositions.push_back(v);
 			}
 			for (int i = 0; i < faces.size(); i += 3) {
 				Vector3ui f = { faces[i], faces[i + 1], faces[i + 2] };
@@ -80,8 +78,11 @@ int main()
 	auto heightFun = [](float x, float y) {
 		return (gaussian(x, y, 30, 5, { -10, 0 }) + gaussian(x, y, 50, 3, { 10, 0 }));
 	};
+	auto heightFun1 = [](float x, float y) {
+		return float(1.0);
+	};
 	Mona::HeightMap hm;
-	Mona::generateTerrain({ 0,0 }, { 10,10 }, 10, 20, heightFun, &hm);
+	Mona::generateTerrain({ 0,0 }, { 10,10 }, 10, 20, heightFun1, &hm);
 
 	std::cout << "altura: " << hm.getHeight(5, 5);
 	

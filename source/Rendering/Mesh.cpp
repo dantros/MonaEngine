@@ -281,11 +281,9 @@ namespace Mona {
 			std::vector<Vector3ui> groupedFaces;
 			vertexPositions.reserve(numVertices);
 			groupedFaces.reserve(faces.size());
-			for (int i = 0; i < numInnerVerticesWidth + 2; i++) {
-				for (int j = 0; j < numInnerVerticesHeight + 2; j++) {
-					Vector3f v(vertices[index(i, j)], vertices[index(i, j + 1)], vertices[index(i, j + 2)]);
-					vertexPositions.push_back(v);
-				}
+			for (int i = 0; i < vertices.size(); i += 9) {
+				Vector3f v(vertices[i], vertices[i + 1], vertices[i + 2]);
+				vertexPositions.push_back(v);
 			}
 			for (int i = 0; i < faces.size(); i += 3) {
 				Vector3ui f = { faces[i], faces[i + 1], faces[i + 2] };

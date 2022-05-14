@@ -85,8 +85,8 @@ namespace Mona{
                     if (trI->neighbors[0] != nullptr && trI->neighbors[1] != nullptr && trI->neighbors[2] != nullptr) {
                         break; // todos los vecinos encontrados
                     }
-                    if (funcUtils::findIndex(trI->neighbors, trJ) != -1) {
-                        continue; // ya esta trJ en los vecinos de trI
+                    if (funcUtils::findIndex(trI->neighbors, trJ) != -1) { // los vecinos de trI ya fueron asignados
+                        break; 
                     }
                     if (sharedVertices(trI, trJ) == 2) {
                         for (int k = 0; k < 3; k++) {
@@ -445,6 +445,10 @@ namespace Mona{
             currentT = nextT;
         }
         foundT = currentT;
+        // debug
+        std::vector<Vertex> foundTVertices = { m_vertices[foundT->vertices[0]], m_vertices[foundT->vertices[1]], m_vertices[foundT->vertices[2]] };
+        std::cout << "fount t: " << std::endl;
+        std::cout << funcUtils::vec3vecToString(foundTVertices) << std::endl;
         // interpolar altura
         return getInterpolatedHeight(foundT, x, y);
 

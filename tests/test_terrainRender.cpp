@@ -1,6 +1,7 @@
 #include "MonaEngine.hpp"
 #include "Rendering/DiffuseFlatMaterial.hpp"
 #include "Utilities/BasicCameraControllers.hpp"
+#include "Rendering/UnlitFlatMaterial.hpp"
 #include <numbers>
 
 
@@ -12,28 +13,33 @@ float gaussian(float x, float y, float s, float sigma, glm::vec2 mu) {
 void CreateTerrain(Mona::World& world) {
 	auto terrain = world.CreateGameObject<Mona::GameObject>();
 	auto& meshManager = Mona::MeshManager::GetInstance();
-	auto materialPtr = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseFlat));
-	materialPtr->SetDiffuseColor(glm::vec3(0.3, 0.5f, 0.7f));
-	float planeScale = 1.0f;
+	auto materialPtr = std::static_pointer_cast<Mona::UnlitFlatMaterial>(world.CreateMaterial(Mona::MaterialType::UnlitFlat));
+	//auto materialPtr = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseFlat));
+	materialPtr->SetColor(glm::vec3(0.3, 0.5f, 0.7f));
+	//materialPtr->SetDiffuseColor(glm::vec3(0.3, 0.5f, 0.7f));
+	float planeScale = 10.0f;
 	auto transform = world.AddComponent<Mona::TransformComponent>(terrain);
 	transform->SetScale(glm::vec3(planeScale));
 
 	auto heightFun = [](float x, float y) {
 		return (gaussian(x, y, 30, 5, { -10, 0 }) + gaussian(x, y, 50, 3, { 10, 0 }));
 	};
-	auto terrainMesh = meshManager.GenerateTerrain({ -10,-10 }, { 10,10 }, 20, 20, heightFun);
+	auto heightFun1 = [](float x, float y) {
+		return 0.5f;
+	};
+	auto terrainMesh = meshManager.GenerateTerrain({ -10,-10 }, { 10,10 }, 20, 20, heightFun1);
 
 	world.AddComponent<Mona::StaticMeshComponent>(terrain, terrainMesh, materialPtr);
 	Mona::BoxShapeInformation boxInfo(glm::vec3(planeScale, planeScale, planeScale));
-	Mona::RigidBodyHandle rb = world.AddComponent<Mona::RigidBodyComponent>(terrain, boxInfo, Mona::RigidBodyType::StaticBody, 1.0f, false, glm::vec3(0.0f, 0.0f, -planeScale));
+	Mona::RigidBodyHandle rb = world.AddComponent<Mona::RigidBodyComponent>(terrain, boxInfo, Mona::RigidBodyType::StaticBody, 1.0f, false, glm::vec3(0.0f, 0.0f, 0.0f));
 }
 
-void AddDirectionalLight(Mona::World& world, const glm::vec3& axis, float angle, const glm::vec3& center, float lightIntensity)
+void AddDirectionalLight(Mona::World& world, const glm::vec3& axis, float angle, float lightIntensity)
 {
 	auto light = world.CreateGameObject<Mona::GameObject>();
 	auto transform = world.AddComponent<Mona::TransformComponent>(light);
-	transform->SetTranslation(center);
 	transform->Rotate(axis, angle);
+	//transform->SetTranslation(center);
 	world.AddComponent<Mona::DirectionalLightComponent>(light, lightIntensity * glm::vec3(1.0f));
 
 }
@@ -45,12 +51,15 @@ public:
 	Mona::GameObjectHandle<Mona::BasicPerspectiveCamera> m_camera;
 	virtual void UserStartUp(Mona::World &world) noexcept override{
 		m_camera = world.CreateGameObject<Mona::BasicPerspectiveCamera>();
-		world.SetAmbientLight(glm::vec3(0.2f));
-		world.AddComponent<Mona::SpotLightComponent>(m_camera, glm::vec3(100.0f), 5.0f, glm::radians(25.0f), glm::radians(37.0f));
+		world.SetAmbientLight(glm::vec3(1.2f));
+		//world.AddComponent<Mona::SpotLightComponent>(m_camera, glm::vec3(100.0f), 5.0f, glm::radians(25.0f), glm::radians(37.0f));
 		world.SetMainCamera(world.GetComponentHandle<Mona::CameraComponent>(m_camera));
 		CreateTerrain(world);
-		//AddDirectionalLight(world, glm::vec3(0.0f, 0.0f, 10.0f), 2.0f, glm::radians(-45.0f));
-		AddDirectionalLight(world, glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 100.0f), 15.0f);
+		//AddDirectionalLight(world, glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-180.0f), glm::vec3(0.0f, 0.0f, 1000.0f),5.0f);
+		//AddDirectionalLight(world, glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1000.0f),5.0f);
+		AddDirectionalLight(world, glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-45.0f), 10);
+		AddDirectionalLight(world, glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-135.0f), 10);
+		//AddDirectionalLight(world, glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(-135.0f), 15.0f);
 
 		
 	}

@@ -80,13 +80,12 @@ int main()
 		return (gaussian(x, y, 30, 5, { -10, 0 }) + gaussian(x, y, 50, 3, { 10, 0 }));
 	};
 	auto heightFun1 = [](float x, float y) {
-		return float(1.0);
+		return float(0.0);
 	};
 	Mona::HeightMap hm;
-	Mona::generateTerrain({ 0,0 }, { 10,10 }, 200, 2000, heightFun, &hm);
-
+	Mona::generateTerrain({ 0,0 }, { 10,10 }, 200, 2000, heightFun1, &hm);
 	auto start = std::chrono::high_resolution_clock::now();
-	std::cout << "altura: " << hm.getHeight(5, 5) << std::endl;
+	std::cout << "altura: " << hm.getHeight(3.2, 0.1) << std::endl;
 	auto stop = std::chrono::high_resolution_clock::now();
 	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
 

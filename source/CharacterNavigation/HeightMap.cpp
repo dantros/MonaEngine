@@ -76,32 +76,35 @@ namespace Mona{
 
         // vincular triangulos con sus vecinos
         start = std::chrono::high_resolution_clock::now();
-        for (int i = 0; i < m_triangles.size(); i++) {
-            Triangle* trI = &m_triangles[i];
-            for (int j = i+1; j < m_triangles.size(); j++){ // se comienza desde i+1 porque los anteriores ya fueron vinculados (vinculos bilaterales)
-                Triangle* trJ = &m_triangles[j];
-                if (trI->neighbors[0] != nullptr && trI->neighbors[1] != nullptr && trI->neighbors[2] != nullptr) {
-                    std::cout << "break num: " << j - i << std::endl;
-                    break; // todos los vecinos encontrados
-                }
-                if (funcUtils::findIndex(trI->neighbors, trJ) != -1) {
-                    continue; // ya esta trJ en los vecinos de trI
-                }
-                if (sharedVertices(trI, trJ) == 2) {
-                    for (int k = 0; k < 3; k++) {
-                        if (trI->neighbors[k] == nullptr) { // se asigna al primer lugar vacio
-                            trI->neighbors[k] = trJ;
-                            break;
-                        }
+        for (int k = 0; k < m_vertices.size(); k++) {
+            std::vector<Triangle*> currTriangles = m_triangleMap[k];
+            for (int i = 0; i < currTriangles.size(); i++) {
+                Triangle* trI = currTriangles[i];
+                for (int j = i + 1; j < currTriangles.size(); j++) { // se comienza desde i+1 porque los anteriores ya fueron vinculados (vinculos bilaterales)
+                    Triangle* trJ = currTriangles[j];
+                    if (trI->neighbors[0] != nullptr && trI->neighbors[1] != nullptr && trI->neighbors[2] != nullptr) {
+                        break; // todos los vecinos encontrados
                     }
-                    for (int k = 0; k < 3; k++) {
-                        if (trJ->neighbors[k] == nullptr) { // se asigna al primer lugar vacio
-                            trJ->neighbors[k] = trI;
-                            break;
+                    if (funcUtils::findIndex(trI->neighbors, trJ) != -1) {
+                        continue; // ya esta trJ en los vecinos de trI
+                    }
+                    if (sharedVertices(trI, trJ) == 2) {
+                        for (int k = 0; k < 3; k++) {
+                            if (trI->neighbors[k] == nullptr) { // se asigna al primer lugar vacio
+                                trI->neighbors[k] = trJ;
+                                break;
+                            }
+                        }
+                        for (int k = 0; k < 3; k++) {
+                            if (trJ->neighbors[k] == nullptr) { // se asigna al primer lugar vacio
+                                trJ->neighbors[k] = trI;
+                                break;
+                            }
                         }
                     }
                 }
             }
+
         }
         stop = std::chrono::high_resolution_clock::now();
         duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);

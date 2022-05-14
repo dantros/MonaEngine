@@ -83,7 +83,7 @@ int main()
 		return float(1.0);
 	};
 	Mona::HeightMap hm;
-	Mona::generateTerrain({ 0,0 }, { 10,10 }, 200, 200, heightFun, &hm);
+	Mona::generateTerrain({ 0,0 }, { 10,10 }, 200, 2000, heightFun, &hm);
 
 	auto start = std::chrono::high_resolution_clock::now();
 	std::cout << "altura: " << hm.getHeight(5, 5) << std::endl;

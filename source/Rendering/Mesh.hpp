@@ -4,9 +4,9 @@
 #include <cstdint>
 #include <string>
 #include <glm/glm.hpp>
+#include "../CharacterNavigation/HeightMap.hpp"
 
 namespace Mona {
-	class HeightMap;
 	class Mesh {
 		friend class MeshManager;
 		
@@ -20,11 +20,15 @@ namespace Mona {
 		~Mesh();
 		uint32_t GetVertexArrayID() const noexcept { return m_vertexArrayID; }
 		uint32_t GetIndexBufferCount() const noexcept { return m_indexBufferCount; }
+		HeightMap* GetHeightMap() {
+			if (m_heightMap.isValid()) { return &m_heightMap;}
+			else { return nullptr;	}
+		}
 	private:
-		Mesh(const std::string& filePath, bool flipUVs = false, HeightMap* heightMap = nullptr);
+		Mesh(const std::string& filePath, bool flipUVs = false, bool createHeightMap = false);
 		Mesh(PrimitiveType type);
 		Mesh(const glm::vec2& bottomLeft, const glm::vec2& topRight, int numInnerVerticesWidth, int numInnerVerticesHeight, 
-			float (*heightFunc)(float, float), HeightMap* heightMap = nullptr);
+			float (*heightFunc)(float, float), bool createHeightMap = false);
 
 		void ClearData() noexcept;
 		void CreateSphere() noexcept;
@@ -35,6 +39,7 @@ namespace Mona {
 		uint32_t m_vertexBufferID;
 		uint32_t m_indexBufferID;
 		uint32_t m_indexBufferCount;
+		HeightMap m_heightMap;
 	};
 }
 #endif

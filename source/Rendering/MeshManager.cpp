@@ -21,18 +21,18 @@ namespace Mona {
 	}
 
 	std::shared_ptr<Mesh> MeshManager::GenerateTerrain(const glm::vec2& bottomLeft, const glm::vec2& topRight,
-		int numInnerVerticesWidth, int numInnerVerticesHeight, float (*heightFunc)(float, float), HeightMap* heightMap) noexcept {
+		int numInnerVerticesWidth, int numInnerVerticesHeight, float (*heightFunc)(float, float), bool createHeightMap) noexcept {
 		std::srand(std::time(nullptr)); // use current time as seed for random generator
 		int random_variable = std::rand();
 		const std::string& id = std::to_string(random_variable);
-		Mesh* meshPtr = new Mesh(bottomLeft, topRight, numInnerVerticesWidth, numInnerVerticesHeight, heightFunc, heightMap);
+		Mesh* meshPtr = new Mesh(bottomLeft, topRight, numInnerVerticesWidth, numInnerVerticesHeight, heightFunc, createHeightMap);
 		std::shared_ptr<Mesh> sharedPtr = std::shared_ptr<Mesh>(meshPtr);
 		//Antes de retornar la malla recien cargada, insertamos esta al mapa para que cargas futuras sean mucho mas rapidas.
 		m_meshMap.insert({ id, sharedPtr });
 		return sharedPtr;
 	}
 
-	std::shared_ptr<Mesh> MeshManager::LoadTerrainMesh(const std::filesystem::path& filePath, bool flipUVs, HeightMap* heightMap) noexcept {
+	std::shared_ptr<Mesh> MeshManager::LoadTerrainMesh(const std::filesystem::path& filePath, bool flipUVs, bool createHeightMap) noexcept {
 		const std::string& stringPath = filePath.string();
 		//En caso de que ya exista una entrada en el mapa de mallas con el mismo path, entonces se retorna inmediatamente
 		//dicha malla.
@@ -40,7 +40,7 @@ namespace Mona {
 		if (it != m_meshMap.end()) {
 			return it->second;
 		}
-		Mesh* meshPtr = new Mesh(stringPath, flipUVs, heightMap);
+		Mesh* meshPtr = new Mesh(stringPath, flipUVs, createHeightMap);
 		std::shared_ptr<Mesh> sharedPtr = std::shared_ptr<Mesh>(meshPtr);
 		//Antes de retornar la malla recien cargada, insertamos esta al mapa para que cargas futuras sean mucho mas rapidas.
 		m_meshMap.insert({ stringPath, sharedPtr });

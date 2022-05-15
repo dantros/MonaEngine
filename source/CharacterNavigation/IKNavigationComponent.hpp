@@ -4,6 +4,7 @@
 
 #include <string_view>
 #include "../World/ComponentTypes.hpp"
+#include "EnvironmentData.hpp"
 namespace Mona {
 	class IKNavigationComponent{
 		public:
@@ -13,7 +14,8 @@ namespace Mona {
 			static constexpr std::string_view componentName = "IKNavigationComponent";
 			static constexpr uint8_t componentIndex = GetComponentIndex(EComponentType::IKNavigationComponent);
 			IKNavigationComponent() = default;
-
+		private:
+			EnvironmentData environmentData;
 	};
 }
 

@@ -6,7 +6,7 @@
 
 namespace Mona{
 
-    int HeightMap::lastId = 0;
+    unsigned int HeightMap::lastId = 0;
 
     // operators
     bool operator!= (const Triangle& t1, const Triangle& t2) {

@@ -1,6 +1,5 @@
 #include "Mesh.hpp"
 
-#include "../CharacterNavigation/HeightMap.hpp"
 #include "../Core/Log.hpp"
 #include "../Core/AssimpTransformations.hpp"
 #include <glm/glm.hpp>
@@ -34,7 +33,7 @@ namespace Mona {
 		m_vertexArrayID = 0;
 	}
 
-	Mesh::Mesh(const std::string& filePath, bool flipUVs, HeightMap* heightMap) :
+	Mesh::Mesh(const std::string& filePath, bool flipUVs, bool createHeightMap) :
 		m_vertexArrayID(0),
 		m_vertexBufferID(0),
 		m_indexBufferID(0),
@@ -156,7 +155,8 @@ namespace Mona {
 		glEnableVertexAttribArray(4);
 		glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), (void*)offsetof(MeshVertex, bitangent));
 
-		if (heightMap != nullptr) {
+		if (createHeightMap) {
+			HeightMap heightMap = HeightMap();
 			std::vector<Vector3f> vertexPositions;
 			std::vector<Vector3ui> groupedFaces;
 			vertexPositions.reserve(numVertices);
@@ -170,7 +170,10 @@ namespace Mona {
 				Vector3ui f = { faces[i], faces[i + 1], faces[i + 2] };
 				groupedFaces.push_back(f);
 			}
-			heightMap->init(vertexPositions, groupedFaces);
+			heightMap.init(vertexPositions, groupedFaces);
+			if (heightMap.isValid()) {
+				m_heightMap = heightMap;
+			}
 		}
 		
 	}
@@ -212,7 +215,7 @@ namespace Mona {
 	}
 		
 	Mesh::Mesh(const glm::vec2& bottomLeft, const glm::vec2& topRight, int numInnerVerticesWidth, int numInnerVerticesHeight,
-		float (*heightFunc)(float, float), HeightMap* heightMap):
+		float (*heightFunc)(float, float), bool createHeightMap):
 		m_vertexArrayID(0),
 		m_vertexBufferID(0),
 		m_indexBufferID(0),
@@ -306,8 +309,12 @@ namespace Mona {
 			vertices[i + 10] = tangent[2];
 		}
 
-		if (heightMap != nullptr) {
-			heightMap->init({ bottomLeft[0], bottomLeft[1] }, { topRight[0], topRight[1] }, heightFunc);
+		if (createHeightMap) {
+			HeightMap heightMap = HeightMap();
+			heightMap.init({ bottomLeft[0], bottomLeft[1] }, { topRight[0], topRight[1] }, heightFunc);
+			if (heightMap.isValid()) {
+				m_heightMap = heightMap;
+			}
 		}
 
 		//Comienza el paso de los datos en CPU a GPU usando OpenGL

@@ -144,7 +144,6 @@ namespace Mona{
         duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
         std::cout << "time diff pasos finales: " << duration << std::endl;
         m_isValid = true;
-
     }
 
     bool HeightMap::withinBoundaries(float x, float y) {
@@ -162,7 +161,7 @@ namespace Mona{
             orientationV1V2 = -1;
         }
 
-        if (testV[0] == v1[0] && testV[1] == v1[1] || testV[0] == v2[0] && testV[1] == v2[1]) {
+        if (std::abs(testV[0]-v1[0])<=m_epsilon && std::abs(testV[1]-v1[1])<=m_epsilon || std::abs(testV[0]-v2[0])<=m_epsilon && std::abs(testV[1]-v2[1])<=m_epsilon) {
             return 0;
         }
 
@@ -212,8 +211,6 @@ namespace Mona{
         }
         else {
             MONA_LOG_ERROR("Not a triangle, or projection of vertical triangle");
-            __debugbreak();
-
         }
     }
 
@@ -383,13 +380,19 @@ namespace Mona{
         Vertex v3 = m_vertices[t->vertices[2]];
         float minX = std::min(std::min(v1[0], v2[0]), v3[0]);
         float maxX = std::max(std::max(v1[0], v2[0]), v3[0]);
-        if (x <minX || maxX < x) {
+        if (x < (minX-m_epsilon) || (maxX+m_epsilon) < x) {
             MONA_LOG_ERROR("Target point not inside found triangle.");
             return std::numeric_limits<float>::min();
         }
         std::vector vertices = { v1, v2, v3 };
         Vertex targetPoint = Vertex(x, y, 0);
-        //  check if points coincides with edge or vertex
+        // check if point coincides with vertex
+        for (int i = 0; i < 3; i++) {
+            if (std::abs(vertices[i][0] - x) <= m_epsilon && std::abs(vertices[i][1] - y) <= m_epsilon) {
+                return vertices[i][2];
+            }
+        }
+        //  check if points coincides with edge
         for (int i = 0; i < 3; i++) {
             if (orientationTest(vertices[i], vertices[(i + 1) % 3], targetPoint) == 0) {
                 return interpolateVertexWValue(vertices[i], vertices[(i + 1) % 3], 0, x)[2];
@@ -440,6 +443,36 @@ namespace Mona{
             currentT = nextT;
         }
         foundT = currentT;
+        // debug
+        std::vector<Vertex> foundTVertices = { m_vertices[foundT->vertices[0]], m_vertices[foundT->vertices[1]], m_vertices[foundT->vertices[2]] };
+        std::cout << funcUtils::vec3vecToString(foundTVertices) << std::endl;
+        // interpolar altura
+        return getInterpolatedHeight(foundT, x, y);
+    }
+
+    float HeightMap::getHeight_test(float x, float y) {
+        if (!withinBoundaries(x, y)) {
+            MONA_LOG_WARNING("Point is out of bounds");
+            return std::numeric_limits<float>::min();
+        }
+
+        // encontrar triangulo contenedor
+        Triangle* foundT = nullptr;
+        Triangle* currentT = m_triangleMap[0][0];
+        Vertex targetPoint = Vertex(x, y, 0);
+        while (!triangleContainsPoint(currentT, targetPoint)) {
+            Triangle* nextT = nextTriangle(m_vertices[0], targetPoint, currentT);
+            if (nextT == nullptr) {
+                MONA_LOG_WARNING("Point is out of bounds");
+                return std::numeric_limits<float>::min();
+            }
+            currentT = nextT;
+        }
+        foundT = currentT;
+
+        // debug
+        std::vector<Vertex> foundTVertices = { m_vertices[foundT->vertices[0]], m_vertices[foundT->vertices[1]], m_vertices[foundT->vertices[2]] };
+        std::cout << funcUtils::vec3vecToString(foundTVertices) << std::endl;
         // interpolar altura
         return getInterpolatedHeight(foundT, x, y);
 

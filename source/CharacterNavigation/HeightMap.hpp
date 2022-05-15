@@ -33,13 +33,14 @@ namespace Mona {
 			float m_minY;
 			float m_maxX;
 			float m_maxY;
+			float m_epsilon = 0.000001;
 			std::vector<vIndex> m_orderedX;
 			std::vector<vIndex> m_orderedY;
-			std::vector<Vertex> m_vertices;
 			std::vector<Triangle> m_triangles;
 			std::unordered_map<vIndex, std::vector<Triangle*>> m_triangleMap;
 
 		public:
+			std::vector<Vertex> m_vertices;
 			HeightMap() = default;
 			int getID() { return m_id; }
 			bool withinBoundaries(float x, float y);
@@ -52,6 +53,7 @@ namespace Mona {
 			bool isValid() { return m_isValid; }
 			vIndex findCloseVertex(float x, float y);
 			float getHeight(float x, float y);
+			float getHeight_test(float x, float y);
 			bool goesThroughTriangle(vIndex start, Vertex end, Triangle* triangle);
 			Triangle* nextTriangle(Vertex start, Vertex end, Triangle* triangle);
 			float getInterpolatedHeight(Triangle* t, float x, float y);

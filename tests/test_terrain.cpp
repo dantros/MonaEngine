@@ -84,32 +84,36 @@ int main()
 		return (gaussian(x, y, 30, 5, { -10, 0 }) + gaussian(x, y, 50, 3, { 10, 0 }));
 	};
 	auto heightFun1 = [](float x, float y) {
-		return float(1.0);
+		return float(0.0);
 	};
 	Mona::HeightMap hm;
-	int innerNumWidth = 10;
-	int innerNumHeight = 10;
-	float minX = 0;
-	float minY = 0;
-	float maxX = 10;
-	float maxY = 10;
+	int innerNumWidth = 20;
+	int innerNumHeight = 15;
+	float minX = 0.5;
+	float minY = 5.5;
+	float maxX = 9.2;
+	float maxY = 8.8;
 	Mona::generateTerrain({ minX,minY }, { maxX, maxY }, innerNumWidth, innerNumHeight, heightFun, &hm);
-	auto start = std::chrono::high_resolution_clock::now();
-	std::cout << "altura: " << hm.getHeight(3.2, 0.1) << std::endl;
-	auto stop = std::chrono::high_resolution_clock::now();
-	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-
-	std::cout << "time diff calcular altura: " << duration << std::endl;
+	std::srand(std::time(nullptr));
+	
+	
 
 	std::srand(0);
-	for (int i = 0; i < 1000; i++) {
-		float randX = minX + (maxX - minX)*(float(std::rand())/RAND_MAX);
+	for (int i = 0; i < 100000; i++) {
+		float randX = minX + (maxX - minX) * (float(std::rand()) / RAND_MAX);
 		float randY = minY + (maxY - minY) * (float(std::rand()) / RAND_MAX);
 		float calc = hm.getHeight(randX, randY);
 		float real = heightFun(randX, randY);
-		//std::cout << "randX: " << randX << ", randY: " << randY << std::endl;
 		std::cout << "real: " << real << ", calc: " << calc << std::endl;
 	}
+
+	/*for (int i = 0; i < hm.m_vertices.size(); i++) {
+		float calc = hm.getHeight(hm.m_vertices[i][0], hm.m_vertices[i][1]);
+		float real = heightFun(hm.m_vertices[i][0], hm.m_vertices[i][1]);
+		std::cout << "x: " << hm.m_vertices[i][0] << ", y: " << hm.m_vertices[i][1] << std::endl;
+		std::cout << "real: " << real << ", calc: " << calc << std::endl;
+	}*/
+
 	
 	return 0;
 

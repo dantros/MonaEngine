@@ -86,11 +86,11 @@ namespace Mona{
                 Triangle* trI = currTriangles[i];
                 for (int j = i + 1; j < currTriangles.size(); j++) { // se comienza desde i+1 porque los anteriores ya fueron vinculados (vinculos bilaterales)
                     Triangle* trJ = currTriangles[j];
-                    if (trI->neighbors[0] != nullptr && trI->neighbors[1] != nullptr && trI->neighbors[2] != nullptr) {
-                        break; // todos los vecinos encontrados
-                    }
                     if (funcUtils::findIndex(trI->neighbors, trJ) != -1) { // los vecinos de trI ya fueron asignados
                         break; 
+                    }
+                    if (trI->neighbors[0] != nullptr && trI->neighbors[1] != nullptr && trI->neighbors[2] != nullptr) {
+                        break; // todos los vecinos encontrados
                     }
                     if (sharedVertices(trI, trJ) == 2) {
                         for (int k = 0; k < 3; k++) {
@@ -426,7 +426,7 @@ namespace Mona{
         }
         // si tenemos la funcion de altura
         if (m_heightFunc != nullptr) {
-            return m_heightFunc(x, y);
+            return m_heightFunc(x ,y);
         }
         // encontrar vertice cercano
         vIndex closeV = findCloseVertex(x, y);

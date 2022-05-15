@@ -27,8 +27,8 @@ namespace Mona {
 	private:
 		Mesh(const std::string& filePath, bool flipUVs = false, bool createHeightMap = false);
 		Mesh(PrimitiveType type);
-		Mesh(const glm::vec2& bottomLeft, const glm::vec2& topRight, int numInnerVerticesWidth, int numInnerVerticesHeight, 
-			float (*heightFunc)(float, float), bool createHeightMap = false);
+		Mesh(const glm::vec2& minXY, const glm::vec2& maxXY, int numInnerVerticesWidth, int numInnerVerticesHeight, 
+			float (*heightFunc)(float, float), bool createHeightMap = false, bool useHeightInterpolation = false);
 
 		void ClearData() noexcept;
 		void CreateSphere() noexcept;

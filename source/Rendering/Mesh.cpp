@@ -214,8 +214,8 @@ namespace Mona {
 		return { baseColor[0] * modifier, baseColor[1] * modifier / 2, baseColor[2] };
 	}
 		
-	Mesh::Mesh(const glm::vec2& bottomLeft, const glm::vec2& topRight, int numInnerVerticesWidth, int numInnerVerticesHeight,
-		float (*heightFunc)(float, float), bool createHeightMap):
+	Mesh::Mesh(const glm::vec2& minXY, const glm::vec2& maxXY, int numInnerVerticesWidth, int numInnerVerticesHeight,
+		float (*heightFunc)(float, float), bool createHeightMap, bool useHeightInterpolation):
 		m_vertexArrayID(0),
 		m_vertexBufferID(0),
 		m_indexBufferID(0),
@@ -228,12 +228,12 @@ namespace Mona {
 		size_t numVertices = 0;
 		size_t numFaces = 0;
 
-		float stepX = (topRight[0] - bottomLeft[0]) / (numInnerVerticesWidth + 1);
-		float stepY = (topRight[1] - bottomLeft[1]) / (numInnerVerticesHeight + 1);
+		float stepX = (maxXY[0] - minXY[0]) / (numInnerVerticesWidth + 1);
+		float stepY = (maxXY[1] - minXY[1]) / (numInnerVerticesHeight + 1);
 		for (int i = 0; i < numInnerVerticesWidth + 2; i++) {
-			float x = bottomLeft[0] + stepX * i;
+			float x = minXY[0] + stepX * i;
 			for (int j = 0; j < numInnerVerticesHeight + 2; j++) {
-				float y = bottomLeft[1] + stepY * j;
+				float y = minXY[1] + stepY * j;
 				float z = heightFunc(x, y);
 				numVertices += 1;
 				vertices.insert(vertices.end(), { x, y, z, 0, 0, 0, 0, 0, 0, 0, 0 } ); // falta rellenar valores
@@ -311,7 +311,8 @@ namespace Mona {
 
 		if (createHeightMap) {
 			HeightMap heightMap = HeightMap();
-			heightMap.init({ bottomLeft[0], bottomLeft[1] }, { topRight[0], topRight[1] }, heightFunc);
+			if(useHeightInterpolation){ heightMap.init(vertexPositions, groupedFaces); }
+			else{ heightMap.init({ minXY[0], minXY[1] }, { maxXY[0], maxXY[1] }, heightFunc); }			
 			if (heightMap.isValid()) {
 				m_heightMap = heightMap;
 			}

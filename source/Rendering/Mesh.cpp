@@ -156,7 +156,6 @@ namespace Mona {
 		glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), (void*)offsetof(MeshVertex, bitangent));
 
 		if (createHeightMap) {
-			HeightMap heightMap = HeightMap();
 			std::vector<Vector3f> vertexPositions;
 			std::vector<Vector3ui> groupedFaces;
 			vertexPositions.reserve(numVertices);
@@ -170,10 +169,8 @@ namespace Mona {
 				Vector3ui f = { faces[i], faces[i + 1], faces[i + 2] };
 				groupedFaces.push_back(f);
 			}
-			heightMap.init(vertexPositions, groupedFaces);
-			if (heightMap.isValid()) {
-				m_heightMap = heightMap;
-			}
+			m_heightMap = HeightMap();
+			m_heightMap.init(vertexPositions, groupedFaces);
 		}
 		
 	}
@@ -310,12 +307,9 @@ namespace Mona {
 		}
 
 		if (createHeightMap) {
-			HeightMap heightMap = HeightMap();
-			if(useHeightInterpolation){ heightMap.init(vertexPositions, groupedFaces); }
-			else{ heightMap.init({ minXY[0], minXY[1] }, { maxXY[0], maxXY[1] }, heightFunc); }			
-			if (heightMap.isValid()) {
-				m_heightMap = heightMap;
-			}
+			m_heightMap = HeightMap();
+			if(useHeightInterpolation){ m_heightMap.init(vertexPositions, groupedFaces); }
+			else{m_heightMap.init({ minXY[0], minXY[1] }, { maxXY[0], maxXY[1] }, heightFunc); }
 		}
 
 		//Comienza el paso de los datos en CPU a GPU usando OpenGL

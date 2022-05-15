@@ -64,9 +64,7 @@ namespace Mona {
 				Vector3ui f = { faces[i], faces[i + 1], faces[i + 2] };
 				groupedFaces.push_back(f);
 			}
-			heightMap->init(vertexPositions, groupedFaces);
-
-
+			heightMap->init({ bottomLeft[0], bottomLeft[1] }, { topRight[0], topRight[1] }, heightFunc);
 		}
 
 	}
@@ -99,7 +97,7 @@ int main()
 	
 
 	std::srand(0);
-	for (int i = 0; i < 100000; i++) {
+	for (int i = 0; i < 1000; i++) {
 		float randX = minX + (maxX - minX) * (float(std::rand()) / RAND_MAX);
 		float randY = minY + (maxY - minY) * (float(std::rand()) / RAND_MAX);
 		float calc = hm.getHeight(randX, randY);

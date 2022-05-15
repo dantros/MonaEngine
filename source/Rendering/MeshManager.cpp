@@ -34,6 +34,21 @@ namespace Mona {
 		return sharedPtr;
 	}
 
+	std::shared_ptr<Mesh> MeshManager::LoadTerrainMesh(const std::filesystem::path& filePath, bool flipUVs, HeightMap* heightMap) noexcept {
+		const std::string& stringPath = filePath.string();
+		//En caso de que ya exista una entrada en el mapa de mallas con el mismo path, entonces se retorna inmediatamente
+		//dicha malla.
+		auto it = m_meshMap.find(stringPath);
+		if (it != m_meshMap.end()) {
+			return it->second;
+		}
+		Mesh* meshPtr = new Mesh(stringPath, flipUVs, heightMap);
+		std::shared_ptr<Mesh> sharedPtr = std::shared_ptr<Mesh>(meshPtr);
+		//Antes de retornar la malla recien cargada, insertamos esta al mapa para que cargas futuras sean mucho mas rapidas.
+		m_meshMap.insert({ stringPath, sharedPtr });
+		return sharedPtr;
+	}
+
 	std::shared_ptr<Mesh> MeshManager::LoadMesh(Mesh::PrimitiveType type) noexcept
 	{
 		const std::string primName = PrimitiveEnumToString(type);
@@ -49,7 +64,7 @@ namespace Mona {
 		return sharedPtr;
 	}
 
-	std::shared_ptr<Mesh> MeshManager::LoadMesh(const std::filesystem::path& filePath, bool flipUVs, HeightMap* heightMap) noexcept {
+	std::shared_ptr<Mesh> MeshManager::LoadMesh(const std::filesystem::path& filePath, bool flipUVs) noexcept {
 		const std::string& stringPath = filePath.string();
 		//En caso de que ya exista una entrada en el mapa de mallas con el mismo path, entonces se retorna inmediatamente
 		//dicha malla.
@@ -57,7 +72,7 @@ namespace Mona {
 		if (it != m_meshMap.end()) {
 			return it->second;
 		}
-		Mesh* meshPtr = new Mesh(stringPath, flipUVs, heightMap);
+		Mesh* meshPtr = new Mesh(stringPath, flipUVs);
 		std::shared_ptr<Mesh> sharedPtr = std::shared_ptr<Mesh>(meshPtr);
 		//Antes de retornar la malla recien cargada, insertamos esta al mapa para que cargas futuras sean mucho mas rapidas.
 		m_meshMap.insert({ stringPath, sharedPtr });

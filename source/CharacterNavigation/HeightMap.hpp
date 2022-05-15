@@ -38,6 +38,7 @@ namespace Mona {
 			std::vector<vIndex> m_orderedY;
 			std::vector<Triangle> m_triangles;
 			std::unordered_map<vIndex, std::vector<Triangle*>> m_triangleMap;
+			float (*m_heightFunc)(float, float) = nullptr;
 
 		public:
 			std::vector<Vertex> m_vertices;
@@ -47,13 +48,13 @@ namespace Mona {
 			int orientationTest(const Vertex& v1, const Vertex& v2, const Vertex& testV); // se ignora coordenada z
 			bool triangleContainsPoint(Triangle* t, const Vertex& p); // se ignora coordenada z
 			int sharedVertices(Triangle* t1, Triangle* t2);
-			void orderVerticesCCW(std::vector<vIndex>* vertices);
-			void orderTriangle(Triangle* t);
+			bool orderVerticesCCW(std::vector<vIndex>* vertices);
+			bool orderTriangle(Triangle* t);
 			void init(const std::vector<Vector3f>& vertices, const std::vector<Vector3ui>& faces);
+			void init(const Vector2f& bottomLeft, const Vector2f& topRight, float (*heightFunc)(float, float));
 			bool isValid() { return m_isValid; }
 			vIndex findCloseVertex(float x, float y);
 			float getHeight(float x, float y);
-			float getHeight_test(float x, float y);
 			bool goesThroughTriangle(vIndex start, Vertex end, Triangle* triangle);
 			Triangle* nextTriangle(Vertex start, Vertex end, Triangle* triangle);
 			float getInterpolatedHeight(Triangle* t, float x, float y);

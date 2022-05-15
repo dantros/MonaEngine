@@ -38,26 +38,34 @@ namespace Mona{
         return shared;
     }
 
+    void  HeightMap::init(const Vector2f& bottomLeft, const Vector2f& topRight, float (*heightFunc)(float, float)) {
+        m_id = lastId + 1;
+        lastId = m_id;
+        m_minX = bottomLeft[0];
+        m_minY = bottomLeft[1];
+        m_maxX = topRight[0];
+        m_maxY = topRight[1];
+
+        m_heightFunc = heightFunc;
+        m_isValid = true;
+    }
+
     void HeightMap::init(const std::vector<Vector3f>& vertices, const std::vector<Vector3ui>& faces) {
         m_id = lastId + 1;
         lastId = m_id;
+
         m_vertices.reserve(vertices.size());
         m_triangles.reserve(faces.size());
         
-        // guardar vertices e inicializar mapa de vertices->triangulos
-        auto start = std::chrono::high_resolution_clock::now();        
+        // guardar vertices e inicializar mapa de vertices->triangulos   
         for (int i = 0; i < vertices.size(); i++) {
             Vertex v = Vertex(vertices[i][0], vertices[i][1], vertices[i][2]);
             m_vertices.push_back(v);
 
             m_triangleMap[i] = std::vector<Triangle*>();
         }
-        auto stop = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-        std::cout << "time diff guardar vertices: " << duration << std::endl;
 
         // asginar vertices a triangulos
-        start = std::chrono::high_resolution_clock::now();
         for (int i = 0; i < faces.size(); i++) {
             Triangle t;
             vIndex ind1 = faces[i][0];
@@ -70,12 +78,8 @@ namespace Mona{
             m_triangleMap[ind2].push_back(&m_triangles[i]);
             m_triangleMap[ind3].push_back(&m_triangles[i]);
         }
-        stop = std::chrono::high_resolution_clock::now();
-        duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-        std::cout << "time diff asignar vertices a triangulos: " << duration << std::endl;
 
         // vincular triangulos con sus vecinos
-        start = std::chrono::high_resolution_clock::now();
         for (int k = 0; k < m_vertices.size(); k++) {
             std::vector<Triangle*> currTriangles = m_triangleMap[k];
             for (int i = 0; i < currTriangles.size(); i++) {
@@ -106,20 +110,15 @@ namespace Mona{
             }
 
         }
-        stop = std::chrono::high_resolution_clock::now();
-        duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-        std::cout << "time diff vincular triangulos con sus vecinos: " << duration << std::endl;
 
         // ordenamos los vertices dentro de los triangulos
-        start = std::chrono::high_resolution_clock::now();
         for (int i = 0; i < m_triangles.size(); i++) {
-            orderTriangle(&m_triangles[i]);
+            if (!orderTriangle(&m_triangles[i])) {
+                m_isValid = false;
+                return;
+            }
         }
-        stop = std::chrono::high_resolution_clock::now();
-        duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-        std::cout << "time diff ordernar triangulos: " << duration << std::endl;
 
-        start = std::chrono::high_resolution_clock::now();
         std::vector<IndexedVertex> indexedArr;
         indexedArr.reserve(vertices.size());
         for (int i = 0; i < m_vertices.size(); i++) {
@@ -140,9 +139,7 @@ namespace Mona{
         m_minY = m_vertices[m_orderedY[0]][1];
         m_maxX = m_vertices[m_orderedX[m_orderedX.size()-1]][0];
         m_maxY = m_vertices[m_orderedY[m_orderedY.size()-1]][1];
-        stop = std::chrono::high_resolution_clock::now();
-        duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-        std::cout << "time diff pasos finales: " << duration << std::endl;
+
         m_isValid = true;
     }
 
@@ -197,25 +194,28 @@ namespace Mona{
         return false;
     }
 
-    void HeightMap::orderVerticesCCW(std::vector<vIndex>* vertices) {
+    bool HeightMap::orderVerticesCCW(std::vector<vIndex>* vertices) {
         int orientation = orientationTest(m_vertices[(*vertices)[0]], m_vertices[(*vertices)[1]], m_vertices[(*vertices)[2]]);
         if (orientation == 1) {
-            return; // ya ordenados
+            return true; // ya ordenados
         }
         else if (orientation == -1) {
             std::vector<vIndex> temp = { (*vertices)[0], (*vertices)[1], (*vertices)[2] };
             (*vertices)[0] = temp[1];
             (*vertices)[1] = temp[0];
             (*vertices)[2] = temp[2];
-            return;
+            return true;
         }
         else {
             MONA_LOG_ERROR("Not a triangle, or projection of vertical triangle");
+            return false;
         }
     }
 
-    void HeightMap::orderTriangle(Triangle* t) {
-        orderVerticesCCW(&(t->vertices));
+    bool HeightMap::orderTriangle(Triangle* t) {
+        if (!orderVerticesCCW(&(t->vertices))) {
+            return false;
+        }
         std::vector<Triangle*> orderedTriangles = { nullptr, nullptr, nullptr };
         for (int i = 0; i < 3; i++) {
             Triangle* connectedT = t->neighbors[i];
@@ -233,6 +233,7 @@ namespace Mona{
         }
         t->neighbors = orderedTriangles;
         //triangles are ordered. first one shares v1 and v2 with t, second one v2 and v3, third one v3 and v1.
+        return true;
     }
 
     bool HeightMap::goesThroughTriangle(vIndex start, Vertex end, Triangle* triangle) { //checks if line (starting in vertex of triangle) goes through triangle(or coincides with edge) or passes outside
@@ -423,6 +424,10 @@ namespace Mona{
             MONA_LOG_WARNING("Point is out of bounds");
             return std::numeric_limits<float>::min();
         }
+        // si tenemos la funcion de altura
+        if (m_heightFunc != nullptr) {
+            return m_heightFunc(x, y);
+        }
         // encontrar vertice cercano
         vIndex closeV = findCloseVertex(x, y);
         if (closeV == -1) {
@@ -448,35 +453,6 @@ namespace Mona{
         std::cout << funcUtils::vec3vecToString(foundTVertices) << std::endl;
         // interpolar altura
         return getInterpolatedHeight(foundT, x, y);
-    }
-
-    float HeightMap::getHeight_test(float x, float y) {
-        if (!withinBoundaries(x, y)) {
-            MONA_LOG_WARNING("Point is out of bounds");
-            return std::numeric_limits<float>::min();
-        }
-
-        // encontrar triangulo contenedor
-        Triangle* foundT = nullptr;
-        Triangle* currentT = m_triangleMap[0][0];
-        Vertex targetPoint = Vertex(x, y, 0);
-        while (!triangleContainsPoint(currentT, targetPoint)) {
-            Triangle* nextT = nextTriangle(m_vertices[0], targetPoint, currentT);
-            if (nextT == nullptr) {
-                MONA_LOG_WARNING("Point is out of bounds");
-                return std::numeric_limits<float>::min();
-            }
-            currentT = nextT;
-        }
-        foundT = currentT;
-
-        // debug
-        std::vector<Vertex> foundTVertices = { m_vertices[foundT->vertices[0]], m_vertices[foundT->vertices[1]], m_vertices[foundT->vertices[2]] };
-        std::cout << funcUtils::vec3vecToString(foundTVertices) << std::endl;
-        // interpolar altura
-        return getInterpolatedHeight(foundT, x, y);
-
-
     }
 
 }

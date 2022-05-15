@@ -308,7 +308,7 @@ namespace Mona {
 		}
 
 		if (heightMap != nullptr) {
-			heightMap->init(vertexPositions, groupedFaces);
+			heightMap->init({ bottomLeft[0], bottomLeft[1] }, { topRight[0], topRight[1] }, heightFunc);
 		}
 
 		//Comienza el paso de los datos en CPU a GPU usando OpenGL

@@ -6,8 +6,6 @@
 
 namespace Mona{
 
-    unsigned int HeightMap::lastId = 0;
-
     // operators
     bool operator!= (const Triangle& t1, const Triangle& t2) {
         return t1.vertices != t2.vertices;
@@ -36,8 +34,6 @@ namespace Mona{
     }
 
     void  HeightMap::init(const Vector2f& bottomLeft, const Vector2f& topRight, float (*heightFunc)(float, float)) {
-        m_id = lastId + 1;
-        lastId = m_id;
         m_minX = bottomLeft[0];
         m_minY = bottomLeft[1];
         m_maxX = topRight[0];
@@ -48,8 +44,6 @@ namespace Mona{
     }
 
     void HeightMap::init(const std::vector<Vector3f>& vertices, const std::vector<Vector3ui>& faces) {
-        m_id = lastId + 1;
-        lastId = m_id;
 
         m_vertices.reserve(vertices.size());
         m_triangles.reserve(faces.size());

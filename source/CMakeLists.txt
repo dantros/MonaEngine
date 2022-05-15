@@ -1,4 +1,5 @@
 set(MONA_HEADERS
+				CharacterNavigation/IKNavigationLifetimePolicy.hpp
 				CharacterNavigation/Retargeting.hpp
 				CharacterNavigation/IKNavigationComponent.hpp
 				CharacterNavigation/HeightMap.hpp

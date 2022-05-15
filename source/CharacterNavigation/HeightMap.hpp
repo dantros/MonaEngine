@@ -26,8 +26,6 @@ namespace Mona {
 	class HeightMap{
 		friend class EnvironmentData;
 		private:
-			static unsigned int lastId;
-			unsigned int m_id;
 			bool m_isValid = false;
 			float m_minX;
 			float m_minY;
@@ -52,7 +50,6 @@ namespace Mona {
 
 		public:
 			HeightMap() = default;
-			unsigned int getID() { return m_id; }
 			bool withinBoundaries(float x, float y);
 			void init(const std::vector<Vector3f>& vertices, const std::vector<Vector3ui>& faces);
 			void init(const Vector2f& bottomLeft, const Vector2f& topRight, float (*heightFunc)(float, float));

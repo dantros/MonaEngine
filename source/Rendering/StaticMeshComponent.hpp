@@ -34,7 +34,7 @@ namespace Mona {
 			return m_materialPtr;
 		}
 
-		HeightMap* GetHeightMap() {
+		HeightMap* GetHeightMap() const noexcept {
 			return m_meshPtr->GetHeightMap();
 		}
 

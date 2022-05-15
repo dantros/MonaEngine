@@ -3,16 +3,20 @@
 #define ENVIRONMENTDATA_HPP
 
 #include "HeightMap.hpp"
+#include "../World/ComponentHandle.hpp"
+#include "../World/TransformComponent.hpp"
+#include "../Rendering/StaticMeshComponent.hpp"
 
 namespace Mona {
-
 	class EnvironmentData {
 		private:
-			std::vector<HeightMap*> m_terrains;
+			std::vector<InnerComponentHandle> m_terrains;
+			ComponentManager<TransformComponent>* m_transformManager;
+			ComponentManager<StaticMeshComponent>* m_staticMeshManager;
 		public:
 			float getTerrainHeight(float x, float y);
-			void addTerrain(HeightMap* terrain);
-			int removeTerrain(HeightMap* terrain);
+			void addTerrain(const StaticMeshHandle& terrain);
+			int removeTerrain(const StaticMeshHandle& terrain);
 	};
 
 }

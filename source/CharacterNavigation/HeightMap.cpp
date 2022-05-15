@@ -372,12 +372,16 @@ namespace Mona{
         return -1;
     }
 
+    Vertex interpolateVertexWValue(Vertex v1, Vertex v2, int dimension, float value) {
+        float fraction = (value - v1[dimension]) / (v2[dimension] - v1[dimension]);
+        return v1 + (v2 - v1) * fraction;
+    }
     Vertex interpolateVertex(Vertex v1, Vertex v2, float fraction) {
         float deltaX = (v2[0] - v1[0]) * fraction;
         float deltaY = (v2[1] - v1[1]) * fraction;
         float deltaZ = (v2[2] - v1[2]) * fraction;
 
-        return Vertex(v1[0] + deltaX, v2[1] + deltaY, v2[2] + deltaZ);
+        return Vertex(v1[0] + deltaX, v1[1] + deltaY, v1[2] + deltaZ);
     }
 
     float HeightMap::getInterpolatedHeight(Triangle* t, float x, float y) {
@@ -402,7 +406,9 @@ namespace Mona{
         // find edges to project point onto
         std::vector<std::pair<Vertex, Vertex>> edges;
         for (int i = 0; i < 3; i++) {
-            if (vertices[i][0] <= x && x <= vertices[(i + 1) % 3][0]) {
+            float minX = std::min(vertices[i][0], vertices[(i + 1) % 3][0]);
+            float maxX = std::max(vertices[i][0], vertices[(i + 1) % 3][0]);
+            if (minX <= x && x <= maxX) {
                 edges.push_back(std::pair<Vertex, Vertex>(vertices[i], vertices[(i + 1) % 3]));
             }
         }
@@ -445,10 +451,6 @@ namespace Mona{
             currentT = nextT;
         }
         foundT = currentT;
-        // debug
-        std::vector<Vertex> foundTVertices = { m_vertices[foundT->vertices[0]], m_vertices[foundT->vertices[1]], m_vertices[foundT->vertices[2]] };
-        std::cout << "fount t: " << std::endl;
-        std::cout << funcUtils::vec3vecToString(foundTVertices) << std::endl;
         // interpolar altura
         return getInterpolatedHeight(foundT, x, y);
 

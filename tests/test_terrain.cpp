@@ -3,6 +3,7 @@
 #include <numbers>
 #include <iostream>
 #include <chrono>
+#include <Core/Log.hpp>
 
 namespace Mona {
 	void generateTerrain(const glm::vec2& bottomLeft, const glm::vec2& topRight, int numInnerVerticesWidth, int numInnerVerticesHeight,
@@ -14,8 +15,11 @@ namespace Mona {
 		size_t numVertices = 0;
 		size_t numFaces = 0;
 
+
 		float stepX = (topRight[0] - bottomLeft[0]) / (numInnerVerticesWidth + 1);
 		float stepY = (topRight[1] - bottomLeft[1]) / (numInnerVerticesHeight + 1);
+		std::cout << "step x: " << stepX << std::endl;
+		std::cout << "step y: " << stepY << std::endl;
 		for (int i = 0; i < numInnerVerticesWidth + 2; i++) {
 			float x = bottomLeft[0] + stepX * i;
 			for (int j = 0; j < numInnerVerticesHeight + 2; j++) {
@@ -80,16 +84,32 @@ int main()
 		return (gaussian(x, y, 30, 5, { -10, 0 }) + gaussian(x, y, 50, 3, { 10, 0 }));
 	};
 	auto heightFun1 = [](float x, float y) {
-		return float(0.0);
+		return float(1.0);
 	};
 	Mona::HeightMap hm;
-	Mona::generateTerrain({ 0,0 }, { 10,10 }, 200, 200, heightFun1, &hm);
+	int innerNumWidth = 10;
+	int innerNumHeight = 10;
+	float minX = 0;
+	float minY = 0;
+	float maxX = 10;
+	float maxY = 10;
+	Mona::generateTerrain({ minX,minY }, { maxX, maxY }, innerNumWidth, innerNumHeight, heightFun, &hm);
 	auto start = std::chrono::high_resolution_clock::now();
 	std::cout << "altura: " << hm.getHeight(3.2, 0.1) << std::endl;
 	auto stop = std::chrono::high_resolution_clock::now();
 	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
 
 	std::cout << "time diff calcular altura: " << duration << std::endl;
+
+	std::srand(0);
+	for (int i = 0; i < 1000; i++) {
+		float randX = minX + (maxX - minX)*(float(std::rand())/RAND_MAX);
+		float randY = minY + (maxY - minY) * (float(std::rand()) / RAND_MAX);
+		float calc = hm.getHeight(randX, randY);
+		float real = heightFun(randX, randY);
+		//std::cout << "randX: " << randX << ", randY: " << randY << std::endl;
+		std::cout << "real: " << real << ", calc: " << calc << std::endl;
+	}
 	
 	return 0;
 

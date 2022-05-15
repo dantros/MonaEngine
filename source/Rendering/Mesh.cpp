@@ -10,7 +10,6 @@
 #include <vector>
 #include <stack>
 #include <glad/glad.h>
-#include <iostream>
 namespace Mona {
 
 	struct MeshVertex {

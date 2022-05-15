@@ -1,7 +1,5 @@
 #include "MeshManager.hpp"
 #include "../Animation/SkinnedMesh.hpp"
-#include <cstdlib>
-#include <ctime>
 namespace Mona {
 	
 	std::string PrimitiveEnumToString(Mesh::PrimitiveType type) {

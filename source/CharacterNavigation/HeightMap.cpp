@@ -3,9 +3,6 @@
 #include <algorithm>
 #include "../Core/Log.hpp"
 #include "../Utilities/FuncUtils.hpp"
-#include <iostream>
-#include <intrin.h>
-#include <chrono>
 
 namespace Mona{
 
@@ -448,9 +445,6 @@ namespace Mona{
             currentT = nextT;
         }
         foundT = currentT;
-        // debug
-        std::vector<Vertex> foundTVertices = { m_vertices[foundT->vertices[0]], m_vertices[foundT->vertices[1]], m_vertices[foundT->vertices[2]] };
-        std::cout << funcUtils::vec3vecToString(foundTVertices) << std::endl;
         // interpolar altura
         return getInterpolatedHeight(foundT, x, y);
     }

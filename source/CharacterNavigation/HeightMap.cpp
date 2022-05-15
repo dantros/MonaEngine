@@ -376,13 +376,6 @@ namespace Mona{
         float fraction = (value - v1[dimension]) / (v2[dimension] - v1[dimension]);
         return v1 + (v2 - v1) * fraction;
     }
-    Vertex interpolateVertex(Vertex v1, Vertex v2, float fraction) {
-        float deltaX = (v2[0] - v1[0]) * fraction;
-        float deltaY = (v2[1] - v1[1]) * fraction;
-        float deltaZ = (v2[2] - v1[2]) * fraction;
-
-        return Vertex(v1[0] + deltaX, v1[1] + deltaY, v1[2] + deltaZ);
-    }
 
     float HeightMap::getInterpolatedHeight(Triangle* t, float x, float y) {
         Vertex v1 = m_vertices[t->vertices[0]];
@@ -399,8 +392,7 @@ namespace Mona{
         //  check if points coincides with edge or vertex
         for (int i = 0; i < 3; i++) {
             if (orientationTest(vertices[i], vertices[(i + 1) % 3], targetPoint) == 0) {
-                float frac = (x - vertices[i][0]) / (vertices[(i + 1) % 3][0] - vertices[i][0]);
-                return interpolateVertex(vertices[i], vertices[(i + 1) % 3], frac)[2];
+                return interpolateVertexWValue(vertices[i], vertices[(i + 1) % 3], 0, x)[2];
             }
         }
         // find edges to project point onto
@@ -417,13 +409,10 @@ namespace Mona{
             return std::numeric_limits<float>::min();
         }
         
-        float frac1 = (x - edges[0].first[0]) / (edges[0].second[0] - edges[0].first[0]);
-        float frac2 = (x - edges[1].first[0]) / (edges[1].second[0] - edges[1].first[0]);
-        Vertex interpolated1 = interpolateVertex(edges[0].first, edges[0].second, frac1);
-        Vertex interpolated2 = interpolateVertex(edges[1].first, edges[1].second, frac2);
+        Vertex interpolated1 = interpolateVertexWValue(edges[0].first, edges[0].second, 0, x);
+        Vertex interpolated2 = interpolateVertexWValue(edges[1].first, edges[1].second, 0, x);
 
-        float fracFinal = (y - interpolated1[1]) / (interpolated2[1] - interpolated1[1]);
-        return interpolateVertex(interpolated1, interpolated2, fracFinal)[2];
+        return interpolateVertexWValue(interpolated1, interpolated2, 1, y)[2];
     }
 
     float HeightMap::getHeight(float x, float y) {

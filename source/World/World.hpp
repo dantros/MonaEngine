@@ -29,6 +29,7 @@
 #include "../Animation/SkeletalMeshComponent.hpp"
 #include "../Animation/JointPose.hpp"
 #include "../CharacterNavigation/IKNavigationComponent.hpp"
+#include "../CharacterNavigation/IKNavigationLifetimePolicy.hpp"
 
 #include <memory>
 #include <array>

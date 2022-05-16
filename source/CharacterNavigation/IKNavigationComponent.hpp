@@ -6,13 +6,12 @@
 #include "../World/ComponentHandle.hpp"
 #include "../World/ComponentManager.hpp"
 #include "../World/ComponentTypes.hpp"
-#include "IKNavigationLifetimePolicy.hpp"
 #include "EnvironmentData.hpp"
 namespace Mona {
 	class IKNavigationLifetimePolicy;
 	class IKNavigationComponent{
 		public:
-			friend class World;
+			friend class IKNavigationLifetimePolicy;
 			using LifetimePolicyType = IKNavigationLifetimePolicy;
 			using dependencies = DependencyList<SkeletalMeshComponent, RigidBodyComponent>;
 			static constexpr std::string_view componentName = "IKNavigationComponent";

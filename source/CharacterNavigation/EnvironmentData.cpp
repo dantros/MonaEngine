@@ -6,7 +6,10 @@
 #include <glm/glm.hpp>
 namespace Mona{        
 
-
+    EnvironmentData::EnvironmentData(ComponentManager<TransformComponent>* transformManager, ComponentManager<StaticMeshComponent>* staticMeshManager) {
+        m_transformManager = transformManager;
+        m_staticMeshManager = staticMeshManager;
+    }
     float EnvironmentData::getTerrainHeight(float x, float y) {
         float maxHeight = std::numeric_limits<float>::min();
         for (int i = 0; i < m_terrains.size(); i++) {

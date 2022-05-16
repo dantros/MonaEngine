@@ -12,6 +12,8 @@
 namespace Mona {
 	class EnvironmentData {
 		private:
+			friend class IKNavigationLifetimePolicy;
+			EnvironmentData(ComponentManager<TransformComponent>* transformManager, ComponentManager<StaticMeshComponent>* staticMeshManager);
 			std::vector<InnerComponentHandle> m_terrains;
 			ComponentManager<TransformComponent>* m_transformManager;
 			ComponentManager<StaticMeshComponent>* m_staticMeshManager;

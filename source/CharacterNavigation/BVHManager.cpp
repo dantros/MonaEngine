@@ -101,17 +101,17 @@ namespace Mona{
         }
         m_modelName = modelName;
         m_animName = animName;
-        PyObject* listObj = PyList_New(jointNames.size());
-        if (!listObj) MONA_LOG_ERROR("Unable to allocate memory for Python list");
+        PyObject* pyNameList = PyList_New(jointNames.size());
+        if (!pyNameList) MONA_LOG_ERROR("Unable to allocate memory for Python list");
         for (unsigned int i = 0; i < jointNames.size(); i++) {
             PyObject* name = PyUnicode_FromString(jointNames[i].data());
             if (!name) {
-                Py_DECREF(listObj);
+                Py_DECREF(pyNameList);
                 MONA_LOG_ERROR("Unable to allocate memory for Python list");
             }
-            PyList_SET_ITEM(listObj, i, name);
+            PyList_SET_ITEM(pyNameList, i, name);
         }
-        BVH_file_interface* pyFilePtr = createFileInterface(PyUnicode_FromString(filePath.data()), listObj, PyBool_FromLong(1));
+        BVH_file_interface* pyFilePtr = createFileInterface(PyUnicode_FromString(filePath.data()), pyNameList, PyBool_FromLong(1));
         initFile(pyFilePtr);
         setDynamicData(m_rotations, m_rootPositions, m_frametime);
     }

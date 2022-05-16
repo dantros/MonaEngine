@@ -7,8 +7,10 @@
 int main(){
     Mona::BVHManager::StartUp();
     Mona::BVHManager bvhManager = Mona::BVHManager::GetInstance();
-    Mona::BVHData* file2 = bvhManager.readBVH("testModel", "input");
-    bvhManager.writeBVHDynamicData(file2, "outAnim");
+    std::vector<std::string> jointNames = { "Pelvis", "LeftUpLeg", "LeftLeg", "Hips" };
+    Mona::BVHData* file = bvhManager.readBVH("testModel", "input", jointNames);
+    //Mona::BVHData* file = bvhManager.readBVH("testModel", "input");
+    bvhManager.writeBVHDynamicData(file, "outAnim");
     Mona::BVHManager::ShutDown();
     std::cout << "ready" << std::endl;
     return 0;

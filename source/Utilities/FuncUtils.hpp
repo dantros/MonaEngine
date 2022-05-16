@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <sstream>
+#include "../Core/Log.hpp"
 
 namespace Mona {
 

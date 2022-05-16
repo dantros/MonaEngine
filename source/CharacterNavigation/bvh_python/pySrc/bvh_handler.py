@@ -99,21 +99,18 @@ class BVH_file:
         self.edge_num = 0
         self._topology = None
         self.ee_length = []
+        self.subsetNames = []
         if jointNames:
-            self.subsetNames = jointNames
+            for name in self._names:
+                if name in jointNames:
+                    self.subsetNames.append(name)
         else:
             self.subsetNames = self._names
-
-        for i, name in enumerate(self._names):
-            if ':' in name:
-                name = name[name.find(':') + 1:]
-                self._names[i] = name
-
 
         self.details = [i for i, name in enumerate(self._names) if name not in self.subsetNames]
         self.joint_num = self.anim.shape[1]
         self.joints = []
-        self.simplified_name = []
+        self.simplified_names = []
         self.simplify_map = {}
         self.inverse_simplify_map = {}
 
@@ -132,7 +129,7 @@ class BVH_file:
         for i, j in enumerate(self.joints):
             self.simplify_map[j] = i
             self.inverse_simplify_map[i] = j
-            self.simplified_name.append(self._names[j])
+            self.simplified_names.append(self._names[j])
         self.inverse_simplify_map[0] = -1
         for i in range(self.anim.shape[1]):
             if i in self.details:
@@ -194,7 +191,7 @@ class BVH_file:
 
     @property
     def names(self):
-        return self.simplified_name
+        return self.simplified_names
 
     def write(self, file_path):
         motion = self.to_numpy(quater=False, edge=False)

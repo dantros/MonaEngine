@@ -26,7 +26,7 @@ cdef public BVH_file_interface createFileInterface(filePath, jointNames, quater)
 
     #jointNames (jointNum)
     fileInterface.jointNames = list(pyFile.names)
-
+    
     #offsets (JointNum x 3)
     fileInterface.offsets = pyFile.offsets.tolist()
 

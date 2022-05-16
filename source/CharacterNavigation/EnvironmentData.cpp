@@ -3,14 +3,32 @@
 #include <algorithm>
 #include "../Core/Log.hpp"
 #include "../Utilities/FuncUtils.hpp"
+#include <glm/glm.hpp>
 namespace Mona{        
 
 
     float EnvironmentData::getTerrainHeight(float x, float y) {
         float maxHeight = std::numeric_limits<float>::min();
         for (int i = 0; i < m_terrains.size(); i++) {
-            float height = m_terrains[i]->getHeight(x, y);
-            if (height > maxHeight) { maxHeight = height; }
+            if (!m_staticMeshManager->IsValid(m_terrains[i])) {
+                m_terrains.erase(m_terrains.begin() + i);
+                MONA_LOG_WARNING("Saved terrain was not valid, so it was removed.");
+                continue;
+            }
+            const StaticMeshComponent* staticMesh = m_staticMeshManager->GetComponentPointer(m_terrains[i]);
+            HeightMap* heigtMap = staticMesh->GetHeightMap();
+            GameObject* staticMeshOwner = m_staticMeshManager->GetOwner(m_terrains[i]);
+            TransformComponent* staticMeshTransform = m_transformManager->GetComponentPointer(staticMeshOwner->GetInnerComponentHandle<TransformComponent>());
+
+            // trasladar punto a espacio local de la malla
+            glm::vec4 basePoint = { x, y, 0, 1};
+            glm::vec4 meshPoint = glm::inverse(staticMeshTransform->GetModelMatrix())*basePoint;
+
+            float localHeight = heigtMap->getHeight(meshPoint[0], meshPoint[1]);
+            glm::vec4 localResult = { meshPoint[0], meshPoint[1], localHeight, 1 };
+            // volver a espacio global
+            glm::vec4 globalResult = staticMeshTransform->GetModelMatrix() * localResult;
+            if (globalResult[2] > maxHeight) { maxHeight = globalResult[2]; }
         }
         return maxHeight;
     }
@@ -19,11 +37,11 @@ namespace Mona{
         InnerComponentHandle innerHandle = terrain.GetInnerHandle();
         const StaticMeshComponent* staticMesh = m_staticMeshManager->GetComponentPointer(innerHandle);
         HeightMap* heigtMap = staticMesh->GetHeightMap();
-        if (heigtMap->isValid()) {
+        if (heigtMap->isValid() && m_staticMeshManager->IsValid(innerHandle)) {
             m_terrains.push_back(innerHandle);
         }
         else {
-            MONA_LOG_ERROR("Input terrain's height map was not valid");
+            MONA_LOG_ERROR("Input terrain was not valid");
         }
         
     }

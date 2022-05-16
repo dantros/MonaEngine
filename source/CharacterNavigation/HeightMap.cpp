@@ -362,7 +362,10 @@ namespace Mona{
     }
 
     Vertex interpolateVertexWValue(Vertex v1, Vertex v2, int dimension, float value) {
-        float fraction = (value - v1[dimension]) / (v2[dimension] - v1[dimension]);
+        float fraction = 1;
+        if (v2[dimension] != v1[dimension]) {
+            float fraction = (value - v1[dimension]) / (v2[dimension] - v1[dimension]);
+        }        
         return v1 + (v2 - v1) * fraction;
     }
 
@@ -372,12 +375,10 @@ namespace Mona{
         Vertex v3 = m_vertices[t->vertices[2]];
         float minX = std::min(std::min(v1[0], v2[0]), v3[0]);
         float maxX = std::max(std::max(v1[0], v2[0]), v3[0]);
-        if (x < (minX-m_epsilon) || (maxX+m_epsilon) < x) {
-            MONA_LOG_ERROR("Target point not inside found triangle.");
-            return std::numeric_limits<float>::min();
-        }
+
         std::vector vertices = { v1, v2, v3 };
         Vertex targetPoint = Vertex(x, y, 0);
+       
         // check if point coincides with vertex
         for (int i = 0; i < 3; i++) {
             if (std::abs(vertices[i][0] - x) <= m_epsilon && std::abs(vertices[i][1] - y) <= m_epsilon) {

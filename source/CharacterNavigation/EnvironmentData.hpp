@@ -3,6 +3,8 @@
 #define ENVIRONMENTDATA_HPP
 
 #include "HeightMap.hpp"
+#include "../World/ComponentManager.hpp"
+#include "../World/ComponentTypes.hpp"
 #include "../World/ComponentHandle.hpp"
 #include "../World/TransformComponent.hpp"
 #include "../Rendering/StaticMeshComponent.hpp"

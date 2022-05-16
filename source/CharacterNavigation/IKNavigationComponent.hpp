@@ -10,7 +10,7 @@ namespace Mona {
 	class IKNavigationComponent{
 		public:
 			friend class World;
-			using LifetimePolicyType = IKNavigationLifetimePolicy;
+			using LifetimePolicyType = DefaultLifetimePolicy<IKNavigationComponent>;//IKNavigationLifetimePolicy;
 			using dependencies = DependencyList<SkeletalMeshComponent, RigidBodyComponent>;
 			static constexpr std::string_view componentName = "IKNavigationComponent";
 			static constexpr uint8_t componentIndex = GetComponentIndex(EComponentType::IKNavigationComponent);

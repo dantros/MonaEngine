@@ -98,7 +98,7 @@ int main()
 	
 
 	std::srand(0);
-	for (int i = 0; i < 1000; i++) {
+	for (int i = 0; i < 0; i++) {
 		float randX = minX + (maxX - minX) * (float(std::rand()) / RAND_MAX);
 		float randY = minY + (maxY - minY) * (float(std::rand()) / RAND_MAX);
 		float calc = hm.getHeight(randX, randY);
@@ -106,7 +106,11 @@ int main()
 		std::cout << "real: " << real << ", calc: " << calc << std::endl;
 	}
 
-	
+	for (int i = 0; i < hm.m_vertices.size(); i++) {
+		float calc = hm.getHeight(hm.m_vertices[i][0], hm.m_vertices[i][1]);
+		float real = heightFun(hm.m_vertices[i][0], hm.m_vertices[i][1]);
+		std::cout << "real: " << real << ", calc: " << calc << std::endl;
+	}
 	return 0;
 
 }

@@ -3,6 +3,7 @@
 #define IKNAVIGATIONLIFETIMEPOLICY_HPP
 #include "../World/ComponentManager.hpp"
 #include "../World/TransformComponent.hpp"
+#include "../PhysicsCollision/RigidBodyComponent.hpp"
 #include "IKNavigationComponent.hpp"
 namespace Mona {
 	/*
@@ -17,7 +18,7 @@ namespace Mona {
 		void OnAddComponent(GameObject* gameObjectPtr, IKNavigationComponent& ikNav, const InnerComponentHandle& handle) noexcept {
 			InnerComponentHandle transformHandle = gameObjectPtr->GetInnerComponentHandle<TransformComponent>();
 		}
-		void OnRemoveComponent(GameObject* gameObjectPtr, RigidBodyComponent& rigidBody, const InnerComponentHandle &handle) noexcept {
+		void OnRemoveComponent(GameObject* gameObjectPtr, IKNavigationComponent& ikNav, const InnerComponentHandle &handle) noexcept {
 		}
 	private:
 		ComponentManager<TransformComponent>* m_transformManagerPtr = nullptr;

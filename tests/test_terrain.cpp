@@ -106,11 +106,11 @@ int main()
 		std::cout << "real: " << real << ", calc: " << calc << std::endl;
 	}
 
-	for (int i = 0; i < hm.m_vertices.size(); i++) {
+	/*for (int i = 0; i < hm.m_vertices.size(); i++) {
 		float calc = hm.getHeight(hm.m_vertices[i][0], hm.m_vertices[i][1]);
 		float real = heightFun(hm.m_vertices[i][0], hm.m_vertices[i][1]);
 		std::cout << "real: " << real << ", calc: " << calc << std::endl;
-	}
+	}*/
 	return 0;
 
 }

@@ -3,20 +3,23 @@
 #define IKNAVIGATIONCOMPONENT_HPP
 
 #include <string_view>
+#include "../World/ComponentHandle.hpp"
+#include "../World/ComponentManager.hpp"
 #include "../World/ComponentTypes.hpp"
+#include "IKNavigationLifetimePolicy.hpp"
 #include "EnvironmentData.hpp"
 namespace Mona {
 	class IKNavigationLifetimePolicy;
 	class IKNavigationComponent{
 		public:
 			friend class World;
-			using LifetimePolicyType = DefaultLifetimePolicy<IKNavigationComponent>;//IKNavigationLifetimePolicy;
+			using LifetimePolicyType = IKNavigationLifetimePolicy;
 			using dependencies = DependencyList<SkeletalMeshComponent, RigidBodyComponent>;
 			static constexpr std::string_view componentName = "IKNavigationComponent";
 			static constexpr uint8_t componentIndex = GetComponentIndex(EComponentType::IKNavigationComponent);
 			IKNavigationComponent() = default;
 		private:
-			EnvironmentData environmentData;
+			EnvironmentData m_environmentData;
 	};
 }
 

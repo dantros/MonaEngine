@@ -42,10 +42,13 @@ namespace Mona {
 		auto& transformDataManager = GetComponentManager<TransformComponent>();
 		auto& rigidBodyDataManager = GetComponentManager<RigidBodyComponent>();
 		auto& audioSourceDataManager = GetComponentManager<AudioSourceComponent>();
+		auto& skeletalMeshDataManager = GetComponentManager<SkeletalMeshComponent>();
+		auto& ikNavigationDataManager = GetComponentManager<IKNavigationComponent>();
 
 		const GameObjectID expectedObjects = config.getValueOrDefault<int>("expected_number_of_gameobjects", 1000);
 		rigidBodyDataManager.SetLifetimePolicy(RigidBodyLifetimePolicy(&transformDataManager, &m_physicsCollisionSystem));
 		audioSourceDataManager.SetLifetimePolicy(AudioSourceComponentLifetimePolicy(&m_audioSystem));
+		ikNavigationDataManager.SetLifetimePolicy(IKNavigationLifetimePolicy(&transformDataManager, &rigidBodyDataManager, &skeletalMeshDataManager));
 		m_window.StartUp(m_eventManager);
 		m_input.StartUp(m_eventManager);
 		m_objectManager.StartUp(expectedObjects);

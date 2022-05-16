@@ -14,17 +14,21 @@ namespace Mona {
 	class IKNavigationLifetimePolicy {
 	public:
 		IKNavigationLifetimePolicy() = default;
+		IKNavigationLifetimePolicy(ComponentManager<TransformComponent>* transformManagerPtr, ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr,
+			ComponentManager<SkeletalMeshComponent>* skeletalMeshManagerPtr) : m_transformManagerPtr(transformManagerPtr), m_rigidBodyManagerPtr(rigidBodyManagerPtr),
+			m_skeletalMeshManagerPtr(skeletalMeshManagerPtr) { }
 
 		void OnAddComponent(GameObject* gameObjectPtr, IKNavigationComponent& ikNav, const InnerComponentHandle& handle) noexcept {
 			InnerComponentHandle transformHandle = gameObjectPtr->GetInnerComponentHandle<TransformComponent>();
 		}
-		void OnRemoveComponent(GameObject* gameObjectPtr, IKNavigationComponent& ikNav, const InnerComponentHandle &handle) noexcept {
+		void OnRemoveComponent(GameObject* gameObjectPtr, IKNavigationComponent& ikNav, const InnerComponentHandle& handle) noexcept {
 		}
 	private:
 		ComponentManager<TransformComponent>* m_transformManagerPtr = nullptr;
 		ComponentManager<RigidBodyComponent>* m_rigidBodyManagerPtr = nullptr;
+		ComponentManager<SkeletalMeshComponent>* m_skeletalMeshManagerPtr = nullptr;
 	};
-}
+};
 
 
 #endif

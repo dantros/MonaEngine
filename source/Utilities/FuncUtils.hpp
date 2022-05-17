@@ -51,6 +51,22 @@ namespace Mona {
         }
 
         template < typename T>
+        inline std::string vecToString(std::vector<T> vec)
+        {
+            std::string result = "[ ";
+            for (int i = 0; i < vec.size(); i++) {
+                if (i < vec.size() - 1) {
+                    result += std::to_string(vec[i]) + ", ";
+                }
+                else {
+                    result += std::to_string(vec[i]);
+                }
+            }
+            result += " ]";
+            return result;
+        }
+
+        template < typename T>
         inline std::string vec3vecToString(std::vector<T> vec) 
         {
             std::string result = "[ ";

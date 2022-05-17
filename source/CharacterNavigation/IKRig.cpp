@@ -22,28 +22,37 @@ namespace Mona {
 		}
 
 		BVHData* staticData = m_bvhAnims[0];
+		std::vector<int> topology = staticData->getTopology();
+		std::vector<std::string> jointNames = staticData->getJointNames();
+		MONA_ASSERT(topology.size() == jointNames.size(), "Topology and jointNames arrays should have the same size");
+		// construimos el ikRig
+		m_nodes = std::vector<IKNode>(jointNames.size());
+		for (int i = 0; i < jointNames.size(); i++) {
+			m_nodes[i] = IKNode(jointNames[i], i);
+			if (i > 0) {
+				m_nodes[i].m_parent = &m_nodes[topology[i]];
+			}
+		}
+		for (int i = 1; i < topology.size(); i++) { // guardar los hijos
+			m_nodes[topology[i]].m_children.push_back(&m_nodes[i]);
+		}
+
 		
 		std::vector<ChainData> dataArr = { rigData.spine, rigData.leftLeg, rigData.rightLeg, rigData.leftArm, rigData.rightArm, rigData.leftFoot, rigData.rightFoot };
-		std::vector<IKNode**> nodeTargets = { &m_spineEE, &m_leftLegEE, &m_rightLegEE, &m_leftArmEE, &m_rightArmEE, &m_leftFootEE, &m_rightFootEE };
-		for (int i = 0; i < dataArr.size(); i++) {
-			// buscamos el end effector
+		std::vector<std::vector<IKNode*>*> nodeTargets = { &m_spineChain, &m_leftLegChain, &m_rightLegChain, &m_leftArmChain, &m_rightArmChain, &m_leftFootChain, &m_rightFootChain };
+		for (int i = 0; i < dataArr.size(); i++) { // construccion de las cadenas principales
 			int eeIndex = funcUtils::findIndex(staticData->getJointNames(), dataArr[i].endEffectorName);
 			if (eeIndex != -1) {
-				IKNode currentNode = IKNode(dataArr[i].endEffectorName, i);
-				m_nodes.push_back(currentNode);
-				(*nodeTargets[i]) = &m_nodes.back();
-				int parentIndex = staticData->getTopology()[eeIndex];
-				std::string parentName;
-				while (parentIndex != -1) {
-					parentName = staticData->getJointNames()[parentIndex];
-					currentNode = IKNode(parentName, parentIndex);
-					m_nodes.push_back(currentNode);
-					m_nodes[m_nodes.size() - 2].m_parent = &m_nodes[m_nodes.size() - 1]; // el padre del nodo anterior es el nodo actual
-
-					if (parentName == dataArr[i].startJointName) { break; }
-					if (parentIndex == -1) { MONA_LOG_ERROR("start joint and end effector were not on the same chain!"); }
-					parentIndex = staticData->getTopology()[parentIndex]; // guardarmos el indice del padre para la siguiente iteracion
+				IKNode* currentNode = &m_nodes[eeIndex];
+				(*nodeTargets[i]).push_back(currentNode);
+				while (currentNode->m_parent != nullptr)
+				{
+					currentNode = currentNode->m_parent;
+					(*nodeTargets[i]).push_back(currentNode);
+					if (currentNode->m_jointName == dataArr[i].startJointName) { break; }
+					if (currentNode->m_parent == nullptr) { MONA_LOG_ERROR("Starting joint and end effector were not on the same chain!"); }
 				}
+				
 			}
 		}
 
@@ -51,6 +60,7 @@ namespace Mona {
 
 		}
 	}
+
 
 
 

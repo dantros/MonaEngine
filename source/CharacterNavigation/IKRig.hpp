@@ -10,10 +10,15 @@ namespace Mona{
     typedef Eigen::Matrix<float, 1, 2> Vector2f;
     typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> MatrixXf;
 
+    struct JointData {
+        float minAngle;
+        float maxAngle;
+        bool freeAxis = false;
+        float weightModifier = 1;
+    };
     struct ChainData {
         std::string startJointName;
         std::string endEffectorName;
-        std::vector<std::pair<std::string, float>> weightModifiers;
     };
     struct RigData {
         ChainData spine;
@@ -23,6 +28,11 @@ namespace Mona{
         ChainData rightArm;
         ChainData leftFoot;
         ChainData rightFoot;
+
+        std::unordered_map<std::string, JointData> jointData;
+        void setJointData(std::string jointName, float minAngle, float maxAngle, bool freeAxis = false, float weightModifier = 1) {
+            jointData[jointName] = JointData(minAngle, maxAngle, freeAxis, weightModifier);
+        }
     };
 
     class IKNode {
@@ -34,8 +44,9 @@ namespace Mona{
         std::string m_jointName;
         int m_jointIndex;
         IKNode* m_parent;
-        Vector3f rotationAxis;
-        float rotationAngle;
+        std::vector<IKNode*> m_children;
+        Vector3f m_rotationAxis;
+        float m_rotationAngle;
     };
 
     class IKRig{
@@ -47,13 +58,13 @@ namespace Mona{
             int m_targetClipIndex = -1;
             bool m_adjustFeet;
             std::vector<IKNode> m_nodes;
-            IKNode* m_spineEE;
-            IKNode* m_leftLegEE;
-            IKNode* m_rightLegEE;
-            IKNode* m_leftArmEE;
-            IKNode* m_rightArmEE;
-            IKNode* m_leftFootEE;
-            IKNode* m_rightFootEE;
+            std::vector<IKNode*> m_spineChain;
+            std::vector<IKNode*> m_leftLegChain;
+            std::vector<IKNode*> m_rightLegChain;
+            std::vector<IKNode*> m_leftArmChain;
+            std::vector<IKNode*> m_rightArmChain;
+            std::vector<IKNode*> m_leftFootChain;
+            std::vector<IKNode*> m_rightFootChain;
             void setClipAnimData(std::shared_ptr<AnimationClip> clip, int firstFrame, int lastFrame);
     };
 

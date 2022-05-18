@@ -33,24 +33,28 @@ namespace Mona {
 				m_nodes[i].m_parent = &m_nodes[topology[i]];
 			}
 		}
-		for (int i = 1; i < topology.size(); i++) { // guardar los hijos
-			m_nodes[topology[i]].m_children.push_back(&m_nodes[i]);
-		}
 
 		
-		std::vector<ChainData> dataArr = { rigData.spine, rigData.leftLeg, rigData.rightLeg, rigData.leftArm, rigData.rightArm, rigData.leftFoot, rigData.rightFoot };
-		std::vector<std::vector<IKNode*>*> nodeTargets = { &m_spineChain, &m_leftLegChain, &m_rightLegChain, &m_leftArmChain, &m_rightArmChain, &m_leftFootChain, &m_rightFootChain };
+		std::vector<ChainEnds> dataArr = { rigData.spine, rigData.leftLeg, rigData.rightLeg, rigData.leftArm, rigData.rightArm, rigData.leftFoot, rigData.rightFoot };
+		std::vector<std::pair<IKNode*, IKNode*>*> nodeTargets = { &m_spine, &m_leftLeg, &m_rightLeg, &m_leftArm, &m_rightArm, &m_leftFoot, &m_rightFoot };
 		for (int i = 0; i < dataArr.size(); i++) { // construccion de las cadenas principales
 			int eeIndex = funcUtils::findIndex(staticData->getJointNames(), dataArr[i].endEffectorName);
 			if (eeIndex != -1) {
+				int chainStartIndex = -1;
 				IKNode* currentNode = &m_nodes[eeIndex];
-				(*nodeTargets[i]).push_back(currentNode);
-				while (currentNode->m_parent != nullptr)
-				{
+				currentNode = currentNode->m_parent;
+				while (currentNode != nullptr) {
+					if (currentNode->m_jointName == dataArr[i].startJointName) {
+						chainStartIndex = currentNode->m_jointIndex;
+						break; 
+					}
 					currentNode = currentNode->m_parent;
-					(*nodeTargets[i]).push_back(currentNode);
-					if (currentNode->m_jointName == dataArr[i].startJointName) { break; }
-					if (currentNode->m_parent == nullptr) { MONA_LOG_ERROR("Starting joint and end effector were not on the same chain!"); }
+				}
+				if (chainStartIndex != -1) {
+					(*nodeTargets[i]).first = &m_nodes[chainStartIndex];
+					(*nodeTargets[i]).second = &m_nodes[eeIndex];
+				}else { 
+					MONA_LOG_ERROR("Starting joint and end effector were not on the same chain!"); 
 				}
 				
 			}

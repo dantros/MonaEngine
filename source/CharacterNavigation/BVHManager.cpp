@@ -50,13 +50,6 @@ namespace Mona{
         return data;
     }
     void BVHManager::writeBVHDynamicData(BVHData* data, std::string outAnimName) {
-        /*std::string relPath = std::string("Assets/CharacterNavigation/") + data->getModelName();
-        std::string modelDir = SourcePath(relPath).string();
-        if (!std::filesystem::exists(modelDir)) {
-            if (!std::filesystem::create_directory(modelDir)) {
-                MONA_LOG_ERROR("BVHFile Error: Could not create directory -> {0}", modelDir);
-            }
-        }*/
         std::string writePath = BVHData::_getFilePath(data->getModelName(), outAnimName);
         
         BVH_writer_interface* pyWriterPtr = createWriterInterface(PyUnicode_FromString(data->getInputFilePath().data()));

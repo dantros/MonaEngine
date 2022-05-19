@@ -11,8 +11,9 @@
 
 namespace Mona {
 	class Terrain {
+		friend class EnvironmentData;
 	public:
-		Terrain(InnerComponentHandle transformHandle, InnerComponentHandle meshHandle);
+		Terrain(const GameObject& staticMeshObject);
 	private:
 		InnerComponentHandle m_transformHandle;
 		InnerComponentHandle m_meshHandle;
@@ -21,16 +22,14 @@ namespace Mona {
 	class EnvironmentData {
 		private:
 			friend class IKNavigationLifetimePolicy;
-			EnvironmentData(ComponentManager<TransformComponent>* transformManager, ComponentManager<StaticMeshComponent>* staticMeshManager, 
-				ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr);
-			std::vector<InnerComponentHandle> m_terrains;
+			EnvironmentData(ComponentManager<TransformComponent>* transformManager, ComponentManager<StaticMeshComponent>* staticMeshManager);
+			std::vector<Terrain> m_terrains;
 			ComponentManager<TransformComponent>* m_transformManager = nullptr;
 			ComponentManager<StaticMeshComponent>* m_staticMeshManager = nullptr;
-			ComponentManager<RigidBodyComponent>* m_rigidBodyManagerPtr = nullptr;
 		public:
 			float getTerrainHeight(float x, float y);
-			void addTerrain(const StaticMeshHandle& terrain);
-			int removeTerrain(const StaticMeshHandle& terrain);
+			void addTerrain(const Terrain& terrain);
+			int removeTerrain(const Terrain& terrain);
 	};
 
 }

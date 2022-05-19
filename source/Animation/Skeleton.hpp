@@ -41,6 +41,10 @@ namespace Mona {
 		std::int32_t GetParentIndex(size_type index) const {
 			return m_parentIndices[index];
 		}
+
+		std::string GetModelName() {
+			return m_modelName;
+		}
 	private:
 		//Skeleton() : m_invBindPoseMatrices(), m_jointNames(), m_parentIndices() {}
 		/*

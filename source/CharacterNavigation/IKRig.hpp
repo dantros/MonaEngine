@@ -54,9 +54,8 @@ namespace Mona{
 
     class IKRig{
         public:
-            IKRig(std::vector<BVHData*> bvhAnims, RigData rigData, bool adjustFeet, AnimationController* animationController);
-            AnimationController* m_animationController;
-            std::vector<BVHData*> m_bvhAnims;
+            IKRig(std::shared_ptr<AnimationClip> baseAnim, RigData rigData, bool adjustFeet);
+            std::vector<BVHData> m_bvhAnims;
             int m_currentClipIndex = -1;
             int m_targetClipIndex = -1;
             bool m_adjustFeet;
@@ -68,6 +67,8 @@ namespace Mona{
             std::pair<int, int> m_rightArm = { -1,-1 };
             std::pair<int, int> m_leftFoot = { -1,-1 };
             std::pair<int, int> m_rightFoot = { -1,-1 };
+            void addAnimation(std::shared_ptr<AnimationClip> animation);
+            int removeAnimation(std::shared_ptr<AnimationClip> animation);
             void setClipAnimData(std::shared_ptr<AnimationClip> clip, int firstFrame, int lastFrame);
     };
 

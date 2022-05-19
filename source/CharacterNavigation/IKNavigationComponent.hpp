@@ -7,6 +7,7 @@
 #include "../World/ComponentManager.hpp"
 #include "../World/ComponentTypes.hpp"
 #include "EnvironmentData.hpp"
+#include "IKRig.hpp"
 namespace Mona {
 	class IKNavigationLifetimePolicy;
 	class RigData;
@@ -17,11 +18,17 @@ namespace Mona {
 			using dependencies = DependencyList<SkeletalMeshComponent, RigidBodyComponent>;
 			static constexpr std::string_view componentName = "IKNavigationComponent";
 			static constexpr uint8_t componentIndex = GetComponentIndex(EComponentType::IKNavigationComponent);
-			IKNavigationComponent(std::vector<std::shared_ptr<AnimationClip>> animationClips, const RigData& rigData);
-			void AddAnimation(std::shared_ptr<AnimationClip> animationClip);
-			void AddTerrain(const StaticMeshHandle& terrain);
+			IKNavigationComponent(const RigData& rigData, std::shared_ptr<AnimationClip> baseAnimation);
+			void AddAnimation(std::shared_ptr<AnimationClip> animationClip) {
+
+			}
+			void AddTerrain(const Terrain& terrain) {
+				m_environmentData.addTerrain(terrain);
+			}
 		private:
+			std::vector<std::shared_ptr<AnimationClip>> m_animationClips;
 			EnvironmentData m_environmentData;
+			IKRig m_ikRig;
 	};
 }
 

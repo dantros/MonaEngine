@@ -26,6 +26,9 @@ namespace Mona {
 		};
 		float GetDuration() const { return m_duration; }
 		float Sample(std::vector<JointPose>& outPose, float time, bool isLooping);
+		std::string GetAnimationName() {
+			return m_animationName;
+		}
 		
 		std::shared_ptr<Skeleton> GetSkeleton() const {
 			return m_skeletonPtr;

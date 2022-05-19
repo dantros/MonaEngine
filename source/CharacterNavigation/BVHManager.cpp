@@ -108,7 +108,6 @@ namespace Mona{
         initFile(pyFilePtr);
         setDynamicData(m_rotations, m_rootPositions, m_frametime);
     }
-
     BVHData::BVHData(std::string modelName, std::string animName) {
         std::string filePath = _getFilePath(modelName, animName);
         if (!std::filesystem::exists(filePath)) { 
@@ -121,6 +120,9 @@ namespace Mona{
         initFile(pyFilePtr);
         setDynamicData(m_rotations, m_rootPositions, m_frametime);
     }
+    BVHData::BVHData(std::shared_ptr<AnimationClip> animation): BVHData(animation->GetSkeleton()->GetModelName(), animation->GetAnimationName()) {}
+    BVHData::BVHData(std::shared_ptr<AnimationClip> animation, std::vector<std::string> jointNames) : 
+        BVHData(animation->GetSkeleton()->GetModelName(), animation->GetAnimationName(), jointNames) {}
 
     void BVHData::initFile(BVH_file_interface* pyFile) {
         m_jointNum = pyFile->jointNum;

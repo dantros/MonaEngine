@@ -17,6 +17,8 @@ namespace Mona {
         private:
             friend class BVHManager;
             friend class IKRig;
+            BVHData(std::shared_ptr<AnimationClip> animation);
+            BVHData(std::shared_ptr<AnimationClip> animation, std::vector<std::string> jointNames);
             BVHData(std::string modelName, std::string animName);
             BVHData(std::string modelName, std::string animName, std::vector<std::string> jointNames);
             void initFile(BVH_file_interface* pyFile);

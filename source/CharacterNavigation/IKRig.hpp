@@ -11,16 +11,21 @@ namespace Mona{
     typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> MatrixXf;
 
     struct JointData {
-        float minAngle;
-        float maxAngle;
+        float minAngle = -90;
+        float maxAngle = 90;
         bool freeAxis = false;
-        float weightModifier = 1;
+        float weight = 1;
+        bool dataValid = false;
     };
     struct ChainEnds {
         std::string startJointName;
         std::string endEffectorName;
     };
-    struct RigData {
+    class RigData {
+        friend class IKRig;
+    private:
+        std::unordered_map<std::string, JointData> jointData;
+    public:
         ChainEnds spine;
         ChainEnds leftLeg;
         ChainEnds rightLeg;
@@ -28,11 +33,8 @@ namespace Mona{
         ChainEnds rightArm;
         ChainEnds leftFoot;
         ChainEnds rightFoot;
-
-        std::unordered_map<std::string, JointData> jointData;
-        void setJointData(std::string jointName, float minAngle, float maxAngle, bool freeAxis = false, float weightModifier = 1) {
-            jointData[jointName] = JointData(minAngle, maxAngle, freeAxis, weightModifier);
-        }
+        void setJointData(std::string jointName, float minAngle, float maxAngle, bool freeAxis = false, float weight = 1);
+        JointData getJointData(std::string jointName);
     };
 
     class IKNode {
@@ -41,6 +43,8 @@ namespace Mona{
         IKNode();
         IKNode(std::string jointName, int jointIndex, IKNode* parent=nullptr, float weight=1);
         float m_weight = 1;
+        float m_minAngle;
+        float m_maxAngle;
         bool m_freeAxis = false;
         std::string m_jointName;
         int m_jointIndex;
@@ -57,13 +61,13 @@ namespace Mona{
             int m_targetClipIndex = -1;
             bool m_adjustFeet;
             std::vector<IKNode> m_nodes;
-            std::pair<IKNode*, IKNode*> m_spine;
-            std::pair<IKNode*, IKNode*> m_leftLeg;
-            std::pair<IKNode*, IKNode*> m_rightLeg;
-            std::pair<IKNode*, IKNode*> m_leftArm;
-            std::pair<IKNode*, IKNode*> m_rightArm;
-            std::pair<IKNode*, IKNode*> m_leftFoot;
-            std::pair<IKNode*, IKNode*> m_rightFoot;
+            std::pair<int, int> m_spine = { -1,-1 };
+            std::pair<int, int> m_leftLeg = { -1,-1 };
+            std::pair<int, int> m_rightLeg = { -1,-1 };
+            std::pair<int, int> m_leftArm = { -1,-1 };
+            std::pair<int, int> m_rightArm = { -1,-1 };
+            std::pair<int, int> m_leftFoot = { -1,-1 };
+            std::pair<int, int> m_rightFoot = { -1,-1 };
             void setClipAnimData(std::shared_ptr<AnimationClip> clip, int firstFrame, int lastFrame);
     };
 

@@ -6,9 +6,11 @@
 #include <glm/glm.hpp>
 namespace Mona{        
 
-    EnvironmentData::EnvironmentData(ComponentManager<TransformComponent>* transformManager, ComponentManager<StaticMeshComponent>* staticMeshManager) {
+    EnvironmentData::EnvironmentData(ComponentManager<TransformComponent>* transformManager, ComponentManager<StaticMeshComponent>* staticMeshManager,
+        ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr) {
         m_transformManager = transformManager;
         m_staticMeshManager = staticMeshManager;
+        m_rigidBodyManagerPtr = rigidBodyManagerPtr;
     }
     float EnvironmentData::getTerrainHeight(float x, float y) {
         float maxHeight = std::numeric_limits<float>::min();
@@ -57,6 +59,11 @@ namespace Mona{
             }
         }
         return -1;
+    }
+
+    Terrain::Terrain(InnerComponentHandle transformHandle, InnerComponentHandle meshHandle) {
+        m_transformHandle = transformHandle;
+        m_meshHandle = meshHandle;
     }
 
 }

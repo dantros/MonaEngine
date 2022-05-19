@@ -22,7 +22,7 @@ namespace Mona {
 		}
 
 		void OnAddComponent(GameObject* gameObjectPtr, IKNavigationComponent& ikNav, const InnerComponentHandle& handle) noexcept {
-			ikNav.m_environmentData = EnvironmentData(m_transformManagerPtr, m_staticMeshManagerPtr);
+			ikNav.m_environmentData = EnvironmentData(m_transformManagerPtr, m_staticMeshManagerPtr, m_rigidBodyManagerPtr);
 		}
 		void OnRemoveComponent(GameObject* gameObjectPtr, IKNavigationComponent& ikNav, const InnerComponentHandle& handle) noexcept {
 		}

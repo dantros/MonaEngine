@@ -16,20 +16,26 @@ namespace Mona {
 	class IKNavigationLifetimePolicy {
 	public:
 		IKNavigationLifetimePolicy() = default;
-		IKNavigationLifetimePolicy(ComponentManager<TransformComponent>* transformManagerPtr,
-			ComponentManager<StaticMeshComponent>* staticMeshManagerPtr) : m_transformManagerPtr(transformManagerPtr)
-			, m_staticMeshManagerPtr(staticMeshManagerPtr) {
+		IKNavigationLifetimePolicy(ComponentManager<TransformComponent>* transformManagerPtr, ComponentManager<StaticMeshComponent>* staticMeshManagerPtr, 
+			ComponentManager<SkeletalMeshComponent>* skeletalMeshManagerPtr, ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr) : 
+			m_transformManagerPtr(transformManagerPtr), m_staticMeshManagerPtr(staticMeshManagerPtr), 
+			m_skeletalMeshManagerPtr(skeletalMeshManagerPtr), m_rigidBodyManagerPtr(rigidBodyManagerPtr) {
 
 		}
 
 		void OnAddComponent(GameObject* gameObjectPtr, IKNavigationComponent& ikNav, const InnerComponentHandle& handle) noexcept {
-			ikNav.m_environmentData = EnvironmentData(m_transformManagerPtr, m_staticMeshManagerPtr);
+			ikNav.m_skeletalMeshManagerPtr = m_skeletalMeshManagerPtr;
+			ikNav.m_staticMeshManagerPtr = m_staticMeshManagerPtr;
+			ikNav.m_transformManagerPtr = m_transformManagerPtr;
+			ikNav.m_rigidBodyManagerPtr = m_rigidBodyManagerPtr;
 		}
 		void OnRemoveComponent(GameObject* gameObjectPtr, IKNavigationComponent& ikNav, const InnerComponentHandle& handle) noexcept {
 		}
 	private:
 		ComponentManager<TransformComponent>* m_transformManagerPtr = nullptr;
 		ComponentManager<StaticMeshComponent>* m_staticMeshManagerPtr = nullptr;
+		ComponentManager<SkeletalMeshComponent>* m_skeletalMeshManagerPtr = nullptr;
+		ComponentManager<RigidBodyComponent>* m_rigidBodyManagerPtr = nullptr;
 	};
 };
 

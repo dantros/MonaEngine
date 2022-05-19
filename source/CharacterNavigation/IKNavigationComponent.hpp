@@ -29,6 +29,10 @@ namespace Mona {
 			std::vector<std::shared_ptr<AnimationClip>> m_animationClips;
 			EnvironmentData m_environmentData;
 			IKRig m_ikRig;
+			ComponentManager<TransformComponent>* m_transformManagerPtr = nullptr;
+			ComponentManager<StaticMeshComponent>* m_staticMeshManagerPtr = nullptr;
+			ComponentManager<SkeletalMeshComponent>* m_skeletalMeshManagerPtr = nullptr;
+			ComponentManager<RigidBodyComponent>* m_rigidBodyManagerPtr = nullptr;
 	};
 }
 

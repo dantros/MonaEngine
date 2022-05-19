@@ -22,14 +22,13 @@ namespace Mona {
 	class EnvironmentData {
 		private:
 			friend class IKNavigationLifetimePolicy;
-			EnvironmentData(ComponentManager<TransformComponent>* transformManager, ComponentManager<StaticMeshComponent>* staticMeshManager);
+			EnvironmentData() = default;
 			std::vector<Terrain> m_terrains;
-			ComponentManager<TransformComponent>* m_transformManager = nullptr;
-			ComponentManager<StaticMeshComponent>* m_staticMeshManager = nullptr;
 		public:
-			float getTerrainHeight(float x, float y);
-			void addTerrain(const Terrain& terrain);
-			int removeTerrain(const Terrain& terrain);
+			float getTerrainHeight(float x, float y, ComponentManager<TransformComponent>* transformManager, 
+				ComponentManager<StaticMeshComponent>* staticMeshManager);
+			void addTerrain(const Terrain& terrain, ComponentManager<StaticMeshComponent>* staticMeshManager);
+			int removeTerrain(const Terrain& terrain, ComponentManager<StaticMeshComponent>* staticMeshManager);
 	};
 
 }

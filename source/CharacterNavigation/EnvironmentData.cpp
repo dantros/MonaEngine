@@ -12,21 +12,18 @@ namespace Mona{
         m_meshHandle = staticMeshObject.GetInnerComponentHandle<StaticMeshComponent>();
     }
 
-    EnvironmentData::EnvironmentData(ComponentManager<TransformComponent>* transformManager, ComponentManager<StaticMeshComponent>* staticMeshManager) {
-        m_transformManager = transformManager;
-        m_staticMeshManager = staticMeshManager;
-    }
-    float EnvironmentData::getTerrainHeight(float x, float y) {
+    float EnvironmentData::getTerrainHeight(float x, float y, ComponentManager<TransformComponent>* transformManager,
+        ComponentManager<StaticMeshComponent>* staticMeshManager) {
         float maxHeight = std::numeric_limits<float>::min();
         for (int i = 0; i < m_terrains.size(); i++) {
-            if (!m_staticMeshManager->IsValid(m_terrains[i].m_meshHandle)) {
+            if (!staticMeshManager->IsValid(m_terrains[i].m_meshHandle)) {
                 m_terrains.erase(m_terrains.begin() + i);
                 MONA_LOG_WARNING("Saved terrain was not valid, so it was removed.");
                 continue;
             }
-            const StaticMeshComponent* staticMesh = m_staticMeshManager->GetComponentPointer(m_terrains[i].m_meshHandle);
+            const StaticMeshComponent* staticMesh = staticMeshManager->GetComponentPointer(m_terrains[i].m_meshHandle);
             HeightMap* heigtMap = staticMesh->GetHeightMap();
-            TransformComponent* staticMeshTransform = m_transformManager->GetComponentPointer(m_terrains[i].m_transformHandle);
+            TransformComponent* staticMeshTransform = transformManager->GetComponentPointer(m_terrains[i].m_transformHandle);
 
             // trasladar punto a espacio local de la malla
             glm::vec4 basePoint = { x, y, 0, 1};
@@ -41,18 +38,18 @@ namespace Mona{
         return maxHeight;
     }
 
-    void EnvironmentData::addTerrain(const Terrain& terrain) {
+    void EnvironmentData::addTerrain(const Terrain& terrain, ComponentManager<StaticMeshComponent>* staticMeshManager) {
         InnerComponentHandle meshInnerHandle = terrain.m_meshHandle;
-        const StaticMeshComponent* staticMesh = m_staticMeshManager->GetComponentPointer(meshInnerHandle);
+        const StaticMeshComponent* staticMesh = staticMeshManager->GetComponentPointer(meshInnerHandle);
         HeightMap* heigtMap = staticMesh->GetHeightMap();
-        if (heigtMap->isValid() && m_staticMeshManager->IsValid(meshInnerHandle)) {
+        if (heigtMap->isValid() && staticMeshManager->IsValid(meshInnerHandle)) {
             m_terrains.push_back(terrain);
         }
         else {
             MONA_LOG_ERROR("Input terrain was not valid");
         }        
     }
-    int EnvironmentData::removeTerrain(const Terrain& terrain) {
+    int EnvironmentData::removeTerrain(const Terrain& terrain, ComponentManager<StaticMeshComponent>* staticMeshManager) {
         InnerComponentHandle meshInnerHandle = terrain.m_meshHandle;
         for (int i = 0; i < m_terrains.size(); i++) {
             if (m_terrains[i].m_meshHandle.m_generation == meshInnerHandle.m_generation && m_terrains[i].m_meshHandle.m_index==meshInnerHandle.m_index) {

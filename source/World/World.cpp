@@ -49,7 +49,7 @@ namespace Mona {
 		const GameObjectID expectedObjects = config.getValueOrDefault<int>("expected_number_of_gameobjects", 1000);
 		rigidBodyDataManager.SetLifetimePolicy(RigidBodyLifetimePolicy(&transformDataManager, &m_physicsCollisionSystem));
 		audioSourceDataManager.SetLifetimePolicy(AudioSourceComponentLifetimePolicy(&m_audioSystem));
-		ikNavigationDataManager.SetLifetimePolicy(IKNavigationLifetimePolicy(&transformDataManager, &rigidBodyDataManager, &skeletalMeshDataManager, &staticMeshDataManager));
+		ikNavigationDataManager.SetLifetimePolicy(IKNavigationLifetimePolicy(&transformDataManager, &staticMeshDataManager, &skeletalMeshDataManager, &rigidBodyDataManager));
 		m_window.StartUp(m_eventManager);
 		m_input.StartUp(m_eventManager);
 		m_objectManager.StartUp(expectedObjects);

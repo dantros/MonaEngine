@@ -16,7 +16,7 @@ namespace Mona{
         float maxAngle = 90;
         bool freeAxis = false;
         float weight = 1;
-        bool dataValid = false;
+        bool useThisData = false;
     };
     struct ChainEnds {
         std::string startJointName;
@@ -34,7 +34,8 @@ namespace Mona{
         ChainEnds rightArm;
         ChainEnds leftFoot;
         ChainEnds rightFoot;
-        void setJointData(std::string jointName, float minAngle, float maxAngle, bool freeAxis = false, float weight = 1);
+        void setJointData(std::string jointName, float minAngle, float maxAngle, bool freeAxis = false, float weight = 1, bool enableData =true);
+        void enableJointData(std::string jointName, bool enableData);
         JointData getJointData(std::string jointName);
     };
 

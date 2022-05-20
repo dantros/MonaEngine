@@ -56,7 +56,7 @@ namespace Mona {
 		// setear constraints y pesos
 		for (int i = 0; i < m_nodes.size(); i++) {
 			JointData currData = rigData.jointData[m_nodes[i].m_jointName];
-			if (currData.dataValid) {
+			if (currData.useThisData) {
 				m_nodes[i].m_freeAxis = currData.freeAxis;
 				m_nodes[i].m_minAngle = currData.minAngle;
 				m_nodes[i].m_maxAngle = currData.maxAngle;
@@ -86,7 +86,7 @@ namespace Mona {
 	}
 
 
-	void RigData::setJointData(std::string jointName, float minAngle, float maxAngle, bool freeAxis, float weight) {
+	void RigData::setJointData(std::string jointName, float minAngle, float maxAngle, bool freeAxis, float weight, bool enableData) {
 		if (jointName == "") {
 			MONA_LOG_ERROR("jointName cannot be empty string.");
 			return;
@@ -99,10 +99,13 @@ namespace Mona {
 		jointData[jointName].maxAngle = maxAngle;
 		jointData[jointName].freeAxis = freeAxis;
 		jointData[jointName].weight = weight;
-		jointData[jointName].dataValid = true;
+		jointData[jointName].useThisData = enableData;
 	}
 
 	JointData RigData::getJointData(std::string jointName) {
 		return JointData(jointData[jointName]);
+	}
+	void RigData::enableJointData(std::string jointName, bool enableData) {
+		jointData[jointName].useThisData = enableData;
 	}
 }

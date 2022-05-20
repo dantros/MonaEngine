@@ -53,26 +53,24 @@ namespace Mona{
 
         }
     }
-    std::shared_ptr<BVHData> BVHManager::readBVH(std::shared_ptr<AnimationClip> animation) {
-        BVHData* dataPtr = new BVHData(animation);
-        std::shared_ptr<BVHData> sharedPtr = std::shared_ptr<BVHData>(dataPtr);
-        m_bvhDataMap.insert({ {animation->GetSkeleton()->GetModelName(), animation->GetAnimationName()}, sharedPtr });
-        return sharedPtr;
-    }
+    
     std::shared_ptr<BVHData> BVHManager::readBVH(std::string modelName, std::string animName) {
+        std::shared_ptr<BVHData> savedPtr = getBVHData(modelName, animName);
+        if (savedPtr != nullptr) {
+            return savedPtr;
+        }
         BVHData* dataPtr = new BVHData(modelName, animName);
         std::shared_ptr<BVHData> sharedPtr = std::shared_ptr<BVHData>(dataPtr);
         m_bvhDataMap.insert({ {modelName, animName}, sharedPtr });
         return sharedPtr;
     }
+    std::shared_ptr<BVHData> BVHManager::readBVH(std::shared_ptr<AnimationClip> animation) {
+        return readBVH(animation->GetSkeleton()->GetModelName(), animation->GetAnimationName());
+    }
+
     std::shared_ptr<BVHData> BVHManager::getBVHData(std::string modelName, std::string animName) {
-        if (m_bvhDataMap.find({ modelName, animName }) == m_bvhDataMap.end()) {
-            MONA_LOG_ERROR("Animation has not been read.");
-            return nullptr;
-        }
-        else {
-            return m_bvhDataMap[{modelName, animName}];
-        }
+        if (m_bvhDataMap.find({ modelName, animName }) == m_bvhDataMap.end()) { return nullptr; }
+        else { return m_bvhDataMap.at({modelName, animName}); }
     }
     std::shared_ptr <BVHData> BVHManager::getBVHData(std::shared_ptr<AnimationClip> animation) {
         return getBVHData(animation->GetSkeleton()->GetModelName(), animation->GetAnimationName());
@@ -122,7 +120,9 @@ namespace Mona{
         }
         m_modelName = modelName;
         m_animName = animName;
-        BVH_file_interface* pyFilePtr = createFileInterface(PyUnicode_FromString(filePath.data()), PyBool_FromLong(0), PyBool_FromLong(1));
+        long jointSubset = 0;
+        long quater = 1;
+        BVH_file_interface* pyFilePtr = createFileInterface(PyUnicode_FromString(filePath.data()), PyBool_FromLong(jointSubset), PyBool_FromLong(quater));
         initFile(pyFilePtr);
         setDynamicData(m_rotations, m_rootPositions, m_frametime);
     }

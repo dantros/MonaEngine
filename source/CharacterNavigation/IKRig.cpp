@@ -12,9 +12,10 @@ namespace Mona {
 		m_weight = weight;
 	}
 
-	IKRig::IKRig(std::shared_ptr<BVHData> baseAnim, RigData rigData, bool adjustFeet) {
+	IKRig::IKRig(std::shared_ptr<BVHData> baseAnim, RigData rigData, AnimationController* animationController, bool adjustFeet) {
 		m_adjustFeet = adjustFeet;
 		m_bvhAnims.push_back(baseAnim);
+		m_animationController = animationController;
 
 		std::shared_ptr<BVHData> staticData = m_bvhAnims[0];
 		std::vector<int> topology = staticData->getTopology();
@@ -85,7 +86,7 @@ namespace Mona {
 	}
 
 
-	void RigData::setJointData(std::string jointName, float minAngle, float maxAngle, bool freeAxis = false, float weight = 1) {
+	void RigData::setJointData(std::string jointName, float minAngle, float maxAngle, bool freeAxis, float weight) {
 		if (jointName == "") {
 			MONA_LOG_ERROR("jointName cannot be empty string.");
 			return;

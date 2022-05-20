@@ -66,7 +66,7 @@ namespace Mona{
         return sharedPtr;
     }
     std::shared_ptr<BVHData> BVHManager::getBVHData(std::string modelName, std::string animName) {
-        if (m_bvhDataMap.find({modelName, animName}) == m_bvhDataMap.end()) {
+        if (m_bvhDataMap.find({ modelName, animName }) == m_bvhDataMap.end()) {
             MONA_LOG_ERROR("Animation has not been read.");
             return nullptr;
         }

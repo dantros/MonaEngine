@@ -39,28 +39,31 @@ namespace Mona{
     };
 
     class IKNode {
+    public:
+        IKNode() = default;
+        IKNode(std::string jointName, int jointIndex, IKNode * parent = nullptr, float weight = 1);
     private:
         friend class IKRig;
-        IKNode() = default;
-        IKNode(std::string jointName, int jointIndex, IKNode* parent=nullptr, float weight=1);
         float m_weight = 1;
-        float m_minAngle;
-        float m_maxAngle;
+        float m_minAngle = -90;
+        float m_maxAngle = 90;
         bool m_freeAxis = false;
         std::string m_jointName;
-        int m_jointIndex;
-        IKNode* m_parent;
+        int m_jointIndex = -1;
+        IKNode* m_parent = nullptr;
         Vector3f m_rotationAxis;
     };
 
     class IKRig{
         public:
-            IKRig(std::shared_ptr<BVHData> baseAnim, RigData rigData, bool adjustFeet);
+            IKRig() = default;
+            IKRig(std::shared_ptr<BVHData> baseAnim, RigData rigData, AnimationController* animationController, bool adjustFeet);
             std::vector<std::shared_ptr<BVHData>> m_bvhAnims;
             int m_currentClipIndex = -1;
             int m_targetClipIndex = -1;
             bool m_adjustFeet;
             EnvironmentData m_environmentData;
+            AnimationController* m_animationController;
             std::vector<IKNode> m_nodes;
             std::pair<int, int> m_spine = { -1,-1 };
             std::pair<int, int> m_leftLeg = { -1,-1 };

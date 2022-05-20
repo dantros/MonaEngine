@@ -16,7 +16,6 @@ namespace Mona {
     class BVHData {
         private:
             friend class BVHManager;
-            friend class IKRig;
             BVHData(std::shared_ptr<AnimationClip> animation);
             BVHData(std::string modelName, std::string animName);
             void initFile(BVH_file_interface* pyFile);
@@ -62,25 +61,37 @@ namespace Mona {
 
     };
 
+    struct strPairHash {
+    public:
+        std::size_t operator()(const std::pair<std::string, std::string>& x) const
+        {   
+            auto hash1 = std::to_string(std::hash<std::string>()(x.first));
+            auto hash2 = std::to_string(std::hash<std::string>()(x.second));
+            size_t dualHash = std::stoi(hash1 + hash2);
+            return dualHash;
+        }
+    };
     class BVHManager {
-        private:
-            BVHManager() = default;
-            using BVHDataMap = std::unordered_map<std::pair<std::string,std::string>, std::shared_ptr<BVHData>>;
-            BVHDataMap m_bvhDataMap;
+        friend class World;
         public:
+            using BVHDataMap = std::unordered_map<std::pair<std::string, std::string>, std::shared_ptr<BVHData>, strPairHash>;
+            BVHManager(BVHManager const&) = delete;
             BVHManager& operator=(BVHManager const&) = delete;
             std::shared_ptr <BVHData> readBVH(std::shared_ptr<AnimationClip> animation);
             std::shared_ptr <BVHData> readBVH(std::string modelName, std::string animName);
             std::shared_ptr <BVHData> getBVHData(std::shared_ptr<AnimationClip> animation);
             std::shared_ptr<BVHData> getBVHData(std::string modelName, std::string animName);
             void writeBVHDynamicData(std::shared_ptr <BVHData> data, std::string outAnimName);
-            void CleanUnusedBVHClips();
+            void CleanUnusedBVHClips() noexcept;
             void StartUp();
             void ShutDown();
             static BVHManager& GetInstance() noexcept {
                 static BVHManager instance;
                 return instance;
 		    }
+    private:
+        BVHManager() = default;
+        BVHDataMap m_bvhDataMap;
 
 
     };

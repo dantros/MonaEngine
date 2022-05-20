@@ -22,6 +22,7 @@ namespace Mona {
 	class EnvironmentData {
 		private:
 			friend class IKNavigationLifetimePolicy;
+			friend class IKRig;
 			EnvironmentData() = default;
 			std::vector<Terrain> m_terrains;
 		public:

@@ -12,9 +12,9 @@ namespace Mona {
 		m_weight = weight;
 	}
 
-	IKRig::IKRig(std::shared_ptr<AnimationClip> baseAnim, RigData rigData, bool adjustFeet) {
+	IKRig::IKRig(BVHData baseAnim, RigData rigData, bool adjustFeet) {
 		m_adjustFeet = adjustFeet;
-		m_bvhAnims.push_back(BVHData(baseAnim));
+		m_bvhAnims.push_back(baseAnim);
 
 		BVHData staticData = m_bvhAnims[0];
 		std::vector<int> topology = staticData.getTopology();
@@ -64,20 +64,19 @@ namespace Mona {
 		}
 	}
 
-	void IKRig::addAnimation(std::shared_ptr<AnimationClip> animation) {
-		BVHData newAnim = BVHData(animation);
+	void IKRig::addAnimation(BVHData animation) {
 		for (int i = 0; i < m_bvhAnims.size(); i++) {
-			if (m_bvhAnims[i].getModelName() == newAnim.getModelName() && m_bvhAnims[i].getAnimName() == newAnim.getAnimName()) {
-				MONA_LOG_WARNING("Animation {0} for model {1} had already been added", newAnim.getAnimName(), newAnim.getModelName());
+			if (m_bvhAnims[i].getModelName() == animation.getModelName() && m_bvhAnims[i].getAnimName() == animation.getAnimName()) {
+				MONA_LOG_WARNING("Animation {0} for model {1} had already been added", animation.getAnimName(), animation.getModelName());
 				return;
 			}
 		}
-		m_bvhAnims.push_back(newAnim);
+		m_bvhAnims.push_back(animation);
 	}
-	int IKRig::removeAnimation(std::shared_ptr<AnimationClip> animation) {
+	int IKRig::removeAnimation(BVHData animation) {
 		for (int i = 0; i < m_bvhAnims.size(); i++) {
-			if (m_bvhAnims[i].getModelName() == animation->GetSkeleton()->GetModelName() && 
-				m_bvhAnims[i].getAnimName() == animation->GetAnimationName()) {
+			if (m_bvhAnims[i].getModelName() == animation.getModelName() && 
+				m_bvhAnims[i].getAnimName() == animation.getAnimName()) {
 				m_bvhAnims.erase(m_bvhAnims.begin() + i);
 				return i;
 			}
@@ -102,4 +101,7 @@ namespace Mona {
 		jointData[jointName].dataValid = true;
 	}
 
+	JointData RigData::getJointData(std::string jointName) {
+		return JointData(jointData[jointName]);
+	}
 }

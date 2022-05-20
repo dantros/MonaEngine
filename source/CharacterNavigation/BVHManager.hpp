@@ -18,9 +18,7 @@ namespace Mona {
             friend class BVHManager;
             friend class IKRig;
             BVHData(std::shared_ptr<AnimationClip> animation);
-            BVHData(std::shared_ptr<AnimationClip> animation, std::vector<std::string> jointNames);
             BVHData(std::string modelName, std::string animName);
-            BVHData(std::string modelName, std::string animName, std::vector<std::string> jointNames);
             void initFile(BVH_file_interface* pyFile);
             MatrixXf m_offsets;
             std::vector<VectorXf> m_rootPositions;
@@ -31,7 +29,7 @@ namespace Mona {
             std::string m_animName;
             std::string m_modelName;
             std::vector<int> m_topology;
-            std::vector<std::string> m_jointNames; // si se quiere usar un subset de las joints originales
+            std::vector<std::string> m_jointNames;
             std::vector<VectorXf> m_rootPositions_dmic;
             std::vector<MatrixXf> m_rotations_dmic;
             float m_frametime_dmic;
@@ -67,14 +65,16 @@ namespace Mona {
     class BVHManager {
         private:
             BVHManager() = default;
-            std::vector<BVHData*> m_readDataVector;
+            using BVHDataMap = std::unordered_map<std::pair<std::string,std::string>, std::shared_ptr<BVHData>>;
+            BVHDataMap m_bvhDataMap;
         public:
             BVHManager& operator=(BVHManager const&) = delete;
-            static BVHData* readBVH(std::string modelName, std::string animName);
-            static BVHData* readBVH(std::string modelName, std::string animName, std::vector<std::string> jointNames);
-            void writeBVHDynamicData(BVHData* data, std::string outAnimName);
-            static void StartUp();
-            static void ShutDown();
+            std::shared_ptr <BVHData> readBVH(std::shared_ptr<AnimationClip> animation);
+            std::shared_ptr <BVHData> readBVH(std::string modelName, std::string animName);
+            void writeBVHDynamicData(std::shared_ptr <BVHData> data, std::string outAnimName);
+            void CleanUnusedBVHClips();
+            void StartUp();
+            void ShutDown();
             static BVHManager& GetInstance() noexcept {
                 static BVHManager instance;
                 return instance;

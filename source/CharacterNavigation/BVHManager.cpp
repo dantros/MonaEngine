@@ -33,23 +33,39 @@ namespace Mona{
         }
     }
     void BVHManager::ShutDown() {
-        for (int i = 0; i < GetInstance().m_readDataVector.size(); i++) {
-            delete GetInstance().m_readDataVector[i];
-        }
+        //Al cerrar el motor se llama esta función donde se limpia el mapa de animaciones
+        m_bvhDataMap.clear();
         Py_FinalizeEx();
     }
 
-    BVHData* BVHManager::readBVH(std::string modelName, std::string animName) {
-        BVHData* data = new BVHData(modelName, animName);
-        GetInstance().m_readDataVector.push_back(data);
-        return data;
+    void BVHManager::CleanUnusedBVHClips() noexcept {
+        /*
+        * Elimina todos los punteros del mapa cuyo conteo de referencias es igual a uno,
+        * es decir, que el puntero del mapa es el unico que apunta a esa memoria.
+        */
+        for (auto i = m_bvhDataMap.begin(), last = m_bvhDataMap.end(); i != last;) {
+            if (i->second.use_count() == 1) {
+                i = m_bvhDataMap.erase(i);
+            }
+            else {
+                ++i;
+            }
+
+        }
     }
-    BVHData* BVHManager::readBVH(std::string modelName, std::string animName, std::vector<std::string> jointNames) {
-        BVHData* data = new BVHData(modelName, animName, jointNames);
-        GetInstance().m_readDataVector.push_back(data);
-        return data;
+    std::shared_ptr<BVHData> BVHManager::readBVH(std::shared_ptr<AnimationClip> animation) {
+        BVHData* dataPtr = new BVHData(animation);
+        std::shared_ptr<BVHData> sharedPtr = std::shared_ptr<BVHData>(dataPtr);
+        m_bvhDataMap.insert({ {animation->GetSkeleton()->GetModelName(), animation->GetAnimationName()}, sharedPtr });
+        return sharedPtr;
     }
-    void BVHManager::writeBVHDynamicData(BVHData* data, std::string outAnimName) {
+    std::shared_ptr<BVHData> BVHManager::readBVH(std::string modelName, std::string animName) {
+        BVHData* dataPtr = new BVHData(modelName, animName);
+        std::shared_ptr<BVHData> sharedPtr = std::shared_ptr<BVHData>(dataPtr);
+        m_bvhDataMap.insert({ {modelName, animName}, sharedPtr });
+        return sharedPtr;
+    }
+    void BVHManager::writeBVHDynamicData(std::shared_ptr<BVHData> data, std::string outAnimName) {
         std::string writePath = BVHData::_getFilePath(data->getModelName(), outAnimName);
         
         BVH_writer_interface* pyWriterPtr = createWriterInterface(PyUnicode_FromString(data->getInputFilePath().data()));
@@ -85,29 +101,6 @@ namespace Mona{
 
 
     //BVHData
-
-    BVHData::BVHData(std::string modelName, std::string animName, std::vector<std::string> jointNames){
-        std::string filePath = _getFilePath(modelName, animName);
-        if (!std::filesystem::exists(filePath)) { 
-            MONA_LOG_ERROR("BVHFile Error: Path does not exist -> {0}", filePath);
-            return;
-        }
-        m_modelName = modelName;
-        m_animName = animName;
-        PyObject* pyNameList = PyList_New(jointNames.size());
-        if (!pyNameList) MONA_LOG_ERROR("Unable to allocate memory for Python list");
-        for (unsigned int i = 0; i < jointNames.size(); i++) {
-            PyObject* name = PyUnicode_FromString(jointNames[i].data());
-            if (!name) {
-                Py_DECREF(pyNameList);
-                MONA_LOG_ERROR("Unable to allocate memory for Python list");
-            }
-            PyList_SET_ITEM(pyNameList, i, name);
-        }
-        BVH_file_interface* pyFilePtr = createFileInterface(PyUnicode_FromString(filePath.data()), pyNameList, PyBool_FromLong(1));
-        initFile(pyFilePtr);
-        setDynamicData(m_rotations, m_rootPositions, m_frametime);
-    }
     BVHData::BVHData(std::string modelName, std::string animName) {
         std::string filePath = _getFilePath(modelName, animName);
         if (!std::filesystem::exists(filePath)) { 
@@ -121,8 +114,6 @@ namespace Mona{
         setDynamicData(m_rotations, m_rootPositions, m_frametime);
     }
     BVHData::BVHData(std::shared_ptr<AnimationClip> animation): BVHData(animation->GetSkeleton()->GetModelName(), animation->GetAnimationName()) {}
-    BVHData::BVHData(std::shared_ptr<AnimationClip> animation, std::vector<std::string> jointNames) : 
-        BVHData(animation->GetSkeleton()->GetModelName(), animation->GetAnimationName(), jointNames) {}
 
     void BVHData::initFile(BVH_file_interface* pyFile) {
         m_jointNum = pyFile->jointNum;

@@ -21,10 +21,9 @@ namespace Mona {
 
 	class EnvironmentData {
 		private:
-			friend class IKNavigationLifetimePolicy;
 			friend class IKRig;
-			EnvironmentData() = default;
 			std::vector<Terrain> m_terrains;
+			EnvironmentData() = default;
 		public:
 			float getTerrainHeight(float x, float y, ComponentManager<TransformComponent>* transformManager, 
 				ComponentManager<StaticMeshComponent>* staticMeshManager);

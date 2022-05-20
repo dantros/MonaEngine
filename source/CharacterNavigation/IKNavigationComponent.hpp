@@ -23,7 +23,8 @@ namespace Mona {
 				m_adjustFeet = adjustFeet;
 			}
 			void AddAnimation(std::shared_ptr<AnimationClip> animationClip) {
-				if (animationClip->GetSkeleton() != m_skeleton) {
+				std::shared_ptr<Skeleton> skeletonPtr = m_skeletalMeshManagerPtr->GetComponentPointer(m_skeletalMeshHandle)->GetSkeleton();
+				if (animationClip->GetSkeleton() != skeletonPtr) {
 					MONA_LOG_ERROR("Input animation does not correspond to base skeleton.");
 					return;
 				}
@@ -46,7 +47,7 @@ namespace Mona {
 			}
 		private:
 			std::vector<std::shared_ptr<AnimationClip>> m_animationClips;
-			std::shared_ptr<Skeleton> m_skeleton;
+			InnerComponentHandle m_skeletalMeshHandle;
 			RigData m_rigData;
 			IKRig m_ikRig;
 			bool m_adjustFeet;

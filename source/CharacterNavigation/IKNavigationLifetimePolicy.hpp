@@ -1,11 +1,12 @@
 #pragma once
 #ifndef IKNAVIGATIONLIFETIMEPOLICY_HPP
 #define IKNAVIGATIONLIFETIMEPOLICY_HPP
+#include "IKNavigationComponent.hpp"
+#include "../World/ComponentHandle.hpp"
 #include "../World/ComponentManager.hpp"
 #include "../World/TransformComponent.hpp"
 #include "../PhysicsCollision/RigidBodyComponent.hpp"
 #include "../Rendering/StaticMeshComponent.hpp"
-#include "IKNavigationComponent.hpp"
 #include "EnvironmentData.hpp"
 namespace Mona {
 	/*
@@ -32,16 +33,17 @@ namespace Mona {
 
 			// validar clip base
 			InnerComponentHandle skeletalMeshHandle = m_ikNavigationManagerPtr->GetOwner(handle)->GetInnerComponentHandle<SkeletalMeshComponent>();
+			ikNav.m_skeletalMeshHandle = skeletalMeshHandle;
 			std::shared_ptr<Skeleton> skeletonPtr = m_skeletalMeshManagerPtr->GetComponentPointer(skeletalMeshHandle)->GetSkeleton();
-			AnimationController* animationControllerPtr = &(m_skeletalMeshManagerPtr->GetComponentPointer(skeletalMeshHandle)->GetAnimationController());
-			ikNav.m_skeleton = skeletonPtr;
 			if(ikNav.m_animationClips[0]->GetSkeleton() != skeletonPtr) {
 				MONA_LOG_ERROR("Input animation does not correspond to base skeleton.");
 				ikNav.m_animationClips.erase(ikNav.m_animationClips.begin());
 				return;
 			}
 			std::shared_ptr<BVHData> bvhPtr = BVHManager::GetInstance().readBVH(ikNav.m_animationClips[0]);
-			ikNav.m_ikRig = IKRig(bvhPtr, ikNav.m_rigData, animationControllerPtr, ikNav.m_adjustFeet);
+
+			InnerComponentHandle rigidBodyHandle = m_ikNavigationManagerPtr->GetOwner(handle)->GetInnerComponentHandle<RigidBodyComponent>();
+			ikNav.m_ikRig = IKRig(bvhPtr, ikNav.m_rigData, rigidBodyHandle, skeletalMeshHandle, ikNav.m_adjustFeet);
 		}
 		void OnRemoveComponent(GameObject* gameObjectPtr, IKNavigationComponent& ikNav, const InnerComponentHandle& handle) noexcept {
 		}

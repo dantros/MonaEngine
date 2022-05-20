@@ -5,6 +5,8 @@
 #include <memory>
 #include "BVHManager.hpp"
 #include "EnvironmentData.hpp"
+#include "../PhysicsCollision/RigidBodyLifetimePolicy.hpp"
+#include "../Animation/SkeletalMeshComponent.hpp"
 
 namespace Mona{
     typedef Eigen::Matrix<float, 1, 3> Vector3f;
@@ -16,7 +18,7 @@ namespace Mona{
         float maxAngle = 90;
         bool freeAxis = false;
         float weight = 1;
-        bool useThisData = false;
+        bool enableData = false;
     };
     struct ChainEnds {
         std::string startJointName;
@@ -56,15 +58,19 @@ namespace Mona{
     };
 
     class IKRig{
+        friend class IKNavigationComponent;
         public:
             IKRig() = default;
-            IKRig(std::shared_ptr<BVHData> baseAnim, RigData rigData, AnimationController* animationController, bool adjustFeet);
+            IKRig(std::shared_ptr<BVHData> baseAnim, RigData rigData, InnerComponentHandle rigidBodyHandle, 
+                InnerComponentHandle skeletalMeshHandle, bool adjustFeet);
+        private:
             std::vector<std::shared_ptr<BVHData>> m_bvhAnims;
             int m_currentClipIndex = -1;
             int m_targetClipIndex = -1;
             bool m_adjustFeet;
+            InnerComponentHandle m_rigidBodyHandle;
+            InnerComponentHandle m_skeletalMeshHandle;
             EnvironmentData m_environmentData;
-            AnimationController* m_animationController;
             std::vector<IKNode> m_nodes;
             std::pair<int, int> m_spine = { -1,-1 };
             std::pair<int, int> m_leftLeg = { -1,-1 };
@@ -75,7 +81,7 @@ namespace Mona{
             std::pair<int, int> m_rightFoot = { -1,-1 };
             void addAnimation(std::shared_ptr<BVHData> animation);
             int removeAnimation(std::shared_ptr<BVHData> animation);
-            void setClipAnimData(std::shared_ptr<AnimationClip> clip, int firstFrame, int lastFrame);
+            Vector3f getLinearVelocity(ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr);
     };
 
 }

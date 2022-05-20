@@ -12,10 +12,12 @@ namespace Mona {
 		m_weight = weight;
 	}
 
-	IKRig::IKRig(std::shared_ptr<BVHData> baseAnim, RigData rigData, AnimationController* animationController, bool adjustFeet) {
+	IKRig::IKRig(std::shared_ptr<BVHData> baseAnim, RigData rigData, InnerComponentHandle rigidBodyHandle, 
+		InnerComponentHandle skeletalMeshHandle, bool adjustFeet) {
 		m_adjustFeet = adjustFeet;
 		m_bvhAnims.push_back(baseAnim);
-		m_animationController = animationController;
+		m_rigidBodyHandle = rigidBodyHandle;
+		m_skeletalMeshHandle = skeletalMeshHandle;
 
 		std::shared_ptr<BVHData> staticData = m_bvhAnims[0];
 		std::vector<int> topology = staticData->getTopology();
@@ -56,7 +58,7 @@ namespace Mona {
 		// setear constraints y pesos
 		for (int i = 0; i < m_nodes.size(); i++) {
 			JointData currData = rigData.jointData[m_nodes[i].m_jointName];
-			if (currData.useThisData) {
+			if (currData.enableData) {
 				m_nodes[i].m_freeAxis = currData.freeAxis;
 				m_nodes[i].m_minAngle = currData.minAngle;
 				m_nodes[i].m_maxAngle = currData.maxAngle;
@@ -85,6 +87,11 @@ namespace Mona {
 		return -1;
 	}
 
+	Vector3f IKRig::getLinearVelocity(ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr) {
+		auto bodyVel = rigidBodyManagerPtr->GetComponentPointer(m_rigidBodyHandle)->GetLinearVelocity();
+		return { bodyVel[0], bodyVel[1], bodyVel[2] };
+	}
+
 
 	void RigData::setJointData(std::string jointName, float minAngle, float maxAngle, bool freeAxis, float weight, bool enableData) {
 		if (jointName == "") {
@@ -99,13 +106,13 @@ namespace Mona {
 		jointData[jointName].maxAngle = maxAngle;
 		jointData[jointName].freeAxis = freeAxis;
 		jointData[jointName].weight = weight;
-		jointData[jointName].useThisData = enableData;
+		jointData[jointName].enableData = enableData;
 	}
 
 	JointData RigData::getJointData(std::string jointName) {
 		return JointData(jointData[jointName]);
 	}
 	void RigData::enableJointData(std::string jointName, bool enableData) {
-		jointData[jointName].useThisData = enableData;
+		jointData[jointName].enableData = enableData;
 	}
 }

@@ -6,7 +6,6 @@
 #include "../World/ComponentHandle.hpp"
 #include "../World/ComponentManager.hpp"
 #include "../World/ComponentTypes.hpp"
-#include "EnvironmentData.hpp"
 #include "IKRig.hpp"
 namespace Mona {
 	class IKNavigationLifetimePolicy;
@@ -24,14 +23,25 @@ namespace Mona {
 				m_adjustFeet = adjustFeet;
 			}
 			void AddAnimation(std::shared_ptr<AnimationClip> animationClip) {
+				if (animationClip->GetSkeleton() != m_skeleton) {
+					MONA_LOG_ERROR("Input animation does not correspond to base skeleton.");
+					return;
+				}
+				m_ikRig.addAnimation(animationClip);
+			}
 
+			int RemoveAnimation(std::shared_ptr<AnimationClip> animationClip) {
+				return m_ikRig.removeAnimation(animationClip);
 			}
 			void AddTerrain(const Terrain& terrain) {
-				m_environmentData.addTerrain(terrain, m_staticMeshManagerPtr);
+				m_ikRig.m_environmentData.addTerrain(terrain, m_staticMeshManagerPtr);
+			}
+			int RemoveTerrain(const Terrain& terrain) {
+				return m_ikRig.m_environmentData.removeTerrain(terrain, m_staticMeshManagerPtr);
 			}
 		private:
 			std::vector<std::shared_ptr<AnimationClip>> m_animationClips;
-			EnvironmentData m_environmentData;
+			std::shared_ptr<Skeleton> m_skeleton;
 			RigData m_rigData;
 			IKRig m_ikRig;
 			bool m_adjustFeet;

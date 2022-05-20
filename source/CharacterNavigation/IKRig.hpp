@@ -4,6 +4,7 @@
 
 #include <memory>
 #include "BVHManager.hpp"
+#include "EnvironmentData.hpp"
 
 namespace Mona{
     typedef Eigen::Matrix<float, 1, 3> Vector3f;
@@ -59,6 +60,7 @@ namespace Mona{
             int m_currentClipIndex = -1;
             int m_targetClipIndex = -1;
             bool m_adjustFeet;
+            EnvironmentData m_environmentData;
             std::vector<IKNode> m_nodes;
             std::pair<int, int> m_spine = { -1,-1 };
             std::pair<int, int> m_leftLeg = { -1,-1 };

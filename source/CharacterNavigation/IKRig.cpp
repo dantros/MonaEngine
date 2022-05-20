@@ -12,13 +12,13 @@ namespace Mona {
 		m_weight = weight;
 	}
 
-	IKRig::IKRig(BVHData baseAnim, RigData rigData, bool adjustFeet) {
+	IKRig::IKRig(std::shared_ptr<BVHData> baseAnim, RigData rigData, bool adjustFeet) {
 		m_adjustFeet = adjustFeet;
 		m_bvhAnims.push_back(baseAnim);
 
-		BVHData staticData = m_bvhAnims[0];
-		std::vector<int> topology = staticData.getTopology();
-		std::vector<std::string> jointNames = staticData.getJointNames();
+		std::shared_ptr<BVHData> staticData = m_bvhAnims[0];
+		std::vector<int> topology = staticData->getTopology();
+		std::vector<std::string> jointNames = staticData->getJointNames();
 		MONA_ASSERT(topology.size() == jointNames.size(), "Topology and jointNames arrays should have the same size");
 		// construimos el ikRig
 		m_nodes = std::vector<IKNode>(jointNames.size());
@@ -31,7 +31,7 @@ namespace Mona {
 		std::vector<ChainEnds> dataArr = { rigData.spine, rigData.leftLeg, rigData.rightLeg, rigData.leftArm, rigData.rightArm, rigData.leftFoot, rigData.rightFoot };
 		std::vector<std::pair<int, int>*> nodeTargets = { &m_spine, &m_leftLeg, &m_rightLeg, &m_leftArm, &m_rightArm, &m_leftFoot, &m_rightFoot };
 		for (int i = 0; i < dataArr.size(); i++) { // construccion de las cadenas principales
-			int eeIndex = funcUtils::findIndex(staticData.getJointNames(), dataArr[i].endEffectorName);
+			int eeIndex = funcUtils::findIndex(staticData->getJointNames(), dataArr[i].endEffectorName);
 			if (eeIndex != -1) {
 				int chainStartIndex = -1;
 				IKNode* currentNode = &m_nodes[eeIndex];
@@ -64,19 +64,19 @@ namespace Mona {
 		}
 	}
 
-	void IKRig::addAnimation(BVHData animation) {
+	void IKRig::addAnimation(std::shared_ptr<BVHData> animation) {
 		for (int i = 0; i < m_bvhAnims.size(); i++) {
-			if (m_bvhAnims[i].getModelName() == animation.getModelName() && m_bvhAnims[i].getAnimName() == animation.getAnimName()) {
-				MONA_LOG_WARNING("Animation {0} for model {1} had already been added", animation.getAnimName(), animation.getModelName());
+			if (m_bvhAnims[i]->getModelName() == animation->getModelName() && m_bvhAnims[i]->getAnimName() == animation->getAnimName()) {
+				MONA_LOG_WARNING("Animation {0} for model {1} had already been added", animation->getAnimName(), animation->getModelName());
 				return;
 			}
 		}
 		m_bvhAnims.push_back(animation);
 	}
-	int IKRig::removeAnimation(BVHData animation) {
+	int IKRig::removeAnimation(std::shared_ptr<BVHData> animation) {
 		for (int i = 0; i < m_bvhAnims.size(); i++) {
-			if (m_bvhAnims[i].getModelName() == animation.getModelName() && 
-				m_bvhAnims[i].getAnimName() == animation.getAnimName()) {
+			if (m_bvhAnims[i]->getModelName() == animation->getModelName() && 
+				m_bvhAnims[i]->getAnimName() == animation->getAnimName()) {
 				m_bvhAnims.erase(m_bvhAnims.begin() + i);
 				return i;
 			}

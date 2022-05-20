@@ -71,6 +71,8 @@ namespace Mona {
             BVHManager& operator=(BVHManager const&) = delete;
             std::shared_ptr <BVHData> readBVH(std::shared_ptr<AnimationClip> animation);
             std::shared_ptr <BVHData> readBVH(std::string modelName, std::string animName);
+            std::shared_ptr <BVHData> getBVHData(std::shared_ptr<AnimationClip> animation);
+            std::shared_ptr<BVHData> getBVHData(std::string modelName, std::string animName);
             void writeBVHDynamicData(std::shared_ptr <BVHData> data, std::string outAnimName);
             void CleanUnusedBVHClips();
             void StartUp();

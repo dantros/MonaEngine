@@ -65,6 +65,19 @@ namespace Mona{
         m_bvhDataMap.insert({ {modelName, animName}, sharedPtr });
         return sharedPtr;
     }
+    std::shared_ptr<BVHData> BVHManager::getBVHData(std::string modelName, std::string animName) {
+        if (m_bvhDataMap.find({modelName, animName}) == m_bvhDataMap.end()) {
+            MONA_LOG_ERROR("Animation has not been read.");
+            return nullptr;
+        }
+        else {
+            return m_bvhDataMap[{modelName, animName}];
+        }
+    }
+    std::shared_ptr <BVHData> BVHManager::getBVHData(std::shared_ptr<AnimationClip> animation) {
+        return getBVHData(animation->GetSkeleton()->GetModelName(), animation->GetAnimationName());
+    }
+    
     void BVHManager::writeBVHDynamicData(std::shared_ptr<BVHData> data, std::string outAnimName) {
         std::string writePath = BVHData::_getFilePath(data->getModelName(), outAnimName);
         

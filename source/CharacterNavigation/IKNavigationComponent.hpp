@@ -27,11 +27,16 @@ namespace Mona {
 					MONA_LOG_ERROR("Input animation does not correspond to base skeleton.");
 					return;
 				}
-				m_ikRig.addAnimation(BVHData(animationClip));
+				std::shared_ptr<BVHData> bvhPtr = BVHManager::GetInstance().readBVH(animationClip);
+				m_ikRig.addAnimation(bvhPtr);
 			}
 
 			int RemoveAnimation(std::shared_ptr<AnimationClip> animationClip) {
-				return m_ikRig.removeAnimation(BVHData(animationClip));
+				std::shared_ptr<BVHData> bvhPtr = BVHManager::GetInstance().getBVHData(animationClip);
+				if ( bvhPtr != nullptr) {
+					return m_ikRig.removeAnimation(bvhPtr);
+				}
+				return -1;
 			}
 			void AddTerrain(const Terrain& terrain) {
 				m_ikRig.m_environmentData.addTerrain(terrain, m_staticMeshManagerPtr);

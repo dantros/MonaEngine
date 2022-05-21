@@ -79,7 +79,7 @@ namespace Mona{
         if (m_bvhDataMap.find({ modelName, animName }) == m_bvhDataMap.end()) { return nullptr; }
         else { return m_bvhDataMap.at({modelName, animName}); }
     }
-    std::shared_ptr <BVHData> BVHManager::getBVHData(std::shared_ptr<AnimationClip> animation) {
+    std::shared_ptr<BVHData> BVHManager::getBVHData(std::shared_ptr<AnimationClip> animation) {
         return getBVHData(animation->GetSkeleton()->GetModelName(), animation->GetAnimationName());
     }
     
@@ -95,10 +95,15 @@ namespace Mona{
             for (unsigned int j = 0; j < data->getJointNum(); j++) {
                 PyObject* valListRot = PyList_New(4);
                 PyList_SET_ITEM(jointListRot, j, valListRot);
-                for (unsigned int k = 0; k < 4; k++) {
-                    PyObject* valRot = PyFloat_FromDouble((double)data->getDynamicRotations()[i](j,k));
-                    PyList_SET_ITEM(valListRot, k, valRot);
-                }
+
+                PyObject* valRotW = PyFloat_FromDouble((double)data->getDynamicRotations()[i][j].w());
+                PyObject* valRotX = PyFloat_FromDouble((double)data->getDynamicRotations()[i][j].x());
+                PyObject* valRotY = PyFloat_FromDouble((double)data->getDynamicRotations()[i][j].y());
+                PyObject* valRotZ = PyFloat_FromDouble((double)data->getDynamicRotations()[i][j].z());
+                PyList_SET_ITEM(valListRot, 0, valRotW);
+                PyList_SET_ITEM(valListRot, 1, valRotX);
+                PyList_SET_ITEM(valListRot, 2, valRotY);
+                PyList_SET_ITEM(valListRot, 3, valRotZ);
             }
         }
 
@@ -172,13 +177,13 @@ namespace Mona{
         
 
         // offsets
-        m_offsets = MatrixXf(jointNum, 3);
+        m_offsets = std::vector<Vector3f>(jointNum);
         if (PyList_Check(pyFile->offsets)) {
             for (Py_ssize_t i = 0; i < jointNum; i++) {
                 PyObject* jointOff = PyList_GetItem(pyFile->offsets, i);
                 for (Py_ssize_t j = 0; j < 3; j++) {
                     PyObject* valOff = PyList_GetItem(jointOff, j);
-                    m_offsets(i,j) = (float)PyFloat_AsDouble(valOff);
+                    m_offsets[i][j] = (float)PyFloat_AsDouble(valOff);
                 }
 
             }
@@ -188,17 +193,21 @@ namespace Mona{
         }
 
         // rotations
-        m_rotations = std::vector<MatrixXf>(frameNum);//new float**[frameNum];
+        m_rotations = std::vector<std::vector<Quaternion>>(frameNum);
         if (PyList_Check(pyFile->rotations)) {
             for (Py_ssize_t i = 0; i <frameNum; i++) {
                 PyObject* frameRot = PyList_GetItem(pyFile->rotations, i);
-                m_rotations[i] = MatrixXf(jointNum, 4);
+                m_rotations[i] = std::vector<Quaternion>(jointNum);
                 for (Py_ssize_t j = 0; j < jointNum; j++) {
                     PyObject* jointRot = PyList_GetItem(frameRot, j);
-                    for (Py_ssize_t k = 0; k < 4; k++) {
-                        PyObject* valRot = PyList_GetItem(jointRot, k);
-                        m_rotations[i](j,k) = (float)PyFloat_AsDouble(valRot);
-                    }
+                    PyObject* valRotW = PyList_GetItem(jointRot, 0);
+                    PyObject* valRotX = PyList_GetItem(jointRot, 1);
+                    PyObject* valRotY = PyList_GetItem(jointRot, 2);
+                    PyObject* valRotZ = PyList_GetItem(jointRot, 3);
+                    m_rotations[i][j].w() = (float)PyFloat_AsDouble(valRotW);
+                    m_rotations[i][j].x() = (float)PyFloat_AsDouble(valRotX);
+                    m_rotations[i][j].y() = (float)PyFloat_AsDouble(valRotY);
+                    m_rotations[i][j].z() = (float)PyFloat_AsDouble(valRotZ);
                 }
             }
         }
@@ -208,14 +217,13 @@ namespace Mona{
 
 
         // positions
-        m_rootPositions = std::vector<VectorXf>(frameNum);
+        m_rootPositions = std::vector<Vector3f>(frameNum);
         if (PyList_Check(pyFile->rootPositions)) {
             for (Py_ssize_t i = 0; i < frameNum; i++) {
                 PyObject* frameRoot = PyList_GetItem(pyFile->rootPositions, i);
-                m_rootPositions[i] = VectorXf(3);
                 for (Py_ssize_t j = 0; j < 3; j++) {
                     PyObject* valRoot = PyList_GetItem(frameRoot, j);
-                    m_rootPositions[i](j) = (float)PyFloat_AsDouble(valRoot);
+                    m_rootPositions[i][j] = (float)PyFloat_AsDouble(valRoot);
                 }
 
             }
@@ -225,15 +233,12 @@ namespace Mona{
         }
     }
 
-    void BVHData::setDynamicData(std::vector<MatrixXf> rotations, std::vector<VectorXf> rootPositions, float frametime) {
+    void BVHData::setDynamicData(std::vector<std::vector<Quaternion>> rotations, std::vector<Vector3f> rootPositions, float frametime) {
         if (rotations.size() != rootPositions.size() || rotations.size() != m_frameNum) {
             MONA_LOG_ERROR("Dynamic data must fit static data!");
         }
         for (int i = 0; i < m_frameNum; i++) {
-            if (rotations[i].rows() != m_jointNum || rotations[i].cols() != 4) {
-                MONA_LOG_ERROR("Dynamic data must fit static data!");
-            }
-            if (rootPositions[i].size() != 3) {
+            if (rotations[i].size() != m_jointNum) {
                 MONA_LOG_ERROR("Dynamic data must fit static data!");
             }
         }
@@ -245,9 +250,9 @@ namespace Mona{
     std::vector<JointPose> BVHData::getFramePoses(int frame) {
         std::vector<JointPose> poses(m_jointNum);
         for (int i = 0; i < m_jointNum; i++) {
-            glm::vec3 tr(m_offsets(i,0), m_offsets(i,1), m_offsets(i,2));
+            glm::vec3 tr(m_offsets[i][0], m_offsets[i][1], m_offsets[i][2]);
             glm::vec3 scl(1, 1, 1);
-            glm::fquat rot(m_rotations_dmic[frame](i, 0), m_rotations_dmic[frame](i, 1), m_rotations_dmic[frame](i, 2), m_rotations_dmic[frame](i, 3));
+            glm::fquat rot(m_rotations_dmic[frame][i].w(), m_rotations_dmic[frame][i].x(), m_rotations_dmic[frame][i].y(), m_rotations_dmic[frame][i].z());
             poses[i] = JointPose(rot, tr, scl);
         }
         return poses;

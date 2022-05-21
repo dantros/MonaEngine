@@ -10,13 +10,27 @@
 
 namespace Mona{
     typedef Eigen::Matrix<float, 1, 3> Vector3f;
+    typedef Eigen::Quaternion<float> Quaternion;
+    typedef Eigen::AngleAxis<float> AngleAxis;
     typedef Eigen::Matrix<float, 1, 2> Vector2f;
-    typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> MatrixXf;
+
+    struct JointRotation {
+    private:
+        AngleAxis m_angleAxis;
+        Quaternion m_quatRotation;
+    public:
+        JointRotation(Vector3f rotationAxis, float rotationAngle);
+        JointRotation(Quaternion quatRotation);
+        void setRotation(Quaternion rotation);
+        void setRotation(Vector3f rotationAxis, float rotationAngle);
+        Quaternion getQuatRotation() { return m_quatRotation; }
+        float getRotationAngle() { return m_angleAxis.angle(); }
+        Vector3f getRotationAxis() { return m_angleAxis.axis(); }
+    };
 
     struct JointData {
         float minAngle = -90;
         float maxAngle = 90;
-        bool freeAxis = false;
         float weight = 1;
         bool enableData = false;
     };
@@ -24,7 +38,7 @@ namespace Mona{
         std::string startJointName;
         std::string endEffectorName;
     };
-    class RigData {
+    struct RigData {
         friend class IKRig;
     private:
         std::unordered_map<std::string, JointData> jointData;
@@ -36,7 +50,7 @@ namespace Mona{
         ChainEnds rightArm;
         ChainEnds leftFoot;
         ChainEnds rightFoot;
-        void setJointData(std::string jointName, float minAngle, float maxAngle, bool freeAxis = false, float weight = 1, bool enableData =true);
+        void setJointData(std::string jointName, float minAngle, float maxAngle, float weight = 1, bool enableData =true);
         void enableJointData(std::string jointName, bool enableData);
         JointData getJointData(std::string jointName);
         bool isValid();
@@ -51,19 +65,20 @@ namespace Mona{
         float m_weight = 1;
         float m_minAngle = -90;
         float m_maxAngle = 90;
-        bool m_freeAxis = false;
         std::string m_jointName;
         int m_jointIndex = -1;
         IKNode* m_parent = nullptr;
         Vector3f m_rotationAxis;
     };
-
+    
     class IKRig{
         friend class IKNavigationComponent;
+        friend class IKRigConfig;
         public:
             IKRig() = default;
             IKRig(std::shared_ptr<BVHData> baseAnim, RigData rigData, InnerComponentHandle rigidBodyHandle,
                 InnerComponentHandle skeletalMeshHandle);
+            Vector3f centerOfMass(int frame);
         private:
             std::vector<std::shared_ptr<BVHData>> m_bvhAnims;
             int m_currentClipIndex = -1;

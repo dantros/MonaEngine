@@ -6,12 +6,13 @@
 #include <vector>
 #include <memory>
 #include <Eigen/Dense>
+#include <Eigen/Geometry> 
 #include "../Animation/AnimationController.hpp"
 #include "../Core/RootDirectory.hpp"
 
 namespace Mona {
-    typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> MatrixXf;
-    typedef Eigen::Matrix<float, 1, Eigen::Dynamic> VectorXf;
+    typedef Eigen::Matrix<float, 1, 3> Vector3f;
+    typedef Eigen::Quaternion<float> Quaternion;
 
     class BVHData {
         private:
@@ -19,9 +20,9 @@ namespace Mona {
             BVHData(std::shared_ptr<AnimationClip> animation);
             BVHData(std::string modelName, std::string animName);
             void initFile(BVH_file_interface* pyFile);
-            MatrixXf m_offsets;
-            std::vector<VectorXf> m_rootPositions;
-            std::vector<MatrixXf> m_rotations;
+            std::vector<Vector3f> m_offsets; //numJoints x 3
+            std::vector<Vector3f> m_rootPositions; // frameNum x 3
+            std::vector<std::vector<Quaternion>> m_rotations; // frameNum x numJoints x 4
             int m_jointNum;
             int m_frameNum;
             float m_frametime;
@@ -29,8 +30,8 @@ namespace Mona {
             std::string m_modelName;
             std::vector<int> m_topology;
             std::vector<std::string> m_jointNames;
-            std::vector<VectorXf> m_rootPositions_dmic;
-            std::vector<MatrixXf> m_rotations_dmic;
+            std::vector<Vector3f> m_rootPositions_dmic;
+            std::vector<std::vector<Quaternion>> m_rotations_dmic;
             float m_frametime_dmic;
             std::shared_ptr<AnimationClip> m_baseClip = nullptr;
             static std::string _getFilePath(std::string modelName, std::string animName) {
@@ -39,9 +40,9 @@ namespace Mona {
                 return filePath;
             }
         public:
-            MatrixXf getOffsets() { return m_offsets; }
-            std::vector<VectorXf> getRootPositions() { return m_rootPositions; }
-            std::vector<MatrixXf> getRotations() { return m_rotations; }
+            std::vector<Vector3f> getOffsets() { return m_offsets; }
+            std::vector<Vector3f> getRootPositions() { return m_rootPositions; }
+            std::vector<std::vector<Quaternion>> getRotations() { return m_rotations; }
             int getJointNum() { return m_jointNum; }
             int getFrameNum() { return m_frameNum; }
             float getFrametime() { return m_frametime; }
@@ -49,10 +50,10 @@ namespace Mona {
             std::vector<std::string> getJointNames() { return m_jointNames; }
             std::string getAnimName() { return m_animName;  }
             std::string getModelName() { return m_modelName; }
-            std::vector<VectorXf> getDynamicRootPositions() { return m_rootPositions_dmic; }
-            std::vector<MatrixXf> getDynamicRotations() { return m_rotations_dmic; }
+            std::vector<Vector3f> getDynamicRootPositions() { return m_rootPositions_dmic; }
+            std::vector<std::vector<Quaternion>> getDynamicRotations() { return m_rotations_dmic; }
             float getDynamicFrametime() { return m_frametime_dmic; }
-            void setDynamicData(std::vector<MatrixXf> rotations, std::vector<VectorXf> rootPositions, float frametime);
+            void setDynamicData(std::vector<std::vector<Quaternion>> rotations, std::vector<Vector3f> rootPositions, float frametime);
             std::vector<JointPose> getFramePoses(int frame);
             std::string getInputFilePath() {
                 std::string relPath = std::string("Assets/CharacterNavigation/") + m_modelName + "/" + m_animName + ".bvh";
@@ -67,9 +68,9 @@ namespace Mona {
     public:
         std::size_t operator()(const std::pair<std::string, std::string>& x) const
         {   
-            auto hash1 = std::to_string(std::hash<std::string>()(x.first));
-            auto hash2 = std::to_string(std::hash<std::string>()(x.second));
-            size_t dualHash = std::stoi(hash1 + hash2);
+            size_t hash1 = std::hash<std::string>()(x.first);
+            size_t hash2 = std::hash<std::string>()(x.second);
+            size_t dualHash = hash1<<1 + hash1 + hash2;
             return dualHash;
         }
     };

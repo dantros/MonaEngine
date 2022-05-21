@@ -58,7 +58,6 @@ namespace Mona {
 		for (int i = 0; i < m_nodes.size(); i++) {
 			JointData currData = rigData.jointData[m_nodes[i].m_jointName];
 			if (currData.enableData) {
-				m_nodes[i].m_freeAxis = currData.freeAxis;
 				m_nodes[i].m_minAngle = currData.minAngle;
 				m_nodes[i].m_maxAngle = currData.maxAngle;
 				m_nodes[i].m_weight = currData.weight;
@@ -104,7 +103,11 @@ namespace Mona {
 		rigidBodyManagerPtr->GetComponentPointer(m_rigidBodyHandle)->SetLinearVelocity({velocity[0], velocity[1], velocity[2]});
 	}
 
-	void RigData::setJointData(std::string jointName, float minAngle, float maxAngle, bool freeAxis, float weight, bool enableData) {
+	Vector3f IKRig::centerOfMass(int frame) {
+		return { 0,0,0 };
+	}
+
+	void RigData::setJointData(std::string jointName, float minAngle, float maxAngle, float weight, bool enableData) {
 		if (jointName == "") {
 			MONA_LOG_ERROR("RigData: jointName cannot be empty string.");
 			return;
@@ -115,7 +118,6 @@ namespace Mona {
 		}
 		jointData[jointName].minAngle = minAngle;
 		jointData[jointName].maxAngle = maxAngle;
-		jointData[jointName].freeAxis = freeAxis;
 		jointData[jointName].weight = weight;
 		jointData[jointName].enableData = enableData;
 	}
@@ -137,5 +139,20 @@ namespace Mona {
 			return false;
 		}
 		return true;
+	}
+
+	JointRotation::JointRotation(Vector3f rotationAxis, float rotationAngle) {
+		setRotation(rotationAxis, rotationAngle);
+	}
+	JointRotation::JointRotation(Quaternion quatRotation) {
+		setRotation(quatRotation);
+	}
+	void JointRotation::setRotation(Quaternion rotation) {
+		m_quatRotation = rotation;
+		m_angleAxis = AngleAxis(m_quatRotation);
+	}
+	void JointRotation::setRotation(Vector3f rotationAxis, float rotationAngle) {
+		m_angleAxis = AngleAxis(rotationAngle, rotationAxis);
+		m_quatRotation = Quaternion(m_angleAxis);
 	}
 }

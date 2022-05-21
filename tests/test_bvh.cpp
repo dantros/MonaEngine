@@ -5,13 +5,12 @@
 
     
 int main(){
-    Mona::BVHManager::StartUp();
-    Mona::BVHManager bvhManager = Mona::BVHManager::GetInstance();
-    std::vector<std::string> jointNames = { "Pelvis", "LeftUpLeg", "LeftLeg", "Hips" };
-    Mona::BVHData* file = bvhManager.readBVH("testModel", "input", jointNames);
-    //Mona::BVHData* file = bvhManager.readBVH("testModel", "input");
-    bvhManager.writeBVHDynamicData(file, "outAnim");
-    Mona::BVHManager::ShutDown();
+    Mona::BVHManager::GetInstance().StartUp();
+    std::shared_ptr<Mona::BVHData> file = Mona::BVHManager::GetInstance().readBVH("testModel", "input");
+    std::cout << "File read" << std::endl;
+    Mona::BVHManager::GetInstance().writeBVHDynamicData(file, "outAnim");
+    std::cout << "File wrote" << std::endl;
+    Mona::BVHManager::GetInstance().ShutDown();
     std::cout << "ready" << std::endl;
     return 0;
 }

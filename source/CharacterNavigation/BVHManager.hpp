@@ -32,6 +32,7 @@ namespace Mona {
             std::vector<VectorXf> m_rootPositions_dmic;
             std::vector<MatrixXf> m_rotations_dmic;
             float m_frametime_dmic;
+            std::shared_ptr<AnimationClip> m_baseClip = nullptr;
             static std::string _getFilePath(std::string modelName, std::string animName) {
                 std::string relPath = std::string("Assets/CharacterNavigation/") + modelName + "/" + animName + ".bvh";
                 std::string filePath = SourcePath(relPath).string();
@@ -58,6 +59,7 @@ namespace Mona {
                 std::string filePath = SourcePath(relPath).string();
                 return filePath;
             }
+            std::shared_ptr<AnimationClip> getBaseAnimationClip() { return m_baseClip; }
 
     };
 

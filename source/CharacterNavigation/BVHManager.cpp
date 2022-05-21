@@ -65,7 +65,14 @@ namespace Mona{
         return sharedPtr;
     }
     std::shared_ptr<BVHData> BVHManager::readBVH(std::shared_ptr<AnimationClip> animation) {
-        return readBVH(animation->GetSkeleton()->GetModelName(), animation->GetAnimationName());
+        std::shared_ptr<BVHData> savedPtr = getBVHData(animation);
+        if (savedPtr != nullptr) {
+            return savedPtr;
+        }
+        BVHData* dataPtr = new BVHData(animation);
+        std::shared_ptr<BVHData> sharedPtr = std::shared_ptr<BVHData>(dataPtr);
+        m_bvhDataMap.insert({ {animation->GetSkeleton()->GetModelName(), animation->GetAnimationName()}, sharedPtr });
+        return sharedPtr;
     }
 
     std::shared_ptr<BVHData> BVHManager::getBVHData(std::string modelName, std::string animName) {
@@ -126,7 +133,9 @@ namespace Mona{
         initFile(pyFilePtr);
         setDynamicData(m_rotations, m_rootPositions, m_frametime);
     }
-    BVHData::BVHData(std::shared_ptr<AnimationClip> animation): BVHData(animation->GetSkeleton()->GetModelName(), animation->GetAnimationName()) {}
+    BVHData::BVHData(std::shared_ptr<AnimationClip> animation) : BVHData(animation->GetSkeleton()->GetModelName(), animation->GetAnimationName()) {
+        m_baseClip = animation;
+    }
 
     void BVHData::initFile(BVH_file_interface* pyFile) {
         m_jointNum = pyFile->jointNum;

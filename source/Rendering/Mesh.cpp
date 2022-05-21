@@ -210,7 +210,41 @@ namespace Mona {
 	glm::vec3 surfaceColor(glm::vec3 baseColor, float modifier) {
 		return { baseColor[0] * modifier, baseColor[1] * modifier / 2, baseColor[2] };
 	}
-		
+	
+
+	int orientationTest(const Vertex& v1, const Vertex& v2, const Vertex& testV, float epsilon) { //arista de v1 a v2, +1 si el punto esta a arriba, -1 abajo,0 si es colineal, error(-2) si v1 y v2 iguales
+		float x1 = v1[0];
+		float y1 = v1[1];
+		float x2 = v2[0];
+		float y2 = v2[1];
+
+		int orientationV1V2 = 1;
+		if (x1 > x2) {
+			orientationV1V2 = -1;
+		}
+
+		if (std::abs(testV[0] - v1[0]) <= epsilon && std::abs(testV[1] - v1[1]) <= epsilon || 
+			std::abs(testV[0] - v2[0]) <= epsilon && std::abs(testV[1] - v2[1]) <= epsilon) {
+			return 0;
+		}
+
+		if (x1 == x2 and y1 == y2) {
+			MONA_LOG_ERROR("vertices are equal!");
+			return -2;
+		}
+		if (x1 == x2) {
+			if (y1 > y2) { orientationV1V2 = -1; }
+			if (testV[0] == x1) { return 0; }
+			else if (testV[0] > x1) { return -1 * orientationV1V2; }
+			else { return 1 * orientationV1V2; }
+		}
+
+
+		float yOnLine = ((y2 - y1) / (x2 - x1)) * (testV[0] - x1) + y1;
+		if (testV[1] > yOnLine) { return 1 * orientationV1V2; }
+		else if (testV[1] < yOnLine) { return -1 * orientationV1V2; }
+		else { return 0; }
+	}
 	Mesh::Mesh(const glm::vec2& minXY, const glm::vec2& maxXY, int numInnerVerticesWidth, int numInnerVerticesHeight,
 		float (*heightFunc)(float, float), bool createHeightMap, bool useHeightInterpolation):
 		m_vertexArrayID(0),
@@ -267,7 +301,14 @@ namespace Mona {
 			vertexPositions.push_back(v);
 		}
 		for (int i = 0; i < faces.size(); i += 3) {
+			Vector3f v1 = vertexPositions[faces[i]];
+			Vector3f v2 = vertexPositions[faces[i+1]];
+			Vector3f v3 = vertexPositions[faces[i+2]];
 			Vector3ui f = { faces[i], faces[i + 1], faces[i + 2] };
+			int orientation = orientationTest(v1, v2, v3, 0.00001f);
+			if (orientation == -1) {
+				f = { faces[i + 1], faces[i], faces[i + 2] };
+			}
 			groupedFaces.push_back(f);
 			// Guardamos una cara por cada vertice para extraer normales y tangentes
 			if (oneFacePerVertex[faces[i]].empty()) {

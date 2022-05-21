@@ -92,6 +92,9 @@ namespace Mona {
 		return { bodyVel[0], bodyVel[1], bodyVel[2] };
 	}
 
+	void IKRig::setLinearVelocity(Vector3f velocity, ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr) {
+		rigidBodyManagerPtr->GetComponentPointer(m_rigidBodyHandle)->SetLinearVelocity({velocity[0], velocity[1], velocity[2]});
+	}
 
 	void RigData::setJointData(std::string jointName, float minAngle, float maxAngle, bool freeAxis, float weight, bool enableData) {
 		if (jointName == "") {

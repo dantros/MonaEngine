@@ -82,6 +82,7 @@ namespace Mona{
             void addAnimation(std::shared_ptr<BVHData> animation);
             int removeAnimation(std::shared_ptr<BVHData> animation);
             Vector3f getLinearVelocity(ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr);
+            void setLinearVelocity(Vector3f velocity, ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr);
     };
 
 }

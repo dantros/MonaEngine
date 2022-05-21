@@ -23,21 +23,11 @@ namespace Mona {
 				m_adjustFeet = adjustFeet;
 			}
 			void AddAnimation(std::shared_ptr<AnimationClip> animationClip) {
-				std::shared_ptr<Skeleton> skeletonPtr = m_skeletalMeshManagerPtr->GetComponentPointer(m_skeletalMeshHandle)->GetSkeleton();
-				if (animationClip->GetSkeleton() != skeletonPtr) {
-					MONA_LOG_ERROR("Input animation does not correspond to base skeleton.");
-					return;
-				}
-				std::shared_ptr<BVHData> bvhPtr = BVHManager::GetInstance().readBVH(animationClip);
-				m_ikRig.addAnimation(bvhPtr);
+				m_ikRig.addAnimation(animationClip, m_skeletalMeshManagerPtr);
 			}
 
 			int RemoveAnimation(std::shared_ptr<AnimationClip> animationClip) {
-				std::shared_ptr<BVHData> bvhPtr = BVHManager::GetInstance().getBVHData(animationClip);
-				if ( bvhPtr != nullptr) {
-					return m_ikRig.removeAnimation(bvhPtr);
-				}
-				return -1;
+				return m_ikRig.removeAnimation(animationClip);
 			}
 			void AddTerrain(const Terrain& terrain) {
 				m_ikRig.m_environmentData.addTerrain(terrain, m_staticMeshManagerPtr);
@@ -47,7 +37,6 @@ namespace Mona {
 			}
 		private:
 			std::vector<std::shared_ptr<AnimationClip>> m_animationClips;
-			InnerComponentHandle m_skeletalMeshHandle;
 			RigData m_rigData;
 			IKRig m_ikRig;
 			bool m_adjustFeet;

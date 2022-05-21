@@ -61,7 +61,7 @@ namespace Mona{
         friend class IKNavigationComponent;
         public:
             IKRig() = default;
-            IKRig(std::shared_ptr<BVHData> baseAnim, RigData rigData, InnerComponentHandle rigidBodyHandle, 
+            IKRig(std::shared_ptr<BVHData> baseAnim, RigData rigData, InnerComponentHandle rigidBodyHandle,
                 InnerComponentHandle skeletalMeshHandle, bool adjustFeet);
         private:
             std::vector<std::shared_ptr<BVHData>> m_bvhAnims;
@@ -79,8 +79,8 @@ namespace Mona{
             std::pair<int, int> m_rightArm = { -1,-1 };
             std::pair<int, int> m_leftFoot = { -1,-1 };
             std::pair<int, int> m_rightFoot = { -1,-1 };
-            void addAnimation(std::shared_ptr<BVHData> animation);
-            int removeAnimation(std::shared_ptr<BVHData> animation);
+            void addAnimation(std::shared_ptr<AnimationClip> animationClip, ComponentManager<SkeletalMeshComponent>* skeletalMeshManagerPtr);
+            int removeAnimation(std::shared_ptr<AnimationClip> animationClip);
             Vector3f getLinearVelocity(ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr);
             void setLinearVelocity(Vector3f velocity, ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr);
     };

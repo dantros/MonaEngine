@@ -12,7 +12,7 @@ namespace Mona {
 		m_weight = weight;
 	}
 
-	IKRig::IKRig(std::shared_ptr<BVHData> baseAnim, RigData rigData, InnerComponentHandle rigidBodyHandle, 
+	IKRig::IKRig(std::shared_ptr<BVHData> baseAnim, RigData rigData, InnerComponentHandle rigidBodyHandle,
 		InnerComponentHandle skeletalMeshHandle, bool adjustFeet) {
 		m_adjustFeet = adjustFeet;
 		m_bvhAnims.push_back(baseAnim);
@@ -67,21 +67,30 @@ namespace Mona {
 		}
 	}
 
-	void IKRig::addAnimation(std::shared_ptr<BVHData> animation) {
+	void IKRig::addAnimation(std::shared_ptr<AnimationClip> animationClip, ComponentManager<SkeletalMeshComponent>* skeletalMeshManagerPtr) {
+		std::shared_ptr<Skeleton> skeletonPtr = skeletalMeshManagerPtr->GetComponentPointer(m_skeletalMeshHandle)->GetSkeleton();
+		if (animationClip->GetSkeleton() != skeletonPtr) {
+			MONA_LOG_ERROR("Input animation does not correspond to base skeleton.");
+			return;
+		}
+		std::shared_ptr<BVHData> bvhPtr = BVHManager::GetInstance().readBVH(animationClip);
 		for (int i = 0; i < m_bvhAnims.size(); i++) {
-			if (m_bvhAnims[i]->getModelName() == animation->getModelName() && m_bvhAnims[i]->getAnimName() == animation->getAnimName()) {
-				MONA_LOG_WARNING("Animation {0} for model {1} had already been added", animation->getAnimName(), animation->getModelName());
+			if (m_bvhAnims[i]->getModelName() == bvhPtr->getModelName() && m_bvhAnims[i]->getAnimName() == bvhPtr->getAnimName()) {
+				MONA_LOG_WARNING("Animation {0} for model {1} had already been added", bvhPtr->getAnimName(), bvhPtr->getModelName());
 				return;
 			}
 		}
-		m_bvhAnims.push_back(animation);
+		m_bvhAnims.push_back(bvhPtr);
 	}
-	int IKRig::removeAnimation(std::shared_ptr<BVHData> animation) {
-		for (int i = 0; i < m_bvhAnims.size(); i++) {
-			if (m_bvhAnims[i]->getModelName() == animation->getModelName() && 
-				m_bvhAnims[i]->getAnimName() == animation->getAnimName()) {
-				m_bvhAnims.erase(m_bvhAnims.begin() + i);
-				return i;
+	int IKRig::removeAnimation(std::shared_ptr<AnimationClip> animationClip) {
+		std::shared_ptr<BVHData> bvhPtr = BVHManager::GetInstance().getBVHData(animationClip);
+		if (bvhPtr != nullptr) {
+			for (int i = 0; i < m_bvhAnims.size(); i++) {
+				if (m_bvhAnims[i]->getModelName() == bvhPtr->getModelName() &&
+					m_bvhAnims[i]->getAnimName() == bvhPtr->getAnimName()) {
+					m_bvhAnims.erase(m_bvhAnims.begin() + i);
+					return i;
+				}
 			}
 		}
 		return -1;

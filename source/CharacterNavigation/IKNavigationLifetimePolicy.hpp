@@ -33,7 +33,6 @@ namespace Mona {
 
 			// validar clip base
 			InnerComponentHandle skeletalMeshHandle = m_ikNavigationManagerPtr->GetOwner(handle)->GetInnerComponentHandle<SkeletalMeshComponent>();
-			ikNav.m_skeletalMeshHandle = skeletalMeshHandle;
 			std::shared_ptr<Skeleton> skeletonPtr = m_skeletalMeshManagerPtr->GetComponentPointer(skeletalMeshHandle)->GetSkeleton();
 			if(ikNav.m_animationClips[0]->GetSkeleton() != skeletonPtr) {
 				MONA_LOG_ERROR("Input animation does not correspond to base skeleton.");

@@ -13,8 +13,7 @@ namespace Mona {
 	}
 
 	IKRig::IKRig(std::shared_ptr<BVHData> baseAnim, RigData rigData, InnerComponentHandle rigidBodyHandle,
-		InnerComponentHandle skeletalMeshHandle, bool adjustFeet) {
-		m_adjustFeet = adjustFeet;
+		InnerComponentHandle skeletalMeshHandle) {
 		m_bvhAnims.push_back(baseAnim);
 		m_rigidBodyHandle = rigidBodyHandle;
 		m_skeletalMeshHandle = skeletalMeshHandle;
@@ -22,7 +21,7 @@ namespace Mona {
 		std::shared_ptr<BVHData> staticData = m_bvhAnims[0];
 		std::vector<int> topology = staticData->getTopology();
 		std::vector<std::string> jointNames = staticData->getJointNames();
-		MONA_ASSERT(topology.size() == jointNames.size(), "Topology and jointNames arrays should have the same size");
+		MONA_ASSERT(topology.size() == jointNames.size(), "IKRig: Topology and jointNames arrays should have the same size");
 		// construimos el ikRig
 		m_nodes = std::vector<IKNode>(jointNames.size());
 		m_nodes[0] = IKNode(jointNames[0], 0);
@@ -50,7 +49,7 @@ namespace Mona {
 					(*nodeTargets[i]).first = chainStartIndex;
 					(*nodeTargets[i]).second = eeIndex;
 				}else { 
-					MONA_LOG_ERROR("Starting joint and end effector were not on the same chain!"); 
+					MONA_LOG_ERROR("IKRig: Starting joint and end effector were not on the same chain!"); 
 				}
 			}
 		}
@@ -70,13 +69,13 @@ namespace Mona {
 	void IKRig::addAnimation(std::shared_ptr<AnimationClip> animationClip, ComponentManager<SkeletalMeshComponent>* skeletalMeshManagerPtr) {
 		std::shared_ptr<Skeleton> skeletonPtr = skeletalMeshManagerPtr->GetComponentPointer(m_skeletalMeshHandle)->GetSkeleton();
 		if (animationClip->GetSkeleton() != skeletonPtr) {
-			MONA_LOG_ERROR("Input animation does not correspond to base skeleton.");
+			MONA_LOG_ERROR("IKRig: Input animation does not correspond to base skeleton.");
 			return;
 		}
 		std::shared_ptr<BVHData> bvhPtr = BVHManager::GetInstance().readBVH(animationClip);
 		for (int i = 0; i < m_bvhAnims.size(); i++) {
 			if (m_bvhAnims[i]->getModelName() == bvhPtr->getModelName() && m_bvhAnims[i]->getAnimName() == bvhPtr->getAnimName()) {
-				MONA_LOG_WARNING("Animation {0} for model {1} had already been added", bvhPtr->getAnimName(), bvhPtr->getModelName());
+				MONA_LOG_WARNING("IKRig: Animation {0} for model {1} had already been added", bvhPtr->getAnimName(), bvhPtr->getModelName());
 				return;
 			}
 		}
@@ -107,11 +106,11 @@ namespace Mona {
 
 	void RigData::setJointData(std::string jointName, float minAngle, float maxAngle, bool freeAxis, float weight, bool enableData) {
 		if (jointName == "") {
-			MONA_LOG_ERROR("jointName cannot be empty string.");
+			MONA_LOG_ERROR("RigData: jointName cannot be empty string.");
 			return;
 		}
 		if (minAngle <= maxAngle) {
-			MONA_LOG_ERROR("maxAngle must be equal or greater than minAngle.");
+			MONA_LOG_ERROR("RigData: maxAngle must be equal or greater than minAngle.");
 			return;
 		}
 		jointData[jointName].minAngle = minAngle;
@@ -126,5 +125,17 @@ namespace Mona {
 	}
 	void RigData::enableJointData(std::string jointName, bool enableData) {
 		jointData[jointName].enableData = enableData;
+	}
+
+	bool RigData::isValid() {
+		if (leftLeg.startJointName.empty() || leftLeg.endEffectorName.empty() || rightLeg.startJointName.empty() || rightLeg.endEffectorName.empty()) {
+			MONA_LOG_ERROR("RigData: Legs cannot be empty");
+			return false;
+		}
+		if (spine.startJointName.empty() || spine.endEffectorName.empty()) {
+			MONA_LOG_ERROR("RigData: Spine cannot be empty");
+			return false;
+		}
+		return true;
 	}
 }

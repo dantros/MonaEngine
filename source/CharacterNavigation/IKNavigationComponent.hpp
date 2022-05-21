@@ -17,10 +17,13 @@ namespace Mona {
 			using dependencies = DependencyList<SkeletalMeshComponent, RigidBodyComponent>;
 			static constexpr std::string_view componentName = "IKNavigationComponent";
 			static constexpr uint8_t componentIndex = GetComponentIndex(EComponentType::IKNavigationComponent);
-			IKNavigationComponent(const RigData& rigData, std::shared_ptr<AnimationClip> baseAnimationClip, bool adjustFeet) {
+			IKNavigationComponent(RigData& rigData, std::shared_ptr<AnimationClip> baseAnimationClip) {
+				if (!rigData.isValid()) {
+					MONA_LOG_ERROR("IKNavigationComponent: input rigData was not valid.");
+					return;
+				}
 				m_rigData = rigData;
 				m_baseAnimationClip = baseAnimationClip;
-				m_adjustFeet = adjustFeet;
 			}
 			void AddAnimation(std::shared_ptr<AnimationClip> animationClip) {
 				m_ikRig.addAnimation(animationClip, m_skeletalMeshManagerPtr);
@@ -39,12 +42,10 @@ namespace Mona {
 			std::shared_ptr<AnimationClip> m_baseAnimationClip;
 			RigData m_rigData;
 			IKRig m_ikRig;
-			bool m_adjustFeet;
 			ComponentManager<TransformComponent>* m_transformManagerPtr = nullptr;
 			ComponentManager<StaticMeshComponent>* m_staticMeshManagerPtr = nullptr;
 			ComponentManager<SkeletalMeshComponent>* m_skeletalMeshManagerPtr = nullptr;
 			ComponentManager<RigidBodyComponent>* m_rigidBodyManagerPtr = nullptr;
-			ComponentManager<IKNavigationComponent>* m_ikNavigationManagerPtr = nullptr;
 	};
 }
 

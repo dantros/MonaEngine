@@ -39,6 +39,7 @@ namespace Mona{
         void setJointData(std::string jointName, float minAngle, float maxAngle, bool freeAxis = false, float weight = 1, bool enableData =true);
         void enableJointData(std::string jointName, bool enableData);
         JointData getJointData(std::string jointName);
+        bool isValid();
     };
 
     class IKNode {
@@ -62,12 +63,11 @@ namespace Mona{
         public:
             IKRig() = default;
             IKRig(std::shared_ptr<BVHData> baseAnim, RigData rigData, InnerComponentHandle rigidBodyHandle,
-                InnerComponentHandle skeletalMeshHandle, bool adjustFeet);
+                InnerComponentHandle skeletalMeshHandle);
         private:
             std::vector<std::shared_ptr<BVHData>> m_bvhAnims;
             int m_currentClipIndex = -1;
             int m_targetClipIndex = -1;
-            bool m_adjustFeet;
             InnerComponentHandle m_rigidBodyHandle;
             InnerComponentHandle m_skeletalMeshHandle;
             EnvironmentData m_environmentData;

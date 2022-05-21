@@ -29,7 +29,6 @@ namespace Mona {
 			ikNav.m_staticMeshManagerPtr = m_staticMeshManagerPtr;
 			ikNav.m_transformManagerPtr = m_transformManagerPtr;
 			ikNav.m_rigidBodyManagerPtr = m_rigidBodyManagerPtr;
-			ikNav.m_ikNavigationManagerPtr = m_ikNavigationManagerPtr;
 
 			// validar clip base
 			InnerComponentHandle skeletalMeshHandle = m_ikNavigationManagerPtr->GetOwner(handle)->GetInnerComponentHandle<SkeletalMeshComponent>();
@@ -41,7 +40,7 @@ namespace Mona {
 			std::shared_ptr<BVHData> bvhPtr = BVHManager::GetInstance().readBVH(ikNav.m_baseAnimationClip);
 
 			InnerComponentHandle rigidBodyHandle = m_ikNavigationManagerPtr->GetOwner(handle)->GetInnerComponentHandle<RigidBodyComponent>();
-			ikNav.m_ikRig = IKRig(bvhPtr, ikNav.m_rigData, rigidBodyHandle, skeletalMeshHandle, ikNav.m_adjustFeet);
+			ikNav.m_ikRig = IKRig(bvhPtr, ikNav.m_rigData, rigidBodyHandle, skeletalMeshHandle);
 		}
 		void OnRemoveComponent(GameObject* gameObjectPtr, IKNavigationComponent& ikNav, const InnerComponentHandle& handle) noexcept {
 		}

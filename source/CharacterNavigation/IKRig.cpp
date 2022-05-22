@@ -5,6 +5,10 @@
 
 namespace Mona {
 
+	Vector3f vec3Lerp(Vector3f v1, Vector3f v2, float frac) {
+		return v1 + (v2 - v1) * frac;
+	}
+
 	IKNode::IKNode(std::string jointName, int jointIndex, IKNode* parent, float weight) {
 		m_jointName = jointName;
 		m_jointIndex = jointIndex;
@@ -103,8 +107,75 @@ namespace Mona {
 		rigidBodyManagerPtr->GetComponentPointer(m_rigidBodyHandle)->SetLinearVelocity({velocity[0], velocity[1], velocity[2]});
 	}
 
-	Vector3f IKRig::centerOfMass(int frame) {
-		return { 0,0,0 };
+	std::vector<Vector3f> IKRig::bvhModelSpacePositions(int frame, bool useTargetAnim) {
+		std::vector<Vector3f> modelSpacePos(m_nodes.size());
+		auto anim = m_currentAnim;
+		if (useTargetAnim) {
+			if (m_targetAnim == nullptr) {
+				MONA_LOG_ERROR("IKRig: target animation was nullptr");
+				return modelSpacePos;
+			}
+			anim = m_targetAnim;
+		}
+		auto topology = anim->getTopology();
+		auto rotations = anim->getDynamicRotations();
+		auto offsets = anim->getOffsets();
+		modelSpacePos[0] = { 0,0,0 };
+		// root
+		modelSpacePos[0] = modelSpacePos[0] *rotations[frame][0].toRotationMatrix() + offsets[0];
+		for (int i = 1; i < m_nodes.size(); i++) {
+			modelSpacePos[i] = modelSpacePos[topology[i]]* rotations[frame][i].toRotationMatrix() + offsets[i];
+		}
+		return modelSpacePos;
+	}
+	std::vector<Vector3f> IKRig::dynamicModelSpacePositions(bool useTargetAnim) {
+		std::vector<Vector3f> modelSpacePos(m_nodes.size());
+		auto anim = m_currentAnim;
+		if (useTargetAnim) {
+			if (m_targetAnim == nullptr) {
+				MONA_LOG_ERROR("IKRig: target animation was nullptr");
+				return modelSpacePos;
+			}
+			anim = m_targetAnim; 
+		}
+		auto topology = anim->getTopology();
+		auto offsets = anim->getOffsets();
+		modelSpacePos[0] = { 0,0,0 };
+		// root
+		modelSpacePos[0] = modelSpacePos[0] * m_nodes[0].m_jointRotation_dmic.getQuatRotation().toRotationMatrix() + offsets[0];
+		for (int i = 1; i < m_nodes.size(); i++) {
+			modelSpacePos[i] = modelSpacePos[topology[i]] * m_nodes[i].m_jointRotation_dmic.getQuatRotation().toRotationMatrix() + offsets[i];
+		}
+		return modelSpacePos;
+	}
+	Vector3f IKRig::_centerOfMass(std::vector<Vector3f> modelSpacePositions) {
+		std::vector<Vector3f> modelSpacePos = modelSpacePositions;
+		std::vector<Vector3f> segmentCenters(m_nodes.size());
+		auto topology = m_currentAnim->getTopology();
+		int segNum = 0;
+		float totalSegLength = 0;
+		for (int i = 1; i < m_nodes.size(); i++) {
+			Vector3f v1 = modelSpacePos[i];
+			Vector3f v2 = modelSpacePos[topology[i]];
+			float frac = m_nodes[topology[i]].m_weight / (m_nodes[i].m_weight + m_nodes[topology[i]].m_weight);
+			float segLength = (v2 - v1).norm();
+			segmentCenters[i] = vec3Lerp(v1, v2, frac) * segLength;
+			segNum += 1;
+			totalSegLength += segLength;
+		}
+		Vector3f centerOfMass = { 0,0,0 };
+		for (int i = 1; i < segmentCenters.size(); i++) {
+			centerOfMass += segmentCenters[i];
+		}
+		return centerOfMass / (segNum * totalSegLength);
+	}
+	Vector3f IKRig::bvhCenterOfMass(int frame, bool useTargetAnim) {
+		std::vector<Vector3f> modelSpacePos = bvhModelSpacePositions(frame, useTargetAnim);
+		return _centerOfMass(modelSpacePos);
+	}
+	Vector3f IKRig::dynamicCenterOfMass(bool useTargetAnim) {
+		std::vector<Vector3f> modelSpacePos = dynamicModelSpacePositions(useTargetAnim);
+		return _centerOfMass(modelSpacePos);
 	}
 
 	void RigData::setJointData(std::string jointName, float minAngle, float maxAngle, float weight, bool enableData) {
@@ -140,7 +211,9 @@ namespace Mona {
 		}
 		return true;
 	}
-
+	JointRotation::JointRotation() {
+		setRotation({ 0,0,0,1 });
+	}
 	JointRotation::JointRotation(Vector3f rotationAxis, float rotationAngle) {
 		setRotation(rotationAxis, rotationAngle);
 	}

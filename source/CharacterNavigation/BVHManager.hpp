@@ -61,7 +61,6 @@ namespace Mona {
                 return filePath;
             }
             std::shared_ptr<AnimationClip> getBaseAnimationClip() { return m_baseClip; }
-
     };
 
     struct strPairHash {

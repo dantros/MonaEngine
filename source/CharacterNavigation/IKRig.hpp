@@ -13,12 +13,14 @@ namespace Mona{
     typedef Eigen::Quaternion<float> Quaternion;
     typedef Eigen::AngleAxis<float> AngleAxis;
     typedef Eigen::Matrix<float, 1, 2> Vector2f;
+    typedef Eigen::Matrix<float, 3, 3> Matrix3f;
 
     struct JointRotation {
     private:
         AngleAxis m_angleAxis;
         Quaternion m_quatRotation;
     public:
+        JointRotation();
         JointRotation(Vector3f rotationAxis, float rotationAngle);
         JointRotation(Quaternion quatRotation);
         void setRotation(Quaternion rotation);
@@ -68,7 +70,7 @@ namespace Mona{
         std::string m_jointName;
         int m_jointIndex = -1;
         IKNode* m_parent = nullptr;
-        Vector3f m_rotationAxis;
+        JointRotation m_jointRotation_dmic;
     };
     
     class IKRig{
@@ -78,11 +80,16 @@ namespace Mona{
             IKRig() = default;
             IKRig(std::shared_ptr<BVHData> baseAnim, RigData rigData, InnerComponentHandle rigidBodyHandle,
                 InnerComponentHandle skeletalMeshHandle);
-            Vector3f centerOfMass(int frame);
+            std::vector<Vector3f> bvhModelSpacePositions(int frame, bool useTargetAnim=false);
+            std::vector<Vector3f> dynamicModelSpacePositions(bool useTargetAnim = false);
+            Vector3f bvhCenterOfMass(int frame, bool useTargetAnim = false);
+            Vector3f dynamicCenterOfMass(bool useTargetAnim = false);
+            bool dynamicRotationsValid();
         private:
+            Vector3f _centerOfMass(std::vector<Vector3f> modelSpacePositions);
             std::vector<std::shared_ptr<BVHData>> m_bvhAnims;
-            int m_currentClipIndex = -1;
-            int m_targetClipIndex = -1;
+            std::shared_ptr<BVHData> m_currentAnim = nullptr;
+            std::shared_ptr<BVHData> m_targetAnim = nullptr;
             InnerComponentHandle m_rigidBodyHandle;
             InnerComponentHandle m_skeletalMeshHandle;
             EnvironmentData m_environmentData;

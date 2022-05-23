@@ -23,19 +23,21 @@ namespace Mona {
 		m_skeletalMeshHandle = skeletalMeshHandle;
 
 		std::shared_ptr<BVHData> staticData = m_bvhAnims[0];
-		std::vector<int> topology = staticData->getTopology();
-		std::vector<std::string> jointNames = staticData->getJointNames();
-		MONA_ASSERT(topology.size() == jointNames.size(), "IKRig: Topology and jointNames arrays should have the same size");
+		m_currentAnim = 0;
+		m_topology = staticData->getTopology();
+		m_jointNames = staticData->getJointNames();
+ 
+		MONA_ASSERT(m_topology.size() == m_jointNames.size(), "IKRig: Topology and jointNames arrays should have the same size");
 		// construimos el ikRig
-		m_nodes = std::vector<IKNode>(jointNames.size());
-		m_nodes[0] = IKNode(jointNames[0], 0);
-		for (int i = 1; i < jointNames.size(); i++) {
-			m_nodes[i] = IKNode(jointNames[i], i, &m_nodes[topology[i]]);
+		m_nodes = std::vector<IKNode>(m_jointNames.size());
+		m_nodes[0] = IKNode(m_jointNames[0], 0);
+		for (int i = 1; i < m_jointNames.size(); i++) {
+			m_nodes[i] = IKNode(m_jointNames[i], i, &m_nodes[m_topology[i]]);
 		}
 
 		
-		std::vector<ChainEnds> dataArr = { rigData.spine, rigData.leftLeg, rigData.rightLeg, rigData.leftArm, rigData.rightArm, rigData.leftFoot, rigData.rightFoot };
-		std::vector<std::pair<int, int>*> nodeTargets = { &m_spine, &m_leftLeg, &m_rightLeg, &m_leftArm, &m_rightArm, &m_leftFoot, &m_rightFoot };
+		std::vector<ChainEnds> dataArr = { rigData.leftLeg, rigData.rightLeg, rigData.leftFoot, rigData.rightFoot };
+		std::vector<std::pair<int, int>*> nodeTargets = { &m_leftLeg, &m_rightLeg, &m_leftFoot, &m_rightFoot };
 		for (int i = 0; i < dataArr.size(); i++) { // construccion de las cadenas principales
 			int eeIndex = funcUtils::findIndex(staticData->getJointNames(), dataArr[i].endEffectorName);
 			if (eeIndex != -1) {
@@ -61,7 +63,7 @@ namespace Mona {
 		// setear constraints y pesos
 		for (int i = 0; i < m_nodes.size(); i++) {
 			JointData currData = rigData.jointData[m_nodes[i].m_jointName];
-			if (currData.enableData) {
+			if (currData.enableIKRotation) {
 				m_nodes[i].m_minAngle = currData.minAngle;
 				m_nodes[i].m_maxAngle = currData.maxAngle;
 				m_nodes[i].m_weight = currData.weight;
@@ -82,6 +84,8 @@ namespace Mona {
 				return;
 			}
 		}
+		MONA_ASSERT(bvhPtr->getJointNames() == m_jointNames, "IKRig: jointNames of new animation must fit base animation");
+		MONA_ASSERT(bvhPtr->getTopology() == m_topology , "IKRig: topology of new animation must fit base animation");
 		m_bvhAnims.push_back(bvhPtr);
 	}
 	int IKRig::removeAnimation(std::shared_ptr<AnimationClip> animationClip) {
@@ -107,57 +111,44 @@ namespace Mona {
 		rigidBodyManagerPtr->GetComponentPointer(m_rigidBodyHandle)->SetLinearVelocity({velocity[0], velocity[1], velocity[2]});
 	}
 
-	std::vector<Vector3f> IKRig::bvhModelSpacePositions(int frame, bool useTargetAnim) {
-		std::vector<Vector3f> modelSpacePos(m_nodes.size());
-		auto anim = m_currentAnim;
-		if (useTargetAnim) {
-			if (m_targetAnim == nullptr) {
-				MONA_LOG_ERROR("IKRig: target animation was nullptr");
-				return modelSpacePos;
-			}
-			anim = m_targetAnim;
+	IKRigConfig IKRig::getBVHConfig(int frame, BVHIndex animIndex) {
+		auto anim = m_bvhAnims[animIndex];
+		IKRigConfig rigConfig;
+		rigConfig.jointRotations = std::vector<JointRotation>(m_nodes.size());
+		rigConfig.animIndex = animIndex;
+		for (int i = 0; i < m_nodes.size(); i++) {
+			rigConfig.jointRotations[i].setRotation(anim->getDynamicRotations()[frame][i]);
 		}
-		auto topology = anim->getTopology();
-		auto rotations = anim->getDynamicRotations();
-		auto offsets = anim->getOffsets();
+		return rigConfig;
+	}
+
+	IKRigConfig IKRig::createDynamicConfig(BVHIndex animIndex) {
+		IKRigConfig rigConfig;
+		rigConfig.jointRotations = std::vector<JointRotation>(m_nodes.size());
+		rigConfig.animIndex = animIndex;
+		return rigConfig;
+	}
+
+	std::vector<Vector3f> IKRig::modelSpacePositions(IKRigConfig rigConfig) {
+		std::vector<Vector3f> modelSpacePos(m_nodes.size());
+		auto offsets = m_bvhAnims[rigConfig.animIndex]->getOffsets();
 		modelSpacePos[0] = { 0,0,0 };
 		// root
-		modelSpacePos[0] = modelSpacePos[0] *rotations[frame][0].toRotationMatrix() + offsets[0];
+		modelSpacePos[0] = modelSpacePos[0] * rigConfig.jointRotations[0].getQuatRotation().toRotationMatrix() + offsets[0];
 		for (int i = 1; i < m_nodes.size(); i++) {
-			modelSpacePos[i] = modelSpacePos[topology[i]]* rotations[frame][i].toRotationMatrix() + offsets[i];
+			modelSpacePos[i] = modelSpacePos[m_topology[i]] * rigConfig.jointRotations[i].getQuatRotation().toRotationMatrix() + offsets[i];
 		}
 		return modelSpacePos;
 	}
-	std::vector<Vector3f> IKRig::dynamicModelSpacePositions(bool useTargetAnim) {
-		std::vector<Vector3f> modelSpacePos(m_nodes.size());
-		auto anim = m_currentAnim;
-		if (useTargetAnim) {
-			if (m_targetAnim == nullptr) {
-				MONA_LOG_ERROR("IKRig: target animation was nullptr");
-				return modelSpacePos;
-			}
-			anim = m_targetAnim; 
-		}
-		auto topology = anim->getTopology();
-		auto offsets = anim->getOffsets();
-		modelSpacePos[0] = { 0,0,0 };
-		// root
-		modelSpacePos[0] = modelSpacePos[0] * m_nodes[0].m_jointRotation_dmic.getQuatRotation().toRotationMatrix() + offsets[0];
-		for (int i = 1; i < m_nodes.size(); i++) {
-			modelSpacePos[i] = modelSpacePos[topology[i]] * m_nodes[i].m_jointRotation_dmic.getQuatRotation().toRotationMatrix() + offsets[i];
-		}
-		return modelSpacePos;
-	}
-	Vector3f IKRig::_centerOfMass(std::vector<Vector3f> modelSpacePositions) {
-		std::vector<Vector3f> modelSpacePos = modelSpacePositions;
+	Vector3f IKRig::getCenterOfMass(IKRigConfig rigConfig) {
+		std::vector<Vector3f> modelSpacePos = modelSpacePositions(rigConfig);
 		std::vector<Vector3f> segmentCenters(m_nodes.size());
-		auto topology = m_currentAnim->getTopology();
 		int segNum = 0;
 		float totalSegLength = 0;
 		for (int i = 1; i < m_nodes.size(); i++) {
 			Vector3f v1 = modelSpacePos[i];
-			Vector3f v2 = modelSpacePos[topology[i]];
-			float frac = m_nodes[topology[i]].m_weight / (m_nodes[i].m_weight + m_nodes[topology[i]].m_weight);
+			Vector3f v2 = modelSpacePos[m_topology[i]];
+			float frac = m_nodes[m_topology[i]].m_weight / (m_nodes[i].m_weight + m_nodes[m_topology[i]].m_weight);
 			float segLength = (v2 - v1).norm();
 			segmentCenters[i] = vec3Lerp(v1, v2, frac) * segLength;
 			segNum += 1;
@@ -168,14 +159,6 @@ namespace Mona {
 			centerOfMass += segmentCenters[i];
 		}
 		return centerOfMass / (segNum * totalSegLength);
-	}
-	Vector3f IKRig::bvhCenterOfMass(int frame, bool useTargetAnim) {
-		std::vector<Vector3f> modelSpacePos = bvhModelSpacePositions(frame, useTargetAnim);
-		return _centerOfMass(modelSpacePos);
-	}
-	Vector3f IKRig::dynamicCenterOfMass(bool useTargetAnim) {
-		std::vector<Vector3f> modelSpacePos = dynamicModelSpacePositions(useTargetAnim);
-		return _centerOfMass(modelSpacePos);
 	}
 
 	void RigData::setJointData(std::string jointName, float minAngle, float maxAngle, float weight, bool enableData) {
@@ -190,23 +173,19 @@ namespace Mona {
 		jointData[jointName].minAngle = minAngle;
 		jointData[jointName].maxAngle = maxAngle;
 		jointData[jointName].weight = weight;
-		jointData[jointName].enableData = enableData;
+		jointData[jointName].enableIKRotation = enableData;
 	}
 
 	JointData RigData::getJointData(std::string jointName) {
 		return JointData(jointData[jointName]);
 	}
 	void RigData::enableJointData(std::string jointName, bool enableData) {
-		jointData[jointName].enableData = enableData;
+		jointData[jointName].enableIKRotation = enableData;
 	}
 
 	bool RigData::isValid() {
 		if (leftLeg.startJointName.empty() || leftLeg.endEffectorName.empty() || rightLeg.startJointName.empty() || rightLeg.endEffectorName.empty()) {
 			MONA_LOG_ERROR("RigData: Legs cannot be empty");
-			return false;
-		}
-		if (spine.startJointName.empty() || spine.endEffectorName.empty()) {
-			MONA_LOG_ERROR("RigData: Spine cannot be empty");
 			return false;
 		}
 		return true;
@@ -225,7 +204,7 @@ namespace Mona {
 		m_angleAxis = AngleAxis(m_quatRotation);
 	}
 	void JointRotation::setRotation(Vector3f rotationAxis, float rotationAngle) {
-		m_angleAxis = AngleAxis(rotationAngle, rotationAxis);
+		m_angleAxis = AngleAxis(rotationAngle, rotationAxis.normalized());
 		m_quatRotation = Quaternion(m_angleAxis);
 	}
 }

@@ -13,7 +13,7 @@ namespace Mona{
     typedef Eigen::Quaternion<float> Quaternion;
     typedef Eigen::AngleAxis<float> AngleAxis;
     typedef Eigen::Matrix<float, 1, 2> Vector2f;
-    typedef Eigen::Matrix<float, 3, 3> Matrix3f;
+    typedef int BVHIndex;
 
     struct JointRotation {
     private:
@@ -29,12 +29,16 @@ namespace Mona{
         float getRotationAngle() { return m_angleAxis.angle(); }
         Vector3f getRotationAxis() { return m_angleAxis.axis(); }
     };
+    struct IKRigConfig {
+        std::vector<JointRotation> jointRotations;
+        BVHIndex animIndex = -1;
+    };
 
     struct JointData {
         float minAngle = -90;
         float maxAngle = 90;
         float weight = 1;
-        bool enableData = false;
+        bool enableIKRotation = false;
     };
     struct ChainEnds {
         std::string startJointName;
@@ -45,11 +49,8 @@ namespace Mona{
     private:
         std::unordered_map<std::string, JointData> jointData;
     public:
-        ChainEnds spine;
         ChainEnds leftLeg;
         ChainEnds rightLeg;
-        ChainEnds leftArm;
-        ChainEnds rightArm;
         ChainEnds leftFoot;
         ChainEnds rightFoot;
         void setJointData(std::string jointName, float minAngle, float maxAngle, float weight = 1, bool enableData =true);
@@ -72,33 +73,42 @@ namespace Mona{
         IKNode* m_parent = nullptr;
         JointRotation m_jointRotation_dmic;
     };
+
+    struct FootContacts {
+        std::vector<int> leftLegUp;
+        std::vector<int> leftLegDown;
+        std::vector<int> leftFootUp;
+        std::vector<int> leftFootDown;
+        std::vector<int> rightLegUp;
+        std::vector<int> rightLegDown;
+        std::vector<int> rightFootUp;
+        std::vector<int> rightFootDown;
+    };
     
     class IKRig{
         friend class IKNavigationComponent;
-        friend class IKRigConfig;
         public:
             IKRig() = default;
             IKRig(std::shared_ptr<BVHData> baseAnim, RigData rigData, InnerComponentHandle rigidBodyHandle,
                 InnerComponentHandle skeletalMeshHandle);
-            std::vector<Vector3f> bvhModelSpacePositions(int frame, bool useTargetAnim=false);
-            std::vector<Vector3f> dynamicModelSpacePositions(bool useTargetAnim = false);
-            Vector3f bvhCenterOfMass(int frame, bool useTargetAnim = false);
-            Vector3f dynamicCenterOfMass(bool useTargetAnim = false);
-            bool dynamicRotationsValid();
+            IKRigConfig getBVHConfig(int frame, BVHIndex animIndex);
+            IKRigConfig createDynamicConfig(BVHIndex animIndex);
+            std::vector<Vector3f> modelSpacePositions(IKRigConfig rigConfig);
+            Vector3f getCenterOfMass(IKRigConfig rigConfig);
+            bool isConfigValid(IKRigConfig rigConfig);
         private:
-            Vector3f _centerOfMass(std::vector<Vector3f> modelSpacePositions);
+            FootContacts findFootContactFrames(std::shared_ptr<BVHData> anim);
             std::vector<std::shared_ptr<BVHData>> m_bvhAnims;
-            std::shared_ptr<BVHData> m_currentAnim = nullptr;
-            std::shared_ptr<BVHData> m_targetAnim = nullptr;
+            std::vector<int> m_topology;
+            std::vector<std::string> m_jointNames;
+            BVHIndex m_currentAnim = -1;
+            BVHIndex m_targetAnim = -1;
             InnerComponentHandle m_rigidBodyHandle;
             InnerComponentHandle m_skeletalMeshHandle;
             EnvironmentData m_environmentData;
             std::vector<IKNode> m_nodes;
-            std::pair<int, int> m_spine = { -1,-1 };
             std::pair<int, int> m_leftLeg = { -1,-1 };
             std::pair<int, int> m_rightLeg = { -1,-1 };
-            std::pair<int, int> m_leftArm = { -1,-1 };
-            std::pair<int, int> m_rightArm = { -1,-1 };
             std::pair<int, int> m_leftFoot = { -1,-1 };
             std::pair<int, int> m_rightFoot = { -1,-1 };
             void addAnimation(std::shared_ptr<AnimationClip> animationClip, ComponentManager<SkeletalMeshComponent>* skeletalMeshManagerPtr);

@@ -5,8 +5,8 @@
 
 namespace Mona {
 
-	Vector3f vec3Lerp(Vector3f v1, Vector3f v2, float frac) {
-		return v1 + (v2 - v1) * frac;
+	Vector3f vec3Lerp(Vector3f v1, Vector3f v2, float fraction) {
+		return v1 + (v2 - v1) * fraction;
 	}
 
 	IKRig::IKRig(std::shared_ptr<BVHData> baseAnim, RigData rigData, InnerComponentHandle rigidBodyHandle,

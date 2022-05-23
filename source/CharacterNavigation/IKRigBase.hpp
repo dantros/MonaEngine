@@ -29,10 +29,7 @@ namespace Mona {
         float getRotationAngle() { return m_angleAxis.angle(); }
         Vector3f getRotationAxis() { return m_angleAxis.axis(); }
     };
-    struct IKRigConfig {
-        std::vector<JointRotation> jointRotations;
-        BVHIndex animIndex = -1;
-    };
+    typedef std::vector<JointRotation> IKRigConfig;
 
     struct JointData {
         float minAngle = -90;

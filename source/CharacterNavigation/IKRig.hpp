@@ -13,7 +13,7 @@ namespace Mona{
             IKRig(std::shared_ptr<BVHData> baseAnim, RigData rigData, InnerComponentHandle rigidBodyHandle,
                 InnerComponentHandle skeletalMeshHandle);
             IKRigConfig getBVHConfig(int frame, BVHIndex animIndex);
-            IKRigConfig createDynamicConfig(BVHIndex animIndex);
+            IKRigConfig createDynamicConfig();
             std::vector<Vector3f> modelSpacePositions(IKRigConfig rigConfig);
             Vector3f getCenterOfMass(IKRigConfig rigConfig);
             bool isConfigValid(IKRigConfig rigConfig);
@@ -22,6 +22,7 @@ namespace Mona{
             std::vector<std::shared_ptr<BVHData>> m_bvhAnims;
             std::vector<int> m_topology;
             std::vector<std::string> m_jointNames;
+            std::vector<Vector3f> m_offsets;
             BVHIndex m_currentAnim = -1;
             BVHIndex m_targetAnim = -1;
             InnerComponentHandle m_rigidBodyHandle;

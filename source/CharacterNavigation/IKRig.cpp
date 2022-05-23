@@ -19,8 +19,10 @@ namespace Mona {
 		m_currentAnim = 0;
 		m_topology = staticData->getTopology();
 		m_jointNames = staticData->getJointNames();
+		m_offsets = staticData->getOffsets();
  
 		MONA_ASSERT(m_topology.size() == m_jointNames.size(), "IKRig: Topology and jointNames arrays should have the same size");
+
 		// construimos el ikRig
 		m_nodes = std::vector<IKNode>(m_jointNames.size());
 		m_nodes[0] = IKNode(m_jointNames[0], 0);
@@ -80,8 +82,21 @@ namespace Mona {
 				return;
 			}
 		}
-		MONA_ASSERT(bvhPtr->getJointNames() == m_jointNames, "IKRig: jointNames of new animation must fit base animation");
-		MONA_ASSERT(bvhPtr->getTopology() == m_topology , "IKRig: topology of new animation must fit base animation");
+		if (!(bvhPtr->getJointNames() == m_jointNames)) {
+			MONA_LOG_ERROR("IKRig: jointNames of new animation must fit base animation");
+			return;
+		}
+		if (!(bvhPtr->getTopology() == m_topology)) {
+			MONA_LOG_ERROR("IKRig: topology of new animation must fit base animation");
+			return;
+		}
+		
+		for (int i = 0; i < m_offsets.size(); i++) {
+			if (!m_offsets[i].isApprox(bvhPtr->getOffsets()[i])) {
+				MONA_LOG_ERROR("IKRig: offsets of new animation must fit base animation");
+				return;
+			}
+		}
 		m_bvhAnims.push_back(bvhPtr);
 	}
 	int IKRig::removeAnimation(std::shared_ptr<AnimationClip> animationClip) {
@@ -110,29 +125,26 @@ namespace Mona {
 	IKRigConfig IKRig::getBVHConfig(int frame, BVHIndex animIndex) {
 		auto anim = m_bvhAnims[animIndex];
 		IKRigConfig rigConfig;
-		rigConfig.jointRotations = std::vector<JointRotation>(m_nodes.size());
-		rigConfig.animIndex = animIndex;
+		rigConfig = std::vector<JointRotation>(m_nodes.size());
 		for (int i = 0; i < m_nodes.size(); i++) {
-			rigConfig.jointRotations[i].setRotation(anim->getDynamicRotations()[frame][i]);
+			rigConfig[i].setRotation(anim->getDynamicRotations()[frame][i]);
 		}
 		return rigConfig;
 	}
 
-	IKRigConfig IKRig::createDynamicConfig(BVHIndex animIndex) {
+	IKRigConfig IKRig::createDynamicConfig() {
 		IKRigConfig rigConfig;
-		rigConfig.jointRotations = std::vector<JointRotation>(m_nodes.size());
-		rigConfig.animIndex = animIndex;
+		rigConfig = std::vector<JointRotation>(m_nodes.size());
 		return rigConfig;
 	}
 
 	std::vector<Vector3f> IKRig::modelSpacePositions(IKRigConfig rigConfig) {
 		std::vector<Vector3f> modelSpacePos(m_nodes.size());
-		auto offsets = m_bvhAnims[rigConfig.animIndex]->getOffsets();
 		modelSpacePos[0] = { 0,0,0 };
 		// root
-		modelSpacePos[0] = modelSpacePos[0] * rigConfig.jointRotations[0].getQuatRotation().toRotationMatrix() + offsets[0];
+		modelSpacePos[0] = modelSpacePos[0] * rigConfig[0].getQuatRotation().toRotationMatrix() + m_offsets[0];
 		for (int i = 1; i < m_nodes.size(); i++) {
-			modelSpacePos[i] = modelSpacePos[m_topology[i]] * rigConfig.jointRotations[i].getQuatRotation().toRotationMatrix() + offsets[i];
+			modelSpacePos[i] = modelSpacePos[m_topology[i]] * rigConfig[i].getQuatRotation().toRotationMatrix() + m_offsets[i];
 		}
 		return modelSpacePos;
 	}

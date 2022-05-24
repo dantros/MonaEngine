@@ -99,6 +99,23 @@ namespace Mona {
             result += " ]";
             return result;
         }
+
+        template < typename T>
+        inline std::vector<int> minValueIndex_multiple(std::vector<T> vec) {
+            T minVal = std::numeric_limits<T>::max();
+            for (int i = 0; i < vec.size(); i++) {
+                if (vec[i] < minVal) {
+                    minVal = vec[i];
+                }
+            }
+            std::vector<int> minIndexes;
+            for (int i = 0; i < vec.size(); i++) {
+                if (vec[i] == minVal) {
+                    minIndexes.push_back(i);
+                }
+            }
+            return minInd;
+        }
 	}
     
 }

@@ -9,32 +9,30 @@ namespace Mona {
 		return v1 + (v2 - v1) * fraction;
 	}
 
-	IKRig::IKRig(std::shared_ptr<BVHData> baseAnim, RigData rigData, InnerComponentHandle rigidBodyHandle,
+	IKRig::IKRig(std::shared_ptr<AnimationClip> baseAnim, RigData rigData, InnerComponentHandle rigidBodyHandle,
 		InnerComponentHandle skeletalMeshHandle) {
-		m_bvhAnims.push_back(baseAnim);
+		m_animations.push_back(baseAnim);
 		m_rigidBodyHandle = rigidBodyHandle;
 		m_skeletalMeshHandle = skeletalMeshHandle;
+		m_skeleton = baseAnim->GetSkeleton();
 
-		std::shared_ptr<BVHData> staticData = m_bvhAnims[0];
+		std::shared_ptr<AnimationClip> staticData = m_animations[0];
 		m_currentAnim = 0;
-		m_topology = staticData->getTopology();
-		m_jointNames = staticData->getJointNames();
-		m_offsets = staticData->getOffsets();
- 
-		MONA_ASSERT(m_topology.size() == m_jointNames.size(), "IKRig: Topology and jointNames arrays should have the same size");
+		auto topology = GetTopology();
+		auto jointNames = GetJointNames();
 
 		// construimos el ikRig
-		m_nodes = std::vector<IKNode>(m_jointNames.size());
-		m_nodes[0] = IKNode(m_jointNames[0], 0);
-		for (int i = 1; i < m_jointNames.size(); i++) {
-			m_nodes[i] = IKNode(m_jointNames[i], i, &m_nodes[m_topology[i]]);
+		m_nodes = std::vector<IKNode>(jointNames.size());
+		m_nodes[0] = IKNode(jointNames[0], 0);
+		for (int i = 1; i < jointNames.size(); i++) {
+			m_nodes[i] = IKNode(jointNames[i], i, &m_nodes[topology[i]]);
 		}
 
 		
 		std::vector<ChainEnds> dataArr = { rigData.leftLeg, rigData.rightLeg, rigData.leftFoot, rigData.rightFoot };
 		std::vector<std::pair<int, int>*> nodeTargets = { &m_leftLeg, &m_rightLeg, &m_leftFoot, &m_rightFoot };
 		for (int i = 0; i < dataArr.size(); i++) { // construccion de las cadenas principales
-			int eeIndex = funcUtils::findIndex(staticData->getJointNames(), dataArr[i].endEffectorName);
+			int eeIndex = funcUtils::findIndex(jointNames, dataArr[i].endEffectorName);
 			if (eeIndex != -1) {
 				int chainStartIndex = -1;
 				IKNode* currentNode = &m_nodes[eeIndex];
@@ -66,7 +64,7 @@ namespace Mona {
 		}
 
 		// crear validador
-		m_configValidator = IKRigConfigValidator(&m_nodes, &m_topology);
+		m_configValidator = IKRigConfigValidator(&m_nodes, &topology);
 	}
 
 	void IKRig::addAnimation(std::shared_ptr<AnimationClip> animationClip, ComponentManager<SkeletalMeshComponent>* skeletalMeshManagerPtr) {
@@ -75,39 +73,20 @@ namespace Mona {
 			MONA_LOG_ERROR("IKRig: Input animation does not correspond to base skeleton.");
 			return;
 		}
-		std::shared_ptr<BVHData> bvhPtr = BVHManager::GetInstance().readBVH(animationClip);
-		for (int i = 0; i < m_bvhAnims.size(); i++) {
-			if (m_bvhAnims[i]->getModelName() == bvhPtr->getModelName() && m_bvhAnims[i]->getAnimName() == bvhPtr->getAnimName()) {
-				MONA_LOG_WARNING("IKRig: Animation {0} for model {1} had already been added", bvhPtr->getAnimName(), bvhPtr->getModelName());
+		for (int i = 0; i < m_animations.size(); i++) {
+			if (m_animations[i]->GetAnimationName() == animationClip->GetAnimationName()) {
+				MONA_LOG_WARNING("IKRig: Animation {0} for model {1} had already been added", 
+					animationClip->GetAnimationName(), m_skeleton->GetModelName());
 				return;
 			}
 		}
-		if (!(bvhPtr->getJointNames() == m_jointNames)) {
-			MONA_LOG_ERROR("IKRig: jointNames of new animation must fit base animation");
-			return;
-		}
-		if (!(bvhPtr->getTopology() == m_topology)) {
-			MONA_LOG_ERROR("IKRig: topology of new animation must fit base animation");
-			return;
-		}
-		
-		for (int i = 0; i < m_offsets.size(); i++) {
-			if (!m_offsets[i].isApprox(bvhPtr->getOffsets()[i])) {
-				MONA_LOG_ERROR("IKRig: offsets of new animation must fit base animation");
-				return;
-			}
-		}
-		m_bvhAnims.push_back(bvhPtr);
+		m_animations.push_back(animationClip);
 	}
 	int IKRig::removeAnimation(std::shared_ptr<AnimationClip> animationClip) {
-		std::shared_ptr<BVHData> bvhPtr = BVHManager::GetInstance().getBVHData(animationClip);
-		if (bvhPtr != nullptr) {
-			for (int i = 0; i < m_bvhAnims.size(); i++) {
-				if (m_bvhAnims[i]->getModelName() == bvhPtr->getModelName() &&
-					m_bvhAnims[i]->getAnimName() == bvhPtr->getAnimName()) {
-					m_bvhAnims.erase(m_bvhAnims.begin() + i);
-					return i;
-				}
+		for (int i = 0; i < m_animations.size(); i++) {
+			if (m_animations[i] == animationClip) {
+				m_animations.erase(m_animations.begin() + i);
+				return i;
 			}
 		}
 		return -1;
@@ -122,8 +101,8 @@ namespace Mona {
 		rigidBodyManagerPtr->GetComponentPointer(m_rigidBodyHandle)->SetLinearVelocity({velocity[0], velocity[1], velocity[2]});
 	}
 
-	IKRigConfig IKRig::getBVHConfig(int frame, BVHIndex animIndex) {
-		auto anim = m_bvhAnims[animIndex];
+	IKRigConfig IKRig::getBVHConfig(int frame, AnimIndex animIndex) {
+		auto anim = m_animations[animIndex];
 		IKRigConfig rigConfig;
 		rigConfig = std::vector<JointRotation>(m_nodes.size());
 		for (int i = 0; i < m_nodes.size(); i++) {
@@ -144,7 +123,7 @@ namespace Mona {
 		// root
 		modelSpacePos[0] = modelSpacePos[0] * rigConfig[0].getQuatRotation().toRotationMatrix() + m_offsets[0];
 		for (int i = 1; i < m_nodes.size(); i++) {
-			modelSpacePos[i] = modelSpacePos[m_topology[i]] * rigConfig[i].getQuatRotation().toRotationMatrix() + m_offsets[i];
+			modelSpacePos[i] = modelSpacePos[GetTopology()[i]] * rigConfig[i].getQuatRotation().toRotationMatrix() + m_offsets[i];
 		}
 		return modelSpacePos;
 	}
@@ -155,8 +134,8 @@ namespace Mona {
 		float totalSegLength = 0;
 		for (int i = 1; i < m_nodes.size(); i++) {
 			Vector3f v1 = modelSpacePos[i];
-			Vector3f v2 = modelSpacePos[m_topology[i]];
-			float frac = m_nodes[m_topology[i]].m_weight / (m_nodes[i].m_weight + m_nodes[m_topology[i]].m_weight);
+			Vector3f v2 = modelSpacePos[GetTopology()[i]];
+			float frac = m_nodes[GetTopology()[i]].m_weight / (m_nodes[i].m_weight + m_nodes[GetTopology()[i]].m_weight);
 			float segLength = (v2 - v1).norm();
 			segmentCenters[i] = vec3Lerp(v1, v2, frac) * segLength;
 			segNum += 1;

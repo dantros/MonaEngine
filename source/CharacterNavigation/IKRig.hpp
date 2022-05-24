@@ -10,21 +10,22 @@ namespace Mona{
         friend class IKNavigationComponent;
         public:
             IKRig() = default;
-            IKRig(std::shared_ptr<BVHData> baseAnim, RigData rigData, InnerComponentHandle rigidBodyHandle,
+            IKRig(std::shared_ptr<AnimationClip> baseAnim, RigData rigData, InnerComponentHandle rigidBodyHandle,
                 InnerComponentHandle skeletalMeshHandle);
-            IKRigConfig getBVHConfig(int frame, BVHIndex animIndex);
+            IKRigConfig getBVHConfig(int frame, AnimIndex animIndex);
             IKRigConfig createDynamicConfig();
             std::vector<Vector3f> modelSpacePositions(IKRigConfig rigConfig);
             Vector3f getCenterOfMass(IKRigConfig rigConfig);
             bool isConfigValid(IKRigConfig rigConfig);
         private:
-            FootContacts findFootContactFrames(std::shared_ptr<BVHData> anim);
-            std::vector<std::shared_ptr<BVHData>> m_bvhAnims;
-            std::vector<int> m_topology;
-            std::vector<std::string> m_jointNames;
+            FootContacts findFootContactFrames(std::shared_ptr<AnimationClip> anim);
+            std::vector<std::shared_ptr<AnimationClip>> m_animations;
+            std::shared_ptr<Skeleton> m_skeleton;
+            std::vector<int>& GetTopology() { return m_skeleton->m_parentIndices; }
+            std::vector<std::string>& GetJointNames() { return m_skeleton->m_jointNames; }
             std::vector<Vector3f> m_offsets;
-            BVHIndex m_currentAnim = -1;
-            BVHIndex m_targetAnim = -1;
+            AnimIndex m_currentAnim = -1;
+            AnimIndex m_targetAnim = -1;
             InnerComponentHandle m_rigidBodyHandle;
             InnerComponentHandle m_skeletalMeshHandle;
             EnvironmentData m_environmentData;

@@ -37,6 +37,8 @@ namespace Mona {
 			aiNodeAnim* track = animation->mChannels[i];
 			m_trackJointNames.push_back(track->mNodeName.C_Str());
 			AnimationClip::AnimationTrack& animationTrack = m_animationTracks[i];
+
+			// regularizamos transformaciones rellenando con la identidad donde haga falta
 			animationTrack.positions.reserve(track->mNumPositionKeys);
 			animationTrack.positionTimeStamps.reserve(track->mNumPositionKeys);
 			animationTrack.rotations.reserve(track->mNumRotationKeys);
@@ -44,18 +46,71 @@ namespace Mona {
 			animationTrack.stableRotations.reserve(track->mNumRotationKeys);
 			animationTrack.scales.reserve(track->mNumScalingKeys);
 			animationTrack.scaleTimeStamps.reserve(track->mNumScalingKeys);
-			for (uint32_t j = 0; j < track->mNumPositionKeys; j++) {
-				animationTrack.positionTimeStamps.push_back(track->mPositionKeys[j].mTime / ticksPerSecond);
-				animationTrack.positions.push_back(AssimpToGlmVec3(track->mPositionKeys[j].mValue));
-			}
-			for (uint32_t j = 0; j < track->mNumRotationKeys; j++) {
-				animationTrack.rotationTimeStamps.push_back(track->mPositionKeys[j].mTime / ticksPerSecond);
-				animationTrack.rotations.push_back(AssimpToGlmQuat(track->mRotationKeys[j].mValue));
+			int posIndex = 0;
+			int rotIndex = 0;
+			int sclIndex = 0;
+			while (posIndex < track->mNumPositionKeys || rotIndex < track->mNumRotationKeys || sclIndex < track->mNumScalingKeys) {
+				aiVector3D currPos = posIndex < track->mNumPositionKeys ? track->mPositionKeys[posIndex].mValue : aiVector3D({0,0,0});
+				aiQuaternion currRot = rotIndex < track->mNumRotationKeys ? track->mRotationKeys[rotIndex].mValue : aiQuaternion({ 1,0,0,0 });
+				aiVector3D currScl = sclIndex < track->mNumScalingKeys ? track->mScalingKeys[sclIndex].mValue : aiVector3D({ 1,1,1 });
+				double currPosTime = posIndex < track->mNumPositionKeys ? track->mPositionKeys[posIndex].mTime / ticksPerSecond : std::numeric_limits<double>::max();
+				double currRotTime = rotIndex < track->mNumRotationKeys ? track->mRotationKeys[rotIndex].mTime / ticksPerSecond : std::numeric_limits<double>::max();
+				double currSclTime = sclIndex < track->mNumScalingKeys ? track->mScalingKeys[sclIndex].mTime / ticksPerSecond : std::numeric_limits<double>::max();
+				std::vector<double> times = { currPosTime, currRotTime, currSclTime };
+				std::vector<int> minIndices = funcUtils::minValueIndex_multiple<double>(times);
+				if (minIndices.size() == 3) {
+					posIndex += 1;
+					rotIndex += 1;
+					sclIndex += 1;
+				}
+				else if(minIndices.size()==2) {
+					if (minIndices[0] == 0 && minIndices[1] == 1) {
+						currSclTime = currPosTime;
+						currScl = aiVector3D({ 1,1,1 });
+						posIndex += 1;
+						rotIndex += 1;
+					}
+					else if (minIndices[0] == 1 && minIndices[1] == 2) {
+						currPosTime = currSclTime;
+						currPos = aiVector3D({ 0,0,0 });
+						rotIndex += 1;
+						sclIndex += 1;
+					}
+					else if (minIndices[0] == 0 && minIndices[1] == 2) {
+						currRotTime = currSclTime;
+						currRot = aiQuaternion({ 1,0,0,0 });
+						posIndex += 1;
+						sclIndex += 1;
+					}
+				}
+				else if (minIndices.size() == 1) {
+					if (minIndices[0] == 0) {
+						currRotTime = currPosTime;
+						currRot = aiQuaternion({ 1,0,0,0 });
+						currSclTime = currPosTime;
+						currScl = aiVector3D({ 1,1,1 });
+					}
+					else if (minIndices[0] == 1) {
+						currPosTime = currRotTime;
+						currPos = aiVector3D({ 0,0,0 });
+						currSclTime = currRotTime;
+						currScl = aiVector3D({ 1,1,1 });
+					}
+					else if (minIndices[0] == 2) {
+						currPosTime = currSclTime;
+						currPos = aiVector3D({ 0,0,0 });
+						currRotTime = currSclTime;
+						currRot = aiQuaternion({ 1,0,0,0 });
+					}
+				}
 
-			}
-			for (uint32_t j = 0; j < track->mNumScalingKeys; j++) {
-				animationTrack.scaleTimeStamps.push_back(track->mPositionKeys[j].mTime / ticksPerSecond);
-				animationTrack.scales.push_back(AssimpToGlmVec3(track->mScalingKeys[j].mValue));
+				animationTrack.positionTimeStamps.push_back(currPosTime);
+				animationTrack.positions.push_back(AssimpToGlmVec3(currPos));
+				animationTrack.rotationTimeStamps.push_back(currRotTime);
+				animationTrack.rotations.push_back(AssimpToGlmQuat(currRot));
+				animationTrack.scaleTimeStamps.push_back(currSclTime);
+				animationTrack.scales.push_back(AssimpToGlmVec3(currScl));
+				
 
 			}
 		}
@@ -65,6 +120,7 @@ namespace Mona {
 		SetSkeleton(skeleton);
 		if (removeRootMotion)
 			RemoveRootMotion();
+
 
 		// Calcular rotaciones estabilizadas
 		for (int i = 0; i < m_animationTracks.size(); i++) {

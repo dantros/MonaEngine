@@ -13,7 +13,7 @@ namespace Mona {
     typedef Eigen::Quaternion<float> Quaternion;
     typedef Eigen::AngleAxis<float> AngleAxis;
     typedef Eigen::Matrix<float, 1, 2> Vector2f;
-    typedef int BVHIndex;
+    typedef int AnimIndex;
 
     struct JointRotation {
     private:

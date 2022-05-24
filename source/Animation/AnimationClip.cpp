@@ -41,6 +41,7 @@ namespace Mona {
 			animationTrack.positionTimeStamps.reserve(track->mNumPositionKeys);
 			animationTrack.rotations.reserve(track->mNumRotationKeys);
 			animationTrack.rotationTimeStamps.reserve(track->mNumRotationKeys);
+			animationTrack.stableRotations.reserve(track->mNumRotationKeys);
 			animationTrack.scales.reserve(track->mNumScalingKeys);
 			animationTrack.scaleTimeStamps.reserve(track->mNumScalingKeys);
 			for (uint32_t j = 0; j < track->mNumPositionKeys; j++) {
@@ -64,6 +65,23 @@ namespace Mona {
 		SetSkeleton(skeleton);
 		if (removeRootMotion)
 			RemoveRootMotion();
+
+		// Calcular rotaciones estabilizadas
+		for (int i = 0; i < m_animationTracks.size(); i++) {
+			AnimationTrack& track = m_animationTracks[i];
+			int maxIndex = std::max(std::max(track.positions.size(), track.rotations.size()), track.scales.size());
+			for (int j = 0; j < maxIndex; j++) {
+				glm::vec3 scl = j < track.scales.size() ? track.scales[j] :	glm::vec3({ 1,1,1 });
+				glm::vec3 tr = j < track.positions.size() ? track.positions[j] : glm::vec3({ 0,0,0 });
+				glm::fquat rot = j < track.rotations.size() ? track.rotations[j] : glm::fquat({1,0,0,0 });
+				glm::mat4 mat = glm::identity<glm::mat4>();
+				mat = glm::scale(mat, scl);
+				mat = glm::toMat4(rot) * mat;
+				mat = glm::translate(mat, tr);
+				glm::mat4 fromBindPoseMat = mat* glm::inverse(skeleton->m_offsets[m_trackJointIndices[i]]);
+				track.stableRotations.push_back(glm::toQuat(fromBindPoseMat));
+			}
+		}
 
 		// Se guarda el nombre de la animacion
 		std::string fileName = filePath;

@@ -6,6 +6,7 @@
 #include <memory>
 #include <utility>
 #include <glm/glm.hpp>
+#include <Eigen/Geometry>
 #include "JointPose.hpp"
 namespace Mona {
 	class Skeleton;
@@ -19,6 +20,7 @@ namespace Mona {
 			std::vector<glm::vec3> positions;
 			std::vector<glm::fquat> rotations;
 			std::vector<glm::vec3> scales;
+			std::vector<glm::fquat> stableRotations;
 			std::vector<float> positionTimeStamps;
 			std::vector<float> rotationTimeStamps;
 			std::vector<float> scaleTimeStamps;

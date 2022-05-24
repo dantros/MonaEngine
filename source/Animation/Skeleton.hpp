@@ -6,12 +6,14 @@
 #include <vector>
 #include <unordered_map>
 #include <glm/glm.hpp>
+#include <Eigen/Dense>
 namespace Mona {
 
 
 	class Skeleton {
 	public:
 		friend class SkeletonManager;
+		friend class AnimationClip;
 		using size_type = std::vector<std::string>::size_type;
 		size_type JointCount() const {
 			return m_jointNames.size();
@@ -65,6 +67,7 @@ namespace Mona {
 		std::vector<glm::mat4> m_invBindPoseMatrices;
 		std::vector<std::string> m_jointNames;
 		std::vector<std::int32_t> m_parentIndices;
+		std::vector<glm::mat4> m_offsets;
 		std::string m_modelName;
 	};
 }

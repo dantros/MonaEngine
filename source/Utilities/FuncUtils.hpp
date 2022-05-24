@@ -116,6 +116,24 @@ namespace Mona {
             }
             return minInd;
         }
+
+        inline bool conditionArray_OR(std::vector<bool> condArr) {
+            for (int i = 0; i < condArr.size(); i++) {
+                if (condArr[i]) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        inline bool conditionArray_AND(std::vector<bool> condArr) {
+            for (int i = 0; i < condArr.size(); i++) {
+                if (!condArr[i]) {
+                    return false;
+                }
+            }
+            return true;
+        }
 	}
     
 }

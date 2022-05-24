@@ -115,6 +115,56 @@ namespace Mona {
 			}
 		}
 
+		// luego se modifican los tracks de ser encesario para que todos los tracks tengan el mismo numero de frames en los mismos tiempos
+		std::vector<int> timeIndexes(m_animationTracks.size());
+		std::vector<bool> conditions(m_animationTracks.size());
+		for (int i = 0; i < timeIndexes.size(); i++) { timeIndexes[i] = 0; }
+		for (int i = 0; i < conditions.size(); i++) { conditions[i] = true; }
+		while (funcUtils::conditionArray_OR(conditions)) {
+			std::vector<float> currentTimes;
+			std::vector<glm::vec3> currentPositions;
+			std::vector<glm::fquat> currentRotations;
+			std::vector<glm::vec3> currentScales;
+			for (int i = 0; i < m_animationTracks.size(); i++) {
+				float currTime = timeIndexes[i] < m_animationTracks[i].rotationTimeStamps.size() ? m_animationTracks[i].rotationTimeStamps[timeIndexes[i]] : std::numeric_limits<float>::max();
+				glm::vec3 currPos = timeIndexes[i] < m_animationTracks[i].positions.size() ? m_animationTracks[i].positions[timeIndexes[i]] : glm::vec3({ 0,0,0 });
+				glm::fquat currRot = timeIndexes[i] < m_animationTracks[i].rotations.size() ? m_animationTracks[i].rotations[timeIndexes[i]] : glm::fquat({ 1,0,0,0 });
+				glm::vec3 currScl = timeIndexes[i] < m_animationTracks[i].scales.size() ? m_animationTracks[i].scales[timeIndexes[i]] : glm::vec3({ 1,1,1 });
+				currentTimes.push_back(currTime);
+				currentPositions.push_back(currPos);
+				currentRotations.push_back(currRot);
+				currentScales.push_back(currScl);
+			}
+			std::vector<int> minIndexes = funcUtils::minValueIndex_multiple<float>(currentTimes);
+			float currMinTime = currentTimes[minIndexes[0]];
+			glm::vec3 currMinPos = currentPositions[minIndexes[0]];
+			glm::fquat currMinRot = currentRotations[minIndexes[0]];
+			glm::vec3 currMinScl = currentScales[minIndexes[0]];
+			for (int i = 0; i < m_animationTracks.size(); i++) {
+				if (funcUtils::findIndex<int>(minIndexes, i) != -1) { // esta entre las animaciones con valor minimo
+					timeIndexes[i] += 1;
+				}
+				else {
+					auto insertIndPos = m_animationTracks[i].positions.begin() + std::max(timeIndexes[i] - 1, 0); // se insertan los nuevos valores antes de la posicion minima acutal del track
+					auto insertIndRot = m_animationTracks[i].rotations.begin() + std::max(timeIndexes[i] - 1, 0);
+					auto insertIndScl = m_animationTracks[i].scales.begin() + std::max(timeIndexes[i] - 1, 0);
+					auto insertIndTime = m_animationTracks[i].positionTimeStamps.begin() + std::max(timeIndexes[i] - 1, 0);
+					m_animationTracks[i].positions.insert(insertIndPos, currMinPos);
+					m_animationTracks[i].rotations.insert(insertIndRot, currMinRot);
+					m_animationTracks[i].scales.insert(insertIndScl, currMinScl);
+					m_animationTracks[i].positionTimeStamps.insert(insertIndTime, currMinTime);
+					m_animationTracks[i].rotationTimeStamps.insert(insertIndTime, currMinTime);
+					m_animationTracks[i].scaleTimeStamps.insert(insertIndTime, currMinTime);
+					timeIndexes[i] += 1; // se saltan los valores recien insertados
+				}
+			}
+			// update conditions
+			for (int i = 0; i < m_animationTracks.size(); i++) {
+				if (!timeIndexes[i] < m_animationTracks[i].positionTimeStamps.size()) {
+					conditions[i] = false;
+				}
+			}
+		}
 
 		m_trackJointIndices.resize(m_trackJointNames.size());
 		SetSkeleton(skeleton);

@@ -140,8 +140,10 @@ namespace Mona {
 			glm::vec3 currMinPos = currentPositions[minIndexes[0]];
 			glm::fquat currMinRot = currentRotations[minIndexes[0]];
 			glm::vec3 currMinScl = currentScales[minIndexes[0]];
+			int currMinIndexes_idx = minIndexes[0];
 			for (int i = 0; i < m_animationTracks.size(); i++) {
-				if (funcUtils::findIndex<int>(minIndexes, i) != -1) { // esta entre las animaciones con valor minimo
+				if (currMinIndexes_idx < minIndexes.size() && i == minIndexes[currMinIndexes_idx]) { // esta entre las animaciones con valor minimo
+					currMinIndexes_idx += 1;
 					timeIndexes[i] += 1;
 				}
 				else {

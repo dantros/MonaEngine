@@ -45,76 +45,38 @@ namespace Mona {
 			animationTrack.rotationTimeStamps.reserve(track->mNumRotationKeys);
 			animationTrack.scales.reserve(track->mNumScalingKeys);
 			animationTrack.scaleTimeStamps.reserve(track->mNumScalingKeys);
-			int posIndex = 0;
-			int rotIndex = 0;
-			int sclIndex = 0;
-			while (posIndex < track->mNumPositionKeys || rotIndex < track->mNumRotationKeys || sclIndex < track->mNumScalingKeys) {
-				aiVector3D currPos = posIndex < track->mNumPositionKeys ? track->mPositionKeys[posIndex].mValue : aiVector3D({ 0,0,0 });
-				aiQuaternion currRot = rotIndex < track->mNumRotationKeys ? track->mRotationKeys[rotIndex].mValue : aiQuaternion({ 1,0,0,0 });
-				aiVector3D currScl = sclIndex < track->mNumScalingKeys ? track->mScalingKeys[sclIndex].mValue : aiVector3D({ 1,1,1 });
-				double currPosTime = posIndex < track->mNumPositionKeys ? track->mPositionKeys[posIndex].mTime / ticksPerSecond : std::numeric_limits<double>::max();
-				double currRotTime = rotIndex < track->mNumRotationKeys ? track->mRotationKeys[rotIndex].mTime / ticksPerSecond : std::numeric_limits<double>::max();
-				double currSclTime = sclIndex < track->mNumScalingKeys ? track->mScalingKeys[sclIndex].mTime / ticksPerSecond : std::numeric_limits<double>::max();
+			std::vector<std::vector<float>> identities = { std::vector<float>({ 0,0,0 }), std::vector<float>({ 1,0,0,0 }), std::vector<float>({ 1,1,1 }) };
+			std::vector<int> timeIndexes = { 0,0,0 };
+			while (timeIndexes[0]< track->mNumPositionKeys || timeIndexes[1]< track->mNumRotationKeys || timeIndexes[2]< track->mNumScalingKeys) {
+				std::vector<float> currPos = timeIndexes[0] < track->mNumPositionKeys ? AssimpToStdVec3(track->mPositionKeys[timeIndexes[0]].mValue) : identities[0];
+				std::vector<float>  currRot = timeIndexes[1] < track->mNumRotationKeys ? AssimpToStdVec4(track->mRotationKeys[timeIndexes[1]].mValue) : identities[1];
+				std::vector<float> currScl = timeIndexes[2] < track->mNumScalingKeys ? AssimpToStdVec3(track->mScalingKeys[timeIndexes[2]].mValue) : identities[2];
+				double currPosTime = timeIndexes[0] < track->mNumPositionKeys ? track->mPositionKeys[timeIndexes[0]].mTime / ticksPerSecond : std::numeric_limits<double>::max();
+				double currRotTime = timeIndexes[1] < track->mNumRotationKeys ? track->mRotationKeys[timeIndexes[1]].mTime / ticksPerSecond : std::numeric_limits<double>::max();
+				double currSclTime = timeIndexes[2] < track->mNumScalingKeys ? track->mScalingKeys[timeIndexes[2]].mTime / ticksPerSecond : std::numeric_limits<double>::max();
 				std::vector<double> currentTimes = { currPosTime, currRotTime, currSclTime };
+				std::vector<std::vector<float>*> currentValues = { &currPos, &currRot, &currScl };
 				std::vector<int> minIndexes = funcUtils::minValueIndex_multiple<double>(currentTimes);
 				double currMinTime = currentTimes[minIndexes[0]];
-				if (minIndexes.size() == 3) {
-					posIndex += 1;
-					rotIndex += 1;
-					sclIndex += 1;
-				}
-				else if (minIndexes.size() == 2) {
-					if (minIndexes[0] == 0 && minIndexes[1] == 1) {
-						currSclTime = currMinTime;
-						currScl = aiVector3D({ 1,1,1 });
-						posIndex += 1;
-						rotIndex += 1;
+
+				for (int i = 0; i < 3; i++) {
+					if (funcUtils::findIndex(minIndexes, i) != -1) { // esta entre las animaciones con valor minimo
+						timeIndexes[i] += 1;
 					}
-					else if (minIndexes[0] == 1 && minIndexes[1] == 2) {
-						currPosTime = currMinTime;
-						currPos = aiVector3D({ 0,0,0 });
-						rotIndex += 1;
-						sclIndex += 1;
-					}
-					else if (minIndexes[0] == 0 && minIndexes[1] == 2) {
-						currRotTime = currMinTime;
-						currRot = aiQuaternion({ 1,0,0,0 });
-						posIndex += 1;
-						sclIndex += 1;
+					else {
+						(*currentValues[i]) = identities[i]; // si no tiene el tiempo minimo le asignamos su identidad correspondiente
 					}
 				}
-				else if (minIndexes.size() == 1) {
-					if (minIndexes[0] == 0) {
-						currRotTime = currMinTime;
-						currRot = aiQuaternion({ 1,0,0,0 });
-						currSclTime = currMinTime;
-						currScl = aiVector3D({ 1,1,1 });
-						posIndex += 1;
-					}
-					else if (minIndexes[0] == 1) {
-						currPosTime = currMinTime;
-						currPos = aiVector3D({ 0,0,0 });
-						currSclTime = currMinTime;
-						currScl = aiVector3D({ 1,1,1 });
-						rotIndex += 1;
-					}
-					else if (minIndexes[0] == 2) {
-						currPosTime = currMinTime;
-						currPos = aiVector3D({ 0,0,0 });
-						currRotTime = currMinTime;
-						currRot = aiQuaternion({ 1,0,0,0 });
-						sclIndex += 1;
-					}
-				}
+				glm::vec3 glmPos({currPos[0], currPos[1], currPos[2]});
+				glm::fquat glmRot({ currRot[0], currRot[1], currRot[2], currRot[3] });
+				glm::vec3 glmScl({ currScl[0], currScl[1], currScl[2] });
 
-				animationTrack.positionTimeStamps.push_back(currPosTime);
-				animationTrack.positions.push_back(AssimpToGlmVec3(currPos));
-				animationTrack.rotationTimeStamps.push_back(currRotTime);
-				animationTrack.rotations.push_back(AssimpToGlmQuat(currRot));
-				animationTrack.scaleTimeStamps.push_back(currSclTime);
-				animationTrack.scales.push_back(AssimpToGlmVec3(currScl));
-
-
+				animationTrack.positionTimeStamps.push_back(currMinTime);
+				animationTrack.positions.push_back(glmPos);
+				animationTrack.rotationTimeStamps.push_back(currMinTime);
+				animationTrack.rotations.push_back(glmRot);
+				animationTrack.scaleTimeStamps.push_back(currMinTime);
+				animationTrack.scales.push_back(glmScl);
 			}
 		}
 

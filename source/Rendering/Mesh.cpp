@@ -334,14 +334,14 @@ namespace Mona {
 			Vector3f v1 = oneFacePerVertex[vertexIndex][0];
 			Vector3f v2 = oneFacePerVertex[vertexIndex][1];
 			Vector3f v3 = oneFacePerVertex[vertexIndex][2];
-			Vector3f normal = (v2 - v1).cross(v3 - v1).normalized();
+			Vector3f normal = glm::normalize(glm::cross((v2 - v1),(v3 - v1)));
 			vertices[i + 3] = normal[0];
 			vertices[i + 4] = normal[1];
 			vertices[i + 5] = normal[2];
 			// uv
 			vertices[i + 6] = 0.0f;
 			vertices[i + 7] = 0.0f;
-			Vector3f tangent = (v2 - v1).normalized();
+			Vector3f tangent = glm::normalize(v2 - v1);
 			vertices[i + 8] = tangent[0];
 			vertices[i + 9] = tangent[1];
 			vertices[i + 10] = tangent[2];

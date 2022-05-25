@@ -41,19 +41,17 @@ namespace Mona{
 	JointRotation::JointRotation() {
 		setRotation({ 0,0,0,1 });
 	}
-	JointRotation::JointRotation(Vector3f rotationAxis, float rotationAngle) {
-		setRotation(rotationAxis, rotationAngle);
+	JointRotation::JointRotation(float rotationAngle, Vector3f rotationAxis) {
+		setRotation(rotationAngle, rotationAxis);
 	}
 	JointRotation::JointRotation(Quaternion quatRotation) {
 		setRotation(quatRotation);
 	}
 	void JointRotation::setRotation(Quaternion rotation) {
 		m_quatRotation = rotation;
-		m_angleAxis = AngleAxis(m_quatRotation);
 	}
-	void JointRotation::setRotation(Vector3f rotationAxis, float rotationAngle) {
-		m_angleAxis = AngleAxis(rotationAngle, rotationAxis.normalized());
-		m_quatRotation = Quaternion(m_angleAxis);
+	void JointRotation::setRotation(float rotationAngle, Vector3f rotationAxis) {
+		m_quatRotation = glm::angleAxis(rotationAngle, rotationAxis);
 	}
 
 	IKRigConfigValidator::IKRigConfigValidator(std::vector<IKNode>* nodesPtr, std::vector<int>* topologyPtr) {

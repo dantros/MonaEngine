@@ -3,33 +3,33 @@
 #define IKRIGBASE_HPP
 
 #include <memory>
-#include "BVHManager.hpp"
 #include "EnvironmentData.hpp"
 #include "../PhysicsCollision/RigidBodyLifetimePolicy.hpp"
 #include "../Animation/SkeletalMeshComponent.hpp"
 
 namespace Mona {
-    typedef Eigen::Matrix<float, 1, 3> Vector3f;
-    typedef Eigen::Quaternion<float> Quaternion;
-    typedef Eigen::AngleAxis<float> AngleAxis;
+    typedef glm::vec3 Vector3f;
+    typedef glm::fquat Quaternion;
     typedef Eigen::Matrix<float, 1, 2> Vector2f;
     typedef int AnimIndex;
 
     struct JointRotation {
     private:
-        AngleAxis m_angleAxis;
         Quaternion m_quatRotation;
     public:
         JointRotation();
-        JointRotation(Vector3f rotationAxis, float rotationAngle);
+        JointRotation(float rotationAngle, Vector3f rotationAxis);
         JointRotation(Quaternion quatRotation);
         void setRotation(Quaternion rotation);
-        void setRotation(Vector3f rotationAxis, float rotationAngle);
+        void setRotation(float rotationAngle, Vector3f rotationAxis);
         Quaternion getQuatRotation() { return m_quatRotation; }
-        float getRotationAngle() { return m_angleAxis.angle(); }
-        Vector3f getRotationAxis() { return m_angleAxis.axis(); }
+        float getRotationAngle() { return glm::angle(m_quatRotation); }
+        Vector3f getRotationAxis() { return glm::axis(m_quatRotation); }
     };
-    typedef std::vector<JointRotation> IKRigConfig;
+    struct IKRigConfig {
+        std::vector<JointRotation> jointRotations;
+        AnimIndex animIndex;
+    };
 
     struct JointData {
         float minAngle = -90;

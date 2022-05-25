@@ -101,29 +101,32 @@ namespace Mona {
 		rigidBodyManagerPtr->GetComponentPointer(m_rigidBodyHandle)->SetLinearVelocity({velocity[0], velocity[1], velocity[2]});
 	}
 
-	IKRigConfig IKRig::getBVHConfig(int frame, AnimIndex animIndex) {
+	IKRigConfig IKRig::getAnimConfig(int frame, AnimIndex animIndex) {
 		auto anim = m_animations[animIndex];
 		IKRigConfig rigConfig;
-		rigConfig = std::vector<JointRotation>(m_nodes.size());
+		rigConfig.jointRotations = std::vector<JointRotation>(m_nodes.size());
+		rigConfig.animIndex = animIndex;
 		for (int i = 0; i < m_nodes.size(); i++) {
-			rigConfig[i].setRotation(anim->getDynamicRotations()[frame][i]);
+			rigConfig.jointRotations[i].setRotation(anim->GetRotation(frame, i));
 		}
 		return rigConfig;
 	}
 
-	IKRigConfig IKRig::createDynamicConfig() {
+	IKRigConfig IKRig::createDynamicConfig(int animIndex) {
 		IKRigConfig rigConfig;
-		rigConfig = std::vector<JointRotation>(m_nodes.size());
+		rigConfig.animIndex = animIndex;
+		rigConfig.jointRotations = std::vector<JointRotation>(m_nodes.size());
 		return rigConfig;
 	}
 
 	std::vector<Vector3f> IKRig::modelSpacePositions(IKRigConfig rigConfig) {
 		std::vector<Vector3f> modelSpacePos(m_nodes.size());
+		auto anim = m_animations[rigConfig.animIndex];
 		modelSpacePos[0] = { 0,0,0 };
 		// root
-		modelSpacePos[0] = modelSpacePos[0] * rigConfig[0].getQuatRotation().toRotationMatrix() + m_offsets[0];
+		modelSpacePos[0] = modelSpacePos[0] * glm::toMat3(rigConfig.jointRotations[0].getQuatRotation()) + anim->GetPosition(0, 0);
 		for (int i = 1; i < m_nodes.size(); i++) {
-			modelSpacePos[i] = modelSpacePos[GetTopology()[i]] * rigConfig[i].getQuatRotation().toRotationMatrix() + m_offsets[i];
+			modelSpacePos[i] = modelSpacePos[GetTopology()[i]] * glm::toMat3(rigConfig.jointRotations[i].getQuatRotation()) + anim->GetPosition(0, i);
 		}
 		return modelSpacePos;
 	}
@@ -136,7 +139,7 @@ namespace Mona {
 			Vector3f v1 = modelSpacePos[i];
 			Vector3f v2 = modelSpacePos[GetTopology()[i]];
 			float frac = m_nodes[GetTopology()[i]].m_weight / (m_nodes[i].m_weight + m_nodes[GetTopology()[i]].m_weight);
-			float segLength = (v2 - v1).norm();
+			float segLength = glm::distance(v1, v2);
 			segmentCenters[i] = vec3Lerp(v1, v2, frac) * segLength;
 			segNum += 1;
 			totalSegLength += segLength;

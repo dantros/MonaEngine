@@ -12,8 +12,8 @@ namespace Mona{
             IKRig() = default;
             IKRig(std::shared_ptr<AnimationClip> baseAnim, RigData rigData, InnerComponentHandle rigidBodyHandle,
                 InnerComponentHandle skeletalMeshHandle);
-            IKRigConfig getBVHConfig(int frame, AnimIndex animIndex);
-            IKRigConfig createDynamicConfig();
+            IKRigConfig getAnimConfig(int frame, AnimIndex animIndex);
+            IKRigConfig createDynamicConfig(int animIndex);
             std::vector<Vector3f> modelSpacePositions(IKRigConfig rigConfig);
             Vector3f getCenterOfMass(IKRigConfig rigConfig);
             bool isConfigValid(IKRigConfig rigConfig);
@@ -23,7 +23,7 @@ namespace Mona{
             std::shared_ptr<Skeleton> m_skeleton;
             std::vector<int>& GetTopology() { return m_skeleton->m_parentIndices; }
             std::vector<std::string>& GetJointNames() { return m_skeleton->m_jointNames; }
-            std::vector<Vector3f> m_offsets;
+
             AnimIndex m_currentAnim = -1;
             AnimIndex m_targetAnim = -1;
             InnerComponentHandle m_rigidBodyHandle;

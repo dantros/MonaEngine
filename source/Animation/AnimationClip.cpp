@@ -232,6 +232,10 @@ namespace Mona {
 			uint32_t jointIndex = static_cast<uint32_t>(signIndex);
 			m_trackJointIndices[i] = jointIndex;
 		}
+		m_jointTrackIndices = std::vector<int>(m_trackJointIndices.size());
+		for (uint32_t i = 0; i < m_trackJointIndices.size(); i++) {
+			m_jointTrackIndices[m_trackJointIndices[i]] = i;
+		}
 		m_skeletonPtr = skeletonPtr;
 	}
 
@@ -271,5 +275,15 @@ namespace Mona {
 		return { sample, frac };
 	}
 
+
+	glm::vec3 AnimationClip::GetPosition(int frame, int joint) {
+		return m_animationTracks[m_jointTrackIndices[joint]].positions[frame];
+	}
+	glm::fquat AnimationClip::GetRotation(int frame, int joint) {
+		return m_animationTracks[m_jointTrackIndices[joint]].rotations[frame];
+	}
+	glm::vec3 AnimationClip::GetScale(int frame, int joint) {
+		return m_animationTracks[m_jointTrackIndices[joint]].scales[frame];
+	}
 
 }

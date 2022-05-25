@@ -114,7 +114,7 @@ namespace Mona {
                     minIndexes.push_back(i);
                 }
             }
-            return minInd;
+            return minIndexes;
         }
 
         inline bool conditionArray_OR(std::vector<bool> condArr) {

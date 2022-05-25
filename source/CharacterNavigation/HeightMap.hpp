@@ -4,16 +4,16 @@
 
 #include <vector>
 #include <Eigen/Dense>
+#include <glm/glm.hpp>
 
 
 
 namespace Mona {
     
-	typedef Eigen::Matrix<float, 1, 3> Vector3f;
+	typedef glm::vec3 Vector3f;
 	typedef Eigen::Matrix<float, 1, 2> Vector2f;
 	typedef Eigen::Matrix<unsigned int, 1, 3> Vector3ui;
-	typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> MatrixXf;
-	typedef Eigen::Matrix<float, 1, 3> Vertex;
+	typedef glm::vec3 Vertex;
 	typedef unsigned int vIndex;
 
 	struct Triangle {

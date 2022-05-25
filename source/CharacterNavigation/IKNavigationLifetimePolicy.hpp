@@ -37,10 +37,9 @@ namespace Mona {
 				MONA_LOG_ERROR("Input animation does not correspond to base skeleton.");
 				return;
 			}
-			std::shared_ptr<BVHData> bvhPtr = BVHManager::GetInstance().readBVH(ikNav.m_baseAnimationClip);
 
 			InnerComponentHandle rigidBodyHandle = m_ikNavigationManagerPtr->GetOwner(handle)->GetInnerComponentHandle<RigidBodyComponent>();
-			ikNav.m_ikRig = IKRig(bvhPtr, ikNav.m_rigData, rigidBodyHandle, skeletalMeshHandle);
+			ikNav.m_ikRig = IKRig(ikNav.m_baseAnimationClip, ikNav.m_rigData, rigidBodyHandle, skeletalMeshHandle);
 		}
 		void OnRemoveComponent(GameObject* gameObjectPtr, IKNavigationComponent& ikNav, const InnerComponentHandle& handle) noexcept {
 		}

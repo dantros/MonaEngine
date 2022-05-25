@@ -20,7 +20,6 @@ namespace Mona {
 			std::vector<glm::vec3> positions;
 			std::vector<glm::fquat> rotations;
 			std::vector<glm::vec3> scales;
-			std::vector<glm::fquat> stableRotations;
 			std::vector<float> positionTimeStamps;
 			std::vector<float> rotationTimeStamps;
 			std::vector<float> scaleTimeStamps;
@@ -51,6 +50,7 @@ namespace Mona {
 		std::shared_ptr<Skeleton> m_skeletonPtr;
 		float m_duration = 1.0f;
 		std::string m_animationName;
+		bool m_stableRotations;
 	};
 }
 #endif

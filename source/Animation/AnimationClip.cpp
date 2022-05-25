@@ -37,99 +37,25 @@ namespace Mona {
 			aiNodeAnim* track = animation->mChannels[i];
 			m_trackJointNames.push_back(track->mNodeName.C_Str());
 			AnimationClip::AnimationTrack& animationTrack = m_animationTracks[i];
-
-			// regularizamos transformaciones rellenando con la identidad donde haga falta
 			animationTrack.positions.reserve(track->mNumPositionKeys);
 			animationTrack.positionTimeStamps.reserve(track->mNumPositionKeys);
 			animationTrack.rotations.reserve(track->mNumRotationKeys);
 			animationTrack.rotationTimeStamps.reserve(track->mNumRotationKeys);
 			animationTrack.scales.reserve(track->mNumScalingKeys);
 			animationTrack.scaleTimeStamps.reserve(track->mNumScalingKeys);
-			std::vector<std::vector<float>> identities = { std::vector<float>({ 0,0,0 }), std::vector<float>({ 1,0,0,0 }), std::vector<float>({ 1,1,1 }) };
-			std::vector<int> timeIndexes = { 0,0,0 };
-			while (timeIndexes[0]< track->mNumPositionKeys || timeIndexes[1]< track->mNumRotationKeys || timeIndexes[2]< track->mNumScalingKeys) {
-				std::vector<float> currPos = timeIndexes[0] < track->mNumPositionKeys ? AssimpToStdVec3(track->mPositionKeys[timeIndexes[0]].mValue) : identities[0];
-				std::vector<float>  currRot = timeIndexes[1] < track->mNumRotationKeys ? AssimpToStdVec4(track->mRotationKeys[timeIndexes[1]].mValue) : identities[1];
-				std::vector<float> currScl = timeIndexes[2] < track->mNumScalingKeys ? AssimpToStdVec3(track->mScalingKeys[timeIndexes[2]].mValue) : identities[2];
-				double currPosTime = timeIndexes[0] < track->mNumPositionKeys ? track->mPositionKeys[timeIndexes[0]].mTime / ticksPerSecond : std::numeric_limits<double>::max();
-				double currRotTime = timeIndexes[1] < track->mNumRotationKeys ? track->mRotationKeys[timeIndexes[1]].mTime / ticksPerSecond : std::numeric_limits<double>::max();
-				double currSclTime = timeIndexes[2] < track->mNumScalingKeys ? track->mScalingKeys[timeIndexes[2]].mTime / ticksPerSecond : std::numeric_limits<double>::max();
-				std::vector<double> currentTimes = { currPosTime, currRotTime, currSclTime };
-				std::vector<std::vector<float>*> currentValues = { &currPos, &currRot, &currScl };
-				std::vector<int> minIndexes = funcUtils::minValueIndex_multiple<double>(currentTimes);
-				double currMinTime = currentTimes[minIndexes[0]];
-
-				for (int i = 0; i < 3; i++) {
-					if (funcUtils::findIndex(minIndexes, i) != -1) { // esta entre las animaciones con valor minimo
-						timeIndexes[i] += 1;
-					}
-					else {
-						(*currentValues[i]) = identities[i]; // si no tiene el tiempo minimo le asignamos su identidad correspondiente
-					}
-				}
-				glm::vec3 glmPos({currPos[0], currPos[1], currPos[2]});
-				glm::fquat glmRot({ currRot[0], currRot[1], currRot[2], currRot[3] });
-				glm::vec3 glmScl({ currScl[0], currScl[1], currScl[2] });
-
-				animationTrack.positionTimeStamps.push_back(currMinTime);
-				animationTrack.positions.push_back(glmPos);
-				animationTrack.rotationTimeStamps.push_back(currMinTime);
-				animationTrack.rotations.push_back(glmRot);
-				animationTrack.scaleTimeStamps.push_back(currMinTime);
-				animationTrack.scales.push_back(glmScl);
+			for (uint32_t j = 0; j < track->mNumPositionKeys; j++) {
+				animationTrack.positionTimeStamps.push_back(track->mPositionKeys[j].mTime / ticksPerSecond);
+				animationTrack.positions.push_back(AssimpToGlmVec3(track->mPositionKeys[j].mValue));
 			}
-		}
+			for (uint32_t j = 0; j < track->mNumRotationKeys; j++) {
+				animationTrack.rotationTimeStamps.push_back(track->mRotationKeys[j].mTime / ticksPerSecond);
+				animationTrack.rotations.push_back(AssimpToGlmQuat(track->mRotationKeys[j].mValue));
 
-		// luego se modifican los tracks de ser encesario para que todos los tracks tengan el mismo numero de frames en los mismos tiempos
-		std::vector<int> timeIndexes(m_animationTracks.size());
-		std::vector<bool> conditions(m_animationTracks.size());
-		for (int i = 0; i < timeIndexes.size(); i++) { timeIndexes[i] = 0; }
-		for (int i = 0; i < conditions.size(); i++) { conditions[i] = true; }
-		while (funcUtils::conditionArray_OR(conditions)) {
-			std::vector<float> currentTimes;
-			std::vector<glm::vec3> currentPositions;
-			std::vector<glm::fquat> currentRotations;
-			std::vector<glm::vec3> currentScales;
-			for (int i = 0; i < m_animationTracks.size(); i++) {
-				float currTime = timeIndexes[i] < m_animationTracks[i].rotationTimeStamps.size() ? m_animationTracks[i].rotationTimeStamps[timeIndexes[i]] : std::numeric_limits<float>::max();
-				glm::vec3 currPos = timeIndexes[i] < m_animationTracks[i].positions.size() ? m_animationTracks[i].positions[timeIndexes[i]] : glm::vec3({ 0,0,0 });
-				glm::fquat currRot = timeIndexes[i] < m_animationTracks[i].rotations.size() ? m_animationTracks[i].rotations[timeIndexes[i]] : glm::fquat({ 1,0,0,0 });
-				glm::vec3 currScl = timeIndexes[i] < m_animationTracks[i].scales.size() ? m_animationTracks[i].scales[timeIndexes[i]] : glm::vec3({ 1,1,1 });
-				currentTimes.push_back(currTime);
-				currentPositions.push_back(currPos);
-				currentRotations.push_back(currRot);
-				currentScales.push_back(currScl);
 			}
-			std::vector<int> minIndexes = funcUtils::minValueIndex_multiple<float>(currentTimes);
-			float currMinTime = currentTimes[minIndexes[0]];
-			glm::vec3 currMinPos = currentPositions[minIndexes[0]];
-			glm::fquat currMinRot = currentRotations[minIndexes[0]];
-			glm::vec3 currMinScl = currentScales[minIndexes[0]];
-			int currMinIndexes_idx = minIndexes[0];
-			for (int i = 0; i < m_animationTracks.size(); i++) {
-				if (currMinIndexes_idx < minIndexes.size() && i == minIndexes[currMinIndexes_idx]) { // esta entre las animaciones con valor minimo
-					currMinIndexes_idx += 1;
-					timeIndexes[i] += 1;
-				}
-				else {
-					auto insertIndPos = m_animationTracks[i].positions.begin() + std::max(timeIndexes[i] - 1, 0); // se insertan los nuevos valores antes de la posicion minima acutal del track
-					auto insertIndRot = m_animationTracks[i].rotations.begin() + std::max(timeIndexes[i] - 1, 0);
-					auto insertIndScl = m_animationTracks[i].scales.begin() + std::max(timeIndexes[i] - 1, 0);
-					auto insertIndTime = m_animationTracks[i].positionTimeStamps.begin() + std::max(timeIndexes[i] - 1, 0);
-					m_animationTracks[i].positions.insert(insertIndPos, currMinPos);
-					m_animationTracks[i].rotations.insert(insertIndRot, currMinRot);
-					m_animationTracks[i].scales.insert(insertIndScl, currMinScl);
-					m_animationTracks[i].positionTimeStamps.insert(insertIndTime, currMinTime);
-					m_animationTracks[i].rotationTimeStamps.insert(insertIndTime, currMinTime);
-					m_animationTracks[i].scaleTimeStamps.insert(insertIndTime, currMinTime);
-					timeIndexes[i] += 1; // se saltan los valores recien insertados
-				}
-			}
-			// update conditions
-			for (int i = 0; i < m_animationTracks.size(); i++) {
-				if (!timeIndexes[i] < m_animationTracks[i].positionTimeStamps.size()) {
-					conditions[i] = false;
-				}
+			for (uint32_t j = 0; j < track->mNumScalingKeys; j++) {
+				animationTrack.scaleTimeStamps.push_back(track->mScalingKeys[j].mTime / ticksPerSecond);
+				animationTrack.scales.push_back(AssimpToGlmVec3(track->mScalingKeys[j].mValue));
+
 			}
 		}
 
@@ -157,11 +83,8 @@ namespace Mona {
 		}
 
 		// Se guarda el nombre de la animacion
-		std::string fileName = filePath;
 		size_t pos = filePath.find_last_of("/\\");
-		if (pos != std::string::npos) {
-			fileName = filePath.substr(pos + 1);
-		}		
+		std::string fileName = pos != std::string::npos ? filePath.substr(pos + 1) : filePath;	
 		m_animationName = funcUtils::splitString(fileName, '.')[0];
 	}
 
@@ -232,7 +155,7 @@ namespace Mona {
 			uint32_t jointIndex = static_cast<uint32_t>(signIndex);
 			m_trackJointIndices[i] = jointIndex;
 		}
-		m_jointTrackIndices = std::vector<int>(m_trackJointIndices.size());
+		m_jointTrackIndices = std::vector<int>(skeletonPtr->m_jointNames.size());
 		for (uint32_t i = 0; i < m_trackJointIndices.size(); i++) {
 			m_jointTrackIndices[m_trackJointIndices[i]] = i;
 		}

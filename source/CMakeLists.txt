@@ -8,7 +8,6 @@ set(MONA_HEADERS
 				CharacterNavigation/EnvironmentData.hpp
 				CharacterNavigation/IKRig.hpp
 				CharacterNavigation/IK.hpp
-				CharacterNavigation/bvh_python/cython_interface.h
 				Core/Common.hpp 
 				Core/Log.hpp
 				Core/Config.hpp
@@ -88,7 +87,6 @@ set(MONA_SOURCES
 				CharacterNavigation/EnvironmentData.cpp
 				CharacterNavigation/IKRig.cpp
 				CharacterNavigation/IK.cpp
-				CharacterNavigation/bvh_python/cython_interface.cpp
 				Core/Config.cpp
 				Event/EventManager.cpp
 				Platform/Window.cpp

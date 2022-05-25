@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.15)
 project(MonaEngine C CXX)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 find_package(OpenGL REQUIRED)
-find_package(Python REQUIRED COMPONENTS Development)
 set(THIRD_PARTY_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/glad/include"
 						"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/glfw-3.3.2/include"
 						"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/spdlog-1.9.2/include"
@@ -15,7 +14,6 @@ set(THIRD_PARTY_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/glad
 						"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/assimp-5.0.1/include"
 						"${CMAKE_CURRENT_BINARY_DIR}/thirdParty/assimp-5.0.1/include"
 						"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/stb"
-						${Python_INCLUDE_DIRS}
 						"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/eigen")
 
 set(MONA_INCLUDE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/source")
@@ -27,9 +25,9 @@ list (APPEND BULLET_LIBRARIES BulletDynamics)
 list (APPEND BULLET_LIBRARIES BulletCollision)
 list (APPEND BULLET_LIBRARIES LinearMath)
 if(MSVC)
-	set(THIRD_PARTY_LIBRARIES glad glfw ${OPENGL_LIBRARIES} ImGui ${BULLET_LIBRARIES} OpenAL dr_wav assimp stb Python::Python eigen)
+	set(THIRD_PARTY_LIBRARIES glad glfw ${OPENGL_LIBRARIES} ImGui ${BULLET_LIBRARIES} OpenAL dr_wav assimp stb eigen)
 else()
-	set(THIRD_PARTY_LIBRARIES glad glfw ${OPENGL_LIBRARIES} ImGui ${BULLET_LIBRARIES} stdc++fs OpenAL dr_wav assimp stb Python::Python eigen)
+	set(THIRD_PARTY_LIBRARIES glad glfw ${OPENGL_LIBRARIES} ImGui ${BULLET_LIBRARIES} stdc++fs OpenAL dr_wav assimp stb eigen)
 endif(MSVC)
 configure_file(CMakeConfigFiles/RootDirectory.hpp.in "${CMAKE_CURRENT_SOURCE_DIR}/source/Core/RootDirectory.hpp")
 add_subdirectory(thirdParty)

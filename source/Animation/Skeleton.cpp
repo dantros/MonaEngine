@@ -94,11 +94,8 @@ namespace Mona {
 		}
 
 		// Se guarda el nombre del modelo
-		std::string fileName = filePath;
 		size_t pos = filePath.find_last_of("/\\");
-		if (pos != std::string::npos) {
-			fileName = filePath.substr(pos + 1);
-		}
+		std::string fileName = pos != std::string::npos ? filePath.substr(pos + 1): filePath;
 		m_modelName = funcUtils::splitString(fileName, '.')[0];
 	}
 	

@@ -10,7 +10,6 @@
 namespace Mona {
     typedef glm::vec3 Vector3f;
     typedef glm::fquat Quaternion;
-    typedef Eigen::Matrix<float, 1, 2> Vector2f;
     typedef int AnimIndex;
 
     struct JointRotation {

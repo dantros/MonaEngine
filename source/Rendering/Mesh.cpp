@@ -156,17 +156,15 @@ namespace Mona {
 		glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), (void*)offsetof(MeshVertex, bitangent));
 
 		if (createHeightMap) {
-			std::vector<Vector3f> vertexPositions;
-			std::vector<Vector3ui> groupedFaces;
+			std::vector<glm::vec3> vertexPositions;
+			std::vector<glm::vec3> groupedFaces;
 			vertexPositions.reserve(numVertices);
 			groupedFaces.reserve(faces.size());
 			for (int i = 0; i < numVertices; i++) {
-				glm::vec3 currPos = vertices[i].position;
-				Vector3f v = Vector3f(currPos[0], currPos[1], currPos[2]);
-				vertexPositions.push_back(v);
+				vertexPositions.push_back(vertices[i].position);
 			}
 			for (int i = 0; i < faces.size(); i+=3) {
-				Vector3ui f = { faces[i], faces[i + 1], faces[i + 2] };
+				glm::vec3 f = { faces[i], faces[i + 1], faces[i + 2] };
 				groupedFaces.push_back(f);
 			}
 			m_heightMap = HeightMap();
@@ -290,21 +288,21 @@ namespace Mona {
 				faces.insert(faces.end(), { isw, ise, ine, ine, inw, isw }); // falta rellenar las normales
 			}
 		}
-		std::vector<Vector3f> vertexPositions;
-		std::vector<Vector3ui> groupedFaces;
-		std::unordered_map<int, std::vector<Vector3f>> oneFacePerVertex;
+		std::vector<glm::vec3> vertexPositions;
+		std::vector<glm::vec3> groupedFaces;
+		std::unordered_map<int, std::vector<glm::vec3>> oneFacePerVertex;
 		vertexPositions.reserve(numVertices);
 		oneFacePerVertex.reserve(numVertices);
 		groupedFaces.reserve(faces.size());
 		for (int i = 0; i < vertices.size(); i += 11) {
-			Vector3f v(vertices[i], vertices[i + 1], vertices[i + 2]);
+			glm::vec3 v(vertices[i], vertices[i + 1], vertices[i + 2]);
 			vertexPositions.push_back(v);
 		}
 		for (int i = 0; i < faces.size(); i += 3) {
-			Vector3f v1 = vertexPositions[faces[i]];
-			Vector3f v2 = vertexPositions[faces[i+1]];
-			Vector3f v3 = vertexPositions[faces[i+2]];
-			Vector3ui f = { faces[i], faces[i + 1], faces[i + 2] };
+			glm::vec3 v1 = vertexPositions[faces[i]];
+			glm::vec3 v2 = vertexPositions[faces[i+1]];
+			glm::vec3 v3 = vertexPositions[faces[i+2]];
+			glm::vec3 f = { faces[i], faces[i + 1], faces[i + 2] };
 			int orientation = orientationTest(v1, v2, v3, 0.00001f);
 			if (orientation == -1) {
 				f = { faces[i + 1], faces[i], faces[i + 2] };
@@ -331,17 +329,17 @@ namespace Mona {
 		// Rellenar valores faltantes en vertices
 		for (int i = 0; i < vertices.size(); i += 11) {
 			int vertexIndex = i / 11;
-			Vector3f v1 = oneFacePerVertex[vertexIndex][0];
-			Vector3f v2 = oneFacePerVertex[vertexIndex][1];
-			Vector3f v3 = oneFacePerVertex[vertexIndex][2];
-			Vector3f normal = glm::normalize(glm::cross((v2 - v1),(v3 - v1)));
+			glm::vec3 v1 = oneFacePerVertex[vertexIndex][0];
+			glm::vec3 v2 = oneFacePerVertex[vertexIndex][1];
+			glm::vec3 v3 = oneFacePerVertex[vertexIndex][2];
+			glm::vec3 normal = glm::normalize(glm::cross((v2 - v1),(v3 - v1)));
 			vertices[i + 3] = normal[0];
 			vertices[i + 4] = normal[1];
 			vertices[i + 5] = normal[2];
 			// uv
 			vertices[i + 6] = 0.0f;
 			vertices[i + 7] = 0.0f;
-			Vector3f tangent = glm::normalize(v2 - v1);
+			glm::vec3 tangent = glm::normalize(v2 - v1);
 			vertices[i + 8] = tangent[0];
 			vertices[i + 9] = tangent[1];
 			vertices[i + 10] = tangent[2];

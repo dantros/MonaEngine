@@ -24,7 +24,7 @@ namespace Mona {
 			return;
 		}
 
-		//Solo cargamos la primera animación
+		//Solo cargamos la primera animaciï¿½n
 		aiAnimation* animation = scene->mAnimations[0];
 		// Dado que los tiempos de muestreo de assimp estan generalmente en ticks se debe dividir casi todos 
 		// los tiempos de sus objetos por tickspersecond. Por otro lado, assimp sigue la convencion de que si mTicksPerSecond 
@@ -70,8 +70,9 @@ namespace Mona {
 		for (int i = 0; i < m_animationTracks.size(); i++) {
 			auto track = m_animationTracks[i];
 			glm::vec3 basePosition = track.positions[0];
+			glm::vec3 baseScale = track.scales[0];
 			for (int j = 1; j < track.positions.size(); j++) {
-				if (track.positions[j] != basePosition) {
+				if (track.positions[j] != basePosition || track.scales[j] != baseScale) {
 					m_stableRotations = false;
 					break;
 				}
@@ -92,7 +93,7 @@ namespace Mona {
 		//Primero se obtiene el tiempo de muestreo correcto
 		float newTime = GetSamplingTime(time, isLooping);
 
-		//Por cada articulación o joint animada
+		//Por cada articulaciï¿½n o joint animada
 		for (uint32_t i = 0; i < m_animationTracks.size(); i++)
 		{
 			const AnimationTrack& animationTrack = m_animationTracks[i];
@@ -100,7 +101,7 @@ namespace Mona {
 			std::pair<uint32_t, float> fp;
 			glm::vec3 localPosition;
 			/* Siempre se chequea si hay solo una muestra en el track dado que en ese caso no tiene sentido interpolar.
-			En cada cado (rotación, translación y escala) primero se llama una función que obtiene, dado el tiempo de muestreo, 
+			En cada cado (rotaciï¿½n, translaciï¿½n y escala) primero se llama una funciï¿½n que obtiene, dado el tiempo de muestreo, 
 			el primer indice cuyo tiempo de muestreo es mayor al obtenido y un valor entre 0 y 1 que representa que tan cerca
 			esta de dicha muestra, este valor se usa para interpolar.*/
 			if (animationTrack.positions.size() > 1)
@@ -163,7 +164,7 @@ namespace Mona {
 	}
 
 	void AnimationClip::RemoveRootMotion() {
-		//Remueve las translaciones del track de animación asociado a la raiz del esqueleto
+		//Remueve las translaciones del track de animaciï¿½n asociado a la raiz del esqueleto
 		for (uint32_t i = 0; i < m_animationTracks.size(); i++)
 		{
 			AnimationTrack& animationTrack = m_animationTracks[i];

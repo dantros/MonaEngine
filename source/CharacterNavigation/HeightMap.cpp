@@ -33,7 +33,7 @@ namespace Mona{
         return shared;
     }
 
-    void  HeightMap::init(const Vector2f& bottomLeft, const Vector2f& topRight, float (*heightFunc)(float, float)) {
+    void  HeightMap::init(const glm::vec2& bottomLeft, const glm::vec2& topRight, float (*heightFunc)(float, float)) {
         m_minX = bottomLeft[0];
         m_minY = bottomLeft[1];
         m_maxX = topRight[0];
@@ -43,7 +43,7 @@ namespace Mona{
         m_isValid = true;
     }
 
-    void HeightMap::init(const std::vector<Vector3f>& vertices, const std::vector<Vector3ui>& faces) {
+    void HeightMap::init(const std::vector<glm::vec3>& vertices, const std::vector<glm::vec3>& faces) {
 
         m_vertices.reserve(vertices.size());
         m_triangles.reserve(faces.size());

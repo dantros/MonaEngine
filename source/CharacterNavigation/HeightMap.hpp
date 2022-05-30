@@ -11,8 +11,6 @@
 namespace Mona {
     
 	typedef glm::vec3 Vector3f;
-	typedef Eigen::Matrix<float, 1, 2> Vector2f;
-	typedef Eigen::Matrix<unsigned int, 1, 3> Vector3ui;
 	typedef glm::vec3 Vertex;
 	typedef unsigned int vIndex;
 
@@ -51,8 +49,8 @@ namespace Mona {
 		public:
 			HeightMap() = default;
 			bool withinBoundaries(float x, float y);
-			void init(const std::vector<Vector3f>& vertices, const std::vector<Vector3ui>& faces);
-			void init(const Vector2f& bottomLeft, const Vector2f& topRight, float (*heightFunc)(float, float));
+			void init(const std::vector<glm::vec3>& vertices, const std::vector<glm::vec3>& faces);
+			void init(const glm::vec2& bottomLeft, const glm::vec2& topRight, float (*heightFunc)(float, float));
 			bool isValid() { return m_isValid; }
 			float getHeight(float x, float y);
 	};

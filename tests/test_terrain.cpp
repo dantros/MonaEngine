@@ -52,16 +52,16 @@ namespace Mona {
 
 
 		if (heightMap != nullptr) {
-			std::vector<Vector3f> vertexPositions;
-			std::vector<Vector3ui> groupedFaces;
+			std::vector<glm::vec3> vertexPositions;
+			std::vector<glm::vec3> groupedFaces;
 			vertexPositions.reserve(numVertices);
 			groupedFaces.reserve(numFaces);
 			for (int i = 0; i < vertices.size(); i+=3) {
-				Vector3f v(vertices[i], vertices[i + 1], vertices[i + 2]);
+				glm::vec3 v(vertices[i], vertices[i + 1], vertices[i + 2]);
 				vertexPositions.push_back(v);
 			}
 			for (int i = 0; i < faces.size(); i += 3) {
-				Vector3ui f = { faces[i], faces[i + 1], faces[i + 2] };
+				glm::vec3 f = { faces[i], faces[i + 1], faces[i + 2] };
 				groupedFaces.push_back(f);
 			}
 			//heightMap->init({ bottomLeft[0], bottomLeft[1] }, { topRight[0], topRight[1] }, heightFunc);

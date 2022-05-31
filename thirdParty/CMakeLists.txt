@@ -21,4 +21,4 @@ add_subdirectory_with_folder("thirdParty" dr_wav)
 add_subdirectory_with_folder("thirdParty/Assimp" assimp-5.0.1)
 add_subdirectory_with_folder("thirdParty" stb)
 add_subdirectory_with_folder("thirdParty/eigen" eigen)
-
+add_subdirectory_with_folder("thirdParty/autodiff" autodiff-0.6.8)

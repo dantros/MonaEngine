@@ -8,26 +8,31 @@
 #include "../Animation/SkeletalMeshComponent.hpp"
 
 namespace Mona {
-    typedef glm::vec3 Vector3f;
-    typedef glm::fquat Quaternion;
     typedef int AnimIndex;
 
     struct JointRotation {
     private:
-        Quaternion m_quatRotation;
+        glm::fquat m_quatRotation;
     public:
         JointRotation();
-        JointRotation(float rotationAngle, Vector3f rotationAxis);
-        JointRotation(Quaternion quatRotation);
-        void setRotation(Quaternion rotation);
-        void setRotation(float rotationAngle, Vector3f rotationAxis);
-        Quaternion getQuatRotation() { return m_quatRotation; }
+        JointRotation(float rotationAngle, glm::vec3 rotationAxis);
+        JointRotation(glm::fquat quatRotation);
+        void setRotation(glm::fquat rotation);
+        void setRotation(float rotationAngle, glm::vec3 rotationAxis);
+        glm::fquat getQuatRotation() { return m_quatRotation; }
         float getRotationAngle() { return glm::angle(m_quatRotation); }
         Vector3f getRotationAxis() { return glm::axis(m_quatRotation); }
     };
     struct IKRigConfig {
-        std::vector<JointRotation> jointRotations;
-        AnimIndex animIndex;
+        std::vector<JointRotation> baseJointRotations;
+        std::vector<JointRotation> dynamicJointRotations;
+        std::vector<glm::vec3> jointScales;
+        std::vector<glm::vec3> jointPositions;
+        std::vector<float> timeStamps;
+        AnimIndex animIndex = -1;
+        float currentTime;
+
+        IKRigConfig(std::shared_ptr<AnimationClip> animation, AnimIndex animIndex);
     };
 
     struct JointData {

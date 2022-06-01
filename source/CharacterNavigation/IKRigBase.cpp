@@ -2,6 +2,31 @@
 
 namespace Mona{
 
+	IKRigConfig::IKRigConfig(std::shared_ptr<AnimationClip> animation, AnimIndex animationIndex) {
+		jointPositions.reserve(animation->m_animationTracks.size());
+		jointScales.reserve(animation->m_animationTracks.size());
+		timeStamps.reserve(animation->m_animationTracks.size()* animation->m_animationTracks[0].rotationTimeStamps.size());
+		for (int i = 0; i < animation->m_animationTracks.size();i++) {
+			jointPositions.push_back(animation->m_animationTracks[i].positions[0]);
+			jointScales.push_back(animation->m_animationTracks[i].scales[0]);
+			for (int j = 0; j < animation->m_animationTracks[i].rotationTimeStamps.size(); j++) {
+				timeStamps.push_back(animation->m_animationTracks[i].rotationTimeStamps[j]);
+			}
+		}
+		// ordenamos las timestamps y eliminamos las repetidas
+		std::sort(timeStamps.begin(), timeStamps.end());
+		int index = 0;
+		while (index < timeStamps.size()-1) {
+			if (timeStamps[index] == timeStamps[index + 1]) {
+				timeStamps.erase(timeStamps.begin() + index + 1);
+			}
+			else {
+				index += 1;
+			}
+		}
+		animIndex = animationIndex;
+
+	}
 	IKNode::IKNode(std::string jointName, int jointIndex, IKNode* parent, float weight) {
 		m_jointName = jointName;
 		m_jointIndex = jointIndex;
@@ -41,16 +66,16 @@ namespace Mona{
 	JointRotation::JointRotation() {
 		setRotation({ 0,0,0,1 });
 	}
-	JointRotation::JointRotation(float rotationAngle, Vector3f rotationAxis) {
+	JointRotation::JointRotation(float rotationAngle, glm::vec3 rotationAxis) {
 		setRotation(rotationAngle, rotationAxis);
 	}
-	JointRotation::JointRotation(Quaternion quatRotation) {
+	JointRotation::JointRotation(glm::fquat quatRotation) {
 		setRotation(quatRotation);
 	}
-	void JointRotation::setRotation(Quaternion rotation) {
+	void JointRotation::setRotation(glm::fquat rotation) {
 		m_quatRotation = rotation;
 	}
-	void JointRotation::setRotation(float rotationAngle, Vector3f rotationAxis) {
+	void JointRotation::setRotation(float rotationAngle, glm::vec3 rotationAxis) {
 		m_quatRotation = glm::angleAxis(rotationAngle, rotationAxis);
 	}
 

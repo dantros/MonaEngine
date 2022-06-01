@@ -14,7 +14,7 @@ namespace Mona {
 	public:
 		friend class AnimationClipManager;
 		friend class IKRig;
-		friend class BVHData;
+		friend struct IKRigConfig;
 		using jointIndex = uint32_t;
 		struct AnimationTrack {
 			std::vector<glm::vec3> positions;

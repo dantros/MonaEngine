@@ -39,7 +39,6 @@ add_subdirectory(autodiff)
 option(AUTODIFF_BUILD_TESTS "Enable the compilation of the test files." OFF)
 # Build the tests
 if(AUTODIFF_BUILD_TESTS)
-    message("AUTODIFF WHATTT")
     add_subdirectory(tests)
 endif()
 

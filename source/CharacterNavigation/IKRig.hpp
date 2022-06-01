@@ -20,6 +20,7 @@ namespace Mona{
         private:
             FootContacts findFootContactFrames(std::shared_ptr<AnimationClip> anim);
             std::vector<std::shared_ptr<AnimationClip>> m_animations;
+            std::vector<IKRigConfig> m_animConfigurations;
             std::shared_ptr<Skeleton> m_skeleton;
             std::vector<int>& GetTopology() { return m_skeleton->m_parentIndices; }
             std::vector<std::string>& GetJointNames() { return m_skeleton->m_jointNames; }

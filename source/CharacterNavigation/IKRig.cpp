@@ -5,13 +5,18 @@
 
 namespace Mona {
 
-	Vector3f vec3Lerp(Vector3f v1, Vector3f v2, float fraction) {
+	glm::vec3 vec3Lerp(glm::vec3 v1, glm::vec3 v2, float fraction) {
 		return v1 + (v2 - v1) * fraction;
 	}
 
 	IKRig::IKRig(std::shared_ptr<AnimationClip> baseAnim, RigData rigData, InnerComponentHandle rigidBodyHandle,
 		InnerComponentHandle skeletalMeshHandle) {
+		if (!baseAnim->m_stableRotations) {
+			MONA_LOG_ERROR("IKRig: Animation must have stable rotations (fixed scales and positions per joint).");
+			return;
+		}
 		m_animations.push_back(baseAnim);
+		m_animConfigurations.push_back(IKRigConfig(baseAnim, 0));
 		m_rigidBodyHandle = rigidBodyHandle;
 		m_skeletalMeshHandle = skeletalMeshHandle;
 		m_skeleton = baseAnim->GetSkeleton();
@@ -73,6 +78,10 @@ namespace Mona {
 			MONA_LOG_ERROR("IKRig: Input animation does not correspond to base skeleton.");
 			return;
 		}
+		if(!animationClip->m_stableRotations) {
+			MONA_LOG_ERROR("IKRig: Animation must have stable rotations (fixed scales and positions per joint).");
+			return;
+		}
 		for (int i = 0; i < m_animations.size(); i++) {
 			if (m_animations[i]->GetAnimationName() == animationClip->GetAnimationName()) {
 				MONA_LOG_WARNING("IKRig: Animation {0} for model {1} had already been added", 
@@ -92,12 +101,12 @@ namespace Mona {
 		return -1;
 	}
 
-	Vector3f IKRig::getLinearVelocity(ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr) {
+	glm::vec3 IKRig::getLinearVelocity(ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr) {
 		auto bodyVel = rigidBodyManagerPtr->GetComponentPointer(m_rigidBodyHandle)->GetLinearVelocity();
 		return { bodyVel[0], bodyVel[1], bodyVel[2] };
 	}
 
-	void IKRig::setLinearVelocity(Vector3f velocity, ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr) {
+	void IKRig::setLinearVelocity(glm::vec3 velocity, ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr) {
 		rigidBodyManagerPtr->GetComponentPointer(m_rigidBodyHandle)->SetLinearVelocity({velocity[0], velocity[1], velocity[2]});
 	}
 
@@ -119,8 +128,8 @@ namespace Mona {
 		return rigConfig;
 	}
 
-	std::vector<Vector3f> IKRig::modelSpacePositions(IKRigConfig rigConfig) {
-		std::vector<Vector3f> modelSpacePos(m_nodes.size());
+	std::vector<glm::vec3> IKRig::modelSpacePositions(IKRigConfig rigConfig) {
+		std::vector<glm::vec3> modelSpacePos(m_nodes.size());
 		auto anim = m_animations[rigConfig.animIndex];
 		modelSpacePos[0] = { 0,0,0 };
 		// root
@@ -130,21 +139,21 @@ namespace Mona {
 		}
 		return modelSpacePos;
 	}
-	Vector3f IKRig::getCenterOfMass(IKRigConfig rigConfig) {
-		std::vector<Vector3f> modelSpacePos = modelSpacePositions(rigConfig);
-		std::vector<Vector3f> segmentCenters(m_nodes.size());
+	glm::vec3 IKRig::getCenterOfMass(IKRigConfig rigConfig) {
+		std::vector<glm::vec3> modelSpacePos = modelSpacePositions(rigConfig);
+		std::vector<glm::vec3> segmentCenters(m_nodes.size());
 		int segNum = 0;
 		float totalSegLength = 0;
 		for (int i = 1; i < m_nodes.size(); i++) {
-			Vector3f v1 = modelSpacePos[i];
-			Vector3f v2 = modelSpacePos[GetTopology()[i]];
+			glm::vec3 v1 = modelSpacePos[i];
+			glm::vec3 v2 = modelSpacePos[GetTopology()[i]];
 			float frac = m_nodes[GetTopology()[i]].m_weight / (m_nodes[i].m_weight + m_nodes[GetTopology()[i]].m_weight);
 			float segLength = glm::distance(v1, v2);
 			segmentCenters[i] = vec3Lerp(v1, v2, frac) * segLength;
 			segNum += 1;
 			totalSegLength += segLength;
 		}
-		Vector3f centerOfMass = { 0,0,0 };
+		glm::vec3 centerOfMass = { 0,0,0 };
 		for (int i = 1; i < segmentCenters.size(); i++) {
 			centerOfMass += segmentCenters[i];
 		}

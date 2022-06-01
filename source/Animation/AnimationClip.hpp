@@ -43,9 +43,12 @@ namespace Mona {
 
 		float GetSamplingTime(float time, bool isLooping) const;
 		std::pair<uint32_t, float> GetTimeFraction(const std::vector<float>& timeStamps, float time) const;
-		glm::vec3 GetPosition(int frame, int joint);
-		glm::fquat GetRotation(int frame, int joint);
-		glm::vec3 GetScale(int frame, int joint);
+		glm::vec3 GetPosition(float time, int joint, bool isLooping);
+		glm::fquat GetRotation(float time, int joint, bool isLooping);
+		glm::vec3 GetScale(float time, int joint, bool isLooping);
+		void SetPosition(glm::vec3 newPosition, float time, int joint, bool isLooping);
+		void SetRotation(glm::fquat newRotation, float time, int joint, bool isLooping);
+		void SetScale(glm::vec3 newScale, float time, int joint, bool isLooping);
 
 		std::vector<AnimationTrack> m_animationTracks;
 		std::vector<std::string> m_trackJointNames;

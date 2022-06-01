@@ -13,15 +13,19 @@ namespace Mona {
     struct JointRotation {
     private:
         glm::fquat m_quatRotation;
+        glm::vec3 m_rotationAxis;
+        float m_rotationAngle;
     public:
         JointRotation();
         JointRotation(float rotationAngle, glm::vec3 rotationAxis);
         JointRotation(glm::fquat quatRotation);
         void setRotation(glm::fquat rotation);
         void setRotation(float rotationAngle, glm::vec3 rotationAxis);
-        glm::fquat getQuatRotation() { return m_quatRotation; }
-        float getRotationAngle() { return glm::angle(m_quatRotation); }
-        Vector3f getRotationAxis() { return glm::axis(m_quatRotation); }
+        void setRotationAngle(float rotationAngle);
+        void setRotationAxis(glm::vec3 rotationAxis);
+        const glm::fquat& getQuatRotation() { return m_quatRotation; }
+        const float& getRotationAngle() { return m_rotationAngle; }
+        const Vector3f& getRotationAxis() { return m_rotationAxis; }
     };
     struct IKRigConfig {
         std::vector<JointRotation> baseJointRotations;
@@ -30,7 +34,7 @@ namespace Mona {
         std::vector<glm::vec3> jointPositions;
         std::vector<float> timeStamps;
         AnimIndex animIndex = -1;
-        float currentTime;
+        float currentTime = -1;
 
         IKRigConfig(std::shared_ptr<AnimationClip> animation, AnimIndex animIndex);
     };

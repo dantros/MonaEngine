@@ -199,15 +199,114 @@ namespace Mona {
 		return { sample, frac };
 	}
 
+	glm::vec3 AnimationClip::GetPosition(float time, int joint, bool isLooping) {
+		//Primero se obtiene el tiempo de muestreo correcto
+		float newTime = GetSamplingTime(time, isLooping);
+		const AnimationTrack& animationTrack = m_animationTracks[m_jointTrackIndices[joint]];
+		glm::vec3 localPosition;
+		if (animationTrack.positions.size() > 1)
+		{
 
-	glm::vec3 AnimationClip::GetPosition(int frame, int joint) {
-		return m_animationTracks[m_jointTrackIndices[joint]].positions[frame];
+			std::pair<uint32_t, float> fp = GetTimeFraction(animationTrack.positionTimeStamps, newTime);
+			const glm::vec3& position = animationTrack.positions[fp.first - 1];
+			const glm::vec3& nextPosition = animationTrack.positions[fp.first % animationTrack.positions.size()];
+			localPosition = glm::mix(position, nextPosition, fp.second);
+		}
+		else {
+			localPosition = animationTrack.positions[0];
+		}
+		return localPosition;
 	}
-	glm::fquat AnimationClip::GetRotation(int frame, int joint) {
-		return m_animationTracks[m_jointTrackIndices[joint]].rotations[frame];
+	glm::fquat AnimationClip::GetRotation(float time, int joint, bool isLooping) {
+		//Primero se obtiene el tiempo de muestreo correcto
+		float newTime = GetSamplingTime(time, isLooping);
+		const AnimationTrack& animationTrack = m_animationTracks[m_jointTrackIndices[joint]];
+		glm::fquat localRotation;
+		if (animationTrack.rotations.size() > 1)
+		{
+
+			std::pair<uint32_t, float> fp = GetTimeFraction(animationTrack.rotationTimeStamps, newTime);
+			const glm::fquat& rotation = animationTrack.rotations[fp.first - 1];
+			const glm::fquat& nextRotation = animationTrack.rotations[fp.first % animationTrack.rotations.size()];
+			localRotation = glm::mix(rotation, nextRotation, fp.second);
+		}
+		else {
+			localRotation = animationTrack.rotations[0];
+		}
+		return localRotation;
 	}
-	glm::vec3 AnimationClip::GetScale(int frame, int joint) {
-		return m_animationTracks[m_jointTrackIndices[joint]].scales[frame];
+	glm::vec3 AnimationClip::GetScale(float time, int joint, bool isLooping) {
+		//Primero se obtiene el tiempo de muestreo correcto
+		float newTime = GetSamplingTime(time, isLooping);
+		const AnimationTrack& animationTrack = m_animationTracks[m_jointTrackIndices[joint]];
+		glm::vec3 localScale;
+		if (animationTrack.scales.size() > 1)
+		{
+
+			std::pair<uint32_t, float> fp = GetTimeFraction(animationTrack.scaleTimeStamps, newTime);
+			const glm::vec3& scale = animationTrack.scales[fp.first - 1];
+			const glm::vec3& nextScale = animationTrack.scales[fp.first % animationTrack.scales.size()];
+			localScale = glm::mix(scale, nextScale, fp.second);
+		}
+		else {
+			localScale = animationTrack.scales[0];
+		}
+		return localScale;
+	}
+
+	void AnimationClip::SetPosition(glm::vec3 newPosition, float time, int joint, bool isLooping) {
+		//Primero se obtiene el tiempo de muestreo correcto
+		float newTime = GetSamplingTime(time, isLooping);
+		AnimationTrack& animationTrack = m_animationTracks[m_jointTrackIndices[joint]];
+		int targetIndex;
+		if (animationTrack.positions.size() > 1)
+		{
+			std::pair<uint32_t, float> fp = GetTimeFraction(animationTrack.positionTimeStamps, newTime);
+			int indexBefore = fp.first - 1;
+			int indexAfter = fp.first % animationTrack.positions.size();
+			if (fp.second < 0.5) { targetIndex = indexBefore;}
+			else {targetIndex = indexAfter;}
+		}
+		else {
+			targetIndex = 0;
+		}
+		animationTrack.positions[targetIndex] = newPosition;
+	}
+	void AnimationClip::SetRotation(glm::fquat newRotation, float time, int joint, bool isLooping) {
+		//Primero se obtiene el tiempo de muestreo correcto
+		float newTime = GetSamplingTime(time, isLooping);
+		AnimationTrack& animationTrack = m_animationTracks[m_jointTrackIndices[joint]];
+		int targetIndex;
+		if (animationTrack.rotations.size() > 1)
+		{
+			std::pair<uint32_t, float> fp = GetTimeFraction(animationTrack.rotationTimeStamps, newTime);
+			int indexBefore = fp.first - 1;
+			int indexAfter = fp.first % animationTrack.rotations.size();
+			if (fp.second < 0.5) { targetIndex = indexBefore; }
+			else { targetIndex = indexAfter; }
+		}
+		else {
+			targetIndex = 0;
+		}
+		animationTrack.rotations[targetIndex] = newRotation;
+	}
+	void AnimationClip::SetScale(glm::vec3 newScale, float time, int joint, bool isLooping) {
+		//Primero se obtiene el tiempo de muestreo correcto
+		float newTime = GetSamplingTime(time, isLooping);
+		AnimationTrack& animationTrack = m_animationTracks[m_jointTrackIndices[joint]];
+		int targetIndex;
+		if (animationTrack.scales.size() > 1)
+		{
+			std::pair<uint32_t, float> fp = GetTimeFraction(animationTrack.scaleTimeStamps, newTime);
+			int indexBefore = fp.first - 1;
+			int indexAfter = fp.first % animationTrack.scales.size();
+			if (fp.second < 0.5) { targetIndex = indexBefore; }
+			else { targetIndex = indexAfter; }
+		}
+		else {
+			targetIndex = 0;
+		}
+		animationTrack.scales[targetIndex] = newScale;
 	}
 
 }

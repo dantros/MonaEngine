@@ -10,15 +10,15 @@ namespace Mona {
 	}
 
 	IKRig::IKRig(std::shared_ptr<AnimationClip> baseAnim, RigData rigData, InnerComponentHandle rigidBodyHandle,
-		InnerComponentHandle skeletalMeshHandle) {
+		InnerComponentHandle skeletalMeshHandle, AnimationController* animController) : m_animationController(animController),
+		m_rigidBodyHandle(rigidBodyHandle), m_skeletalMeshHandle(skeletalMeshHandle)
+	{
 		if (!baseAnim->m_stableRotations) {
 			MONA_LOG_ERROR("IKRig: Animation must have stable rotations (fixed scales and positions per joint).");
 			return;
 		}
 		m_animations.push_back(baseAnim);
 		m_animConfigurations.push_back(IKRigConfig(baseAnim, 0));
-		m_rigidBodyHandle = rigidBodyHandle;
-		m_skeletalMeshHandle = skeletalMeshHandle;
 		m_skeleton = baseAnim->GetSkeleton();
 
 		std::shared_ptr<AnimationClip> staticData = m_animations[0];
@@ -110,36 +110,30 @@ namespace Mona {
 		rigidBodyManagerPtr->GetComponentPointer(m_rigidBodyHandle)->SetLinearVelocity({velocity[0], velocity[1], velocity[2]});
 	}
 
-	IKRigConfig IKRig::getAnimConfig(int frame, AnimIndex animIndex) {
+	IKRigConfig* IKRig::getAnimConfig(float time, AnimIndex animIndex) {
 		auto anim = m_animations[animIndex];
-		IKRigConfig rigConfig;
-		rigConfig.jointRotations = std::vector<JointRotation>(m_nodes.size());
-		rigConfig.animIndex = animIndex;
+		IKRigConfig* configPtr = &m_animConfigurations[animIndex];
+		glm::fquat rot;
 		for (int i = 0; i < m_nodes.size(); i++) {
-			rigConfig.jointRotations[i].setRotation(anim->GetRotation(frame, i));
+			rot = anim->GetRotation(time, i, m_animationController->GetIsLooping());
+			configPtr->baseJointRotations[i].setRotation(rot);
+			configPtr->dynamicJointRotations[i].setRotation(rot);
 		}
-		return rigConfig;
+		return configPtr;
 	}
 
-	IKRigConfig IKRig::createDynamicConfig(int animIndex) {
-		IKRigConfig rigConfig;
-		rigConfig.animIndex = animIndex;
-		rigConfig.jointRotations = std::vector<JointRotation>(m_nodes.size());
-		return rigConfig;
-	}
-
-	std::vector<glm::vec3> IKRig::modelSpacePositions(IKRigConfig rigConfig) {
+	std::vector<glm::vec3> IKRig::modelSpacePositions(const IKRigConfig& rigConfig) {
 		std::vector<glm::vec3> modelSpacePos(m_nodes.size());
 		auto anim = m_animations[rigConfig.animIndex];
 		modelSpacePos[0] = { 0,0,0 };
 		// root
-		modelSpacePos[0] = modelSpacePos[0] * glm::toMat3(rigConfig.jointRotations[0].getQuatRotation()) + anim->GetPosition(0, 0);
+		modelSpacePos[0] = modelSpacePos[0] * glm::toMat3(rigConfig.baseJointRotations[0].getQuatRotation()) + rigConfig.jointPositions[0];
 		for (int i = 1; i < m_nodes.size(); i++) {
-			modelSpacePos[i] = modelSpacePos[GetTopology()[i]] * glm::toMat3(rigConfig.jointRotations[i].getQuatRotation()) + anim->GetPosition(0, i);
+			modelSpacePos[i] = modelSpacePos[GetTopology()[i]] * glm::toMat3(rigConfig.baseJointRotations[i].getQuatRotation()) + rigConfig.jointPositions[i];
 		}
 		return modelSpacePos;
 	}
-	glm::vec3 IKRig::getCenterOfMass(IKRigConfig rigConfig) {
+	glm::vec3 IKRig::getCenterOfMass(const IKRigConfig& rigConfig) {
 		std::vector<glm::vec3> modelSpacePos = modelSpacePositions(rigConfig);
 		std::vector<glm::vec3> segmentCenters(m_nodes.size());
 		int segNum = 0;

@@ -6,6 +6,8 @@ namespace Mona{
 		jointPositions.reserve(animation->m_animationTracks.size());
 		jointScales.reserve(animation->m_animationTracks.size());
 		timeStamps.reserve(animation->m_animationTracks.size()* animation->m_animationTracks[0].rotationTimeStamps.size());
+		baseJointRotations.resize(animation->m_animationTracks.size());
+		dynamicJointRotations.resize(animation->m_animationTracks.size());
 		for (int i = 0; i < animation->m_animationTracks.size();i++) {
 			jointPositions.push_back(animation->m_animationTracks[i].positions[0]);
 			jointScales.push_back(animation->m_animationTracks[i].scales[0]);
@@ -74,9 +76,23 @@ namespace Mona{
 	}
 	void JointRotation::setRotation(glm::fquat rotation) {
 		m_quatRotation = rotation;
+		m_rotationAngle = glm::angle(m_quatRotation);
+		m_rotationAxis = glm::axis(m_quatRotation);
 	}
 	void JointRotation::setRotation(float rotationAngle, glm::vec3 rotationAxis) {
 		m_quatRotation = glm::angleAxis(rotationAngle, rotationAxis);
+		m_rotationAngle = rotationAngle;
+		m_rotationAxis = rotationAxis;
+	}
+
+	void JointRotation::setRotationAngle(float rotationAngle) {
+		m_quatRotation = glm::angleAxis(rotationAngle, m_rotationAxis);
+		m_rotationAngle = rotationAngle;
+	}
+
+	void JointRotation::setRotationAxis(glm::vec3 rotationAxis) {
+		m_quatRotation = glm::angleAxis(m_rotationAngle, rotationAxis);
+		m_rotationAxis = rotationAxis;
 	}
 
 	IKRigConfigValidator::IKRigConfigValidator(std::vector<IKNode>* nodesPtr, std::vector<int>* topologyPtr) {

@@ -13,6 +13,8 @@ set(MONA_HEADERS
 				Core/Config.hpp
 				Core/RootDirectory.hpp
 				Core/AssimpTransformations.hpp
+				Core/FuncUtils.hpp
+				Core/GlmUtils.hpp
 				Platform/Window.hpp
 				Platform/Input.hpp
 				Platform/KeyCodes.hpp
@@ -77,8 +79,7 @@ set(MONA_HEADERS
 				Audio/AudioSourceComponentLifetimePolicy.hpp
 				DebugDrawing/DebugDrawingSystem.hpp
 				DebugDrawing/BulletDebugDraw.hpp
-				Utilities/BasicCameraControllers.hpp
-				Utilities/FuncUtils.hpp)
+				Utilities/BasicCameraControllers.hpp)
 set(MONA_SOURCES
 				CharacterNavigation/IKRigBase.cpp
 				CharacterNavigation/IKNavigationSystem.cpp

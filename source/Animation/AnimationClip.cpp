@@ -7,7 +7,7 @@
 #include "../Core/AssimpTransformations.hpp"
 #include "../Core/Log.hpp"
 #include "Skeleton.hpp"
-#include "../Utilities/FuncUtils.hpp"
+#include "../Core/FuncUtils.hpp"
 namespace Mona {
 	AnimationClip::AnimationClip(const std::string& filePath,
 		std::shared_ptr<Skeleton> skeleton,

@@ -2,7 +2,7 @@
 #include <limits>
 #include <algorithm>
 #include "../Core/Log.hpp"
-#include "../Utilities/FuncUtils.hpp"
+#include "../Core/FuncUtils.hpp"
 
 namespace Mona{
 

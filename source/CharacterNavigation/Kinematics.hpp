@@ -28,10 +28,10 @@ namespace Mona {
 		Kinematics(IKRig* ikRig);
 		GradientDescentIK m_gradientDescent;
 		IKRig* m_ikRig;
-		std::vector<glm::vec3> ModelSpacePositions(AnimationIndex animIndex);
-		glm::vec3 ModelSpaceJointPosition(AnimationIndex animIndex, JointIndex jointIndex);
-		std::vector<glm::mat4x4> ModelSpaceTransforms(AnimationIndex animIndex);
-		glm::mat4x4 ModelSpaceJointTransform(AnimationIndex animIndex, JointIndex jointIndex);
+		std::vector<glm::vec3> ModelSpacePositions(AnimationIndex animIndex, bool useDynamicRotations);
+		glm::vec3 ModelSpaceJointPosition(AnimationIndex animIndex, JointIndex jointIndex, bool useDynamicRotations);
+		std::vector<glm::mat4x4> ModelSpaceTransforms(AnimationIndex animIndex, bool useDynamicRotations);
+		glm::mat4x4 ModelSpaceJointTransform(AnimationIndex animIndex, JointIndex jointIndex, bool useDynamicRotations);
 
 	};
 

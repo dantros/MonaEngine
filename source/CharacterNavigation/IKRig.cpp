@@ -1,6 +1,6 @@
 #include "IKRig.hpp"
 #include "../Core/Log.hpp"
-#include "../Utilities/FuncUtils.hpp"
+#include "../Core/FuncUtils.hpp"
 
 
 namespace Mona {

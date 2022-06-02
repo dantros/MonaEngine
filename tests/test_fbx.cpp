@@ -9,7 +9,7 @@
 #include "Animation/JointPose.hpp"
 #include <iostream>
 #include "Core/AssimpTransformations.hpp"
-#include "Utilities/FuncUtils.hpp"
+#include "Core/FuncUtils.hpp"
 #include "Core/RootDirectory.hpp"
 
 

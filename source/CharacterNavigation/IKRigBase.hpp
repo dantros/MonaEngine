@@ -40,6 +40,7 @@ namespace Mona {
         float m_currentTime = -1;
     public:
         const std::vector<JointRotation>& getBaseJointRotations() const { return m_baseJointRotations; }
+        const std::vector<JointRotation>& getDynamicJointRotations() const { return m_dynamicJointRotations; }
         const std::vector<glm::vec3>& getJointScales() const { return m_jointScales; }
         const std::vector<glm::vec3>& getJointPositions() const { return m_jointPositions; }
         const std::vector<float>& getTimeStamps() const { return m_timeStamps; }

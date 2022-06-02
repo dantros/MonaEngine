@@ -6,7 +6,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
-#include "../Utilities/FuncUtils.hpp"
+#include "../Core/FuncUtils.hpp"
 namespace Mona {
 
 	Skeleton::Skeleton(const std::string& filePath) {

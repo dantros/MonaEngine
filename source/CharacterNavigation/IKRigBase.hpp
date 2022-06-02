@@ -8,7 +8,8 @@
 #include "../Animation/SkeletalMeshComponent.hpp"
 
 namespace Mona {
-    typedef int AnimIndex;
+    typedef int AnimationIndex;
+    typedef int JointIndex;
 
     struct JointRotation {
     private:
@@ -23,20 +24,28 @@ namespace Mona {
         void setRotation(float rotationAngle, glm::vec3 rotationAxis);
         void setRotationAngle(float rotationAngle);
         void setRotationAxis(glm::vec3 rotationAxis);
-        const glm::fquat& getQuatRotation() { return m_quatRotation; }
-        const float& getRotationAngle() { return m_rotationAngle; }
-        const Vector3f& getRotationAxis() { return m_rotationAxis; }
+        glm::fquat getQuatRotation() const { return m_quatRotation; }
+        float getRotationAngle() const { return m_rotationAngle; }
+        Vector3f getRotationAxis() const { return m_rotationAxis; }
     };
-    struct IKRigConfig {
-        std::vector<JointRotation> baseJointRotations;
-        std::vector<JointRotation> dynamicJointRotations;
-        std::vector<glm::vec3> jointScales;
-        std::vector<glm::vec3> jointPositions;
-        std::vector<float> timeStamps;
-        AnimIndex animIndex = -1;
-        float currentTime = -1;
-
-        IKRigConfig(std::shared_ptr<AnimationClip> animation, AnimIndex animIndex);
+    class IKRigConfig {
+        friend class IKRig;
+    private:
+        std::vector<JointRotation> m_baseJointRotations;
+        std::vector<JointRotation> m_dynamicJointRotations;
+        std::vector<glm::vec3> m_jointScales;
+        std::vector<glm::vec3> m_jointPositions;
+        std::vector<float> m_timeStamps;
+        AnimationIndex m_animIndex = -1;
+        float m_currentTime = -1;
+    public:
+        const std::vector<JointRotation>& getBaseJointRotations() const { return m_baseJointRotations; }
+        const std::vector<glm::vec3>& getJointScales() const { return m_jointScales; }
+        const std::vector<glm::vec3>& getJointPositions() const { return m_jointPositions; }
+        const std::vector<float>& getTimeStamps() const { return m_timeStamps; }
+        std::vector<JointRotation>* getDynamicJointRotationsPtr() { return &m_dynamicJointRotations;  }
+        float getCurrentTime() const { return m_currentTime; }
+        IKRigConfig(std::shared_ptr<AnimationClip> animation, AnimationIndex animIndex);
     };
 
     struct JointData {
@@ -46,8 +55,12 @@ namespace Mona {
         bool enableIKRotation = false;
     };
     struct ChainEnds {
+        friend class IKRig;
         std::string startJointName;
         std::string endEffectorName;
+    private:
+        JointIndex startJointIndex = -1;
+        JointIndex endEffectorIndex = -1;
     };
     struct RigData {
         friend class IKRig;
@@ -67,7 +80,7 @@ namespace Mona {
     class IKNode {
     public:
         IKNode() = default;
-        IKNode(std::string jointName, int jointIndex, IKNode* parent = nullptr, float weight = 1);
+        IKNode(std::string jointName, JointIndex jointIndex, IKNode* parent = nullptr, float weight = 1);
     private:
         friend class IKRig;
         float m_weight = 1;

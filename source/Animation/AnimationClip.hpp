@@ -14,7 +14,7 @@ namespace Mona {
 	public:
 		friend class AnimationClipManager;
 		friend class IKRig;
-		friend struct IKRigConfig;
+		friend class IKRigConfig;
 		using jointIndex = uint32_t;
 		struct AnimationTrack {
 			std::vector<glm::vec3> positions;
@@ -58,6 +58,7 @@ namespace Mona {
 		float m_duration = 1.0f;
 		std::string m_animationName;
 		bool m_stableRotations;
+		bool m_noRootMotion;
 	};
 }
 #endif

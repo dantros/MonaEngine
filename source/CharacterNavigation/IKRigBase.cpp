@@ -2,31 +2,31 @@
 
 namespace Mona{
 
-	IKRigConfig::IKRigConfig(std::shared_ptr<AnimationClip> animation, AnimIndex animationIndex) {
-		jointPositions.reserve(animation->m_animationTracks.size());
-		jointScales.reserve(animation->m_animationTracks.size());
-		timeStamps.reserve(animation->m_animationTracks.size()* animation->m_animationTracks[0].rotationTimeStamps.size());
-		baseJointRotations.resize(animation->m_animationTracks.size());
-		dynamicJointRotations.resize(animation->m_animationTracks.size());
+	IKRigConfig::IKRigConfig(std::shared_ptr<AnimationClip> animation, AnimationIndex animationIndex) {
+		m_jointPositions.reserve(animation->m_animationTracks.size());
+		m_jointScales.reserve(animation->m_animationTracks.size());
+		m_timeStamps.reserve(animation->m_animationTracks.size()* animation->m_animationTracks[0].rotationTimeStamps.size());
+		m_baseJointRotations.resize(animation->m_animationTracks.size());
+		m_dynamicJointRotations.resize(animation->m_animationTracks.size());
 		for (int i = 0; i < animation->m_animationTracks.size();i++) {
-			jointPositions.push_back(animation->m_animationTracks[i].positions[0]);
-			jointScales.push_back(animation->m_animationTracks[i].scales[0]);
+			m_jointPositions.push_back(animation->m_animationTracks[i].positions[0]);
+			m_jointScales.push_back(animation->m_animationTracks[i].scales[0]);
 			for (int j = 0; j < animation->m_animationTracks[i].rotationTimeStamps.size(); j++) {
-				timeStamps.push_back(animation->m_animationTracks[i].rotationTimeStamps[j]);
+				m_timeStamps.push_back(animation->m_animationTracks[i].rotationTimeStamps[j]);
 			}
 		}
 		// ordenamos las timestamps y eliminamos las repetidas
-		std::sort(timeStamps.begin(), timeStamps.end());
+		std::sort(m_timeStamps.begin(), m_timeStamps.end());
 		int index = 0;
-		while (index < timeStamps.size()-1) {
-			if (timeStamps[index] == timeStamps[index + 1]) {
-				timeStamps.erase(timeStamps.begin() + index + 1);
+		while (index < m_timeStamps.size()-1) {
+			if (m_timeStamps[index] == m_timeStamps[index + 1]) {
+				m_timeStamps.erase(m_timeStamps.begin() + index + 1);
 			}
 			else {
 				index += 1;
 			}
 		}
-		animIndex = animationIndex;
+		m_animIndex = animationIndex;
 
 	}
 	IKNode::IKNode(std::string jointName, int jointIndex, IKNode* parent, float weight) {

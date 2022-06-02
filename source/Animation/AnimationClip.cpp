@@ -61,11 +61,26 @@ namespace Mona {
 
 		m_trackJointIndices.resize(m_trackJointNames.size());
 		SetSkeleton(skeleton);
-		if (removeRootMotion)
+		if (removeRootMotion) {
 			RemoveRootMotion();
+			m_noRootMotion = true;
+		}
+		else {
+			m_noRootMotion = true;
+			int rootIndex = m_jointTrackIndices[0];
+			auto& rootTrack = m_animationTracks[rootIndex];
+			for (uint32_t i = 0; i < rootTrack.positions.size(); i++)
+			{
+				if (rootTrack.positions[i] != glm::vec3(0.0f)) {
+					m_noRootMotion = false;
+					break;
+				}
+			}
+		}
+			
 
 
-		// Calcular rotaciones estabilizadas si se requiere
+		// Chequar si los escalamientos y traslaciones son constantes por joint.
 		m_stableRotations = true;
 		for (int i = 0; i < m_animationTracks.size(); i++) {
 			auto track = m_animationTracks[i];
@@ -78,9 +93,6 @@ namespace Mona {
 				}
 			}
 			if (!m_stableRotations) { break; }
-		}
-		if (!m_stableRotations) {
-			// tratar de estabilizar rotaciones
 		}
 
 		// Se guarda el nombre de la animacion
@@ -265,7 +277,7 @@ namespace Mona {
 			int indexBefore = fp.first - 1;
 			int indexAfter = fp.first % animationTrack.positions.size();
 			if (fp.second < 0.5) { targetIndex = indexBefore;}
-			else {targetIndex = indexAfter;}
+			else {targetIndex = indexAfter;	}
 		}
 		else {
 			targetIndex = 0;

@@ -7,7 +7,7 @@ set(MONA_HEADERS
 				CharacterNavigation/HeightMap.hpp
 				CharacterNavigation/EnvironmentData.hpp
 				CharacterNavigation/IKRig.hpp
-				CharacterNavigation/IK.hpp
+				CharacterNavigation/Kinematics.hpp
 				Core/Common.hpp 
 				Core/Log.hpp
 				Core/Config.hpp
@@ -86,7 +86,7 @@ set(MONA_SOURCES
 				CharacterNavigation/HeightMap.cpp
 				CharacterNavigation/EnvironmentData.cpp
 				CharacterNavigation/IKRig.cpp
-				CharacterNavigation/IK.cpp
+				CharacterNavigation/Kinematics.cpp
 				Core/Config.cpp
 				Event/EventManager.cpp
 				Platform/Window.cpp

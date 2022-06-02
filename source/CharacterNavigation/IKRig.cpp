@@ -18,7 +18,7 @@ namespace Mona {
 			return;
 		}
 		m_animations.push_back(baseAnim);
-		m_animConfigurations.push_back(IKRigConfig(baseAnim, 0));
+		m_animationConfigs.push_back(IKRigConfig(baseAnim, 0));
 		m_skeleton = baseAnim->GetSkeleton();
 
 		std::shared_ptr<AnimationClip> staticData = m_animations[0];
@@ -35,9 +35,10 @@ namespace Mona {
 
 		
 		std::vector<ChainEnds> dataArr = { rigData.leftLeg, rigData.rightLeg, rigData.leftFoot, rigData.rightFoot };
-		std::vector<std::pair<int, int>*> nodeTargets = { &m_leftLeg, &m_rightLeg, &m_leftFoot, &m_rightFoot };
+		std::vector<ChainEnds*> chainTargets = { &m_leftLeg, &m_rightLeg, &m_leftFoot, &m_rightFoot };
 		for (int i = 0; i < dataArr.size(); i++) { // construccion de las cadenas principales
 			int eeIndex = funcUtils::findIndex(jointNames, dataArr[i].endEffectorName);
+			(*chainTargets[i]) = dataArr[i]; // copiamos los nombres
 			if (eeIndex != -1) {
 				int chainStartIndex = -1;
 				IKNode* currentNode = &m_nodes[eeIndex];
@@ -49,9 +50,9 @@ namespace Mona {
 					}
 					currentNode = currentNode->m_parent;
 				}
-				if (chainStartIndex != -1) {
-					(*nodeTargets[i]).first = chainStartIndex;
-					(*nodeTargets[i]).second = eeIndex;
+				if (chainStartIndex != -1) { // seteamos los indices
+					(*chainTargets[i]).startJointIndex = chainStartIndex;
+					(*chainTargets[i]).endEffectorIndex = eeIndex;
 				}else { 
 					MONA_LOG_ERROR("IKRig: Starting joint and end effector were not on the same chain!"); 
 				}
@@ -110,48 +111,14 @@ namespace Mona {
 		rigidBodyManagerPtr->GetComponentPointer(m_rigidBodyHandle)->SetLinearVelocity({velocity[0], velocity[1], velocity[2]});
 	}
 
-	IKRigConfig* IKRig::getAnimConfig(float time, AnimIndex animIndex) {
+	void IKRig::setIKRigConfigTime(float time, AnimationIndex animIndex) {
 		auto anim = m_animations[animIndex];
-		IKRigConfig* configPtr = &m_animConfigurations[animIndex];
 		glm::fquat rot;
 		for (int i = 0; i < m_nodes.size(); i++) {
 			rot = anim->GetRotation(time, i, m_animationController->GetIsLooping());
-			configPtr->baseJointRotations[i].setRotation(rot);
-			configPtr->dynamicJointRotations[i].setRotation(rot);
+			m_animationConfigs[animIndex].m_baseJointRotations[i].setRotation(rot);
+			m_animationConfigs[animIndex].m_dynamicJointRotations[i].setRotation(rot);
 		}
-		return configPtr;
-	}
-
-	std::vector<glm::vec3> IKRig::modelSpacePositions(const IKRigConfig& rigConfig) {
-		std::vector<glm::vec3> modelSpacePos(m_nodes.size());
-		auto anim = m_animations[rigConfig.animIndex];
-		modelSpacePos[0] = { 0,0,0 };
-		// root
-		modelSpacePos[0] = modelSpacePos[0] * glm::toMat3(rigConfig.baseJointRotations[0].getQuatRotation()) + rigConfig.jointPositions[0];
-		for (int i = 1; i < m_nodes.size(); i++) {
-			modelSpacePos[i] = modelSpacePos[GetTopology()[i]] * glm::toMat3(rigConfig.baseJointRotations[i].getQuatRotation()) + rigConfig.jointPositions[i];
-		}
-		return modelSpacePos;
-	}
-	glm::vec3 IKRig::getCenterOfMass(const IKRigConfig& rigConfig) {
-		std::vector<glm::vec3> modelSpacePos = modelSpacePositions(rigConfig);
-		std::vector<glm::vec3> segmentCenters(m_nodes.size());
-		int segNum = 0;
-		float totalSegLength = 0;
-		for (int i = 1; i < m_nodes.size(); i++) {
-			glm::vec3 v1 = modelSpacePos[i];
-			glm::vec3 v2 = modelSpacePos[GetTopology()[i]];
-			float frac = m_nodes[GetTopology()[i]].m_weight / (m_nodes[i].m_weight + m_nodes[GetTopology()[i]].m_weight);
-			float segLength = glm::distance(v1, v2);
-			segmentCenters[i] = vec3Lerp(v1, v2, frac) * segLength;
-			segNum += 1;
-			totalSegLength += segLength;
-		}
-		glm::vec3 centerOfMass = { 0,0,0 };
-		for (int i = 1; i < segmentCenters.size(); i++) {
-			centerOfMass += segmentCenters[i];
-		}
-		return centerOfMass / (segNum * totalSegLength);
 	}
 
 }

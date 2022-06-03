@@ -9,6 +9,7 @@ set(MONA_HEADERS
 				CharacterNavigation/IKRig.hpp
 				CharacterNavigation/Kinematics.hpp
 				CharacterNavigation/GradientDescent.hpp
+				CharacterNavigation/Splines.hpp
 				Core/Common.hpp 
 				Core/Log.hpp
 				Core/Config.hpp
@@ -90,6 +91,7 @@ set(MONA_SOURCES
 				CharacterNavigation/IKRig.cpp
 				CharacterNavigation/Kinematics.cpp
 				CharacterNavigation/GradientDescent.cpp
+				CharacterNavigation/Splines.cpp
 				Core/Config.cpp
 				Event/EventManager.cpp
 				Platform/Window.cpp

@@ -8,6 +8,7 @@ set(MONA_HEADERS
 				CharacterNavigation/EnvironmentData.hpp
 				CharacterNavigation/IKRig.hpp
 				CharacterNavigation/Kinematics.hpp
+				CharacterNavigation/GradientDescent.hpp
 				Core/Common.hpp 
 				Core/Log.hpp
 				Core/Config.hpp
@@ -88,6 +89,7 @@ set(MONA_SOURCES
 				CharacterNavigation/EnvironmentData.cpp
 				CharacterNavigation/IKRig.cpp
 				CharacterNavigation/Kinematics.cpp
+				CharacterNavigation/GradientDescent.cpp
 				Core/Config.cpp
 				Event/EventManager.cpp
 				Platform/Window.cpp

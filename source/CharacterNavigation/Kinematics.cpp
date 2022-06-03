@@ -8,7 +8,7 @@ namespace Mona {
 		m_ikRig = ikRig;
 	}
 
-	GradientDescentIK::GradientDescentIK(IKRig* ikRig) {
+	InverseKinematics::InverseKinematics(IKRig* ikRig) {
 		m_ikRig = ikRig;
 		m_forwardKinematics = ForwardKinematics(ikRig);
 	}

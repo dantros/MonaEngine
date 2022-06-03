@@ -44,7 +44,7 @@ namespace Mona {
         const std::vector<glm::vec3>& getJointScales() const { return m_jointScales; }
         const std::vector<glm::vec3>& getJointPositions() const { return m_jointPositions; }
         const std::vector<float>& getTimeStamps() const { return m_timeStamps; }
-        std::vector<JointRotation>* getDynamicJointRotationsPtr() { return &m_dynamicJointRotations;  }
+        const std::vector<JointRotation>* getDynamicJointRotationsPtr() const { return &m_dynamicJointRotations;  }
         float getCurrentTime() const { return m_currentTime; }
         IKRigConfig(std::shared_ptr<AnimationClip> animation, AnimationIndex animIndex);
     };

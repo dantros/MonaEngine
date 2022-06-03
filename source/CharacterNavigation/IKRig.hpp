@@ -8,7 +8,7 @@ namespace Mona{
     
     class IKRig{
         friend class IKNavigationComponent;
-        friend class GradientDescentIK;
+        friend class InverseKinematics;
         public:
             IKRig() = default;
             IKRig(std::shared_ptr<AnimationClip> baseAnim, RigData rigData, InnerComponentHandle rigidBodyHandle,

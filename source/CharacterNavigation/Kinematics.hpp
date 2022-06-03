@@ -18,11 +18,11 @@ namespace Mona {
 
 	};
 
-	class GradientDescentIK {
+	class InverseKinematics {
 		IKRig* m_ikRig;
 		ForwardKinematics m_forwardKinematics;
-		GradientDescentIK() = default;
-		GradientDescentIK(IKRig* ikRig);
+		InverseKinematics() = default;
+		InverseKinematics(IKRig* ikRig);
 	};
 
 	

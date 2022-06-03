@@ -59,7 +59,7 @@ namespace Mona {
 	std::vector<float> GradientDescent<dataT>::computeArgsMin(float descentRate, int maxIterations, std::vector<float> initialArgs) {
 		std::vector<float> args = initialArgs;
 		std::vector<float> gradient;
-		while (maxIterations > 0) {
+		while (0 <= maxIterations) {
 			gradient = computeGradient(args);
 			for (int i = 0; i < m_argNum; i++) {
 				args[i] -= descentRate * gradient[i];

@@ -75,6 +75,15 @@ namespace Mona{
 
 
     CubicBezierSpline::CubicBezierSpline(std::vector<glm::vec3> splinePoints, std::vector<float> tValues) {
+        // chequeamos que los tValues vengan correctamente ordenados
+        for (int i = 1; i < tValues.size(); i++) {
+            if (!(tValues[i-1] < tValues[i])) {
+                MONA_LOG_ERROR("tValues must come in a strictly ascending order");
+                return;
+            }
+        }
+        m_minT = tValues[0];
+        m_maxT = tValues[tValues.size() - 1];
         // en splinePoints recibimos los puntos por los que pasara la curva, osea los extremos P0 y P4 de cada sub curva de bezier
         // generamos los puntos de control faltantes P1 y P2 para cada segmento
         // Se tienen n+1 puntos conocidos K , o knots, que son extremos de los segmentos
@@ -116,7 +125,25 @@ namespace Mona{
             controlPoints = { splinePoints[i], p1Values[i], p2Values[i], splinePoints[i + 1] };
             m_bezierCurves[i] = BezierCurve(3, controlPoints, tValues[i], tValues[i + 1]);
         }
-    };
+    }
+
+    glm::vec3 CubicBezierSpline::evalSpline(float t) {
+        for (int i = 0; i < m_bezierCurves.size(); i++) {
+            if (m_bezierCurves[i].inTRange(t)) {
+                return m_bezierCurves[i].evalCurve(t);
+            }
+        }
+        MONA_LOG_ERROR("t value is not in range");
+    }
+
+    glm::vec3 CubicBezierSpline::getVelocity(float t) {
+        for (int i = 0; i < m_bezierCurves.size(); i++) {
+            if (m_bezierCurves[i].inTRange(t)) {
+                return m_bezierCurves[i].getVelocity(t);
+            }
+        }
+        MONA_LOG_ERROR("t value is not in range");
+    }
 
 
     

@@ -25,6 +25,12 @@ namespace Mona{
     class CubicBezierSpline {
         CubicBezierSpline(std::vector<glm::vec3> splinePoints, std::vector<float> tValues);
         std::vector<BezierCurve> m_bezierCurves;
+        float m_minT;
+        float m_maxT;
+        glm::vec3 evalSpline(float t);
+        glm::vec3 getVelocity(float t);
+        glm::vec2 getTRange() { return glm::vec2({ m_minT, m_maxT }); }
+        bool inTRange(float t) { return m_minT <= t && t <= m_maxT; }
     };
 
 

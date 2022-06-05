@@ -59,51 +59,6 @@ namespace Mona {
 			}
 		}
 
-		// descomprimimos las rotaciones de la animacion, repitiendo valores para que todas las articulaciones 
-		// tengan el mismo numero de rotaciones
-		std::vector<AnimationClip::AnimationTrack>& tracks = m_animationTracks;
-		int nTracks = tracks.size();
-		std::vector<bool> conditions(nTracks);
-		std::vector<int> currentTimeIndexes(nTracks);
-		std::vector<float> currentTimes(nTracks);
-		for (int i = 0; i < nTracks; i++) {
-			currentTimeIndexes[i] = 0;
-			conditions[i] = currentTimeIndexes[i] < tracks[i].rotationTimeStamps.size();
-		}
-		while (funcUtils::conditionArray_OR(conditions)) {
-			// seteamos el valor del timestamp que le corresponde a cada track
-			for (int i = 0; i < nTracks; i++) {
-				currentTimes[i] = conditions[i] ? tracks[i].rotationTimeStamps[currentTimeIndexes[i]] : std::numeric_limits<float>::max();
-			}
-			// encontramos los indices de las tracks que tienen el minimo timestamp actual
-			std::vector<int> minTimeIndexes = funcUtils::minValueIndex_multiple<float>(currentTimes); // ordenados ascendentemente
-			float currentMinTime = currentTimes[minTimeIndexes[0]];
-
-			int currentMinTimeIndexesIndex = 0;
-			for (int i = 0; i < nTracks; i++) {
-				if (currentMinTimeIndexesIndex == i) { // track actual tiene un timestamp minimo
-					currentTimeIndexes[i] += 1;
-					currentMinTimeIndexesIndex += 1;
-				}
-				else {
-					// si el valor a insertar cae antes del primer timestamp, se replica el ultimo valor del arreglo de rotaciones
-					// se asume animacion circular
-					int insertOffset = currentTimeIndexes[i];
-					int valIndex = currentTimeIndexes[i] > 0 ? currentTimeIndexes[i] - 1 : tracks[i].rotationTimeStamps.size() - 1;
-					auto rotIt = tracks[i].rotations.begin() + insertOffset;
-					auto timeRotIt = tracks[i].rotationTimeStamps.begin() + insertOffset;
-					tracks[i].rotations.insert(rotIt, tracks[i].rotations[valIndex]);
-					tracks[i].rotationTimeStamps.insert(timeRotIt, currentMinTime);
-					currentTimeIndexes[i] += 1;
-				}
-			}
-
-			// actualizamos las condiciones
-			for (int i = 0; i < nTracks; i++) {
-				conditions[i] = currentTimeIndexes[i] < tracks[i].rotationTimeStamps.size();
-			}
-		}
-
 		m_trackJointIndices.resize(m_trackJointNames.size());
 		SetSkeleton(skeleton);
 		if (removeRootMotion) {

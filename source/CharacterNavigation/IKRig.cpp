@@ -96,7 +96,7 @@ namespace Mona {
 		std::vector<AnimationClip::AnimationTrack>& tracks = animationClip->m_animationTracks;
 		int nTracks = tracks.size();
 		std::vector<bool> conditions(nTracks);
-		std::vector<float> currentTimeIndexes(nTracks);
+		std::vector<int> currentTimeIndexes(nTracks);
 		std::vector<float> currentTimes(nTracks);
 		for (int i = 0; i < nTracks; i++) {
 			currentTimeIndexes[i] = 0;
@@ -111,12 +111,11 @@ namespace Mona {
 			std::vector<int> minTimeIndexes = funcUtils::minValueIndex_multiple<float>(currentTimes); // ordenados ascendentemente
 			float currentMinTime = currentTimes[minTimeIndexes[0]];
 
-			int currentMinTimeIndexesIndex = 0;
+			int minTimeIndexesIndex = 0;
 			for (int i = 0; i < nTracks; i++) {
-				if (!conditions[i]) { continue; }
-				if (currentMinTimeIndexesIndex == i) { // track actual tiene un timestamp minimo
+				if (minTimeIndexesIndex < minTimeIndexes.size() && minTimeIndexes[minTimeIndexesIndex] == i) { // track actual tiene un timestamp minimo
 					currentTimeIndexes[i] += 1;
-					currentMinTimeIndexesIndex += 1;
+					minTimeIndexesIndex += 1;
 				}
 				else {
 					// si el valor a insertar cae antes del primer timestamp, se replica el ultimo valor del arreglo de rotaciones

@@ -60,7 +60,7 @@ namespace Mona{
         // n valores indexados de 0 a n-1
         int n = dVector.size();
         std::vector<T> xVector(n);
-        int w;
+        float w;
         for (int i = 1; i <= n-1; i++) {
             w = diagA[i] / diagB[i - 1];
             diagB[i] = diagB[i] - w * diagC[i - 1];
@@ -134,6 +134,7 @@ namespace Mona{
             }
         }
         MONA_LOG_ERROR("t value is not in range");
+        return glm::vec3(0);
     }
 
     glm::vec3 CubicBezierSpline::getVelocity(float t) {
@@ -143,6 +144,7 @@ namespace Mona{
             }
         }
         MONA_LOG_ERROR("t value is not in range");
+        return glm::vec3(0);
     }
 
 

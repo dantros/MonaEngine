@@ -34,13 +34,9 @@ namespace Mona {
 			InnerComponentHandle skeletalMeshHandle = m_ikNavigationManagerPtr->GetOwner(handle)->GetInnerComponentHandle<SkeletalMeshComponent>();
 			std::shared_ptr<Skeleton> skeletonPtr = m_skeletalMeshManagerPtr->GetComponentPointer(skeletalMeshHandle)->GetSkeleton();
 			AnimationController* animController = &m_skeletalMeshManagerPtr->GetComponentPointer(skeletalMeshHandle)->GetAnimationController();
-			if(ikNav.m_baseAnimationClip->GetSkeleton() != skeletonPtr) {
-				MONA_LOG_ERROR("Input animation does not correspond to base skeleton.");
-				return;
-			}
 
 			InnerComponentHandle rigidBodyHandle = m_ikNavigationManagerPtr->GetOwner(handle)->GetInnerComponentHandle<RigidBodyComponent>();
-			ikNav.m_ikRig = IKRig(ikNav.m_baseAnimationClip, ikNav.m_rigData, rigidBodyHandle, skeletalMeshHandle, animController);
+			ikNav.m_ikRig = IKRig(ikNav.m_baseAnimationClip, ikNav.m_rigData, rigidBodyHandle, skeletalMeshHandle, animController, m_skeletalMeshManagerPtr);
 		}
 		void OnRemoveComponent(GameObject* gameObjectPtr, IKNavigationComponent& ikNav, const InnerComponentHandle& handle) noexcept {
 		}

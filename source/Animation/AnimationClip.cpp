@@ -59,6 +59,51 @@ namespace Mona {
 			}
 		}
 
+		// descomprimimos las rotaciones de la animacion, repitiendo valores para que todas las articulaciones 
+		// tengan el mismo numero de rotaciones
+		std::vector<AnimationClip::AnimationTrack>& tracks = m_animationTracks;
+		int nTracks = tracks.size();
+		std::vector<bool> conditions(nTracks);
+		std::vector<int> currentTimeIndexes(nTracks);
+		std::vector<float> currentTimes(nTracks);
+		for (int i = 0; i < nTracks; i++) {
+			currentTimeIndexes[i] = 0;
+			conditions[i] = currentTimeIndexes[i] < tracks[i].rotationTimeStamps.size();
+		}
+		while (funcUtils::conditionArray_OR(conditions)) {
+			// seteamos el valor del timestamp que le corresponde a cada track
+			for (int i = 0; i < nTracks; i++) {
+				currentTimes[i] = conditions[i] ? tracks[i].rotationTimeStamps[currentTimeIndexes[i]] : std::numeric_limits<float>::max();
+			}
+			// encontramos los indices de las tracks que tienen el minimo timestamp actual
+			std::vector<int> minTimeIndexes = funcUtils::minValueIndex_multiple<float>(currentTimes); // ordenados ascendentemente
+			float currentMinTime = currentTimes[minTimeIndexes[0]];
+
+			int currentMinTimeIndexesIndex = 0;
+			for (int i = 0; i < nTracks; i++) {
+				if (currentMinTimeIndexesIndex == i) { // track actual tiene un timestamp minimo
+					currentTimeIndexes[i] += 1;
+					currentMinTimeIndexesIndex += 1;
+				}
+				else {
+					// si el valor a insertar cae antes del primer timestamp, se replica el ultimo valor del arreglo de rotaciones
+					// se asume animacion circular
+					int insertOffset = currentTimeIndexes[i];
+					int valIndex = currentTimeIndexes[i] > 0 ? currentTimeIndexes[i] - 1 : tracks[i].rotationTimeStamps.size() - 1;
+					auto rotIt = tracks[i].rotations.begin() + insertOffset;
+					auto timeRotIt = tracks[i].rotationTimeStamps.begin() + insertOffset;
+					tracks[i].rotations.insert(rotIt, tracks[i].rotations[valIndex]);
+					tracks[i].rotationTimeStamps.insert(timeRotIt, currentMinTime);
+					currentTimeIndexes[i] += 1;
+				}
+			}
+
+			// actualizamos las condiciones
+			for (int i = 0; i < nTracks; i++) {
+				conditions[i] = currentTimeIndexes[i] < tracks[i].rotationTimeStamps.size();
+			}
+		}
+
 		m_trackJointIndices.resize(m_trackJointNames.size());
 		SetSkeleton(skeleton);
 		if (removeRootMotion) {
@@ -266,25 +311,7 @@ namespace Mona {
 		return localScale;
 	}
 
-	void AnimationClip::SetPosition(glm::vec3 newPosition, float time, int joint, bool isLooping) {
-		//Primero se obtiene el tiempo de muestreo correcto
-		float newTime = GetSamplingTime(time, isLooping);
-		AnimationTrack& animationTrack = m_animationTracks[m_jointTrackIndices[joint]];
-		int targetIndex;
-		if (animationTrack.positions.size() > 1)
-		{
-			std::pair<uint32_t, float> fp = GetTimeFraction(animationTrack.positionTimeStamps, newTime);
-			int indexBefore = fp.first - 1;
-			int indexAfter = fp.first % animationTrack.positions.size();
-			if (fp.second < 0.5) { targetIndex = indexBefore;}
-			else {targetIndex = indexAfter;	}
-		}
-		else {
-			targetIndex = 0;
-		}
-		animationTrack.positions[targetIndex] = newPosition;
-	}
-	void AnimationClip::SetRotation(glm::fquat newRotation, float time, int joint, bool isLooping) {
+	void AnimationClip::SetNearestRotation(glm::fquat newRotation, float time, int joint, bool isLooping) {
 		//Primero se obtiene el tiempo de muestreo correcto
 		float newTime = GetSamplingTime(time, isLooping);
 		AnimationTrack& animationTrack = m_animationTracks[m_jointTrackIndices[joint]];
@@ -302,23 +329,44 @@ namespace Mona {
 		}
 		animationTrack.rotations[targetIndex] = newRotation;
 	}
-	void AnimationClip::SetScale(glm::vec3 newScale, float time, int joint, bool isLooping) {
+
+	void AnimationClip::AddRotation(glm::fquat newRotation, float time, int joint, bool isLooping) {
 		//Primero se obtiene el tiempo de muestreo correcto
 		float newTime = GetSamplingTime(time, isLooping);
 		AnimationTrack& animationTrack = m_animationTracks[m_jointTrackIndices[joint]];
 		int targetIndex;
-		if (animationTrack.scales.size() > 1)
+		if (animationTrack.rotations.size() > 1)
 		{
-			std::pair<uint32_t, float> fp = GetTimeFraction(animationTrack.scaleTimeStamps, newTime);
+			std::pair<uint32_t, float> fp = GetTimeFraction(animationTrack.rotationTimeStamps, newTime);
 			int indexBefore = fp.first - 1;
-			int indexAfter = fp.first % animationTrack.scales.size();
-			if (fp.second < 0.5) { targetIndex = indexBefore; }
-			else { targetIndex = indexAfter; }
+			int indexAfter = fp.first % animationTrack.rotations.size();
+			if (fp.second == 0) { animationTrack.rotations[indexBefore] = newRotation; }
+			else if (fp.second == 1) { animationTrack.rotations[indexAfter] = newRotation; }
+			else {
+				auto it1 = animationTrack.rotations.begin();
+				auto it2 = animationTrack.rotationTimeStamps.begin();
+				animationTrack.rotations.insert(it1 + indexAfter, newRotation);
+				animationTrack.rotationTimeStamps.insert(it2 + indexAfter, newTime);
+			}
 		}
 		else {
-			targetIndex = 0;
+			float savedTime = animationTrack.rotationTimeStamps[0];
+			if (newTime == savedTime) {
+				animationTrack.rotations[0] = newRotation;
+			}
+			else {
+				auto it1 = animationTrack.rotations.begin();
+				auto it2 = animationTrack.rotationTimeStamps.begin();
+				if (newTime < savedTime) {
+					animationTrack.rotations.insert(it1, newRotation);
+					animationTrack.rotationTimeStamps.insert(it2, newTime);
+				}
+				else {
+					animationTrack.rotations.insert(it1 + 1, newRotation);
+					animationTrack.rotationTimeStamps.insert(it2 + 1, newTime);
+				}
+			}
 		}
-		animationTrack.scales[targetIndex] = newScale;
 	}
 
 }

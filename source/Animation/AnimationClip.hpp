@@ -46,9 +46,8 @@ namespace Mona {
 		glm::vec3 GetPosition(float time, int joint, bool isLooping);
 		glm::fquat GetRotation(float time, int joint, bool isLooping);
 		glm::vec3 GetScale(float time, int joint, bool isLooping);
-		void SetPosition(glm::vec3 newPosition, float time, int joint, bool isLooping);
-		void SetRotation(glm::fquat newRotation, float time, int joint, bool isLooping);
-		void SetScale(glm::vec3 newScale, float time, int joint, bool isLooping);
+		void SetNearestRotation(glm::fquat newRotation, float time, int joint, bool isLooping);
+		void AddRotation(glm::fquat newRotation, float time, int joint, bool isLooping);
 
 		std::vector<AnimationTrack> m_animationTracks;
 		std::vector<std::string> m_trackJointNames;
@@ -57,8 +56,8 @@ namespace Mona {
 		std::shared_ptr<Skeleton> m_skeletonPtr;
 		float m_duration = 1.0f;
 		std::string m_animationName;
-		bool m_stableRotations;
-		bool m_noRootMotion;
+		bool m_stableRotations = false;
+		bool m_noRootMotion = false;
 	};
 }
 #endif

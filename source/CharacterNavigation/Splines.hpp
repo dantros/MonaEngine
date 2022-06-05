@@ -16,6 +16,7 @@ namespace Mona{
         float m_maxT;
     public:
         BezierCurve(int order, std::vector<glm::vec3> controlPoints, float minT = 0, float maxT = 1);
+        BezierCurve() = default;;
         glm::vec3 evalCurve(float t);
         glm::vec3 getVelocity(float t);
         glm::vec2 getTRange() { return glm::vec2({ m_minT, m_maxT }); }

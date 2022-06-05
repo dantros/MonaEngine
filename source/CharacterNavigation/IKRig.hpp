@@ -12,13 +12,13 @@ namespace Mona{
         public:
             IKRig() = default;
             IKRig(std::shared_ptr<AnimationClip> baseAnim, RigData rigData, InnerComponentHandle rigidBodyHandle,
-                InnerComponentHandle skeletalMeshHandle, AnimationController* animController);
+                InnerComponentHandle skeletalMeshHandle, AnimationController* animController, ComponentManager<SkeletalMeshComponent>* skeletalMeshManagerPtr);
             void setIKRigConfigTime(float time, AnimationIndex animIndex);
             bool isConfigValid(const IKRigConfig& rigConfig);
-            const IKRigConfig& GetAnimationConfig(AnimationIndex animIndex) const { return m_animationConfigs[animIndex]; }
-            std::shared_ptr<AnimationClip> GetAnimation(AnimationIndex animIndex) { return m_animations[animIndex]; }
-            const std::vector<int>& GetTopology() const { return m_skeleton->m_parentIndices; }
-            const std::vector<std::string>& GetJointNames() const { return m_skeleton->m_jointNames; }
+            const IKRigConfig& getAnimationConfig(AnimationIndex animIndex) const { return m_animationConfigs[animIndex]; }
+            std::shared_ptr<AnimationClip> getAnimation(AnimationIndex animIndex) { return m_animations[animIndex]; }
+            const std::vector<int>& getTopology() const { return m_skeleton->m_parentIndices; }
+            const std::vector<std::string>& getJointNames() const { return m_skeleton->m_jointNames; }
         private:
             FootContacts findFootContactFrames(std::shared_ptr<AnimationClip> anim);
             std::vector<std::shared_ptr<AnimationClip>> m_animations;

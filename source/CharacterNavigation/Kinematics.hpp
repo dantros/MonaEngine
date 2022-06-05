@@ -5,6 +5,8 @@
 #include <vector>
 #include <functional>
 #include "IKRig.hpp"
+#include "GradientDescent.hpp"
+#include "Splines.hpp"
 
 namespace Mona {
 	class ForwardKinematics {
@@ -18,9 +20,17 @@ namespace Mona {
 
 	};
 
+	struct DescentData {
+		VectorX baseAngles;
+		Vector3 targetEEPosition;
+
+	};
+
 	class InverseKinematics {
 		IKRig* m_ikRig;
 		ForwardKinematics m_forwardKinematics;
+		GradientDescent<DescentData> m_gradientDescent;
+		DescentData m_descentData;
 		InverseKinematics() = default;
 		InverseKinematics(IKRig* ikRig);
 	};

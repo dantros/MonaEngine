@@ -26,7 +26,7 @@ namespace Mona {
         void setRotationAxis(glm::vec3 rotationAxis);
         glm::fquat getQuatRotation() const { return m_quatRotation; }
         float getRotationAngle() const { return m_rotationAngle; }
-        Vector3f getRotationAxis() const { return m_rotationAxis; }
+        glm::vec3 getRotationAxis() const { return m_rotationAxis; }
     };
     class IKRigConfig {
         friend class IKRig;
@@ -55,23 +55,24 @@ namespace Mona {
         float weight = 1;
         bool enableIKRotation = false;
     };
-    struct ChainEnds {
+    struct ChainData {
         friend class IKRig;
         std::string startJointName;
         std::string endEffectorName;
     private:
         JointIndex startJointIndex = -1;
         JointIndex endEffectorIndex = -1;
+        int chainLength = 0;
     };
     struct RigData {
         friend class IKRig;
     private:
         std::unordered_map<std::string, JointData> jointData;
     public:
-        ChainEnds leftLeg;
-        ChainEnds rightLeg;
-        ChainEnds leftFoot;
-        ChainEnds rightFoot;
+        ChainData leftLeg;
+        ChainData rightLeg;
+        ChainData leftFoot;
+        ChainData rightFoot;
         void setJointData(std::string jointName, float minAngle, float maxAngle, float weight = 1, bool enableData = true);
         void enableJointData(std::string jointName, bool enableData);
         JointData getJointData(std::string jointName);

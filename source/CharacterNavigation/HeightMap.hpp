@@ -3,14 +3,13 @@
 #define HEIGHTMAP_HPP
 
 #include <vector>
-#include <Eigen/Dense>
 #include <glm/glm.hpp>
+#include <unordered_map>
 
 
 
 namespace Mona {
     
-	typedef glm::vec3 Vector3f;
 	typedef glm::vec3 Vertex;
 	typedef unsigned int vIndex;
 

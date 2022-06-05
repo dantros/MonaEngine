@@ -31,16 +31,18 @@ namespace Mona {
 		}
 
 		
-		std::vector<ChainEnds> dataArr = { rigData.leftLeg, rigData.rightLeg, rigData.leftFoot, rigData.rightFoot };
-		std::vector<ChainEnds*> chainTargets = { &m_leftLeg, &m_rightLeg, &m_leftFoot, &m_rightFoot };
+		std::vector<ChainData> dataArr = { rigData.leftLeg, rigData.rightLeg, rigData.leftFoot, rigData.rightFoot };
+		std::vector<ChainData*> chainTargets = { &m_leftLeg, &m_rightLeg, &m_leftFoot, &m_rightFoot };
 		for (int i = 0; i < dataArr.size(); i++) { // construccion de las cadenas principales
 			int eeIndex = funcUtils::findIndex(jointNames, dataArr[i].endEffectorName);
 			(*chainTargets[i]) = dataArr[i]; // copiamos los nombres
 			if (eeIndex != -1) {
 				int chainStartIndex = -1;
 				IKNode* currentNode = &m_nodes[eeIndex];
+				(*chainTargets[i]).chainLength = 1;
 				currentNode = currentNode->m_parent;
 				while (currentNode != nullptr) {
+					(*chainTargets[i]).chainLength += 1;
 					if (currentNode->m_jointName == dataArr[i].startJointName) {
 						chainStartIndex = currentNode->m_jointIndex;
 						break; 
@@ -53,6 +55,9 @@ namespace Mona {
 				}else { 
 					MONA_LOG_ERROR("IKRig: Starting joint and end effector were not on the same chain!"); 
 				}
+			}
+			else {
+				MONA_LOG_ERROR("IKRig: Did not find an end effector named {0}", dataArr[i].endEffectorName);
 			}
 		}
 

@@ -11,6 +11,28 @@ namespace Mona {
 	InverseKinematics::InverseKinematics(IKRig* ikRig) {
 		m_ikRig = ikRig;
 		m_forwardKinematics = ForwardKinematics(ikRig);
+		
+		//creamos terminos para el descenso de gradiente
+		// termino 1 (acercar la animacion creada a la animacion original)
+		std::function<float(const VectorX&, DescentData*)> term1Function =
+			[](const VectorX& varAngles, DescentData* dataPtr)->float{
+			return (varAngles - dataPtr->baseAngles).squaredNorm();
+		};
+
+		std::function<float(const VectorX&, int, DescentData*)> term1PartialDerivativeFunction =
+			[](const VectorX& varAngles, int varIndex, DescentData* dataPtr)->float {
+			return 2 * (std::abs(varAngles[varIndex] - dataPtr->baseAngles[varIndex]));
+		};
+
+		FunctionTerm<DescentData> term1(term1Function, term1PartialDerivativeFunction);
+
+		// termino 2 (seguir la curva deseada para el end effector)
+		std::function<float(const VectorX&, DescentData*)> term2Function;
+		std::function<float(const VectorX&, int, DescentData*)> term2PartialDerivativeFunction;
+		FunctionTerm<DescentData> term2(term2Function, term2PartialDerivativeFunction);
+
+		auto terms = std::vector<FunctionTerm<DescentData>>({ term1, term2 });
+		m_gradientDescent = GradientDescent<DescentData>(terms,1,&m_descentData);
 	}
 
 	

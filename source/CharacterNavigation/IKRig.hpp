@@ -33,10 +33,10 @@ namespace Mona{
             EnvironmentData m_environmentData;
             IKRigConfigValidator m_configValidator;
             std::vector<IKNode> m_nodes;
-            ChainEnds m_leftLeg;
-            ChainEnds m_rightLeg;
-            ChainEnds m_leftFoot;
-            ChainEnds m_rightFoot;
+            ChainData m_leftLeg;
+            ChainData m_rightLeg;
+            ChainData m_leftFoot;
+            ChainData m_rightFoot;
             void addAnimation(std::shared_ptr<AnimationClip> animationClip, ComponentManager<SkeletalMeshComponent>* skeletalMeshManagerPtr);
             int removeAnimation(std::shared_ptr<AnimationClip> animationClip);
             glm::vec3 getLinearVelocity(ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr);

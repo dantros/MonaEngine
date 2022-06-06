@@ -14,11 +14,12 @@ namespace Mona{
             IKRig(std::shared_ptr<AnimationClip> baseAnim, RigData rigData, InnerComponentHandle rigidBodyHandle,
                 InnerComponentHandle skeletalMeshHandle, AnimationController* animController, ComponentManager<SkeletalMeshComponent>* skeletalMeshManagerPtr);
             void setIKRigConfigTime(float time, AnimationIndex animIndex);
-            bool isConfigValid(const IKRigConfig& rigConfig);
-            const IKRigConfig& getAnimationConfig(AnimationIndex animIndex) const { return m_animationConfigs[animIndex]; }
+            IKRigConfig& getAnimationConfig(AnimationIndex animIndex) { return m_animationConfigs[animIndex]; }
             std::shared_ptr<AnimationClip> getAnimation(AnimationIndex animIndex) { return m_animations[animIndex]; }
             const std::vector<int>& getTopology() const { return m_skeleton->m_parentIndices; }
             const std::vector<std::string>& getJointNames() const { return m_skeleton->m_jointNames; }
+            IKNode* getIKNode(JointIndex jointIndex) { return &m_nodes[jointIndex]; }
+
         private:
             FootContacts findFootContactFrames(std::shared_ptr<AnimationClip> anim);
             std::vector<std::shared_ptr<AnimationClip>> m_animations;
@@ -31,7 +32,7 @@ namespace Mona{
             InnerComponentHandle m_rigidBodyHandle;
             InnerComponentHandle m_skeletalMeshHandle;
             EnvironmentData m_environmentData;
-            IKRigConfigValidator m_configValidator;
+            ForwardKinematics m_forwardKinematics;
             std::vector<IKNode> m_nodes;
             ChainData m_leftLeg;
             ChainData m_rightLeg;

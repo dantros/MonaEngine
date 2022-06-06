@@ -2,7 +2,7 @@
 
 namespace Mona{
 
-	IKRigConfig::IKRigConfig(std::shared_ptr<AnimationClip> animation, AnimationIndex animationIndex) {
+	IKRigConfig::IKRigConfig(std::shared_ptr<AnimationClip> animation, AnimationIndex animationIndex, ForwardKinematics* forwardKinematics) {
 		m_jointPositions.reserve(animation->m_animationTracks.size());
 		m_jointScales.reserve(animation->m_animationTracks.size());
 		m_timeStamps.reserve(animation->m_animationTracks.size()* animation->m_animationTracks[0].rotationTimeStamps.size());
@@ -27,8 +27,25 @@ namespace Mona{
 			}
 		}
 		m_animIndex = animationIndex;
-
+		m_forwardKinematics = forwardKinematics;
 	}
+
+	std::vector<glm::vec3> IKRigConfig::getModelSpacePositions(bool useDynamicRotations) {
+		return m_forwardKinematics->ModelSpacePositions(m_animIndex, useDynamicRotations);
+	}
+	glm::vec3 IKRigConfig::getModelSpacePosition(JointIndex jointIndex, bool useDynamicRotations) {
+		return m_forwardKinematics->ModelSpacePosition(m_animIndex, jointIndex, useDynamicRotations);
+	}
+	std::vector<glm::mat4> IKRigConfig::getModelSpaceTransforms(bool useDynamicRotations) {
+		return m_forwardKinematics->ModelSpaceTransforms(m_animIndex, useDynamicRotations);
+	}
+	std::vector<glm::mat4> IKRigConfig::getJointSpaceTransforms(bool useDynamicRotations) {
+		return m_forwardKinematics->JointSpaceTransforms(m_animIndex, useDynamicRotations);
+	}
+	std::vector<std::pair<JointIndex, glm::mat4>> IKRigConfig::getJointSpaceChainTransforms(JointIndex eeIndex, bool useDynamicRotations) {
+		return m_forwardKinematics->JointSpaceChainTransforms(m_animIndex, eeIndex, useDynamicRotations);
+	}
+
 	IKNode::IKNode(std::string jointName, int jointIndex, IKNode* parent, float weight) {
 		m_jointName = jointName;
 		m_jointIndex = jointIndex;
@@ -93,11 +110,6 @@ namespace Mona{
 	void JointRotation::setRotationAxis(glm::vec3 rotationAxis) {
 		m_quatRotation = glm::angleAxis(m_rotationAngle, rotationAxis);
 		m_rotationAxis = rotationAxis;
-	}
-
-	IKRigConfigValidator::IKRigConfigValidator(std::vector<IKNode>* nodesPtr, std::vector<int>* topologyPtr) {
-		m_nodes = nodesPtr;
-		m_topology = topologyPtr;
 	}
     
 }

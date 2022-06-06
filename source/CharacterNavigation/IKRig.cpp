@@ -14,6 +14,7 @@ namespace Mona {
 		m_animationController(animController), m_rigidBodyHandle(rigidBodyHandle), m_skeletalMeshHandle(skeletalMeshHandle)
 	{
 		m_skeleton = baseAnim->GetSkeleton();
+		m_forwardKinematics = ForwardKinematics(this);
 		addAnimation(baseAnim, skeletalMeshManagerPtr);
 		m_animations.push_back(baseAnim);
 		m_animationConfigs.push_back(IKRigConfig(baseAnim, 0));
@@ -31,14 +32,14 @@ namespace Mona {
 		}
 
 		
-		std::vector<ChainData> dataArr = { rigData.leftLeg, rigData.rightLeg, rigData.leftFoot, rigData.rightFoot };
+		std::vector<ChainEnds> dataArr = { rigData.leftLeg, rigData.rightLeg, rigData.leftFoot, rigData.rightFoot };
 		std::vector<ChainData*> chainTargets = { &m_leftLeg, &m_rightLeg, &m_leftFoot, &m_rightFoot };
 		for (int i = 0; i < dataArr.size(); i++) { // construccion de las cadenas principales
 			int eeIndex = funcUtils::findIndex(jointNames, dataArr[i].endEffectorName);
-			(*chainTargets[i]) = dataArr[i]; // copiamos los nombres
 			if (eeIndex != -1) {
 				int chainStartIndex = -1;
 				IKNode* currentNode = &m_nodes[eeIndex];
+				(*chainTargets[i]).eeNode = currentNode;
 				(*chainTargets[i]).chainLength = 1;
 				currentNode = currentNode->m_parent;
 				while (currentNode != nullptr) {
@@ -70,9 +71,6 @@ namespace Mona {
 				m_nodes[i].m_weight = currData.weight;
 			}
 		}
-
-		// crear validador
-		m_configValidator = IKRigConfigValidator(&m_nodes, &topology);
 	}
 
 	void IKRig::addAnimation(std::shared_ptr<AnimationClip> animationClip, ComponentManager<SkeletalMeshComponent>* skeletalMeshManagerPtr) {
@@ -140,13 +138,15 @@ namespace Mona {
 				conditions[i] = currentTimeIndexes[i] < tracks[i].rotationTimeStamps.size();
 			}
 		}
-
 		m_animations.push_back(animationClip);
+		m_animationConfigs.push_back(IKRigConfig(animationClip, m_animations.size() - 1, &m_forwardKinematics));
 	}
+
 	int IKRig::removeAnimation(std::shared_ptr<AnimationClip> animationClip) {
 		for (int i = 0; i < m_animations.size(); i++) {
 			if (m_animations[i] == animationClip) {
 				m_animations.erase(m_animations.begin() + i);
+				m_animationConfigs.erase(m_animationConfigs.begin() + i);
 				return i;
 			}
 		}

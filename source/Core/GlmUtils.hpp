@@ -12,39 +12,33 @@
 namespace Mona {
 
     namespace glmUtils {
-        inline glm::mat3x3 scaleToMat3(const glm::vec3& scale) {
-            glm::mat3x3 mat = glm::identity<glm::mat3x3>();
+        inline glm::mat3 scaleToMat3(const glm::vec3& scale) {
+            glm::mat3 mat = glm::identity<glm::mat3>();
             for (int i = 0; i < 3; i++) {
                 mat[i][i] = scale[i];
             }
             return mat;
         }
 
-        inline glm::mat4x4 scaleToMat4(const glm::vec3& scale) {
-            return glm::scale(glm::identity<glm::mat4x4>(), scale);
+        inline glm::mat4 scaleToMat4(const glm::vec3& scale) {
+            return glm::scale(glm::identity<glm::mat4>(), scale);
         }
 
-        inline glm::mat4x4 translationToMat4(const glm::vec3& translation) {
-            return glm::translate(glm::identity<glm::mat4x4>(), translation);
+        inline glm::mat4 translationToMat4(const glm::vec3& translation) {
+            return glm::translate(glm::identity<glm::mat4>(), translation);
         }
 
-        inline glm::mat3x3 rotationToMat3(const glm::fquat& rotation) {
+        inline glm::mat3 rotationToMat3(const glm::fquat& rotation) {
             return glm::toMat3(rotation);
         }
 
-        inline glm::mat4x4 rotationToMat4(const glm::fquat& rotation) {
+        inline glm::mat4 rotationToMat4(const glm::fquat& rotation) {
             return glm::toMat4(rotation);
         }
-        
-        template <int len, typename T>
-        inline glm::vec<len, T> stdVecToGlm(const std::vector<T>& stdVec) {
-            glm::vec<len, T> glmVec;
-            for (int i = 0; i < len; i++) {
-                glmVec[i] = stdVec[i];
-            }
-            return glmVec;
+
+        inline glm::vec3 vec4ToVec3(const glm::vec4& vec4) {
+            return glm::vec3(vec4[0], vec4[1], vec4[2]);
         }
-    
     
     }
         

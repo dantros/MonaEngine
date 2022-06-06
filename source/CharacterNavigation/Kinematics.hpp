@@ -15,15 +15,22 @@ namespace Mona {
 		ForwardKinematics(IKRig* ikRig);
 		ForwardKinematics() = default;
 		std::vector<glm::vec3> ModelSpacePositions(AnimationIndex animIndex, bool useDynamicRotations);
-		std::vector<glm::mat4x4> ModelSpaceTransforms(AnimationIndex animIndex, bool useDynamicRotations);
-		std::vector<glm::mat4x4> JointSpaceTransforms(AnimationIndex animIndex, bool useDynamicRotations);
+		glm::vec3 ModelSpacePosition(AnimationIndex animIndex, JointIndex jointIndex, bool useDynamicRotations);
+		std::vector<glm::mat4> ModelSpaceTransforms(AnimationIndex animIndex, bool useDynamicRotations);
+		std::vector<glm::mat4> JointSpaceTransforms(AnimationIndex animIndex, bool useDynamicRotations);
+		std::vector<std::pair<JointIndex,glm::mat4>> JointSpaceChainTransforms(AnimationIndex animIndex, JointIndex eeIndex, bool useDynamicRotations);
 
 	};
 
 	struct DescentData {
+		// constants
 		VectorX baseAngles;
 		Vector3 targetEEPosition;
-
+		float betaValue;
+		// dynamic calcs
+		ChainData chainData;
+		std::vector<JointIndex> jointIndexes;
+		IKRigConfig* rigConfig;
 	};
 
 	class InverseKinematics {

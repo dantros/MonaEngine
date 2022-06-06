@@ -6,6 +6,7 @@
 #include "EnvironmentData.hpp"
 #include "../PhysicsCollision/RigidBodyLifetimePolicy.hpp"
 #include "../Animation/SkeletalMeshComponent.hpp"
+#include "Kinematics.hpp"
 
 namespace Mona {
     typedef int AnimationIndex;
@@ -37,6 +38,7 @@ namespace Mona {
         std::vector<glm::vec3> m_jointPositions;
         std::vector<float> m_timeStamps;
         AnimationIndex m_animIndex = -1;
+        ForwardKinematics* m_forwardKinematics;
         float m_currentTime = -1;
     public:
         const std::vector<JointRotation>& getBaseJointRotations() const { return m_baseJointRotations; }
@@ -44,9 +46,15 @@ namespace Mona {
         const std::vector<glm::vec3>& getJointScales() const { return m_jointScales; }
         const std::vector<glm::vec3>& getJointPositions() const { return m_jointPositions; }
         const std::vector<float>& getTimeStamps() const { return m_timeStamps; }
-        const std::vector<JointRotation>* getDynamicJointRotationsPtr() const { return &m_dynamicJointRotations;  }
+        AnimationIndex getAnimIndex() const { return m_animIndex; }
+        std::vector<JointRotation>* getDynamicJointRotationsPtr() { return &m_dynamicJointRotations;  }
         float getCurrentTime() const { return m_currentTime; }
-        IKRigConfig(std::shared_ptr<AnimationClip> animation, AnimationIndex animIndex);
+        IKRigConfig(std::shared_ptr<AnimationClip> animation, AnimationIndex animIndex, ForwardKinematics* fk);
+        std::vector<glm::vec3> getModelSpacePositions(bool useDynamicRotations);
+        glm::vec3 getModelSpacePosition(JointIndex jointIndex, bool useDynamicRotations);
+        std::vector<glm::mat4> getModelSpaceTransforms(bool useDynamicRotations);
+        std::vector<glm::mat4> getJointSpaceTransforms(bool useDynamicRotations);
+        std::vector<std::pair<JointIndex, glm::mat4>> getJointSpaceChainTransforms(JointIndex eeIndex, bool useDynamicRotations);
     };
 
     struct JointData {
@@ -55,24 +63,25 @@ namespace Mona {
         float weight = 1;
         bool enableIKRotation = false;
     };
-    struct ChainData {
-        friend class IKRig;
+    struct ChainEnds {
         std::string startJointName;
         std::string endEffectorName;
-    private:
+    };
+    struct ChainData {
         JointIndex startJointIndex = -1;
         JointIndex endEffectorIndex = -1;
         int chainLength = 0;
+        IKNode* eeNode;
     };
     struct RigData {
         friend class IKRig;
     private:
         std::unordered_map<std::string, JointData> jointData;
     public:
-        ChainData leftLeg;
-        ChainData rightLeg;
-        ChainData leftFoot;
-        ChainData rightFoot;
+        ChainEnds leftLeg;
+        ChainEnds rightLeg;
+        ChainEnds leftFoot;
+        ChainEnds rightFoot;
         void setJointData(std::string jointName, float minAngle, float maxAngle, float weight = 1, bool enableData = true);
         void enableJointData(std::string jointName, bool enableData);
         JointData getJointData(std::string jointName);
@@ -80,18 +89,19 @@ namespace Mona {
     };
 
     class IKNode {
-    public:
+        friend class IKRig;
         IKNode() = default;
         IKNode(std::string jointName, JointIndex jointIndex, IKNode* parent = nullptr, float weight = 1);
-    private:
-        friend class IKRig;
         float m_weight = 1;
         float m_minAngle = -90;
         float m_maxAngle = 90;
         std::string m_jointName;
         int m_jointIndex = -1;
         IKNode* m_parent = nullptr;
-        JointRotation m_jointRotation_dmic;
+    public:
+        IKNode* getParent() const { return m_parent; }
+        glm::vec2 getMotionRange() const { return glm::vec2(m_minAngle, m_maxAngle); }
+        JointIndex getIndex() const { return m_jointIndex; }
     };
 
     struct FootContacts {
@@ -103,15 +113,6 @@ namespace Mona {
         std::vector<int> rightLegDown;
         std::vector<int> rightFootUp;
         std::vector<int> rightFootDown;
-    };
-
-    class IKRigConfigValidator {
-        friend class IKRig;
-        std::vector<IKNode>* m_nodes;
-        std::vector<int>* m_topology;
-        IKRigConfigValidator() = default;
-        IKRigConfigValidator(std::vector<IKNode>* nodesPtr, std::vector<int>* topologyPtr);
-        bool isConfigValid(IKRigConfig rigConfig);
     };
 
 }

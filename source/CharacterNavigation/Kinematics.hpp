@@ -18,16 +18,17 @@ namespace Mona {
 		glm::vec3 ModelSpacePosition(AnimationIndex animIndex, JointIndex jointIndex, bool useDynamicRotations);
 		std::vector<glm::mat4> ModelSpaceTransforms(AnimationIndex animIndex, bool useDynamicRotations);
 		std::vector<glm::mat4> JointSpaceTransforms(AnimationIndex animIndex, bool useDynamicRotations);
-		std::vector<std::pair<JointIndex,glm::mat4>> JointSpaceChainTransforms(AnimationIndex animIndex, JointIndex eeIndex, bool useDynamicRotations);
 
 	};
 
 	struct DescentData {
-		// constants
+		// constants data
 		VectorX baseAngles;
-		Vector3 targetEEPosition;
+		glm::vec3 targetEEPosition;
 		float betaValue;
-		// dynamic calcs
+		// variables data
+		std::vector<glm::mat4> forwardModelSpaceTransforms;
+		std::vector<glm::mat4> backwardModelSpaceTransforms;
 		ChainData chainData;
 		std::vector<JointIndex> jointIndexes;
 		IKRigConfig* rigConfig;

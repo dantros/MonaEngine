@@ -42,9 +42,6 @@ namespace Mona{
 	std::vector<glm::mat4> IKRigConfig::getJointSpaceTransforms(bool useDynamicRotations) {
 		return m_forwardKinematics->JointSpaceTransforms(m_animIndex, useDynamicRotations);
 	}
-	std::vector<std::pair<JointIndex, glm::mat4>> IKRigConfig::getJointSpaceChainTransforms(JointIndex eeIndex, bool useDynamicRotations) {
-		return m_forwardKinematics->JointSpaceChainTransforms(m_animIndex, eeIndex, useDynamicRotations);
-	}
 
 	IKNode::IKNode(std::string jointName, int jointIndex, IKNode* parent, float weight) {
 		m_jointName = jointName;

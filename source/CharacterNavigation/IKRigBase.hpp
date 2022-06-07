@@ -54,7 +54,6 @@ namespace Mona {
         glm::vec3 getModelSpacePosition(JointIndex jointIndex, bool useDynamicRotations);
         std::vector<glm::mat4> getModelSpaceTransforms(bool useDynamicRotations);
         std::vector<glm::mat4> getJointSpaceTransforms(bool useDynamicRotations);
-        std::vector<std::pair<JointIndex, glm::mat4>> getJointSpaceChainTransforms(JointIndex eeIndex, bool useDynamicRotations);
     };
 
     struct JointData {

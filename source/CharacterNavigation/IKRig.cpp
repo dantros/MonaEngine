@@ -17,7 +17,7 @@ namespace Mona {
 		m_forwardKinematics = ForwardKinematics(this);
 		addAnimation(baseAnim, skeletalMeshManagerPtr);
 		m_animations.push_back(baseAnim);
-		m_animationConfigs.push_back(IKRigConfig(baseAnim, 0));
+		m_animationConfigs.push_back(IKRigConfig(baseAnim, 0, &m_forwardKinematics));
 
 		std::shared_ptr<AnimationClip> staticData = m_animations[0];
 		m_currentAnim = 0;
@@ -33,33 +33,9 @@ namespace Mona {
 
 		
 		std::vector<ChainEnds> dataArr = { rigData.leftLeg, rigData.rightLeg, rigData.leftFoot, rigData.rightFoot };
-		std::vector<ChainData*> chainTargets = { &m_leftLeg, &m_rightLeg, &m_leftFoot, &m_rightFoot };
+		std::vector<IKChain*> chainTargets = { &m_leftLeg, &m_rightLeg, &m_leftFoot, &m_rightFoot };
 		for (int i = 0; i < dataArr.size(); i++) { // construccion de las cadenas principales
-			int eeIndex = funcUtils::findIndex(jointNames, dataArr[i].endEffectorName);
-			if (eeIndex != -1) {
-				int chainStartIndex = -1;
-				IKNode* currentNode = &m_nodes[eeIndex];
-				(*chainTargets[i]).eeNode = currentNode;
-				(*chainTargets[i]).chainLength = 1;
-				currentNode = currentNode->m_parent;
-				while (currentNode != nullptr) {
-					(*chainTargets[i]).chainLength += 1;
-					if (currentNode->m_jointName == dataArr[i].startJointName) {
-						chainStartIndex = currentNode->m_jointIndex;
-						break; 
-					}
-					currentNode = currentNode->m_parent;
-				}
-				if (chainStartIndex != -1) { // seteamos los indices
-					(*chainTargets[i]).startJointIndex = chainStartIndex;
-					(*chainTargets[i]).endEffectorIndex = eeIndex;
-				}else { 
-					MONA_LOG_ERROR("IKRig: Starting joint and end effector were not on the same chain!"); 
-				}
-			}
-			else {
-				MONA_LOG_ERROR("IKRig: Did not find an end effector named {0}", dataArr[i].endEffectorName);
-			}
+			(*chainTargets[i]) = buildIKChain(dataArr[i]);
 		}
 
 		// setear constraints y pesos
@@ -170,6 +146,32 @@ namespace Mona {
 			m_animationConfigs[animIndex].m_baseJointRotations[i].setRotation(rot);
 			m_animationConfigs[animIndex].m_dynamicJointRotations[i].setRotation(rot);
 		}
+	}
+
+	IKChain IKRig::buildIKChain(ChainEnds chainEnds) {
+		MONA_ASSERT(chainEnds.baseJointName != chainEnds.endEffectorName, "Base joint and end effector must be different!");
+		auto jointNames = getJointNames();
+		IKChain ikChain;
+		int eeIndex = funcUtils::findIndex(jointNames, chainEnds.endEffectorName);
+		if (eeIndex != -1) {
+			int chainStartIndex = -1;
+			IKNode* currentNode = &m_nodes[eeIndex];
+			while (currentNode != nullptr) {
+				ikChain.insert(ikChain.begin(), currentNode->m_jointIndex);
+				if (currentNode->m_jointName == chainEnds.baseJointName) {
+					chainStartIndex = currentNode->m_jointIndex;
+					break;
+				}
+				currentNode = currentNode->m_parent;
+			}
+			if (chainStartIndex == -1) {
+				MONA_LOG_ERROR("IKRig: base joint and end effector were not on the same chain!");
+			}
+		}
+		else {
+			MONA_LOG_ERROR("IKRig: Did not find an end effector named {0}", chainEnds.endEffectorName);
+		}
+		return ikChain;
 	}
 
 }

@@ -1,5 +1,6 @@
 #include "Kinematics.hpp"
 #include "../Core/GlmUtils.hpp"
+#include "../Core/FuncUtils.hpp"
 #include <glm/gtx/matrix_decompose.hpp>
 
 
@@ -45,47 +46,64 @@ namespace Mona {
 		// termino 2 (seguir la curva deseada para el end effector)
 		std::function<float(const VectorX&, DescentData*)> term2Function =
 			[](const VectorX& varAngles, DescentData* dataPtr)->float {
-			glm::vec4 baseVec(0,0,0,1);
-			int eeIndex = dataPtr->jointIndexes.back();
-			glm::vec3 eePos = glmUtils::vec4ToVec3(dataPtr->forwardModelSpaceTransforms[eeIndex]*baseVec);
-			return  dataPtr->betaValue * glm::length2(eePos - dataPtr->targetEEPosition);
+			float result = 0;
+			int eeIndex;
+			glm::vec4 baseVec(0, 0, 0, 1);
+			glm::vec3 eePos;
+			for (int i = 0; i < dataPtr->ikChains.size(); i++) {
+				eeIndex = dataPtr->eeIndexes[i];
+				eePos = glmUtils::vec4ToVec3(dataPtr->forwardModelSpaceTransforms[eeIndex] * baseVec);
+				result += glm::length2(eePos - dataPtr->targetEEPositions[i]);
+			}
+			result = dataPtr->betaValue * result;
+			return result;
 		};
 
 		std::function<float(const VectorX&, int, DescentData*)> term2PartialDerivativeFunction =
 			[](const VectorX& varAngles, int varIndex, DescentData* dataPtr)->float {
-			glm::mat4 TA = 0<varIndex ? 
-				dataPtr->forwardModelSpaceTransforms[dataPtr->jointIndexes[varIndex-1]] : glm::identity<glm::mat4>();
-			glm::mat4 TB = varIndex<(dataPtr->jointIndexes.size()-1) ?
-				dataPtr->backwardModelSpaceTransforms[dataPtr->jointIndexes[varIndex + 1]] : glm::identity<glm::mat4>();
-			glm::mat4 TvarRaw = dataPtr->jointSpaceTransforms[dataPtr->jointIndexes[varIndex]];
-			glm::vec3 TvarScl;
-			glm::fquat TvarQuat;
-			glm::vec3 TvarTr;
-			glm::vec3 skew;
-			glm::vec4 perspective;
-			glm::decompose(TvarRaw, TvarScl, TvarQuat, TvarTr, skew, perspective);
-			TB = glmUtils::scaleToMat4(TvarScl) * TB;
-			glm::vec3 b = glmUtils::vec4ToVec3(TB* glm::vec4(0,0,0,1));
-			TA = TA * glmUtils::translationToMat4(TvarTr);
-			glm::mat4 Tvar = glmUtils::rotationToMat4(TvarQuat);
-			glm::mat4 dTvar = rotationMatrixDerivative_dAngle(varAngles[varIndex], dataPtr->rotationAxes[dataPtr->jointIndexes[varIndex]]);
-			glm::vec3 eeT = dataPtr->targetEEPosition;
-			float result = 0;
-			for (int k = 0; k <= 2; k++) {
-				float mult1 = 0;
-				for (int j = 0; j <= 3; j++) {
-					for (int i = 0; i <= 3; i++) {
-						mult1 += b[j] * TA[k][i] * Tvar[i][j] - eeT[k] / 16;
+			
+			for (int c = 0; c < dataPtr->ikChains.size(); c++) {
+				// chequeamos si el angulo variable es parte de la cadena actual
+				int ind = funcUtils::findIndex(dataPtr->ikChains[c], dataPtr->jointIndexes[varIndex]);
+				if (ind != -1) {
+					JointIndex jIndex = dataPtr->ikChains[c][ind];
+					glm::mat4 TA = 0 < varIndex ?
+						dataPtr->forwardModelSpaceTransforms[dataPtr->jointIndexes[varIndex - 1]] : glm::identity<glm::mat4>();
+					glm::mat4 TB = varIndex < (dataPtr->jointIndexes.size() - 1) ?
+						dataPtr->backwardModelSpaceTransforms[dataPtr->jointIndexes[varIndex + 1]] : glm::identity<glm::mat4>();
+					glm::mat4 TvarRaw = dataPtr->jointSpaceTransforms[dataPtr->jointIndexes[varIndex]];
+					glm::vec3 TvarScl;
+					glm::fquat TvarQuat;
+					glm::vec3 TvarTr;
+					glm::vec3 skew;
+					glm::vec4 perspective;
+					glm::decompose(TvarRaw, TvarScl, TvarQuat, TvarTr, skew, perspective);
+					TB = glmUtils::scaleToMat4(TvarScl) * TB;
+					glm::vec3 b = glmUtils::vec4ToVec3(TB * glm::vec4(0, 0, 0, 1));
+					TA = TA * glmUtils::translationToMat4(TvarTr);
+					glm::mat4 Tvar = glmUtils::rotationToMat4(TvarQuat);
+					glm::mat4 dTvar = rotationMatrixDerivative_dAngle(varAngles[varIndex], dataPtr->rotationAxes[dataPtr->jointIndexes[varIndex]]);
+					glm::vec3 eeT = dataPtr->targetEEPositions[c];
+					float result = 0;
+					for (int k = 0; k <= 2; k++) {
+						float mult1 = 0;
+						for (int j = 0; j <= 3; j++) {
+							for (int i = 0; i <= 3; i++) {
+								mult1 += b[j] * TA[k][i] * Tvar[i][j] - eeT[k] / 16;
+							}
+						}
+						float mult2 = 0;
+						for (int j = 0; j <= 3; j++) {
+							for (int i = 0; i <= 3; i++) {
+								mult2 += b[j] * TA[k][i] * dTvar[i][j];
+							}
+						}
+						result += mult1 * mult2;
 					}
+
 				}
-				float mult2 = 0;
-				for (int j = 0; j <= 3; j++) {
-					for (int i = 0; i <= 3; i++) {
-						mult2 += b[j] * TA[k][i] * dTvar[i][j];
-					}
-				}
-				result += mult1 * mult2;
 			}
+			
 			result = dataPtr->betaValue * 2 * result;
 			return result;
 		};

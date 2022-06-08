@@ -34,14 +34,15 @@ namespace Mona{
             EnvironmentData m_environmentData;
             ForwardKinematics m_forwardKinematics;
             std::vector<IKNode> m_nodes;
-            ChainData m_leftLeg;
-            ChainData m_rightLeg;
-            ChainData m_leftFoot;
-            ChainData m_rightFoot;
+            IKChain m_leftLeg;
+            IKChain m_rightLeg;
+            IKChain m_leftFoot;
+            IKChain m_rightFoot;
             void addAnimation(std::shared_ptr<AnimationClip> animationClip, ComponentManager<SkeletalMeshComponent>* skeletalMeshManagerPtr);
             int removeAnimation(std::shared_ptr<AnimationClip> animationClip);
             glm::vec3 getLinearVelocity(ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr);
             void setLinearVelocity(glm::vec3 velocity, ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr);
+            IKChain buildIKChain(ChainEnds chainEnds);
     };
 
 }

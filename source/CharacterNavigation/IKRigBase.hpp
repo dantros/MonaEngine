@@ -11,6 +11,7 @@
 namespace Mona {
     typedef int AnimationIndex;
     typedef int JointIndex;
+    typedef std::vector<JointIndex> IKChain;
 
     struct JointRotation {
     private:
@@ -63,14 +64,8 @@ namespace Mona {
         bool enableIKRotation = false;
     };
     struct ChainEnds {
-        std::string startJointName;
+        std::string baseJointName;
         std::string endEffectorName;
-    };
-    struct ChainData {
-        JointIndex startJointIndex = -1;
-        JointIndex endEffectorIndex = -1;
-        int chainLength = 0;
-        IKNode* eeNode;
     };
     struct RigData {
         friend class IKRig;

@@ -73,12 +73,13 @@ namespace Mona{
 	}
 
 	bool RigData::isValid() {
-		if (leftLeg.startJointName.empty() || leftLeg.endEffectorName.empty() || rightLeg.startJointName.empty() || rightLeg.endEffectorName.empty()) {
+		if (leftLeg.baseJointName.empty() || leftLeg.endEffectorName.empty() || rightLeg.baseJointName.empty() || rightLeg.endEffectorName.empty()) {
 			MONA_LOG_ERROR("RigData: Legs cannot be empty");
 			return false;
 		}
 		return true;
 	}
+
 	JointRotation::JointRotation() {
 		setRotation({ 0,0,0,1 });
 	}

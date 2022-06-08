@@ -24,7 +24,7 @@ namespace Mona {
 	struct DescentData {
 		// constants data
 		VectorX baseAngles;
-		glm::vec3 targetEEPosition;
+		std::vector<glm::vec3> targetEEPositions;
 		float betaValue;
 		// variables data
 		std::vector<JointIndex> jointIndexes;
@@ -32,6 +32,7 @@ namespace Mona {
 		std::vector<glm::mat4> backwardModelSpaceTransforms; // multiplicacion en cadena desde el ee hasta el joint i
 		std::vector<glm::mat4> jointSpaceTransforms;
 		std::vector<glm::vec3> rotationAxes;
+		std::vector<IKChain> ikChains;
 		// other data
 		IKRigConfig* rigConfig;
 		std::vector<glm::vec2> motionRanges;

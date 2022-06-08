@@ -29,7 +29,7 @@ namespace Mona {
 		// variables data
 		std::vector<JointIndex> jointIndexes;
 		std::vector<glm::mat4> forwardModelSpaceTransforms; // multiplicacion en cadena desde la raiz hasta el joint i
-		std::vector<glm::mat4> backwardModelSpaceTransforms; // multiplicacion en cadena desde el ee hasta el joint i
+		std::vector<std::vector<glm::mat4>> chainsBackwardModelSpaceTransforms; // multiplicacion en cadena desde el ee de la cadena hasta el joint i
 		std::vector<glm::mat4> jointSpaceTransforms;
 		std::vector<glm::vec3> rotationAxes;
 		std::vector<IKChain> ikChains;

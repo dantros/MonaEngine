@@ -51,7 +51,7 @@ namespace Mona {
 			glm::vec4 baseVec(0, 0, 0, 1);
 			glm::vec3 eePos;
 			for (int i = 0; i < dataPtr->ikChains.size(); i++) {
-				eeIndex = dataPtr->eeIndexes[i];
+				eeIndex = dataPtr->ikChains[i].back();
 				eePos = glmUtils::vec4ToVec3(dataPtr->forwardModelSpaceTransforms[eeIndex] * baseVec);
 				result += glm::length2(eePos - dataPtr->targetEEPositions[i]);
 			}
@@ -61,30 +61,31 @@ namespace Mona {
 
 		std::function<float(const VectorX&, int, DescentData*)> term2PartialDerivativeFunction =
 			[](const VectorX& varAngles, int varIndex, DescentData* dataPtr)->float {
-			
+			float result = 0;
+			glm::mat4 TA;
+			glm::mat4 TB;
+			glm::vec3 TvarScl;
+			glm::fquat TvarQuat;
+			glm::vec3 TvarTr;
+			glm::vec3 skew;
+			glm::vec4 perspective;
 			for (int c = 0; c < dataPtr->ikChains.size(); c++) {
 				// chequeamos si el angulo variable es parte de la cadena actual
 				int ind = funcUtils::findIndex(dataPtr->ikChains[c], dataPtr->jointIndexes[varIndex]);
 				if (ind != -1) {
-					JointIndex jIndex = dataPtr->ikChains[c][ind];
-					glm::mat4 TA = 0 < varIndex ?
-						dataPtr->forwardModelSpaceTransforms[dataPtr->jointIndexes[varIndex - 1]] : glm::identity<glm::mat4>();
-					glm::mat4 TB = varIndex < (dataPtr->jointIndexes.size() - 1) ?
-						dataPtr->backwardModelSpaceTransforms[dataPtr->jointIndexes[varIndex + 1]] : glm::identity<glm::mat4>();
+					JointIndex varJointIndex = dataPtr->ikChains[c][ind];
+					JointIndex baseJointIndex = dataPtr->ikChains[c][0];
+					JointIndex eeIndex = dataPtr->ikChains[c].back();
 					glm::mat4 TvarRaw = dataPtr->jointSpaceTransforms[dataPtr->jointIndexes[varIndex]];
-					glm::vec3 TvarScl;
-					glm::fquat TvarQuat;
-					glm::vec3 TvarTr;
-					glm::vec3 skew;
-					glm::vec4 perspective;
 					glm::decompose(TvarRaw, TvarScl, TvarQuat, TvarTr, skew, perspective);
-					TB = glmUtils::scaleToMat4(TvarScl) * TB;
+					TA = (varJointIndex != baseJointIndex ? dataPtr->forwardModelSpaceTransforms[dataPtr->ikChains[c][ind-1]] : 
+						glm::identity<glm::mat4>()) * glmUtils::translationToMat4(TvarTr);
+					TB = glmUtils::scaleToMat4(TvarScl) * (varJointIndex != eeIndex ?	dataPtr->chainsBackwardModelSpaceTransforms[c][dataPtr->ikChains[c][ind+1]] :
+						glm::identity<glm::mat4>());
 					glm::vec3 b = glmUtils::vec4ToVec3(TB * glm::vec4(0, 0, 0, 1));
-					TA = TA * glmUtils::translationToMat4(TvarTr);
 					glm::mat4 Tvar = glmUtils::rotationToMat4(TvarQuat);
 					glm::mat4 dTvar = rotationMatrixDerivative_dAngle(varAngles[varIndex], dataPtr->rotationAxes[dataPtr->jointIndexes[varIndex]]);
 					glm::vec3 eeT = dataPtr->targetEEPositions[c];
-					float result = 0;
 					for (int k = 0; k <= 2; k++) {
 						float mult1 = 0;
 						for (int j = 0; j <= 3; j++) {
@@ -100,10 +101,8 @@ namespace Mona {
 						}
 						result += mult1 * mult2;
 					}
-
 				}
 			}
-			
 			result = dataPtr->betaValue * 2 * result;
 			return result;
 		};
@@ -123,10 +122,15 @@ namespace Mona {
 			}
 			// calcular arreglos de transformaciones
 			dataPtr->forwardModelSpaceTransforms = dataPtr->rigConfig->getModelSpaceTransforms(true);
-			std::vector<glm::mat4>* bt = &dataPtr->backwardModelSpaceTransforms;
-			(*bt) = dataPtr->rigConfig->getJointSpaceTransforms(true);
-			for (int i = (*bt).size() - 2; 0 <= i; i--) {
-				(*bt)[i] = (*bt)[i] * (*bt)[i + 1];
+			IKChain ikChain;
+			std::vector<glm::mat4>* bt;
+			for (int c = 0; c < dataPtr->ikChains.size();c++) {
+				bt = &dataPtr->chainsBackwardModelSpaceTransforms[c];
+				(*bt) = dataPtr->rigConfig->getJointSpaceTransforms(true);
+				ikChain = dataPtr->ikChains[c];
+				for (int i = ikChain.size() - 2; 0 <= i; i--) {
+					(*bt)[ikChain[i]] = (*bt)[ikChain[i]] * (*bt)[ikChain[i+1]];
+				}
 			}
 		};
 

@@ -1,5 +1,6 @@
 #include "Kinematics.hpp"
 #include "../Core/GlmUtils.hpp"
+#include <glm/gtx/matrix_decompose.hpp>
 
 
 namespace Mona {
@@ -7,6 +8,21 @@ namespace Mona {
 	ForwardKinematics::ForwardKinematics(IKRig* ikRig) {
 		m_ikRig = ikRig;
 	}
+
+	glm::mat4 rotationMatrixDerivative_dAngle(float angle, glm::vec3 axis) {
+		glm::mat4 mat = glm::identity<glm::mat4>();
+		mat[0][0] = -(pow(axis[1], 2) + pow(axis[2], 2)) * sin(angle);
+		mat[1][0] = axis[0] * axis[1] * sin(angle) + axis[2] * cos(angle);
+		mat[2][0] = axis[0] * axis[2] * sin(angle) - axis[1] * cos(angle);
+		mat[0][1] = axis[0] * axis[1] * sin(angle) - axis[1] * cos(angle);
+		mat[1][1] = -(pow(axis[0], 2) + pow(axis[2], 2)) * sin(angle);
+		mat[2][1] = axis[1] * axis[2] * sin(angle) + axis[0] * cos(angle);
+		mat[0][2] = axis[0] * axis[2] * sin(angle) + axis[1] * cos(angle);
+		mat[1][2] = axis[1] * axis[2] * sin(angle) - axis[0] * cos(angle);
+		mat[2][2] = -(pow(axis[0], 2) + pow(axis[1], 2)) * sin(angle);
+		return mat;
+	}
+
 
 	InverseKinematics::InverseKinematics(IKRig* ikRig) {
 		m_ikRig = ikRig;
@@ -29,33 +45,31 @@ namespace Mona {
 		// termino 2 (seguir la curva deseada para el end effector)
 		std::function<float(const VectorX&, DescentData*)> term2Function =
 			[](const VectorX& varAngles, DescentData* dataPtr)->float {
-			glm::mat4 transform(glm::identity<glm::mat4>());
-			auto rigConfig = dataPtr->rigConfig;
-			auto dynamicRotations = rigConfig->getDynamicJointRotationsPtr();
-			for (int i = 0; i < dataPtr->jointIndexes.size(); i++) {
-				(*dynamicRotations)[dataPtr->jointIndexes[i]].setRotationAngle(varAngles[i]);
-			}
+			glm::vec4 baseVec(0,0,0,1);
 			int eeIndex = dataPtr->jointIndexes.back();
-			glm::vec3 eePos = rigConfig->getModelSpacePosition(eeIndex, true);
+			glm::vec3 eePos = glmUtils::vec4ToVec3(dataPtr->forwardModelSpaceTransforms[eeIndex]*baseVec);
 			return  dataPtr->betaValue * glm::length2(eePos - dataPtr->targetEEPosition);
 		};
 
 		std::function<float(const VectorX&, int, DescentData*)> term2PartialDerivativeFunction =
 			[](const VectorX& varAngles, int varIndex, DescentData* dataPtr)->float {
-			auto rigConfig = dataPtr->rigConfig;
-			auto dynamicRotations = rigConfig->getDynamicJointRotationsPtr();
-			for (int i = 0; i < dataPtr->jointIndexes.size(); i++) {
-				(*dynamicRotations)[dataPtr->jointIndexes[i]].setRotationAngle(varAngles[i]);
-			}
-			int eeIndex = dataPtr->jointIndexes.back();
-			glm::vec3 eePos = rigConfig->getModelSpacePosition(eeIndex, true);
-			auto chainTransforms = rigConfig->getJointSpaceChainTransforms(eeIndex, true);
-			glm::vec4 chainRule1 = dataPtr->betaValue * glm::length2(eePos - dataPtr->targetEEPosition);
-			glm::vec4 rootPos(0, 0, 0,1);
-			glm::mat4 transformA = glm::identity<glm::mat4>();
-			glm::mat4 varTransform;
-			glm::mat4 transformB = glm::identity<glm::mat4>();
-			return chainRuleVal*transformA*varTransform*transformB;
+			glm::mat4 TA = 0<varIndex ? 
+				dataPtr->forwardModelSpaceTransforms[dataPtr->jointIndexes[varIndex-1]] : glm::identity<glm::mat4>();
+			glm::mat4 TB = varIndex<(dataPtr->jointIndexes.size()-1) ?
+				dataPtr->backwardModelSpaceTransforms[dataPtr->jointIndexes[varIndex + 1]] : glm::identity<glm::mat4>();
+			glm::mat4 TvarRaw = dataPtr->jointSpaceTransforms[dataPtr->jointIndexes[varIndex]];
+			glm::vec3 TvarScl;
+			glm::fquat Tvar;
+			glm::vec3 TvarTr;
+			glm::vec3 skew;
+			glm::vec4 perspective;
+			glm::decompose(TvarRaw, TvarScl, Tvar, TvarTr, skew, perspective);
+			TA = TA * glmUtils::translationToMat4(TvarTr);
+			TB = glmUtils::scaleToMat4(TvarScl) * TB;
+			glm::vec3 b = glmUtils::vec4ToVec3(TB* glm::vec4(0,0,0,1));
+			glm::mat4 dTvar = rotationMatrixDerivative_dAngle(varAngles[varIndex], dataPtr->rotationAxes[dataPtr->jointIndexes[varIndex]]);
+
+			return 0;
 		};
 		FunctionTerm<DescentData> term2(term2Function, term2PartialDerivativeFunction);
 

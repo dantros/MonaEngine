@@ -27,11 +27,13 @@ namespace Mona {
 		glm::vec3 targetEEPosition;
 		float betaValue;
 		// variables data
-		std::vector<glm::mat4> forwardModelSpaceTransforms;
-		std::vector<glm::mat4> backwardModelSpaceTransforms;
-		ChainData chainData;
 		std::vector<JointIndex> jointIndexes;
-		IKRigConfig* rigConfig;
+		std::vector<glm::mat4> forwardModelSpaceTransforms; // multiplicacion en cadena desde la raiz hasta el joint i
+		std::vector<glm::mat4> backwardModelSpaceTransforms; // multiplicacion en cadena desde el ee hasta el joint i
+		std::vector<glm::mat4> jointSpaceTransforms;
+		std::vector<glm::vec3> rotationAxes;
+		// other data
+		std::vector<glm::vec2> motionRanges;
 	};
 
 	class InverseKinematics {

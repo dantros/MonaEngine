@@ -59,17 +59,35 @@ namespace Mona {
 				dataPtr->backwardModelSpaceTransforms[dataPtr->jointIndexes[varIndex + 1]] : glm::identity<glm::mat4>();
 			glm::mat4 TvarRaw = dataPtr->jointSpaceTransforms[dataPtr->jointIndexes[varIndex]];
 			glm::vec3 TvarScl;
-			glm::fquat Tvar;
+			glm::fquat TvarQuat;
 			glm::vec3 TvarTr;
 			glm::vec3 skew;
 			glm::vec4 perspective;
-			glm::decompose(TvarRaw, TvarScl, Tvar, TvarTr, skew, perspective);
-			TA = TA * glmUtils::translationToMat4(TvarTr);
+			glm::decompose(TvarRaw, TvarScl, TvarQuat, TvarTr, skew, perspective);
 			TB = glmUtils::scaleToMat4(TvarScl) * TB;
 			glm::vec3 b = glmUtils::vec4ToVec3(TB* glm::vec4(0,0,0,1));
+			TA = TA * glmUtils::translationToMat4(TvarTr);
+			glm::mat4 Tvar = glmUtils::rotationToMat4(TvarQuat);
 			glm::mat4 dTvar = rotationMatrixDerivative_dAngle(varAngles[varIndex], dataPtr->rotationAxes[dataPtr->jointIndexes[varIndex]]);
-
-			return 0;
+			glm::vec3 eeT = dataPtr->targetEEPosition;
+			float result = 0;
+			for (int k = 0; k <= 2; k++) {
+				float mult1 = 0;
+				for (int j = 0; j <= 3; j++) {
+					for (int i = 0; i <= 3; i++) {
+						mult1 += b[j] * TA[k][i] * Tvar[i][j] - eeT[k] / 16;
+					}
+				}
+				float mult2 = 0;
+				for (int j = 0; j <= 3; j++) {
+					for (int i = 0; i <= 3; i++) {
+						mult2 += b[j] * TA[k][i] * dTvar[i][j];
+					}
+				}
+				result += mult1 * mult2;
+			}
+			result = dataPtr->betaValue * 2 * result;
+			return result;
 		};
 		FunctionTerm<DescentData> term2(term2Function, term2PartialDerivativeFunction);
 

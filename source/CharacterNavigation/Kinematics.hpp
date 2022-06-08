@@ -33,6 +33,7 @@ namespace Mona {
 		std::vector<glm::mat4> jointSpaceTransforms;
 		std::vector<glm::vec3> rotationAxes;
 		// other data
+		IKRigConfig* rigConfig;
 		std::vector<glm::vec2> motionRanges;
 	};
 

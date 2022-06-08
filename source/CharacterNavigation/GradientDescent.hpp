@@ -33,9 +33,10 @@ namespace Mona {
 	class GradientDescent {
 		std::vector<FunctionTerm<dataT>> m_terms;
 		int m_argNum;
-		std::function<void(VectorX&, dataT*)>  m_afterDescentStepCustomBehaviour;
+		dataT* m_dataPtr;
+		std::function<void(VectorX&, dataT*)>  m_postDescentStepCustomBehaviour;
 	public:
-		GradientDescent(std::vector<FunctionTerm<dataT>> terms, int argNum, dataT* dataPtr);
+		GradientDescent(std::vector<FunctionTerm<dataT>> terms, int argNum, dataT* dataPtr, std::function<void(VectorX&, dataT*)>  postDescentStepCustomBehaviour);
 		GradientDescent() = default;
 		VectorX computeGradient(const VectorX& args);
 		VectorX computeArgsMin(float descentRate, int maxIterations, const VectorX& initialArgs);

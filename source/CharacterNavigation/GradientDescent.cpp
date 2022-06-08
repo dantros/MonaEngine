@@ -19,10 +19,13 @@ namespace Mona {
 	}
 
 	template <typename dataT>
-	GradientDescent<dataT>::GradientDescent(std::vector<FunctionTerm<dataT>> terms, int argNum, dataT* dataPtr) {
+	GradientDescent<dataT>::GradientDescent(std::vector<FunctionTerm<dataT>> terms, int argNum, dataT* dataPtr,
+		std::function<void(VectorX&, dataT*)>  postDescentStepCustomBehaviour) {
 		MONA_ASSERT(terms.size() > 0, "Must provide at least one function term");
 		m_argNum = argNum;
-		m_terms = terms;		
+		m_terms = terms;
+		m_postDescentStepCustomBehaviour = postDescentStepCustomBehaviour;
+		m_dataPtr = dataPtr;
 		for (int i = 0; i < m_terms.size(); i++) {
 			m_terms[i].m_dataPtr = dataPtr;
 		}
@@ -46,6 +49,7 @@ namespace Mona {
 		VectorX args = initialArgs;
 		while (0 < maxIterations) {
 			args -= descentRate* computeGradient(args);
+			m_postDescentStepCustomBehaviour(args, m_dataPtr);
 			maxIterations -= 1;
 		}
 		return args;

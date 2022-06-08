@@ -90,9 +90,30 @@ namespace Mona {
 			return result;
 		};
 		FunctionTerm<DescentData> term2(term2Function, term2PartialDerivativeFunction);
+		std::function<void(VectorX&, DescentData*)>  postDescentStepCustomBehaviour = [](VectorX& args, DescentData* dataPtr)->void {
+			// aplicar restricciones de movimiento
+			for (int i = 0; i < args.size(); i++) {
+				int jIndex = dataPtr->jointIndexes[i];
+				if (args[i] < dataPtr->motionRanges[jIndex][0]) { args[i] = dataPtr->motionRanges[jIndex][0];}
+				else if (dataPtr->motionRanges[jIndex][1] < args[i]) {args[i] = dataPtr->motionRanges[jIndex][1];}
+			}
+			// setear nuevos angulos
+			auto configRot = dataPtr->rigConfig->getDynamicJointRotationsPtr();
+			for (int i = 0; i < dataPtr->jointIndexes.size(); i++) {
+				int jIndex = dataPtr->jointIndexes[i];
+				(*configRot)[jIndex].setRotationAngle(args[i]);
+			}
+			// calcular arreglos de transformaciones
+			dataPtr->forwardModelSpaceTransforms = dataPtr->rigConfig->getModelSpaceTransforms(true);
+			std::vector<glm::mat4>* bt = &dataPtr->backwardModelSpaceTransforms;
+			(*bt) = dataPtr->rigConfig->getJointSpaceTransforms(true);
+			for (int i = (*bt).size() - 2; 0 <= i; i--) {
+				(*bt)[i] = (*bt)[i] * (*bt)[i + 1];
+			}
+		};
 
 		auto terms = std::vector<FunctionTerm<DescentData>>({ term1, term2 });
-		m_gradientDescent = GradientDescent<DescentData>(terms,1,&m_descentData);
+		m_gradientDescent = GradientDescent<DescentData>(terms,1,&m_descentData, postDescentStepCustomBehaviour);
 	}
 
 	glm::vec3 ForwardKinematics::ModelSpacePosition(AnimationIndex animIndex, JointIndex jointIndex, bool useDynamicRotations) {

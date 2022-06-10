@@ -38,6 +38,7 @@ namespace Mona{
             InnerComponentHandle m_skeletalMeshHandle;
             EnvironmentData m_environmentData;
             ForwardKinematics m_forwardKinematics;
+            InverseKinematics m_inverseKinematics;
             std::vector<IKNode> m_nodes;
             std::vector<IKChain> m_ikChains;
             IKChain m_leftLeg;

@@ -25,9 +25,6 @@ namespace Mona{
 		m_forwardKinematics = forwardKinematics;
 	}
 
-	std::vector<glm::vec3> IKRigConfig::getModelSpacePositions(bool useDynamicRotations) {
-		return m_forwardKinematics->ModelSpacePositions(m_animIndex, useDynamicRotations);
-	}
 	glm::vec3 IKRigConfig::getModelSpacePosition(JointIndex jointIndex, bool useDynamicRotations) {
 		return m_forwardKinematics->ModelSpacePosition(m_animIndex, jointIndex, useDynamicRotations);
 	}

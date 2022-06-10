@@ -44,6 +44,8 @@ namespace Mona {
 				m_nodes[i].m_weight = currData.weight;
 			}
 		}
+		// setear cinematica inversa
+		m_inverseKinematics = InverseKinematics(this, m_ikChains, 0);
 	}
 
 	void IKRig::addAnimation(std::shared_ptr<AnimationClip> animationClip, ComponentManager<SkeletalMeshComponent>* skeletalMeshManagerPtr) {

@@ -25,6 +25,20 @@ namespace Mona {
 		return mat;
 	}
 
+	void setDescentTransformArrays(DescentData* dataPtr) {
+		dataPtr->forwardModelSpaceTransforms = dataPtr->rigConfig->getModelSpaceTransforms(true);
+		dataPtr->jointSpaceTransforms = dataPtr->rigConfig->getJointSpaceTransforms(true);
+		IKChain ikChain;
+		std::vector<glm::mat4>* bt;
+		for (int c = 0; c < dataPtr->ikChains.size(); c++) {
+			bt = &dataPtr->backwardModelSpaceTransformsPerChain[c];
+			(*bt) = dataPtr->jointSpaceTransforms;
+			ikChain = dataPtr->ikChains[c];
+			for (int i = ikChain.joints.size() - 2; 0 <= i; i--) {
+				(*bt)[ikChain.joints[i]] = (*bt)[ikChain.joints[i]] * (*bt)[ikChain.joints[i + 1]];
+			}
+		}
+	}
 
 	InverseKinematics::InverseKinematics(IKRig* ikRig, std::vector<IKChain> ikChains, AnimationIndex animIndex) {
 		m_ikRig = ikRig;
@@ -79,8 +93,8 @@ namespace Mona {
 					glm::decompose(TvarRaw, TvarScl, TvarQuat, TvarTr, skew, perspective);
 					TA = (varJointIndex != baseJointIndex ? dataPtr->forwardModelSpaceTransforms[dataPtr->ikChains[c].joints[ind-1]] : 
 						glm::identity<glm::mat4>()) * glmUtils::translationToMat4(TvarTr);
-					TB = glmUtils::scaleToMat4(TvarScl) * (varJointIndex != eeIndex ?	dataPtr->chainsBackwardModelSpaceTransforms[c][dataPtr->ikChains[c].joints[ind+1]] :
-						glm::identity<glm::mat4>());
+					TB = glmUtils::scaleToMat4(TvarScl) * (varJointIndex != eeIndex ?	
+						dataPtr->backwardModelSpaceTransformsPerChain[c][dataPtr->ikChains[c].joints[ind+1]] :	glm::identity<glm::mat4>());
 					glm::vec3 b = glmUtils::vec4ToVec3(TB * glm::vec4(0, 0, 0, 1));
 					glm::mat4 Tvar = glmUtils::rotationToMat4(TvarQuat);
 					glm::mat4 dTvar = rotationMatrixDerivative_dAngle(varAngles[varIndex], dataPtr->rotationAxes[dataPtr->jointIndexes[varIndex]]);
@@ -120,17 +134,7 @@ namespace Mona {
 				(*configRot)[jIndex].setRotationAngle(args[i]);
 			}
 			// calcular arreglos de transformaciones
-			dataPtr->forwardModelSpaceTransforms = dataPtr->rigConfig->getModelSpaceTransforms(true);
-			IKChain ikChain;
-			std::vector<glm::mat4>* bt;
-			for (int c = 0; c < dataPtr->ikChains.size();c++) {
-				bt = &dataPtr->chainsBackwardModelSpaceTransforms[c];
-				(*bt) = dataPtr->rigConfig->getJointSpaceTransforms(true);
-				ikChain = dataPtr->ikChains[c];
-				for (int i = ikChain.joints.size() - 2; 0 <= i; i--) {
-					(*bt)[ikChain.joints[i]] = (*bt)[ikChain.joints[i]] * (*bt)[ikChain.joints[i+1]];
-				}
-			}
+			setDescentTransformArrays(dataPtr);
 		};
 
 		auto terms = std::vector<FunctionTerm<DescentData>>({ term1, term2 });
@@ -180,7 +184,6 @@ namespace Mona {
 		m_descentData.previousAngles = {};
 	}
 
-
 	std::vector<std::pair<JointIndex, glm::fquat>> InverseKinematics::computeRotations(std::vector<std::pair<std::string, glm::vec3>> eeTargetPerChain) {
 		for (int i = 0; i < eeTargetPerChain.size(); i++) {
 			int ind = funcUtils::findIndex(m_ikChainNames, eeTargetPerChain[i].first);
@@ -201,6 +204,8 @@ namespace Mona {
 			m_descentData.rotationAxes[i] = baseRotations[m_descentData.jointIndexes[i]].getRotationAxis();
 			m_descentData.baseAngles[i] = baseRotations[m_descentData.jointIndexes[i]].getRotationAngle();
 		}
+		// calcular arreglos de transformaciones
+		setDescentTransformArrays(&m_descentData);
 		VectorX computedAngles = m_gradientDescent.computeArgsMin(m_descentData.descentRate, m_descentData.maxIterations, m_descentData.previousAngles);
 		m_descentData.previousAngles = computedAngles;
 		std::vector<std::pair<JointIndex, glm::fquat>> result(computedAngles.size());

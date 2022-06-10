@@ -52,7 +52,6 @@ namespace Mona {
         float getCurrentTime() const { return m_currentTime; }
         int getNextFrameIndex() const { return m_nextFrameIndex; }
         IKRigConfig(std::shared_ptr<AnimationClip> animation, AnimationIndex animIndex, ForwardKinematics* fk);
-        std::vector<glm::vec3> getModelSpacePositions(bool useDynamicRotations);
         glm::vec3 getModelSpacePosition(JointIndex jointIndex, bool useDynamicRotations);
         std::vector<glm::mat4> getModelSpaceTransforms(bool useDynamicRotations);
         std::vector<glm::mat4> getJointSpaceTransforms(bool useDynamicRotations);

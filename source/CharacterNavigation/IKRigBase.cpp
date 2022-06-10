@@ -1,4 +1,5 @@
 #include "IKRigBase.hpp"
+#include "Kinematics.hpp"
 
 namespace Mona{
 
@@ -37,7 +38,7 @@ namespace Mona{
 		return m_forwardKinematics->JointSpaceTransforms(m_animIndex, useDynamicRotations);
 	}
 
-	IKNode::IKNode(std::string jointName, int jointIndex, IKNode* parent, float weight) {
+	IKNode::IKNode(std::string jointName, JointIndex jointIndex, IKNode* parent, float weight) {
 		m_jointName = jointName;
 		m_jointIndex = jointIndex;
 		m_parent = parent;

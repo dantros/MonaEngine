@@ -4,11 +4,17 @@
 
 #include <vector>
 #include <functional>
-#include "IKRig.hpp"
 #include "GradientDescent.hpp"
 #include "Splines.hpp"
 
 namespace Mona {
+	typedef int AnimationIndex;
+	typedef int JointIndex;
+
+	class IKRig;
+	class IKChain;
+	class IKRigConfig;
+
 	class ForwardKinematics {
 		IKRig* m_ikRig;
 	public:
@@ -36,7 +42,9 @@ namespace Mona {
 		// other data
 		IKRigConfig* rigConfig;
 		std::vector<glm::vec2> motionRanges;
-		std::vector<float> previousAngles;
+		VectorX previousAngles;
+		float descentRate;
+		int maxIterations;
 	};
 
 	class InverseKinematics {

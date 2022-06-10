@@ -3,25 +3,30 @@
 #define IKRIG_HPP
 
 #include "IKRigBase.hpp"
+#include "Kinematics.hpp"
 
 namespace Mona{
     
+    typedef int AnimationIndex;
+    typedef int JointIndex;
     class IKRig{
         friend class IKNavigationComponent;
-        friend class InverseKinematics;
         public:
             IKRig() = default;
             IKRig(std::shared_ptr<AnimationClip> baseAnim, RigData rigData, InnerComponentHandle rigidBodyHandle,
                 InnerComponentHandle skeletalMeshHandle, AnimationController* animController, ComponentManager<SkeletalMeshComponent>* skeletalMeshManagerPtr);
             void setIKRigConfigTime(float time, AnimationIndex animIndex);
-            IKRigConfig* getAnimationConfig(AnimationIndex animIndex) { return &m_animationConfigs[animIndex]; }
-            std::shared_ptr<AnimationClip> getAnimation(AnimationIndex animIndex) { return m_animations[animIndex]; }
-            const std::vector<int>& getTopology() const { return m_skeleton->m_parentIndices; }
-            const std::vector<std::string>& getJointNames() const { return m_skeleton->m_jointNames; }
-            IKNode* getIKNode(JointIndex jointIndex) { return &m_nodes[jointIndex]; }
+            IKRigConfig* getAnimationConfig(AnimationIndex animIndex) { return &m_animationConfigs[animIndex]; };
+            std::shared_ptr<AnimationClip> getAnimation(AnimationIndex animIndex) { return m_animations[animIndex]; };
+            const std::vector<int>& getTopology() const { return m_skeleton->m_parentIndices; };
+            const std::vector<std::string>& getJointNames() const { 
+                return m_skeleton->m_jointNames; 
+            };
+            IKNode* getIKNode(JointIndex jointIndex) { 
+                return &m_nodes[jointIndex]; 
+            };
 
         private:
-            FootContacts findFootContactFrames(std::shared_ptr<AnimationClip> anim);
             std::vector<std::shared_ptr<AnimationClip>> m_animations;
             std::vector<IKRigConfig> m_animationConfigs;
             std::shared_ptr<Skeleton> m_skeleton;

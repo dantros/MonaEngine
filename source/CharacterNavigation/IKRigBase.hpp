@@ -6,11 +6,11 @@
 #include "EnvironmentData.hpp"
 #include "../PhysicsCollision/RigidBodyLifetimePolicy.hpp"
 #include "../Animation/SkeletalMeshComponent.hpp"
-#include "Kinematics.hpp"
 
 namespace Mona {
     typedef int AnimationIndex;
     typedef int JointIndex;
+    class ForwardKinematics;
 
     struct JointRotation {
     private:
@@ -89,8 +89,6 @@ namespace Mona {
 
     class IKNode {
         friend class IKRig;
-        IKNode() = default;
-        IKNode(std::string jointName, JointIndex jointIndex, IKNode* parent = nullptr, float weight = 1);
         float m_weight = 1;
         float m_minAngle = -90;
         float m_maxAngle = 90;
@@ -98,6 +96,8 @@ namespace Mona {
         int m_jointIndex = -1;
         IKNode* m_parent = nullptr;
     public:
+        IKNode() = default;
+        IKNode(std::string jointName, JointIndex jointIndex, IKNode * parent = nullptr, float weight = 1);
         IKNode* getParent() const { return m_parent; }
         glm::vec2 getMotionRange() const { return glm::vec2(m_minAngle, m_maxAngle); }
         JointIndex getIndex() const { return m_jointIndex; }

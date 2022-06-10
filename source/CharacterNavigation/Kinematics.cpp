@@ -2,6 +2,7 @@
 #include "../Core/GlmUtils.hpp"
 #include "../Core/FuncUtils.hpp"
 #include <glm/gtx/matrix_decompose.hpp>
+#include "IKRig.hpp"
 
 
 namespace Mona {
@@ -189,7 +190,7 @@ namespace Mona {
 
 		auto& baseRotations = m_descentData.rigConfig->getBaseJointRotations();
 		// si no tenemos info de la configuracion calculada previa, tomamos la configuracion base del tiempo actual
-		if (m_descentData.previousAngles.empty()) {
+		if (m_descentData.previousAngles.size() == 0) {
 			m_descentData.previousAngles.resize(m_descentData.jointIndexes.size());
 			for (int i = 0; i < m_descentData.jointIndexes.size(); i++) {
 				m_descentData.previousAngles[i] = baseRotations[m_descentData.jointIndexes[i]].getRotationAngle();
@@ -200,7 +201,16 @@ namespace Mona {
 			m_descentData.rotationAxes[i] = baseRotations[m_descentData.jointIndexes[i]].getRotationAxis();
 			m_descentData.baseAngles[i] = baseRotations[m_descentData.jointIndexes[i]].getRotationAngle();
 		}
-		
+		VectorX computedAngles = m_gradientDescent.computeArgsMin(m_descentData.descentRate, m_descentData.maxIterations, m_descentData.previousAngles);
+		m_descentData.previousAngles = computedAngles;
+		std::vector<std::pair<JointIndex, glm::fquat>> result(computedAngles.size());
+		auto dmicRot = m_descentData.rigConfig->getDynamicJointRotations();
+		for (int i = 0; i < m_descentData.jointIndexes.size(); i++) {
+			JointIndex jIndex = m_descentData.jointIndexes[i];
+			dmicRot[i].setRotationAngle(computedAngles[i]);
+			result[i] = { jIndex, dmicRot[i].getQuatRotation() };
+		}
+		return result;		
 	}
 
 

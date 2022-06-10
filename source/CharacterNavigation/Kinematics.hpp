@@ -56,7 +56,7 @@ namespace Mona {
 		InverseKinematics(IKRig* ikRig, std::vector<IKChain*> ikChains, AnimationIndex animIndex);
 		void setIKChains(std::vector<IKChain*> ikChains);
 		void setAnimationIndex(AnimationIndex animationIndex);
-		std::vector<std::pair<JointIndex, glm::fquat>> computeRotations(std::vector<IKChain*> ikChains);
+		std::vector<std::pair<JointIndex, glm::fquat>> solveIKChains(const std::vector<IKChain>& ikChains);
 	};
 
 	

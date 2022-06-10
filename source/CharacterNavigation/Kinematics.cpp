@@ -159,14 +159,8 @@ namespace Mona {
 				}
 			}
 		}
-		std::sort(jointIndexes.begin(), jointIndexes.end());
-		JointIndex last = -1;
-		for (int j = 0; j < jointIndexes.size(); j++) {
-			if (jointIndexes[j] != last) {
-				m_descentData.jointIndexes.push_back(jointIndexes[j]);
-			}
-			last = jointIndexes[j];
-		}
+		funcUtils::sortUnique(jointIndexes);
+		m_descentData.jointIndexes = jointIndexes;
 		m_descentData.motionRanges = std::vector<glm::vec2>(m_descentData.jointIndexes.size());
 		for (int j = 0; j < m_descentData.jointIndexes.size(); j++) {
 			JointIndex jInd = m_descentData.jointIndexes[j];
@@ -184,10 +178,10 @@ namespace Mona {
 		m_descentData.previousAngles = {};
 	}
 
-	std::vector<std::pair<JointIndex, glm::fquat>> InverseKinematics::computeRotations(std::vector<IKChain*> ikChains) {
+	std::vector<std::pair<JointIndex, glm::fquat>> InverseKinematics::solveIKChains(const std::vector<IKChain>& ikChains) {
 		MONA_ASSERT(ikChains.size() == m_ikChainNames.size(), "InverseKinematics: input chain names don't fit the ones that were set.");
 		for (int i = 0; i < ikChains.size(); i++) {
-			int ind = funcUtils::findIndex(m_ikChainNames, ikChains[i]->getName());
+			int ind = funcUtils::findIndex(m_ikChainNames, ikChains[i].getName());
 			MONA_ASSERT(i == -1, "InverseKinematics: input chain names don't fit the ones that were set.");
 		}
 

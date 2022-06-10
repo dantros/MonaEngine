@@ -21,6 +21,22 @@ namespace Mona {
         }
 
         template < typename T>
+        inline void sortUnique(std::vector<T>& vecOfElements, bool sortDescending = false)
+        {
+            if (vecOfElements.size() == 0) { return; }
+            if (sortDescending) { std::sort(vecOfElements.begin(), vecOfElements.end(), std::greater<T>()); }
+            else { std::sort(vecOfElements.begin(), vecOfElements.end()); }
+            std::vector<T> temp = {};
+            temp.push_back(vecOfElements[0]);
+            for (int i = 1; i < vecOfElements.size(); i++) {
+                if (vecOfElements[i] != vecOfElements[i-1]) {
+                    temp.push_back(vecOfElements[i]);
+                }
+            }
+            vecOfElements = temp;
+        }
+
+        template < typename T>
         inline int findIndexSubArray(const std::vector<T>& vecOfElements, const T& element, int indexStart, int indexEnd)
         {
             if (indexStart < 0 || indexStart >= vecOfElements.size() || indexEnd < 0 || indexEnd >= vecOfElements.size()) {

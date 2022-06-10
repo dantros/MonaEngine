@@ -45,11 +45,7 @@ namespace Mona {
 			}
 		}
 		// setear cinematica inversa
-		std::vector<IKChain*> chainPtrs(m_ikChains.size());
-		for (int i = 0; i < m_ikChains.size(); i++) {
-			chainPtrs[i] = &m_ikChains[i];
-		}
-		m_inverseKinematics = InverseKinematics(this, chainPtrs, 0);
+		m_inverseKinematics = InverseKinematics(this, getIKChainPtrs(), 0);
 	}
 
 	void IKRig::addAnimation(std::shared_ptr<AnimationClip> animationClip, ComponentManager<SkeletalMeshComponent>* skeletalMeshManagerPtr) {
@@ -139,6 +135,14 @@ namespace Mona {
 
 	void IKRig::setLinearVelocity(glm::vec3 velocity, ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr) {
 		rigidBodyManagerPtr->GetComponentPointer(m_rigidBodyHandle)->SetLinearVelocity({velocity[0], velocity[1], velocity[2]});
+	}
+
+	std::vector<IKChain*> IKRig::getIKChainPtrs() {
+		std::vector<IKChain*> chainPtrs(m_ikChains.size());
+		for (int i = 0; i < m_ikChains.size(); i++) {
+			chainPtrs[i] = &m_ikChains[i];
+		}
+		return chainPtrs;
 	}
 
 	void IKRig::setIKRigConfigTime(float time, AnimationIndex animIndex) {

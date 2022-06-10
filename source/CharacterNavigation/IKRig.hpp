@@ -41,15 +41,12 @@ namespace Mona{
             InverseKinematics m_inverseKinematics;
             std::vector<IKNode> m_nodes;
             std::vector<IKChain> m_ikChains;
-            IKChain m_leftLeg;
-            IKChain m_rightLeg;
-            IKChain m_leftFoot;
-            IKChain m_rightFoot;
             void addAnimation(std::shared_ptr<AnimationClip> animationClip, ComponentManager<SkeletalMeshComponent>* skeletalMeshManagerPtr);
             int removeAnimation(std::shared_ptr<AnimationClip> animationClip);
             glm::vec3 getLinearVelocity(ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr);
             void setLinearVelocity(glm::vec3 velocity, ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr);
             IKChain buildIKChain(ChainEnds chainEnds, std::string chainName);
+            std::vector<IKChain*> getIKChainPtrs();
     };
 
 }

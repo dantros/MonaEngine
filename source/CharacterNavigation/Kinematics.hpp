@@ -29,7 +29,6 @@ namespace Mona {
 	struct DescentData {
 		// constants data
 		VectorX baseAngles;
-		std::vector<glm::vec3> targetEEPositions;
 		float betaValue;
 		// variables data
 		std::vector<JointIndex> jointIndexes;
@@ -57,7 +56,7 @@ namespace Mona {
 		InverseKinematics(IKRig* ikRig, std::vector<IKChain*> ikChains, AnimationIndex animIndex);
 		void setIKChains(std::vector<IKChain*> ikChains);
 		void setAnimationIndex(AnimationIndex animationIndex);
-		std::vector<std::pair<JointIndex, glm::fquat>> computeRotations(std::vector<std::pair<std::string, glm::vec3>> eeTargetPerChain);
+		std::vector<std::pair<JointIndex, glm::fquat>> computeRotations(std::vector<IKChain*> ikChains);
 	};
 
 	

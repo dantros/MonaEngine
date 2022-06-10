@@ -72,11 +72,13 @@ namespace Mona {
         friend class IKRig;
         std::string m_name;
         std::vector<JointIndex> m_joints;
-        CubicBezierSpline m_eeTrajectory;
+        CubicBezierSpline m_eeTargetTrajectory;
+        glm::vec3 m_currentEETarget;
     public:
         IKChain() = default;
         const std::string& getName() const { return m_name; };
         const std::vector<JointIndex>& getJoints() const { return m_joints; };
+        const glm::vec3& getCurrentEETarget() const { return m_currentEETarget; };
     };
     struct RigData {
         friend class IKRig;

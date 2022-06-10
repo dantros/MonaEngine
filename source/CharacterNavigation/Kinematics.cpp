@@ -66,7 +66,7 @@ namespace Mona {
 			for (int c = 0; c < dataPtr->ikChains.size(); c++) {
 				eeIndex = dataPtr->ikChains[c]->getJoints().back();
 				eePos = glmUtils::vec4ToVec3(dataPtr->forwardModelSpaceTransforms[eeIndex] * baseVec);
-				result += glm::length2(eePos - dataPtr->targetEEPositions[c]);
+				result += glm::length2(eePos - dataPtr->ikChains[c]->getCurrentEETarget());
 			}
 			result = dataPtr->betaValue * result;
 			return result;
@@ -99,7 +99,7 @@ namespace Mona {
 					glm::vec3 b = glmUtils::vec4ToVec3(TB * glm::vec4(0, 0, 0, 1));
 					glm::mat4 Tvar = glmUtils::rotationToMat4(TvarQuat);
 					glm::mat4 dTvar = rotationMatrixDerivative_dAngle(varAngles[varIndex], dataPtr->rotationAxes[dataPtr->jointIndexes[varIndex]]);
-					glm::vec3 eeT = dataPtr->targetEEPositions[c];
+					glm::vec3 eeT = dataPtr->ikChains[c]->getCurrentEETarget();
 					for (int k = 0; k <= 2; k++) {
 						float mult1 = 0;
 						for (int j = 0; j <= 3; j++) {
@@ -146,7 +146,6 @@ namespace Mona {
 
 	void InverseKinematics::setIKChains(std::vector<IKChain*> ikChains) {
 		m_descentData.ikChains = ikChains;
-		m_descentData.targetEEPositions = std::vector<glm::vec3>(ikChains.size());
 		m_ikChainNames = std::vector<std::string>(ikChains.size());
 		m_descentData.jointIndexes = {};
 		std::vector<JointIndex> jointIndexes;
@@ -185,11 +184,11 @@ namespace Mona {
 		m_descentData.previousAngles = {};
 	}
 
-	std::vector<std::pair<JointIndex, glm::fquat>> InverseKinematics::computeRotations(std::vector<std::pair<std::string, glm::vec3>> eeTargetPerChain) {
-		for (int i = 0; i < eeTargetPerChain.size(); i++) {
-			int ind = funcUtils::findIndex(m_ikChainNames, eeTargetPerChain[i].first);
+	std::vector<std::pair<JointIndex, glm::fquat>> InverseKinematics::computeRotations(std::vector<IKChain*> ikChains) {
+		MONA_ASSERT(ikChains.size() == m_ikChainNames.size(), "InverseKinematics: input chain names don't fit the ones that were set.");
+		for (int i = 0; i < ikChains.size(); i++) {
+			int ind = funcUtils::findIndex(m_ikChainNames, ikChains[i]->getName());
 			MONA_ASSERT(i == -1, "InverseKinematics: input chain names don't fit the ones that were set.");
-			m_descentData.targetEEPositions[ind] = eeTargetPerChain[i].second;
 		}
 
 		auto& baseRotations = m_descentData.rigConfig->getBaseJointRotations();

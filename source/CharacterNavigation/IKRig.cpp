@@ -31,12 +31,9 @@ namespace Mona {
 			m_nodes[i] = IKNode(jointNames[i], i, &m_nodes[topology[i]]);
 		}
 
-		
-		std::vector<ChainEnds> dataArr = { rigData.leftLeg, rigData.rightLeg, rigData.leftFoot, rigData.rightFoot };
-		std::vector<IKChain*> chainTargets = { &m_leftLeg, &m_rightLeg, &m_leftFoot, &m_rightFoot };
-		for (int i = 0; i < dataArr.size(); i++) { // construccion de las cadenas principales
-			(*chainTargets[i]) = buildIKChain(dataArr[i]);
-		}
+		// construccion de las cadenas principales
+		m_ikChains = { buildIKChain(rigData.leftLeg, "leftLeg"), buildIKChain(rigData.rightLeg, "rightLeg"),
+		buildIKChain(rigData.leftFoot, "leftFoot"), buildIKChain(rigData.rightFoot, "rightFoot") };
 
 		// setear constraints y pesos
 		for (int i = 0; i < m_nodes.size(); i++) {
@@ -140,24 +137,31 @@ namespace Mona {
 
 	void IKRig::setIKRigConfigTime(float time, AnimationIndex animIndex) {
 		auto anim = m_animations[animIndex];
-		glm::fquat rot;
-		for (int i = 0; i < m_nodes.size(); i++) {
-			rot = anim->GetRotation(time, i, m_animationController->GetIsLooping());
-			m_animationConfigs[animIndex].m_baseJointRotations[i].setRotation(rot);
-			m_animationConfigs[animIndex].m_dynamicJointRotations[i].setRotation(rot);
+		auto& config = m_animationConfigs[animIndex];
+		float samplingTime = anim->GetSamplingTime(time, m_animationController->GetIsLooping());
+		config.m_currentTime = samplingTime;
+		for (int i = 0; i < config.m_timeStamps.size(); i++) {
+			if (config.m_timeStamps[i] <= samplingTime) {
+				config.m_nextFrameIndex = (config.m_timeStamps.size()) % (i + 1);
+				break;
+			}
+		}
+		for (int i = 0; i < config.m_dynamicJointRotations.size(); i++) {
+			config.m_dynamicJointRotations[i] = JointRotation(anim->m_animationTracks[i].rotations[config.m_nextFrameIndex]);
 		}
 	}
 
-	IKChain IKRig::buildIKChain(ChainEnds chainEnds) {
+	IKChain IKRig::buildIKChain(ChainEnds chainEnds, std::string chainName) {
 		MONA_ASSERT(chainEnds.baseJointName != chainEnds.endEffectorName, "Base joint and end effector must be different!");
 		auto jointNames = getJointNames();
 		IKChain ikChain;
+		ikChain.name = chainName;
 		int eeIndex = funcUtils::findIndex(jointNames, chainEnds.endEffectorName);
 		if (eeIndex != -1) {
 			int chainStartIndex = -1;
 			IKNode* currentNode = &m_nodes[eeIndex];
 			while (currentNode != nullptr) {
-				ikChain.insert(ikChain.begin(), currentNode->m_jointIndex);
+				ikChain.joints.insert(ikChain.joints.begin(), currentNode->m_jointIndex);
 				if (currentNode->m_jointName == chainEnds.baseJointName) {
 					chainStartIndex = currentNode->m_jointIndex;
 					break;

@@ -3,27 +3,21 @@
 namespace Mona{
 
 	IKRigConfig::IKRigConfig(std::shared_ptr<AnimationClip> animation, AnimationIndex animationIndex, ForwardKinematics* forwardKinematics) {
-		m_jointPositions.reserve(animation->m_animationTracks.size());
-		m_jointScales.reserve(animation->m_animationTracks.size());
-		m_timeStamps.reserve(animation->m_animationTracks.size()* animation->m_animationTracks[0].rotationTimeStamps.size());
-		m_baseJointRotations.resize(animation->m_animationTracks.size());
-		m_dynamicJointRotations.resize(animation->m_animationTracks.size());
-		for (int i = 0; i < animation->m_animationTracks.size();i++) {
+		int frameNum = animation->m_animationTracks[0].rotationTimeStamps.size();
+		int jointNum = animation->m_animationTracks.size();
+		m_jointPositions.reserve(jointNum);
+		m_jointScales.reserve(jointNum);
+		m_timeStamps = animation->m_animationTracks[0].rotationTimeStamps;
+		m_baseJointRotations.reserve(frameNum);
+		m_dynamicJointRotations.resize(jointNum);
+		for (int i = 0; i < jointNum;i++) {
 			m_jointPositions.push_back(animation->m_animationTracks[i].positions[0]);
 			m_jointScales.push_back(animation->m_animationTracks[i].scales[0]);
-			for (int j = 0; j < animation->m_animationTracks[i].rotationTimeStamps.size(); j++) {
-				m_timeStamps.push_back(animation->m_animationTracks[i].rotationTimeStamps[j]);
-			}
 		}
-		// ordenamos las timestamps y eliminamos las repetidas
-		std::sort(m_timeStamps.begin(), m_timeStamps.end());
-		int index = 0;
-		while (index < m_timeStamps.size()-1) {
-			if (m_timeStamps[index] == m_timeStamps[index + 1]) {
-				m_timeStamps.erase(m_timeStamps.begin() + index + 1);
-			}
-			else {
-				index += 1;
+		for (int i = 0; i < frameNum; i++) {
+			m_baseJointRotations.push_back(std::vector<JointRotation>(jointNum));
+			for (int j = 0; j < jointNum; j++) {
+				m_baseJointRotations[i][j] = JointRotation(animation->m_animationTracks[j].rotations[i]);
 			}
 		}
 		m_animIndex = animationIndex;
@@ -81,7 +75,7 @@ namespace Mona{
 	}
 
 	JointRotation::JointRotation() {
-		setRotation({ 0,0,0,1 });
+		setRotation(glm::identity<glm::fquat>());
 	}
 	JointRotation::JointRotation(float rotationAngle, glm::vec3 rotationAxis) {
 		setRotation(rotationAngle, rotationAxis);

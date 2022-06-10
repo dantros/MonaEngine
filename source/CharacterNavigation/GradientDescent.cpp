@@ -65,4 +65,8 @@ namespace Mona {
 		return functionValue;
 	}
 
+	template <typename dataT>
+	void  GradientDescent<dataT>::setArgNum(int argNum) {
+		m_argNum = argNum;
+	}
 }

@@ -11,7 +11,6 @@
 namespace Mona {
     typedef int AnimationIndex;
     typedef int JointIndex;
-    typedef std::vector<JointIndex> IKChain;
 
     struct JointRotation {
     private:
@@ -33,7 +32,7 @@ namespace Mona {
     class IKRigConfig {
         friend class IKRig;
     private:
-        std::vector<JointRotation> m_baseJointRotations;
+        std::vector<std::vector<JointRotation>> m_baseJointRotations;
         std::vector<JointRotation> m_dynamicJointRotations;
         std::vector<glm::vec3> m_jointScales;
         std::vector<glm::vec3> m_jointPositions;
@@ -41,8 +40,9 @@ namespace Mona {
         AnimationIndex m_animIndex = -1;
         ForwardKinematics* m_forwardKinematics;
         float m_currentTime = -1;
+        int m_nextFrameIndex = -1;
     public:
-        const std::vector<JointRotation>& getBaseJointRotations() const { return m_baseJointRotations; }
+        const std::vector<JointRotation>& getBaseJointRotations() const { return m_baseJointRotations[m_nextFrameIndex]; }
         const std::vector<JointRotation>& getDynamicJointRotations() const { return m_dynamicJointRotations; }
         const std::vector<glm::vec3>& getJointScales() const { return m_jointScales; }
         const std::vector<glm::vec3>& getJointPositions() const { return m_jointPositions; }
@@ -50,6 +50,7 @@ namespace Mona {
         AnimationIndex getAnimIndex() const { return m_animIndex; }
         std::vector<JointRotation>* getDynamicJointRotationsPtr() { return &m_dynamicJointRotations;  }
         float getCurrentTime() const { return m_currentTime; }
+        int getNextFrameIndex() const { return m_nextFrameIndex; }
         IKRigConfig(std::shared_ptr<AnimationClip> animation, AnimationIndex animIndex, ForwardKinematics* fk);
         std::vector<glm::vec3> getModelSpacePositions(bool useDynamicRotations);
         glm::vec3 getModelSpacePosition(JointIndex jointIndex, bool useDynamicRotations);
@@ -66,6 +67,10 @@ namespace Mona {
     struct ChainEnds {
         std::string baseJointName;
         std::string endEffectorName;
+    };
+    struct IKChain {
+        std::string name;
+        std::vector<JointIndex> joints;
     };
     struct RigData {
         friend class IKRig;

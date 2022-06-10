@@ -36,15 +36,20 @@ namespace Mona {
 		// other data
 		IKRigConfig* rigConfig;
 		std::vector<glm::vec2> motionRanges;
+		std::vector<float> previousAngles;
 	};
 
 	class InverseKinematics {
 		IKRig* m_ikRig;
-		ForwardKinematics m_forwardKinematics;
 		GradientDescent<DescentData> m_gradientDescent;
 		DescentData m_descentData;
+		std::vector<std::string> m_ikChainNames;
+		AnimationIndex m_animationIndex;
 		InverseKinematics() = default;
-		InverseKinematics(IKRig* ikRig);
+		InverseKinematics(IKRig* ikRig, std::vector<IKChain> ikChains, AnimationIndex animIndex);
+		void setIKChains(std::vector<IKChain> ikChains);
+		void setAnimationIndex(AnimationIndex animationIndex);
+		std::vector<std::pair<JointIndex, glm::fquat>> computeRotations(std::vector<std::pair<std::string, glm::vec3>> eeTargetPerChain);
 	};
 
 	

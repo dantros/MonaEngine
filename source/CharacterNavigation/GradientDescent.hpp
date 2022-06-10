@@ -41,6 +41,7 @@ namespace Mona {
 		VectorX computeGradient(const VectorX& args);
 		VectorX computeArgsMin(float descentRate, int maxIterations, const VectorX& initialArgs);
 		float computeFunctionValue(const VectorX& args);
+		void setArgNum(int argNum);
 	};	
 
 	

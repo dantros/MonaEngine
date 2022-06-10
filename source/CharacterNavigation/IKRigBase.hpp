@@ -6,6 +6,7 @@
 #include "EnvironmentData.hpp"
 #include "../PhysicsCollision/RigidBodyLifetimePolicy.hpp"
 #include "../Animation/SkeletalMeshComponent.hpp"
+#include "Splines.hpp"
 
 namespace Mona {
     typedef int AnimationIndex;
@@ -67,9 +68,15 @@ namespace Mona {
         std::string baseJointName;
         std::string endEffectorName;
     };
-    struct IKChain {
-        std::string name;
-        std::vector<JointIndex> joints;
+    class IKChain {
+        friend class IKRig;
+        std::string m_name;
+        std::vector<JointIndex> m_joints;
+        CubicBezierSpline m_eeTrajectory;
+    public:
+        IKChain() = default;
+        const std::string& getName() const { return m_name; };
+        const std::vector<JointIndex>& getJoints() const { return m_joints; };
     };
     struct RigData {
         friend class IKRig;

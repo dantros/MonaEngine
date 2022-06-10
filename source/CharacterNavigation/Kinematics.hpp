@@ -5,7 +5,7 @@
 #include <vector>
 #include <functional>
 #include "GradientDescent.hpp"
-#include "Splines.hpp"
+#include "glm/glm.hpp"
 
 namespace Mona {
 	typedef int AnimationIndex;
@@ -37,7 +37,7 @@ namespace Mona {
 		std::vector<std::vector<glm::mat4>> backwardModelSpaceTransformsPerChain; // multiplicacion en cadena desde el ee de la cadena hasta el joint i
 		std::vector<glm::mat4> jointSpaceTransforms;
 		std::vector<glm::vec3> rotationAxes;
-		std::vector<IKChain> ikChains;
+		std::vector<IKChain*> ikChains;
 		// other data
 		IKRigConfig* rigConfig;
 		std::vector<glm::vec2> motionRanges;
@@ -54,8 +54,8 @@ namespace Mona {
 		AnimationIndex m_animationIndex;
 	public:
 		InverseKinematics() = default;
-		InverseKinematics(IKRig* ikRig, std::vector<IKChain> ikChains, AnimationIndex animIndex);
-		void setIKChains(std::vector<IKChain> ikChains);
+		InverseKinematics(IKRig* ikRig, std::vector<IKChain*> ikChains, AnimationIndex animIndex);
+		void setIKChains(std::vector<IKChain*> ikChains);
 		void setAnimationIndex(AnimationIndex animationIndex);
 		std::vector<std::pair<JointIndex, glm::fquat>> computeRotations(std::vector<std::pair<std::string, glm::vec3>> eeTargetPerChain);
 	};

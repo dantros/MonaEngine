@@ -45,7 +45,11 @@ namespace Mona {
 			}
 		}
 		// setear cinematica inversa
-		m_inverseKinematics = InverseKinematics(this, m_ikChains, 0);
+		std::vector<IKChain*> chainPtrs(m_ikChains.size());
+		for (int i = 0; i < m_ikChains.size(); i++) {
+			chainPtrs[i] = &m_ikChains[i];
+		}
+		m_inverseKinematics = InverseKinematics(this, chainPtrs, 0);
 	}
 
 	void IKRig::addAnimation(std::shared_ptr<AnimationClip> animationClip, ComponentManager<SkeletalMeshComponent>* skeletalMeshManagerPtr) {
@@ -157,13 +161,13 @@ namespace Mona {
 		MONA_ASSERT(chainEnds.baseJointName != chainEnds.endEffectorName, "Base joint and end effector must be different!");
 		auto jointNames = getJointNames();
 		IKChain ikChain;
-		ikChain.name = chainName;
+		ikChain.m_name = chainName;
 		int eeIndex = funcUtils::findIndex(jointNames, chainEnds.endEffectorName);
 		if (eeIndex != -1) {
 			int chainStartIndex = -1;
 			IKNode* currentNode = &m_nodes[eeIndex];
 			while (currentNode != nullptr) {
-				ikChain.joints.insert(ikChain.joints.begin(), currentNode->m_jointIndex);
+				ikChain.m_joints.insert(ikChain.m_joints.begin(), currentNode->m_jointIndex);
 				if (currentNode->m_jointName == chainEnds.baseJointName) {
 					chainStartIndex = currentNode->m_jointIndex;
 					break;

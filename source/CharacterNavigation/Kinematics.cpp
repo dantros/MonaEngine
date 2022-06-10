@@ -31,16 +31,16 @@ namespace Mona {
 		IKChain ikChain;
 		std::vector<glm::mat4>* bt;
 		for (int c = 0; c < dataPtr->ikChains.size(); c++) {
+			auto joints = dataPtr->ikChains[c]->getJoints();
 			bt = &dataPtr->backwardModelSpaceTransformsPerChain[c];
 			(*bt) = dataPtr->jointSpaceTransforms;
-			ikChain = dataPtr->ikChains[c];
-			for (int i = ikChain.joints.size() - 2; 0 <= i; i--) {
-				(*bt)[ikChain.joints[i]] = (*bt)[ikChain.joints[i]] * (*bt)[ikChain.joints[i + 1]];
+			for (int i = joints.size() - 2; 0 <= i; i--) {
+				(*bt)[joints[i]] = (*bt)[joints[i]] * (*bt)[joints[i + 1]];
 			}
 		}
 	}
 
-	InverseKinematics::InverseKinematics(IKRig* ikRig, std::vector<IKChain> ikChains, AnimationIndex animIndex) {
+	InverseKinematics::InverseKinematics(IKRig* ikRig, std::vector<IKChain*> ikChains, AnimationIndex animIndex) {
 		m_ikRig = ikRig;
 		//creamos terminos para el descenso de gradiente
 		// termino 1 (acercar la animacion creada a la animacion original)
@@ -64,7 +64,7 @@ namespace Mona {
 			glm::vec4 baseVec(0, 0, 0, 1);
 			glm::vec3 eePos;
 			for (int c = 0; c < dataPtr->ikChains.size(); c++) {
-				eeIndex = dataPtr->ikChains[c].joints.back();
+				eeIndex = dataPtr->ikChains[c]->getJoints().back();
 				eePos = glmUtils::vec4ToVec3(dataPtr->forwardModelSpaceTransforms[eeIndex] * baseVec);
 				result += glm::length2(eePos - dataPtr->targetEEPositions[c]);
 			}
@@ -84,17 +84,18 @@ namespace Mona {
 			glm::vec4 perspective;
 			for (int c = 0; c < dataPtr->ikChains.size(); c++) {
 				// chequeamos si el angulo variable es parte de la cadena actual
-				int ind = funcUtils::findIndex(dataPtr->ikChains[c].joints, dataPtr->jointIndexes[varIndex]);
+				auto joints = dataPtr->ikChains[c]->getJoints();
+				int ind = funcUtils::findIndex(joints, dataPtr->jointIndexes[varIndex]);
 				if (ind != -1) {
-					JointIndex varJointIndex = dataPtr->ikChains[c].joints[ind];
-					JointIndex baseJointIndex = dataPtr->ikChains[c].joints[0];
-					JointIndex eeIndex = dataPtr->ikChains[c].joints.back();
+					JointIndex varJointIndex = joints[ind];
+					JointIndex baseJointIndex = joints[0];
+					JointIndex eeIndex = joints.back();
 					glm::mat4 TvarRaw = dataPtr->jointSpaceTransforms[dataPtr->jointIndexes[varIndex]];
 					glm::decompose(TvarRaw, TvarScl, TvarQuat, TvarTr, skew, perspective);
-					TA = (varJointIndex != baseJointIndex ? dataPtr->forwardModelSpaceTransforms[dataPtr->ikChains[c].joints[ind-1]] : 
+					TA = (varJointIndex != baseJointIndex ? dataPtr->forwardModelSpaceTransforms[joints[ind-1]] : 
 						glm::identity<glm::mat4>()) * glmUtils::translationToMat4(TvarTr);
 					TB = glmUtils::scaleToMat4(TvarScl) * (varJointIndex != eeIndex ?	
-						dataPtr->backwardModelSpaceTransformsPerChain[c][dataPtr->ikChains[c].joints[ind+1]] :	glm::identity<glm::mat4>());
+						dataPtr->backwardModelSpaceTransformsPerChain[c][joints[ind+1]] :	glm::identity<glm::mat4>());
 					glm::vec3 b = glmUtils::vec4ToVec3(TB * glm::vec4(0, 0, 0, 1));
 					glm::mat4 Tvar = glmUtils::rotationToMat4(TvarQuat);
 					glm::mat4 dTvar = rotationMatrixDerivative_dAngle(varAngles[varIndex], dataPtr->rotationAxes[dataPtr->jointIndexes[varIndex]]);
@@ -143,15 +144,15 @@ namespace Mona {
 		setAnimationIndex(animIndex);
 	}
 
-	void InverseKinematics::setIKChains(std::vector<IKChain> ikChains) {
+	void InverseKinematics::setIKChains(std::vector<IKChain*> ikChains) {
 		m_descentData.ikChains = ikChains;
 		m_descentData.targetEEPositions = std::vector<glm::vec3>(ikChains.size());
 		m_ikChainNames = std::vector<std::string>(ikChains.size());
 		m_descentData.jointIndexes = {};
 		std::vector<JointIndex> jointIndexes;
 		for (int c = 0; c < ikChains.size(); c++) {
-			jointIndexes.insert(jointIndexes.end(), ikChains[c].joints.begin(), ikChains[c].joints.end());
-			m_ikChainNames[c] = ikChains[c].name;
+			jointIndexes.insert(jointIndexes.end(), ikChains[c]->getJoints().begin(), ikChains[c]->getJoints().end());
+			m_ikChainNames[c] = ikChains[c]->getName();
 			for (int i = 0; i < c; i++) {
 				if (m_ikChainNames[i] == m_ikChainNames[c]) {
 					MONA_LOG_ERROR("InverseKinematics: chain names must all be different.");

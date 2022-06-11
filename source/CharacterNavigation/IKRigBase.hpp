@@ -13,7 +13,7 @@ namespace Mona {
     typedef int JointIndex;
     class ForwardKinematics;
 
-    struct JointRotation {
+    class JointRotation {
     private:
         glm::fquat m_quatRotation;
         glm::vec3 m_rotationAxis;
@@ -72,6 +72,7 @@ namespace Mona {
         friend class IKRig;
         std::string m_name;
         std::vector<JointIndex> m_joints;
+        CubicBezierSpline m_eeBaseTrajectory;
         CubicBezierSpline m_eeTargetTrajectory;
         glm::vec3 m_currentEETarget;
     public:
@@ -79,6 +80,7 @@ namespace Mona {
         const std::string& getName() const { return m_name; };
         const std::vector<JointIndex>& getJoints() const { return m_joints; };
         const glm::vec3& getCurrentEETarget() const { return m_currentEETarget; };
+        bool isBaseChain() const { return m_joints.size() == 1; };
     };
     struct RigData {
         friend class IKRig;
@@ -89,6 +91,7 @@ namespace Mona {
         ChainEnds rightLeg;
         ChainEnds leftFoot;
         ChainEnds rightFoot;
+        std::string hipJointName;
         void setJointData(std::string jointName, float minAngle, float maxAngle, float weight = 1, bool enableData = true);
         void enableJointData(std::string jointName, bool enableData);
         JointData getJointData(std::string jointName);

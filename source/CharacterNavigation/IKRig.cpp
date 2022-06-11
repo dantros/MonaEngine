@@ -32,7 +32,7 @@ namespace Mona {
 		}
 
 		// construccion de las cadenas principales
-		m_ikChains = { buildIKChain(rigData.leftLeg, "leftLeg"), buildIKChain(rigData.rightLeg, "rightLeg"),
+		m_ikChains = { buildBaseIKChain(rigData.hipJointName), buildIKChain(rigData.leftLeg, "leftLeg"), buildIKChain(rigData.rightLeg, "rightLeg"),
 		buildIKChain(rigData.leftFoot, "leftFoot"), buildIKChain(rigData.rightFoot, "rightFoot") };
 
 		// setear constraints y pesos
@@ -45,7 +45,7 @@ namespace Mona {
 			}
 		}
 		// setear cinematica inversa
-		m_inverseKinematics = InverseKinematics(this, getIKChainPtrs(), 0);
+		m_inverseKinematics = InverseKinematics(this, getIKChainPtrs(false), 0);
 	}
 
 	void IKRig::addAnimation(std::shared_ptr<AnimationClip> animationClip, ComponentManager<SkeletalMeshComponent>* skeletalMeshManagerPtr) {
@@ -137,10 +137,12 @@ namespace Mona {
 		rigidBodyManagerPtr->GetComponentPointer(m_rigidBodyHandle)->SetLinearVelocity({velocity[0], velocity[1], velocity[2]});
 	}
 
-	std::vector<IKChain*> IKRig::getIKChainPtrs() {
-		std::vector<IKChain*> chainPtrs(m_ikChains.size());
+	std::vector<IKChain*> IKRig::getIKChainPtrs(bool includeBaseChain) {
+		int size = includeBaseChain ? m_ikChains.size() : m_ikChains.size() - 1;
+		std::vector<IKChain*> chainPtrs(size);
 		for (int i = 0; i < m_ikChains.size(); i++) {
-			chainPtrs[i] = &m_ikChains[i];
+			if (m_ikChains[i].isBaseChain() && includeBaseChain) { chainPtrs.push_back(&m_ikChains[i]); }
+			else if (!m_ikChains[i].isBaseChain()){ chainPtrs.push_back(&m_ikChains[i]);	}
 		}
 		return chainPtrs;
 	}
@@ -162,29 +164,45 @@ namespace Mona {
 	}
 
 	IKChain IKRig::buildIKChain(ChainEnds chainEnds, std::string chainName) {
-		MONA_ASSERT(chainEnds.baseJointName != chainEnds.endEffectorName, "Base joint and end effector must be different!");
+		MONA_ASSERT(chainEnds.baseJointName.empty() || chainEnds.endEffectorName.empty(), "IKRig: Joint names cannot be empty!");
+		MONA_ASSERT(chainEnds.baseJointName != chainEnds.endEffectorName, "IKRig: Base joint and end effector must be different!");
 		auto jointNames = getJointNames();
 		IKChain ikChain;
 		ikChain.m_name = chainName;
-		int eeIndex = funcUtils::findIndex(jointNames, chainEnds.endEffectorName);
+		JointIndex eeIndex = funcUtils::findIndex(jointNames, chainEnds.endEffectorName);
 		if (eeIndex != -1) {
-			int chainStartIndex = -1;
+			int chainBaseIndex = -1;
 			IKNode* currentNode = &m_nodes[eeIndex];
 			while (currentNode != nullptr) {
-				ikChain.m_joints.insert(ikChain.m_joints.begin(), currentNode->m_jointIndex);
 				if (currentNode->m_jointName == chainEnds.baseJointName) {
-					chainStartIndex = currentNode->m_jointIndex;
+					chainBaseIndex = currentNode->m_jointIndex;
 					break;
 				}
+				// la joint correspondiente a la base de la cadena no se guarda para ser modificada mediante IK
+				// , ya que esta es una articulacion que se considera fija
+				ikChain.m_joints.insert(ikChain.m_joints.begin(), currentNode->m_jointIndex);
 				currentNode = currentNode->m_parent;
 			}
-			if (chainStartIndex == -1) {
+			if (chainBaseIndex == -1) {
 				MONA_LOG_ERROR("IKRig: base joint and end effector were not on the same chain!");
 			}
 		}
 		else {
 			MONA_LOG_ERROR("IKRig: Did not find an end effector named {0}", chainEnds.endEffectorName);
 		}
+		return ikChain;
+	}
+
+	IKChain IKRig::buildBaseIKChain(std::string hipJointName) {
+		IKChain ikChain;
+		auto jointNames = getJointNames();
+		JointIndex hipInd = funcUtils::findIndex(jointNames, hipJointName);
+		if (hipInd == -1) {
+			MONA_LOG_ERROR("IKRig: Input hip joint name was not a correct joint name.");
+			return ikChain;
+		}
+		ikChain.m_name = hipJointName;
+		ikChain.m_joints = { hipInd };
 		return ikChain;
 	}
 

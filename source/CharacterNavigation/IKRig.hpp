@@ -19,12 +19,8 @@ namespace Mona{
             IKRigConfig* getAnimationConfig(AnimationIndex animIndex) { return &m_animationConfigs[animIndex]; };
             std::shared_ptr<AnimationClip> getAnimation(AnimationIndex animIndex) { return m_animations[animIndex]; };
             const std::vector<int>& getTopology() const { return m_skeleton->m_parentIndices; };
-            const std::vector<std::string>& getJointNames() const { 
-                return m_skeleton->m_jointNames; 
-            };
-            IKNode* getIKNode(JointIndex jointIndex) { 
-                return &m_nodes[jointIndex]; 
-            };
+            const std::vector<std::string>& getJointNames() const { return m_skeleton->m_jointNames; };
+            IKNode* getIKNode(JointIndex jointIndex) { return &m_nodes[jointIndex]; };
 
         private:
             std::vector<std::shared_ptr<AnimationClip>> m_animations;
@@ -46,7 +42,9 @@ namespace Mona{
             glm::vec3 getLinearVelocity(ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr);
             void setLinearVelocity(glm::vec3 velocity, ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr);
             IKChain buildIKChain(ChainEnds chainEnds, std::string chainName);
-            std::vector<IKChain*> getIKChainPtrs();
+            IKChain buildBaseIKChain(std::string hipJointName);
+            std::vector<IKChain*> getIKChainPtrs(bool includeBaseChain=false);
+            void UpdateIKChains();
     };
 
 }

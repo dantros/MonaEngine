@@ -88,11 +88,11 @@ namespace Mona {
 				int ind = funcUtils::findIndex(joints, dataPtr->jointIndexes[varIndex]);
 				if (ind != -1) {
 					JointIndex varJointIndex = joints[ind];
-					JointIndex baseJointIndex = joints[0];
+					JointIndex firstJointIndex = joints[0];
 					JointIndex eeIndex = joints.back();
 					glm::mat4 TvarRaw = dataPtr->jointSpaceTransforms[dataPtr->jointIndexes[varIndex]];
 					glm::decompose(TvarRaw, TvarScl, TvarQuat, TvarTr, skew, perspective);
-					TA = (varJointIndex != baseJointIndex ? dataPtr->forwardModelSpaceTransforms[joints[ind-1]] : 
+					TA = (varJointIndex != firstJointIndex ? dataPtr->forwardModelSpaceTransforms[joints[ind-1]] : 
 						glm::identity<glm::mat4>()) * glmUtils::translationToMat4(TvarTr);
 					TB = glmUtils::scaleToMat4(TvarScl) * (varJointIndex != eeIndex ?	
 						dataPtr->backwardModelSpaceTransformsPerChain[c][joints[ind+1]] :	glm::identity<glm::mat4>());

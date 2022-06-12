@@ -16,20 +16,24 @@ namespace Mona{
         float m_maxT;
     public:
         BezierCurve(int order, std::vector<glm::vec3> controlPoints, float minT = 0, float maxT = 1);
-        BezierCurve() = default;;
+        BezierCurve() = default;
         glm::vec3 evalCurve(float t);
         glm::vec3 getVelocity(float t);
         glm::vec2 getTRange() { return glm::vec2({ m_minT, m_maxT }); }
         bool inTRange(float t) { return m_minT <= t && t <= m_maxT; }
     };
 
-    class CubicBezierSpline {
+    class BezierSpline {
         std::vector<BezierCurve> m_bezierCurves;
         float m_minT;
         float m_maxT;
     public:
-        CubicBezierSpline() = default;
-        CubicBezierSpline(std::vector<glm::vec3> splinePoints, std::vector<float> tValues);
+        enum class Order {
+            LINEAR,
+            CUBIC
+        };
+        BezierSpline() = default;
+        BezierSpline(std::vector<glm::vec3> splinePoints, std::vector<float> tValues, Order order);
         glm::vec3 evalSpline(float t);
         glm::vec3 getVelocity(float t);
         glm::vec2 getTRange() { return glm::vec2({ m_minT, m_maxT }); }

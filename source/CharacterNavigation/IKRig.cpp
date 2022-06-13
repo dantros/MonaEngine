@@ -137,8 +137,8 @@ namespace Mona {
 		rigidBodyManagerPtr->GetComponentPointer(m_rigidBodyHandle)->SetLinearVelocity({velocity[0], velocity[1], velocity[2]});
 	}
 
-	std::vector<IKChain*> IKRig::getIKChainPtrs(bool includeBaseChain) {
-		int startIndex = includeBaseChain ? 0 : 1;
+	std::vector<IKChain*> IKRig::getIKChainPtrs(bool includeHipChain) {
+		int startIndex = includeHipChain ? 0 : 1;
 		std::vector<IKChain*> chainPtrs(m_ikChains.size() - startIndex);
 		for (int i = startIndex; i < m_ikChains.size(); i++) {
 			chainPtrs.push_back(&m_ikChains[i]);
@@ -151,9 +151,11 @@ namespace Mona {
 		auto& config = m_animationConfigs[animIndex];
 		float samplingTime = anim->GetSamplingTime(time, m_animationController->GetIsLooping());
 		config.m_currentTime = samplingTime;
+		int savedFrameVal = config.m_nextFrameIndex;
 		for (int i = 0; i < config.m_timeStamps.size(); i++) {
 			if (config.m_timeStamps[i] <= samplingTime) {
 				config.m_nextFrameIndex = (config.m_timeStamps.size()) % (i + 1);
+				config.m_requiresUpdate = config.m_nextFrameIndex != savedFrameVal;
 				break;
 			}
 		}
@@ -203,6 +205,19 @@ namespace Mona {
 		ikChain.m_name = hipJointName;
 		ikChain.m_joints = { hipInd };
 		return ikChain;
+	}
+
+	void IKRig::UpdateEETrajectories(float timeStep) {
+		float time = m_animationController->m_sampleTime + timeStep * m_animationController->m_playRate;
+
+		// crear nuevas curvas si
+		//	se acaba el rango de tiempo de las curvas actuales
+		//	hay un cambio en la velocidad angular
+
+		// valores que se deben guardar
+		//	último frame de la animacion para el que se realizó un ajuste IK
+		//	últimos valores de velocidad lineal y angular
+
 	}
 
 }

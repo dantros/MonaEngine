@@ -44,6 +44,7 @@ namespace Mona {
         std::vector<BezierSpline> m_ikChainEETargetTrajectories;
         float m_currentTime = -1;
         int m_nextFrameIndex = -1;
+        bool m_requiresUpdate = true;
     public:
         const std::vector<JointRotation>& getBaseJointRotations() const { return m_baseJointRotations[m_nextFrameIndex]; }
         const std::vector<JointRotation>& getDynamicJointRotations() const { return m_dynamicJointRotations; }

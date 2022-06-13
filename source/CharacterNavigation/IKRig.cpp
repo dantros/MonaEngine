@@ -32,7 +32,7 @@ namespace Mona {
 		}
 
 		// construccion de las cadenas principales
-		m_ikChains = { buildBaseIKChain(rigData.hipJointName), buildIKChain(rigData.leftLeg, "leftLeg"), buildIKChain(rigData.rightLeg, "rightLeg"),
+		m_ikChains = { buildHipIKChain(rigData.hipJointName), buildIKChain(rigData.leftLeg, "leftLeg"), buildIKChain(rigData.rightLeg, "rightLeg"),
 		buildIKChain(rigData.leftFoot, "leftFoot"), buildIKChain(rigData.rightFoot, "rightFoot") };
 
 		// setear constraints y pesos
@@ -138,11 +138,10 @@ namespace Mona {
 	}
 
 	std::vector<IKChain*> IKRig::getIKChainPtrs(bool includeBaseChain) {
-		int size = includeBaseChain ? m_ikChains.size() : m_ikChains.size() - 1;
-		std::vector<IKChain*> chainPtrs(size);
-		for (int i = 0; i < m_ikChains.size(); i++) {
-			if (m_ikChains[i].isBaseChain() && includeBaseChain) { chainPtrs.push_back(&m_ikChains[i]); }
-			else if (!m_ikChains[i].isBaseChain()){ chainPtrs.push_back(&m_ikChains[i]);	}
+		int startIndex = includeBaseChain ? 0 : 1;
+		std::vector<IKChain*> chainPtrs(m_ikChains.size() - startIndex);
+		for (int i = startIndex; i < m_ikChains.size(); i++) {
+			chainPtrs.push_back(&m_ikChains[i]);
 		}
 		return chainPtrs;
 	}
@@ -193,7 +192,7 @@ namespace Mona {
 		return ikChain;
 	}
 
-	IKChain IKRig::buildBaseIKChain(std::string hipJointName) {
+	IKChain IKRig::buildHipIKChain(std::string hipJointName) {
 		IKChain ikChain;
 		auto jointNames = getJointNames();
 		JointIndex hipInd = funcUtils::findIndex(jointNames, hipJointName);

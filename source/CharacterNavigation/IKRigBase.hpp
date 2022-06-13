@@ -40,6 +40,8 @@ namespace Mona {
         std::vector<float> m_timeStamps;
         AnimationIndex m_animIndex = -1;
         ForwardKinematics* m_forwardKinematics;
+        std::vector<BezierSpline> m_ikChainEEBaseTrajectories;
+        std::vector<BezierSpline> m_ikChainEETargetTrajectories;
         float m_currentTime = -1;
         int m_nextFrameIndex = -1;
     public:
@@ -72,15 +74,12 @@ namespace Mona {
         friend class IKRig;
         std::string m_name;
         std::vector<JointIndex> m_joints;
-        CubicBezierSpline m_eeBaseTrajectory;
-        CubicBezierSpline m_eeTargetTrajectory;
         glm::vec3 m_currentEETarget;
     public:
         IKChain() = default;
         const std::string& getName() const { return m_name; };
         const std::vector<JointIndex>& getJoints() const { return m_joints; };
         const glm::vec3& getCurrentEETarget() const { return m_currentEETarget; };
-        bool isBaseChain() const { return m_joints.size() == 1; };
     };
     struct RigData {
         friend class IKRig;

@@ -35,10 +35,6 @@ namespace Mona {
         inline glm::mat4 rotationToMat4(const glm::fquat& rotation) {
             return glm::toMat4(rotation);
         }
-
-        inline glm::vec3 vec4ToVec3(const glm::vec4& vec4) {
-            return glm::vec3(vec4[0], vec4[1], vec4[2]);
-        }
     
     }
         

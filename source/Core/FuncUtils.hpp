@@ -150,6 +150,11 @@ namespace Mona {
             }
             return true;
         }
+
+        template < typename T>
+        inline T lerp(T minVal, T maxVal, float fraction) {
+            return minVal + (maxVal - minVal) * fraction;
+        }
 	}
     
 }

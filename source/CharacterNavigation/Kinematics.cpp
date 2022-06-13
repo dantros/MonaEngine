@@ -65,7 +65,7 @@ namespace Mona {
 			glm::vec3 eePos;
 			for (int c = 0; c < dataPtr->ikChains.size(); c++) {
 				eeIndex = dataPtr->ikChains[c]->getJoints().back();
-				eePos = glmUtils::vec4ToVec3(dataPtr->forwardModelSpaceTransforms[eeIndex] * baseVec);
+				eePos = glm::vec3(dataPtr->forwardModelSpaceTransforms[eeIndex] * baseVec);
 				result += glm::length2(eePos - dataPtr->ikChains[c]->getCurrentEETarget());
 			}
 			result = dataPtr->betaValue * result;
@@ -96,7 +96,7 @@ namespace Mona {
 						glm::identity<glm::mat4>()) * glmUtils::translationToMat4(TvarTr);
 					TB = glmUtils::scaleToMat4(TvarScl) * (varJointIndex != eeIndex ?	
 						dataPtr->backwardModelSpaceTransformsPerChain[c][joints[ind+1]] :	glm::identity<glm::mat4>());
-					glm::vec3 b = glmUtils::vec4ToVec3(TB * glm::vec4(0, 0, 0, 1));
+					glm::vec3 b = glm::vec3(TB * glm::vec4(0, 0, 0, 1));
 					glm::mat4 Tvar = glmUtils::rotationToMat4(TvarQuat);
 					glm::mat4 dTvar = rotationMatrixDerivative_dAngle(varAngles[varIndex], dataPtr->rotationAxes[dataPtr->jointIndexes[varIndex]]);
 					glm::vec3 eeT = dataPtr->ikChains[c]->getCurrentEETarget();
@@ -231,7 +231,7 @@ namespace Mona {
 				modelSpaceTr;
 			currentNode = currentNode->getParent();
 		}
-		return glmUtils::vec4ToVec3(modelSpaceTr* glm::vec4(0, 0, 0, 1));
+		return glm::vec3(modelSpaceTr* glm::vec4(0, 0, 0, 1));
 	}
 
 	std::vector<glm::mat4> ForwardKinematics::ModelSpaceTransforms(AnimationIndex animIndex, bool useDynamicRotations) {

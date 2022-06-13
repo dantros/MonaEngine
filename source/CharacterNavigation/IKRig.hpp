@@ -42,7 +42,7 @@ namespace Mona{
             glm::vec3 getLinearVelocity(ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr);
             void setLinearVelocity(glm::vec3 velocity, ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr);
             IKChain buildIKChain(ChainEnds chainEnds, std::string chainName);
-            IKChain buildBaseIKChain(std::string hipJointName);
+            IKChain buildHipIKChain(std::string hipJointName);
             std::vector<IKChain*> getIKChainPtrs(bool includeBaseChain=false);
             void UpdateIKChains();
     };

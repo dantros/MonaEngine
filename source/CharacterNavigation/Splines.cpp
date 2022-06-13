@@ -1,5 +1,6 @@
 #include "Splines.hpp"
 #include "../Core/Log.hpp"
+#include "../Core/FuncUtils.hpp"
 #include <math.h>
 
 namespace Mona{
@@ -22,7 +23,7 @@ namespace Mona{
             "BezierCurve: Order must be at least 1.");
         MONA_ASSERT(controlPoints.size() == order + 1,
             "BezierCurve: Number of points provided does not fit the order. Points must be order plus 1.");
-        MONA_ASSERT(m_minT < m_maxT, "maxT must be greater than minT.");
+        MONA_ASSERT(m_minT < m_maxT, "BezierCurve: maxT must be greater than minT.");
     }
 
     float BezierCurve::bernsteinBP(int i, int n, float t) {
@@ -52,6 +53,22 @@ namespace Mona{
         }
         result *= n;
         return result;
+    }
+
+    void BezierCurve::rotate(glm::fquat rotation) {
+        for (int i = 0; i < m_controlPoints.size(); i++) {
+            m_controlPoints[i] = glm::rotate(rotation, glm::vec4(m_controlPoints[i], 1));
+        }
+    }
+    void BezierCurve::scale(glm::vec3 scaling) {
+        for (int i = 0; i < m_controlPoints.size(); i++) {
+            m_controlPoints[i] *= scaling;
+        }
+    }
+    void BezierCurve::translate(glm::vec3 translation) {
+        for (int i = 0; i < m_controlPoints.size(); i++) {
+            m_controlPoints[i] += translation;
+        }
     }
 
     template <typename T>
@@ -86,6 +103,7 @@ namespace Mona{
         MONA_ASSERT(splinePoints.size()==tValues.size(), "BezierSpline: there must be exactly one tValue per spline point.")
         m_minT = tValues[0];
         m_maxT = tValues[tValues.size() - 1];
+        m_order = order;
         if (order == Order::LINEAR) {
             // creamos las curvas directamente
             m_bezierCurves = std::vector<BezierCurve>(tValues.size()-1);
@@ -144,7 +162,7 @@ namespace Mona{
                 return m_bezierCurves[i].evalCurve(t);
             }
         }
-        MONA_LOG_ERROR("t value is not in range");
+        MONA_LOG_ERROR("BezierSpline: t value is not in range");
         return glm::vec3(0);
     }
 
@@ -154,8 +172,51 @@ namespace Mona{
                 return m_bezierCurves[i].getVelocity(t);
             }
         }
-        MONA_LOG_ERROR("t value is not in range");
+        MONA_LOG_ERROR("BezierSpline: t value is not in range");
         return glm::vec3(0);
+    }
+
+    int BezierSpline::getSplinePointNum(float minT, float maxT) {
+        MONA_ASSERT(minT < maxT, "BezierSpline: maxT must be greater than minT.");
+        int result = 0;
+        int firstCurveIndex = 0;
+        for (int i = 0; i < m_bezierCurves.size(); i++) {
+            if (m_bezierCurves[i].inTRange(minT)) {
+                firstCurveIndex = i;
+                if (m_bezierCurves[i].getTRange()[0] == minT) {
+                    result += 1;
+                }
+                break;
+            }
+        }
+        for (int i = firstCurveIndex + 1; i < m_bezierCurves.size(); i++) {
+            result += 1;
+            if (m_bezierCurves[i].inTRange(maxT)) {
+                if (m_bezierCurves[i].getTRange()[1] == maxT) {
+                    result += 1;
+                }
+                break;
+            }
+        }
+        return result;
+    }
+
+    int BezierSpline::getOrder() {
+        if (m_order == Order::LINEAR) { return 1; }
+        else { return 3; }
+    }
+
+    BezierSpline BezierSpline::sample(float minT, float maxT, int innerSplinePointNumber) {
+        MONA_ASSERT(minT < maxT, "BezierSpline: maxT must be greater than minT.");
+        MONA_ASSERT(inTRange(minT) && inTRange(maxT), "BezierSpline: Both minT and maxT must be inside the spline's t range.");
+        std::vector<glm::vec3> splinePoints(innerSplinePointNumber + 2);
+        std::vector<float> tValues(innerSplinePointNumber + 2);
+        for (int i = 0; i < tValues.size(); i++) {
+            float fraction = i / (tValues.size() - 1);
+            tValues[i] = funcUtils::lerp(minT, maxT, fraction);
+            splinePoints[i] = evalSpline(tValues[i]);
+        }
+        return BezierSpline(splinePoints, tValues, m_order);
     }
 
 

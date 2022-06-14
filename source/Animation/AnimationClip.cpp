@@ -63,22 +63,7 @@ namespace Mona {
 		SetSkeleton(skeleton);
 		if (removeRootMotion) {
 			RemoveRootMotion();
-			m_noRootMotion = true;
 		}
-		else {
-			m_noRootMotion = true;
-			int rootIndex = m_jointTrackIndices[0];
-			auto& rootTrack = m_animationTracks[rootIndex];
-			for (uint32_t i = 0; i < rootTrack.positions.size(); i++)
-			{
-				if (rootTrack.positions[i] != glm::vec3(0.0f)) {
-					m_noRootMotion = false;
-					break;
-				}
-			}
-		}
-			
-
 
 		// Chequar si los escalamientos y traslaciones son constantes por joint.
 		m_stableRotations = true;

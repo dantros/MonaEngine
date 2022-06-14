@@ -22,6 +22,7 @@ namespace Mona {
 		ForwardKinematics() = default;
 		glm::vec3 ModelSpacePosition(AnimationIndex animIndex, JointIndex jointIndex, bool useDynamicRotations);
 		std::vector<glm::mat4> ModelSpaceTransforms(AnimationIndex animIndex, bool useDynamicRotations);
+		std::vector<glm::vec3> BaseModelSpacePositions(AnimationIndex animIndex, int frame);
 		std::vector<glm::mat4> JointSpaceTransforms(AnimationIndex animIndex, bool useDynamicRotations);
 
 	};

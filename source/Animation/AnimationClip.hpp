@@ -57,7 +57,6 @@ namespace Mona {
 		float m_duration = 1.0f;
 		std::string m_animationName;
 		bool m_stableRotations = false;
-		bool m_noRootMotion = false;
 	};
 }
 #endif

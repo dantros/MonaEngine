@@ -47,6 +47,7 @@ namespace Mona {
         bool m_requiresUpdate = true;
     public:
         const std::vector<JointRotation>& getBaseJointRotations() const { return m_baseJointRotations[m_nextFrameIndex]; }
+        const std::vector<JointRotation>& getBaseJointRotations(int frame) const { return m_baseJointRotations[frame]; }
         const std::vector<JointRotation>& getDynamicJointRotations() const { return m_dynamicJointRotations; }
         const std::vector<glm::vec3>& getJointScales() const { return m_jointScales; }
         const std::vector<glm::vec3>& getJointPositions() const { return m_jointPositions; }
@@ -58,6 +59,7 @@ namespace Mona {
         IKRigConfig(std::shared_ptr<AnimationClip> animation, AnimationIndex animIndex, ForwardKinematics* fk);
         glm::vec3 getModelSpacePosition(JointIndex jointIndex, bool useDynamicRotations);
         std::vector<glm::mat4> getModelSpaceTransforms(bool useDynamicRotations);
+        std::vector<glm::vec3> getBaseModelSpacePositions(int frame);
         std::vector<glm::mat4> getJointSpaceTransforms(bool useDynamicRotations);
     };
 

@@ -15,12 +15,7 @@ namespace Mona {
 	{
 		m_skeleton = baseAnim->GetSkeleton();
 		m_forwardKinematics = ForwardKinematics(this);
-		addAnimation(baseAnim, skeletalMeshManagerPtr);
-		m_animations.push_back(baseAnim);
-		m_animationConfigs.push_back(IKRigConfig(baseAnim, 0, &m_forwardKinematics));
 
-		std::shared_ptr<AnimationClip> staticData = m_animations[0];
-		m_currentAnim = 0;
 		auto topology = getTopology();
 		auto jointNames = getJointNames();
 
@@ -46,6 +41,12 @@ namespace Mona {
 		}
 		// setear cinematica inversa
 		m_inverseKinematics = InverseKinematics(this, getIKChainPtrs(false), 0);
+
+		// setear la animacion base
+		addAnimation(baseAnim, skeletalMeshManagerPtr);
+		m_animations.push_back(baseAnim);
+		m_animationConfigs.push_back(IKRigConfig(baseAnim, 0, &m_forwardKinematics));
+		m_currentAnim = 0;
 	}
 
 	void IKRig::addAnimation(std::shared_ptr<AnimationClip> animationClip, ComponentManager<SkeletalMeshComponent>* skeletalMeshManagerPtr) {
@@ -56,10 +57,6 @@ namespace Mona {
 		}
 		if(!animationClip->m_stableRotations) {
 			MONA_LOG_ERROR("IKRig: Animation must have stable rotations (fixed scales and positions per joint).");
-			return;
-		}
-		if (!animationClip->m_noRootMotion) {
-			MONA_LOG_ERROR("IKRig: Animation must have no root motion.");
 			return;
 		}
 		for (int i = 0; i < m_animations.size(); i++) {
@@ -113,8 +110,32 @@ namespace Mona {
 				conditions[i] = currentTimeIndexes[i] < tracks[i].rotationTimeStamps.size();
 			}
 		}
+
 		m_animations.push_back(animationClip);
 		m_animationConfigs.push_back(IKRigConfig(animationClip, m_animations.size() - 1, &m_forwardKinematics));
+
+		
+		int frameNum = animationClip->m_animationTracks[0].rotationTimeStamps.size();
+		std::vector<std::vector<glm::vec3>> splinePointsPerChain(m_ikChains.size());
+		for (int i = 0; i < splinePointsPerChain.size(); i++) {
+			splinePointsPerChain[i] = std::vector<glm::vec3>(frameNum);
+		}
+		std::vector<glm::vec3> positions;
+		int eeIndex;
+		for (int i = 0; i < frameNum; i++) {
+			positions = m_animationConfigs.back().getBaseModelSpacePositions(i);
+			for (int j = 0; j < m_ikChains.size(); j++) {
+				eeIndex = m_ikChains[j].m_joints.back();
+				splinePointsPerChain[j][i] = positions[eeIndex];
+			}
+		}
+		std::vector<float> tValues = animationClip->m_animationTracks[0].rotationTimeStamps;
+		std::vector<BezierSpline> eeBaseSplines(m_ikChains.size());
+		for (int i = 0; i < eeBaseSplines.size(); i++) {
+			eeBaseSplines[i] = BezierSpline(splinePointsPerChain[i], tValues, BezierSpline::Order::CUBIC);
+		}
+		m_animationConfigs.back().m_ikChainEEBaseTrajectories = eeBaseSplines;
+		animationClip->RemoveRootMotion();
 	}
 
 	int IKRig::removeAnimation(std::shared_ptr<AnimationClip> animationClip) {
@@ -128,12 +149,12 @@ namespace Mona {
 		return -1;
 	}
 
-	glm::vec3 IKRig::getLinearVelocity(ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr) {
+	glm::vec3 IKRig::getRBLinearVelocity(ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr) {
 		auto bodyVel = rigidBodyManagerPtr->GetComponentPointer(m_rigidBodyHandle)->GetLinearVelocity();
 		return { bodyVel[0], bodyVel[1], bodyVel[2] };
 	}
 
-	void IKRig::setLinearVelocity(glm::vec3 velocity, ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr) {
+	void IKRig::setRBLinearVelocity(glm::vec3 velocity, ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr) {
 		rigidBodyManagerPtr->GetComponentPointer(m_rigidBodyHandle)->SetLinearVelocity({velocity[0], velocity[1], velocity[2]});
 	}
 
@@ -207,7 +228,7 @@ namespace Mona {
 		return ikChain;
 	}
 
-	void IKRig::UpdateEETrajectories(float timeStep) {
+	void IKRig::UpdateEETrajectories(float timeStep, glm::vec3 rawLinVel, glm::vec3 rawAngVel) {
 		float time = m_animationController->m_sampleTime + timeStep * m_animationController->m_playRate;
 
 		// crear nuevas curvas si

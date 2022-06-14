@@ -30,6 +30,8 @@ namespace Mona{
 
             AnimationIndex m_currentAnim = -1;
             AnimationIndex m_targetAnim = -1;
+            glm::vec3 m_linearVelocity;
+            glm::vec3 m_angularVelocity;
             InnerComponentHandle m_rigidBodyHandle;
             InnerComponentHandle m_skeletalMeshHandle;
             EnvironmentData m_environmentData;
@@ -39,12 +41,14 @@ namespace Mona{
             std::vector<IKChain> m_ikChains;
             void addAnimation(std::shared_ptr<AnimationClip> animationClip, ComponentManager<SkeletalMeshComponent>* skeletalMeshManagerPtr);
             int removeAnimation(std::shared_ptr<AnimationClip> animationClip);
-            glm::vec3 getLinearVelocity(ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr);
-            void setLinearVelocity(glm::vec3 velocity, ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr);
+            glm::vec3 getRBLinearVelocity(ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr);
+            void setRBLinearVelocity(glm::vec3 velocity, ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr);
+            glm::vec3 getRBAngularVelocity(ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr);
+            void setRBAngularVelocity(glm::vec3 velocity, ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr);
             IKChain buildIKChain(ChainEnds chainEnds, std::string chainName);
             IKChain buildHipIKChain(std::string hipJointName);
             std::vector<IKChain*> getIKChainPtrs(bool includeHipChain=false);
-            void UpdateEETrajectories(float timeStep);
+            void UpdateEETrajectories(float timeStep, glm::vec3 rawLinVel, glm::vec3 rawAngVel);
     };
 
 }

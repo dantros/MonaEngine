@@ -5,10 +5,6 @@
 
 namespace Mona {
 
-	glm::vec3 vec3Lerp(glm::vec3 v1, glm::vec3 v2, float fraction) {
-		return v1 + (v2 - v1) * fraction;
-	}
-
 	IKRig::IKRig(std::shared_ptr<AnimationClip> baseAnim, RigData rigData, InnerComponentHandle rigidBodyHandle,
 		InnerComponentHandle skeletalMeshHandle, AnimationController* animController, ComponentManager<SkeletalMeshComponent>* skeletalMeshManagerPtr) : 
 		m_animationController(animController), m_rigidBodyHandle(rigidBodyHandle), m_skeletalMeshHandle(skeletalMeshHandle)
@@ -47,6 +43,17 @@ namespace Mona {
 		m_animations.push_back(baseAnim);
 		m_animationConfigs.push_back(IKRigConfig(baseAnim, 0, &m_forwardKinematics));
 		m_currentAnim = 0;
+
+		// setear el la altura del rig
+		IKChain& leftLegChain = m_ikChains[1];
+		auto positions = m_animationConfigs[0].getModelSpacePositions(false);
+		float legLenght = 0;
+		for (int i = leftLegChain.m_joints.size() - 1; 0 < i ; i--) {
+			JointIndex currentJ = leftLegChain.m_joints[i];
+			JointIndex parentJ = leftLegChain.m_joints[i-1];
+			legLenght += glm::distance(positions[currentJ], positions[parentJ]);
+		}
+		m_rigHeight = legLenght * 2;
 	}
 
 	void IKRig::addAnimation(std::shared_ptr<AnimationClip> animationClip, ComponentManager<SkeletalMeshComponent>* skeletalMeshManagerPtr) {
@@ -115,26 +122,49 @@ namespace Mona {
 		m_animationConfigs.push_back(IKRigConfig(animationClip, m_animations.size() - 1, &m_forwardKinematics));
 
 		
+		// Ahora guardamos las trayectorias originales de los ee y definimos sus frames de soporte
 		int frameNum = animationClip->m_animationTracks[0].rotationTimeStamps.size();
+		float minDistance = m_rigHeight / 1000;
+		std::vector<float> tValues = animationClip->m_animationTracks[0].rotationTimeStamps;
 		std::vector<std::vector<glm::vec3>> splinePointsPerChain(m_ikChains.size());
-		for (int i = 0; i < splinePointsPerChain.size(); i++) {
-			splinePointsPerChain[i] = std::vector<glm::vec3>(frameNum);
+		std::vector<std::vector<float>> timeStampsPerChain(m_ikChains.size());
+		std::vector<std::vector<bool>> supportFramesPerChain(m_ikChains.size());
+		std::vector<glm::vec3> positions  = m_animationConfigs.back().getBaseModelSpacePositions(0);
+		std::vector<glm::vec3> previousPositions(positions.size());
+		float minFloat = std::numeric_limits<float>::min();
+		std::fill(previousPositions.begin(), previousPositions.end(), glm::vec3(minFloat, minFloat, minFloat));
+		for (int j = 0; j < m_ikChains.size(); j++) {
+			splinePointsPerChain[j].reserve(frameNum);
+			timeStampsPerChain[j].reserve(frameNum);
+			supportFramesPerChain[j].reserve(frameNum);
 		}
-		std::vector<glm::vec3> positions;
-		int eeIndex;
 		for (int i = 0; i < frameNum; i++) {
 			positions = m_animationConfigs.back().getBaseModelSpacePositions(i);
 			for (int j = 0; j < m_ikChains.size(); j++) {
-				eeIndex = m_ikChains[j].m_joints.back();
-				splinePointsPerChain[j][i] = positions[eeIndex];
+				int eeIndex = m_ikChains[j].m_joints.back();
+				bool isSupportFrame = glm::distance(positions[eeIndex], previousPositions[eeIndex]) <= minDistance;
+				supportFramesPerChain[j].push_back(isSupportFrame);
+				if (!isSupportFrame) { // si es suficientemente distinto al anterior, lo guardamos como parte de la curva
+					splinePointsPerChain[j].push_back(positions[eeIndex]);
+					timeStampsPerChain[j].push_back(tValues[i]);
+				}
 			}
+			previousPositions = positions;
 		}
-		std::vector<float> tValues = animationClip->m_animationTracks[0].rotationTimeStamps;
+		// a los valores de soporte del primer frame les asignamos el valor del ultimo asumiento circularidad
+		for (int j = 0; j < m_ikChains.size(); j++) {
+			supportFramesPerChain[j][0] = supportFramesPerChain[j].back();
+		}
 		std::vector<BezierSpline> eeBaseSplines(m_ikChains.size());
 		for (int i = 0; i < eeBaseSplines.size(); i++) {
-			eeBaseSplines[i] = BezierSpline(splinePointsPerChain[i], tValues, BezierSpline::Order::CUBIC);
+			eeBaseSplines[i] = BezierSpline(splinePointsPerChain[i], timeStampsPerChain[i], BezierSpline::Order::CUBIC);
 		}
+
+
 		m_animationConfigs.back().m_ikChainEEBaseTrajectories = eeBaseSplines;
+		m_animationConfigs.back().m_ikChainEESupportFrames = supportFramesPerChain;
+
+
 		animationClip->RemoveRootMotion();
 	}
 

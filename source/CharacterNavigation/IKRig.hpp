@@ -23,7 +23,9 @@ namespace Mona{
             IKNode* getIKNode(JointIndex jointIndex) { return &m_nodes[jointIndex]; };
 
         private:
+            // Animaciones guardadas
             std::vector<std::shared_ptr<AnimationClip>> m_animations;
+            // Informacion de configuracion del IKRig por cada animacion guardada
             std::vector<IKRigConfig> m_animationConfigs;
             std::shared_ptr<Skeleton> m_skeleton;
             AnimationController* m_animationController;
@@ -37,7 +39,11 @@ namespace Mona{
             EnvironmentData m_environmentData;
             ForwardKinematics m_forwardKinematics;
             InverseKinematics m_inverseKinematics;
+            // Altura aproximada del rig, para calculos con distancias relativas
+            float m_rigHeight;
+            // Arreglo de nodos (hay uno por cada articulacion)
             std::vector<IKNode> m_nodes;
+            // Arreglo de cadenas IK
             std::vector<IKChain> m_ikChains;
             void addAnimation(std::shared_ptr<AnimationClip> animationClip, ComponentManager<SkeletalMeshComponent>* skeletalMeshManagerPtr);
             int removeAnimation(std::shared_ptr<AnimationClip> animationClip);
@@ -48,7 +54,7 @@ namespace Mona{
             IKChain buildIKChain(ChainEnds chainEnds, std::string chainName);
             IKChain buildHipIKChain(std::string hipJointName);
             std::vector<IKChain*> getIKChainPtrs(bool includeHipChain=false);
-            void UpdateEETrajectories(float timeStep, glm::vec3 rawLinVel, glm::vec3 rawAngVel);
+            void UpdateEETrajectories(float timeStep, glm::vec3 rawLinVel, glm::vec3 rawAngVel, glm::vec3 globalRootTransform);
     };
 
 }

@@ -218,22 +218,6 @@ namespace Mona {
 
 
 
-	glm::vec3 ForwardKinematics::ModelSpacePosition(AnimationIndex animIndex, JointIndex jointIndex, bool useDynamicRotations) {
-		glm::mat4 modelSpaceTr = glm::identity<glm::mat4>();
-		auto config = m_ikRig->getAnimationConfig(animIndex);
-		auto& rotations = useDynamicRotations ? config->getDynamicJointRotations() : config->getBaseJointRotations();
-		auto currentNode = m_ikRig->getIKNode(jointIndex);
-		while (currentNode != nullptr) {
-			int jIndex = currentNode->getIndex();
-			modelSpaceTr = 	glmUtils::translationToMat4(config->getJointPositions()[jIndex]) * 
-				glmUtils::rotationToMat4(rotations[jIndex].getQuatRotation()) *
-				glmUtils::scaleToMat4(config->getJointScales()[jIndex]) *
-				modelSpaceTr;
-			currentNode = currentNode->getParent();
-		}
-		return glm::vec3(modelSpaceTr* glm::vec4(0, 0, 0, 1));
-	}
-
 	std::vector<glm::mat4> ForwardKinematics::ModelSpaceTransforms(AnimationIndex animIndex, bool useDynamicRotations) {
 		std::vector<glm::mat4> modelSpaceTr(m_ikRig->getTopology().size());
 		auto config = m_ikRig->getAnimationConfig(animIndex);
@@ -249,6 +233,15 @@ namespace Mona {
 					glmUtils::scaleToMat4(config->getJointScales()[i]);
 			}
 		return modelSpaceTr;
+	}
+
+	std::vector<glm::vec3> ForwardKinematics::ModelSpacePositions(AnimationIndex animIndex, bool useDynamicRotations) {
+		auto transforms = ModelSpaceTransforms(animIndex, useDynamicRotations);
+		std::vector<glm::vec3> modelSpacePos(transforms.size());
+		for (int i = 0; i < transforms.size(); i++) {
+			modelSpacePos[i] = transforms[i] * glm::vec4(0, 0, 0, 1);
+		}
+		return modelSpacePos;
 	}
 
 	std::vector<glm::vec3> ForwardKinematics::BaseModelSpacePositions(AnimationIndex animIndex, int frame) {

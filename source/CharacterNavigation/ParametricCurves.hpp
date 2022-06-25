@@ -1,6 +1,6 @@
 #pragma once
-#ifndef SPLINES_HPP
-#define SPLINES_HPP
+#ifndef PARAMETRICCURVES_HPP
+#define PARAMETRICCURVES_HPP
 #include "glm/glm.hpp"
 #include <glm/gtx/quaternion.hpp>
 #include <vector>

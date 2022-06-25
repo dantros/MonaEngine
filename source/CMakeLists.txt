@@ -9,7 +9,8 @@ set(MONA_HEADERS
 				CharacterNavigation/IKRig.hpp
 				CharacterNavigation/Kinematics.hpp
 				CharacterNavigation/GradientDescent.hpp
-				CharacterNavigation/Splines.hpp
+				CharacterNavigation/ParametricCurves.hpp
+				CharacterNavigation/TrajectoryGeneration.hpp
 				Core/Common.hpp 
 				Core/Log.hpp
 				Core/Config.hpp
@@ -91,7 +92,8 @@ set(MONA_SOURCES
 				CharacterNavigation/IKRig.cpp
 				CharacterNavigation/Kinematics.cpp
 				CharacterNavigation/GradientDescent.cpp
-				CharacterNavigation/Splines.cpp
+				CharacterNavigation/ParametricCurves.cpp
+				CharacterNavigation/TrajectoryGeneration.cpp
 				Core/Config.cpp
 				Event/EventManager.cpp
 				Platform/Window.cpp

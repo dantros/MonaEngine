@@ -1,4 +1,4 @@
-#include "Splines.hpp"
+#include "ParametricCurves.hpp"
 #include "../Core/Log.hpp"
 #include "../Core/FuncUtils.hpp"
 #include <math.h>

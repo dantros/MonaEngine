@@ -131,8 +131,7 @@ namespace Mona {
 		std::vector<std::vector<bool>> supportFramesPerChain(m_ikChains.size());
 		std::vector<glm::vec3> positions  = m_animationConfigs.back().getBaseModelSpacePositions(0);
 		std::vector<glm::vec3> previousPositions(positions.size());
-		float minFloat = std::numeric_limits<float>::min();
-		std::fill(previousPositions.begin(), previousPositions.end(), glm::vec3(minFloat, minFloat, minFloat));
+		std::fill(previousPositions.begin(), previousPositions.end(), glm::vec3(std::numeric_limits<float>::min()));
 		for (int j = 0; j < m_ikChains.size(); j++) {
 			splinePointsPerChain[j].reserve(frameNum);
 			timeStampsPerChain[j].reserve(frameNum);
@@ -157,7 +156,7 @@ namespace Mona {
 		}
 		std::vector<BezierSpline> eeBaseSplines(m_ikChains.size());
 		for (int i = 0; i < eeBaseSplines.size(); i++) {
-			eeBaseSplines[i] = BezierSpline(splinePointsPerChain[i], timeStampsPerChain[i], BezierSpline::Order::CUBIC);
+			eeBaseSplines[i] = BezierSpline(splinePointsPerChain[i], timeStampsPerChain[i]);
 		}
 
 

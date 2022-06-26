@@ -4,9 +4,27 @@
 #include "glm/glm.hpp"
 #include <glm/gtx/quaternion.hpp>
 #include <vector>
+#include <map>
 
 namespace Mona{
 
+    class DiscreteCurve {
+    private:
+        // puntos de la curva
+        std::vector<glm::vec3> m_curvePoints;
+        // valores de t
+        std::vector<float> m_tValues;
+    public:
+        DiscreteCurve() = default;
+        DiscreteCurve(std::vector<glm::vec3> curvePoints, std::vector<float> tValues);
+        glm::vec2 getTRange();
+        const std::vector<float>& getTValues() const { return m_tValues; };
+        bool inTRange(float t);
+        glm::vec3 evalCurve(int pointIndex);
+        glm::vec3 getVelocity(int pointIndex);
+        void scaleTValues(float scale, float minIndex, float maxIndex);
+        void setCurvePoint(int pointIndex, glm::vec3 newValue);
+    };
 
     class BezierCurve {
         float bernsteinBP(int i, int n, float t);
@@ -29,27 +47,25 @@ namespace Mona{
     };
 
     class BezierSpline {
-    public:
-        enum class Order {
-            LINEAR,
-            CUBIC
-        };
     private:
         std::vector<BezierCurve> m_bezierCurves;
         float m_minT;
         float m_maxT;
-        Order m_order;
+        int m_order;
     public:
         BezierSpline() = default;
-        BezierSpline(std::vector<glm::vec3> splinePoints, std::vector<float> tValues, Order order);
+        BezierSpline(std::vector<glm::vec3> splinePoints, std::vector<float> tValues);
         glm::vec3 evalSpline(float t);
         glm::vec3 getVelocity(float t);
-        int getOrder();
+        int getOrder() { return m_order; }
         glm::vec2 getTRange() { return glm::vec2({ m_minT, m_maxT }); }
         int getSplinePointNum(float minT, float maxT);
         bool inTRange(float t) { return m_minT <= t && t <= m_maxT; }
-        BezierSpline sample(float minT, float maxT, int innerSplinePointNumber);
+        BezierSpline sampleBezier(float minT, float maxT, int innerSplinePointNumber);
+        DiscreteCurve sampleDiscrete(float minT, float maxT, int innerSplinePointNumber);
     };
+
+    
 
 
     

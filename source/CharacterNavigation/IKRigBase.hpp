@@ -36,15 +36,16 @@ namespace Mona {
     };
     struct TrajectoryData {
         // Trayectoria original del ee asociado a una ikChain
-        std::vector<BezierSpline> eeBaseTrajectory;
+        BezierSpline eeBaseTrajectory;
         // Trayectorias recalculada del ee asociado a una ikChain
-        std::vector<BezierSpline> eeTargetTrajectory;
+        BezierSpline eeTargetTrajectory;
         // Frames de apoyo (estaticos) del end effector
         std::vector<bool> eeSupportFrames;
         glm::vec3 averageVelocity;
     };
     class IKRigConfig {
         friend class IKRig;
+        friend class IKRigController;
     private:
         // Rotaciones para cada joint de la animacion base para cada frame 
         std::vector<std::vector<JointRotation>> m_baseJointRotations;

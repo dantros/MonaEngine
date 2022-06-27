@@ -11,11 +11,11 @@ namespace Mona{
     typedef int JointIndex;
     class IKRig{
         friend class IKNavigationComponent;
+        friend class IKRigController;
         public:
             IKRig() = default;
-            IKRig(std::shared_ptr<AnimationClip> baseAnim, RigData rigData, InnerComponentHandle rigidBodyHandle,
-                InnerComponentHandle skeletalMeshHandle, AnimationController* animController, ComponentManager<SkeletalMeshComponent>* skeletalMeshManagerPtr);
-            void setIKRigConfigTime(float time, AnimationIndex animIndex);
+            IKRig(std::shared_ptr<Skeleton> skeleton, RigData rigData, InnerComponentHandle rigidBodyHandle,
+                InnerComponentHandle skeletalMeshHandle);
             IKRigConfig* getAnimationConfig(AnimationIndex animIndex) { return &m_animationConfigs[animIndex]; };
             std::shared_ptr<AnimationClip> getAnimation(AnimationIndex animIndex) { return m_animations[animIndex]; };
             const std::vector<int>& getTopology() const { return m_skeleton->m_parentIndices; };
@@ -28,9 +28,8 @@ namespace Mona{
             // Informacion de configuracion del IKRig por cada animacion guardada
             std::vector<IKRigConfig> m_animationConfigs;
             std::shared_ptr<Skeleton> m_skeleton;
-            AnimationController* m_animationController;
 
-            AnimationIndex m_currentAnim = -1;
+            AnimationIndex m_currentAnim = 0;
             AnimationIndex m_targetAnim = -1;
             glm::vec3 m_linearVelocity;
             glm::vec3 m_angularVelocity;
@@ -45,8 +44,6 @@ namespace Mona{
             std::vector<IKNode> m_nodes;
             // Arreglo de cadenas IK
             std::vector<IKChain> m_ikChains;
-            void addAnimation(std::shared_ptr<AnimationClip> animationClip, ComponentManager<SkeletalMeshComponent>* skeletalMeshManagerPtr);
-            int removeAnimation(std::shared_ptr<AnimationClip> animationClip);
             glm::vec3 getRBLinearVelocity(ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr);
             void setRBLinearVelocity(glm::vec3 velocity, ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr);
             glm::vec3 getRBAngularVelocity(ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr);
@@ -54,7 +51,6 @@ namespace Mona{
             IKChain buildIKChain(ChainEnds chainEnds, std::string chainName);
             IKChain buildHipIKChain(std::string hipJointName);
             std::vector<IKChain*> getIKChainPtrs(bool includeHipChain=false);
-            void UpdateEETrajectories(float timeStep, glm::vec3 rawLinVel, glm::vec3 rawAngVel, glm::vec3 globalRootTransform);
     };
 
 }

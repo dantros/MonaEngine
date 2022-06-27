@@ -36,7 +36,10 @@ namespace Mona {
 			AnimationController* animController = &m_skeletalMeshManagerPtr->GetComponentPointer(skeletalMeshHandle)->GetAnimationController();
 
 			InnerComponentHandle rigidBodyHandle = m_ikNavigationManagerPtr->GetOwner(handle)->GetInnerComponentHandle<RigidBodyComponent>();
-			ikNav.m_ikRig = IKRig(ikNav.m_baseAnimationClip, ikNav.m_rigData, rigidBodyHandle, skeletalMeshHandle, animController, m_skeletalMeshManagerPtr);
+			ikNav.m_ikRigController = IKRigController(animController, 
+				IKRig(skeletonPtr, ikNav.m_rigData, rigidBodyHandle, skeletalMeshHandle));
+			// setear la animacion base
+			ikNav.AddAnimation(ikNav.m_baseAnimationClip);
 		}
 		void OnRemoveComponent(GameObject* gameObjectPtr, IKNavigationComponent& ikNav, const InnerComponentHandle& handle) noexcept {
 		}

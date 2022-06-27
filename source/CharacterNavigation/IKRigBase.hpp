@@ -34,6 +34,15 @@ namespace Mona {
         float getRotationAngle() const { return m_rotationAngle; }
         glm::vec3 getRotationAxis() const { return m_rotationAxis; }
     };
+    struct TrajectoryData {
+        // Trayectoria original del ee asociado a una ikChain
+        std::vector<BezierSpline> eeBaseTrajectory;
+        // Trayectorias recalculada del ee asociado a una ikChain
+        std::vector<BezierSpline> eeTargetTrajectory;
+        // Frames de apoyo (estaticos) del end effector
+        std::vector<bool> eeSupportFrames;
+        glm::vec3 averageVelocity;
+    };
     class IKRigConfig {
         friend class IKRig;
     private:
@@ -46,14 +55,11 @@ namespace Mona {
         // Posiciones para cada joint de la animacion base (fijas)
         std::vector<glm::vec3> m_jointPositions;
         std::vector<float> m_timeStamps;
+        // Indice de la animacion que le corresponde a esta configuracion
         AnimationIndex m_animIndex = -1;
         ForwardKinematics* m_forwardKinematics;
-        // Trayectorias originales de los ee del arreglo de ikChains (se mantiene orden)
-        std::vector<BezierSpline> m_ikChainEEBaseTrajectories;
-        // Trayectorias recalculadas de los ee del arreglo de ikChains (se mantiene orden)
-        std::vector<BezierSpline> m_ikChainEETargetTrajectories;
-        // Frames de apoyo (estaticos) por end effector
-        std::vector<std::vector<bool>> m_ikChainEESupportFrames;
+        // Data de trayectoria para cada ikChain (mantiene orden del arreglo original de cadenas)
+        std::vector<TrajectoryData> m_ikChainTrajectoryData;
         // Tiempo actual de la animacion
         float m_currentTime = -1;
         // Indice del siguiente frame de la animacion

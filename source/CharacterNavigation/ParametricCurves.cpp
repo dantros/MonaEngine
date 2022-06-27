@@ -36,8 +36,8 @@ namespace Mona{
     }
 
     void DiscreteCurve::scaleTValues(float scale, float minIndex, float maxIndex) {
-        MONA_ASSERT(0 <= minIndex && minIndex < m_curvePoints.size(), "DiscreteCurve: input min index must be within bounds");
-        MONA_ASSERT(0 <= maxIndex && maxIndex < m_curvePoints.size(), "DiscreteCurve: input max index must be within bounds");
+        MONA_ASSERT(minIndex <= maxIndex, "DiscreteCurve: maxIndex must be greater or equal than minIndex.");
+        MONA_ASSERT(0 <= minIndex && maxIndex < m_curvePoints.size(), "DiscreteCurve: input min index and max index must be within bounds");
         if (0 < minIndex) {
             MONA_ASSERT(m_tValues[minIndex - 1] < m_tValues[minIndex] * scale, "DiscreteCurve: scaling must preseve order of t values.");
         }
@@ -147,60 +147,67 @@ namespace Mona{
     }
 
 
-    BezierSpline::BezierSpline(std::vector<glm::vec3> splinePoints, std::vector<float> tValues) {
+    BezierSpline::BezierSpline(std::vector<glm::vec3> splinePoints, std::vector<float> tValues, Order order) {
         MONA_ASSERT(1 < splinePoints.size(), "BezierSpline: must provide at least two points.");
+        m_minT = tValues[0];
+        m_maxT = tValues.back();
+        m_order = order;
         // chequeamos que los tValues vengan correctamente ordenados
         for (int i = 1; i < tValues.size(); i++) {
-            if (!(tValues[i-1] < tValues[i])) {
-                MONA_LOG_ERROR("BezierSpline: tValues must come in a strictly ascending order");
-                return;
+            MONA_ASSERT(!(tValues[i - 1] < tValues[i]), "BezierSpline: tValues must come in a strictly ascending order");
+            return;
+        }
+        MONA_ASSERT(splinePoints.size() == tValues.size(), "BezierSpline: there must be exactly one tValue per spline point.");
+        if (order == Order::LINEAR) {
+            // creamos las curvas directamente
+            m_bezierCurves = std::vector<BezierCurve>(tValues.size() - 1);
+            for (int i = 0; i < tValues.size() - 1; i++) {
+                m_bezierCurves[i] = BezierCurve(1, { splinePoints[i], splinePoints[i + 1] }, tValues[i], tValues[i + 1]);
             }
         }
-        MONA_ASSERT(splinePoints.size()==tValues.size(), "BezierSpline: there must be exactly one tValue per spline point.")
-        m_minT = tValues[0];
-        m_maxT = tValues[tValues.size() - 1];
-        m_order = 3;
-        // en splinePoints recibimos los puntos por los que pasara la curva, osea los extremos P0 y P4 de cada sub curva de bezier
-        // generamos los puntos de control faltantes P1 y P2 para cada segmento
-        // Se tienen n+1 puntos conocidos K , o knots, que son extremos de los segmentos
-        // hay una ecuacion para cada uno de los n segmentos
-        // 2P(1, 0) + P(1,1) = K(O) + 2K(1)
-        // P(1,i-1) + 4P(1,i) + P(1, i+1) = 4K(i) + 2K(i+1)  i pertenece a [1, n-2]
-        // 2P(1,n-2) + 7P(1,n-1) = 8K(n-1) + K(n)
-        // primero se obtiene P1 para cada segmento
-        int n = splinePoints.size() - 1;
-        std::vector<float> diagA(n - 1);
-        std::vector<float> diagB(n);
-        std::vector<float> diagC(n - 1);
-        std::vector<glm::vec3> dVector(n);
-        diagB[0] = 2;
-        diagC[0] = 1;
-        dVector[0] = splinePoints[0] + 2.0f * splinePoints[1];
-        for (int i = 1; i <= n - 2; i++) {
-            diagA[i] = 1;
-            diagB[i] = 4;
-            diagC[i] = 1;
-            dVector[i] = 4.0f * splinePoints[i] + 2.0f * splinePoints[i + 1];
-        }
-        diagA[n - 1] = 2;
-        diagB[n - 1] = 7;
-        dVector[n - 1] = 8.0f * splinePoints[n - 1] + 2.0f * splinePoints[n];
+        else if (order == Order::CUBIC) {
+            // en splinePoints recibimos los puntos por los que pasara la curva, osea los extremos P0 y P4 de cada sub curva de bezier
+            // generamos los puntos de control faltantes P1 y P2 para cada segmento
+            // Se tienen n+1 puntos conocidos K , o knots, que son extremos de los segmentos
+            // hay una ecuacion para cada uno de los n segmentos
+            // 2P(1, 0) + P(1,1) = K(O) + 2K(1)
+            // P(1,i-1) + 4P(1,i) + P(1, i+1) = 4K(i) + 2K(i+1)  i pertenece a [1, n-2]
+            // 2P(1,n-2) + 7P(1,n-1) = 8K(n-1) + K(n)
+            // primero se obtiene P1 para cada segmento
+            int n = splinePoints.size() - 1;
+            std::vector<float> diagA(n - 1);
+            std::vector<float> diagB(n);
+            std::vector<float> diagC(n - 1);
+            std::vector<glm::vec3> dVector(n);
+            diagB[0] = 2;
+            diagC[0] = 1;
+            dVector[0] = splinePoints[0] + 2.0f * splinePoints[1];
+            for (int i = 1; i <= n - 2; i++) {
+                diagA[i] = 1;
+                diagB[i] = 4;
+                diagC[i] = 1;
+                dVector[i] = 4.0f * splinePoints[i] + 2.0f * splinePoints[i + 1];
+            }
+            diagA[n - 1] = 2;
+            diagB[n - 1] = 7;
+            dVector[n - 1] = 8.0f * splinePoints[n - 1] + 2.0f * splinePoints[n];
 
-        std::vector<glm::vec3> p1Values(n);
-        std::vector<glm::vec3> p2Values(n);
-        p1Values = triDiagonalMatrixSolver<glm::vec3>(diagA, diagB, diagC, dVector);
-        for (int i = 0; i <= n - 2; i++) {
-            p2Values[i] = 2.0f * splinePoints[i] - p1Values[i];
-        }
-        p2Values[n - 1] = 0.5f * (splinePoints[n] + p1Values[n - 1]);
+            std::vector<glm::vec3> p1Values(n);
+            std::vector<glm::vec3> p2Values(n);
+            p1Values = triDiagonalMatrixSolver<glm::vec3>(diagA, diagB, diagC, dVector);
+            for (int i = 0; i <= n - 2; i++) {
+                p2Values[i] = 2.0f * splinePoints[i] - p1Values[i];
+            }
+            p2Values[n - 1] = 0.5f * (splinePoints[n] + p1Values[n - 1]);
 
-        // ahora podemos crear las curvas
-        m_bezierCurves = std::vector<BezierCurve>(n);
-        std::vector<glm::vec3> controlPoints;
-        for (int i = 0; i < n; i++) {
-            controlPoints = { splinePoints[i], p1Values[i], p2Values[i], splinePoints[i + 1] };
-            m_bezierCurves[i] = BezierCurve(3, controlPoints, tValues[i], tValues[i + 1]);
-        }            
+            // ahora podemos crear las curvas
+            m_bezierCurves = std::vector<BezierCurve>(n);
+            std::vector<glm::vec3> controlPoints;
+            for (int i = 0; i < n; i++) {
+                controlPoints = { splinePoints[i], p1Values[i], p2Values[i], splinePoints[i + 1] };
+                m_bezierCurves[i] = BezierCurve(3, controlPoints, tValues[i], tValues[i + 1]);
+            }
+        }
     }
 
     glm::vec3 BezierSpline::evalSpline(float t) {
@@ -246,19 +253,6 @@ namespace Mona{
             }
         }
         return result;
-    }
-
-    BezierSpline BezierSpline::sampleBezier(float minT, float maxT, int innerSplinePointNumber) {
-        MONA_ASSERT(minT < maxT, "BezierSpline: maxT must be greater than minT.");
-        MONA_ASSERT(inTRange(minT) && inTRange(maxT), "BezierSpline: Both minT and maxT must be inside the spline's t range.");
-        std::vector<glm::vec3> splinePoints(innerSplinePointNumber + 2);
-        std::vector<float> tValues(innerSplinePointNumber + 2);
-        for (int i = 0; i < tValues.size(); i++) {
-            float fraction = i / (tValues.size() - 1);
-            tValues[i] = funcUtils::lerp(minT, maxT, fraction);
-            splinePoints[i] = evalSpline(tValues[i]);
-        }
-        return BezierSpline(splinePoints, tValues);
     }
 
     DiscreteCurve BezierSpline::sampleDiscrete(float minT, float maxT, int innerSplinePointNumber) {

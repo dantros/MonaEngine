@@ -50,7 +50,7 @@ namespace Mona {
         // Rotaciones para cada joint de la animacion base para cada frame 
         std::vector<std::vector<JointRotation>> m_baseJointRotations;
         // Rotaciones modificables para cada joint
-        std::vector<JointRotation> m_dynamicJointRotations;
+        std::vector<std::vector<JointRotation>> m_dynamicJointRotations;
         // Escalas para cada joint de la animacion base (fijas)
         std::vector<glm::vec3> m_jointScales;
         // Posiciones para cada joint de la animacion base (fijas)
@@ -67,15 +67,19 @@ namespace Mona {
         FrameIndex m_nextFrameIndex = -1;
         // Indica si es necesario actualizar las rotaciones de las joints
         bool m_requiresUpdate = true;
+        // Numero de frames(de rotacion) de la animacion decomprimida
+        int m_frameNum;
     public:
         const std::vector<JointRotation>& getBaseJointRotations() const { return m_baseJointRotations[m_nextFrameIndex]; }
         const std::vector<JointRotation>& getBaseJointRotations(FrameIndex frame) const { return m_baseJointRotations[frame]; }
-        const std::vector<JointRotation>& getDynamicJointRotations() const { return m_dynamicJointRotations; }
+        const std::vector<JointRotation>& getDynamicJointRotations() const { return m_dynamicJointRotations[m_nextFrameIndex]; }
+        const std::vector<JointRotation>& getDynamicJointRotations(FrameIndex frame) const { return m_dynamicJointRotations[frame]; }
         const std::vector<glm::vec3>& getJointScales() const { return m_jointScales; }
         const std::vector<glm::vec3>& getJointPositions() const { return m_jointPositions; }
         const std::vector<float>& getTimeStamps() const { return m_timeStamps; }
         AnimationIndex getAnimIndex() const { return m_animIndex; }
-        std::vector<JointRotation>* getDynamicJointRotationsPtr() { return &m_dynamicJointRotations;  }
+        int getFrameNum() const { return m_frameNum; }
+        std::vector<JointRotation>* getDynamicJointRotationsPtr() { return &(m_dynamicJointRotations[m_nextFrameIndex]);  }
         float getCurrentTime() const { return m_currentTime; }
         FrameIndex getNextFrameIndex() const { return m_nextFrameIndex; }
         IKRigConfig(std::shared_ptr<AnimationClip> animation, AnimationIndex animIndex, ForwardKinematics* fk);

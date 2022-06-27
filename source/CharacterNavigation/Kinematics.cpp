@@ -25,7 +25,7 @@ namespace Mona {
 		return mat;
 	}
 
-	void setDescentTransformArrays(DescentData* dataPtr) {
+	void setDescentTransformArrays(IKData* dataPtr) {
 		dataPtr->forwardModelSpaceTransforms = dataPtr->rigConfig->getModelSpaceTransforms(true);
 		dataPtr->jointSpaceTransforms = dataPtr->rigConfig->getJointSpaceTransforms(true);
 		IKChain ikChain;
@@ -40,25 +40,25 @@ namespace Mona {
 		}
 	}
 
-	InverseKinematics::InverseKinematics(IKRig* ikRig, std::vector<IKChain*> ikChains, AnimationIndex animIndex) {
+	InverseKinematics::InverseKinematics(IKRig* ikRig, std::vector<IKChain*> ikChains) {
 		m_ikRig = ikRig;
 		//creamos terminos para el descenso de gradiente
 		// termino 1 (acercar la animacion creada a la animacion original)
-		std::function<float(const VectorX&, DescentData*)> term1Function =
-			[](const VectorX& varAngles, DescentData* dataPtr)->float{
+		std::function<float(const VectorX&, IKData*)> term1Function =
+			[](const VectorX& varAngles, IKData* dataPtr)->float{
 			return (varAngles - dataPtr->baseAngles).squaredNorm();
 		};
 
-		std::function<float(const VectorX&, int, DescentData*)> term1PartialDerivativeFunction =
-			[](const VectorX& varAngles, int varIndex, DescentData* dataPtr)->float {
+		std::function<float(const VectorX&, int, IKData*)> term1PartialDerivativeFunction =
+			[](const VectorX& varAngles, int varIndex, IKData* dataPtr)->float {
 			return 2 * (varAngles[varIndex] - dataPtr->baseAngles[varIndex]);
 		};
 
-		FunctionTerm<DescentData> term1(term1Function, term1PartialDerivativeFunction);
+		FunctionTerm<IKData> term1(term1Function, term1PartialDerivativeFunction);
 
 		// termino 2 (seguir la curva deseada para el end effector)
-		std::function<float(const VectorX&, DescentData*)> term2Function =
-			[](const VectorX& varAngles, DescentData* dataPtr)->float {
+		std::function<float(const VectorX&, IKData*)> term2Function =
+			[](const VectorX& varAngles, IKData* dataPtr)->float {
 			float result = 0;
 			int eeIndex;
 			glm::vec4 baseVec(0, 0, 0, 1);
@@ -72,8 +72,8 @@ namespace Mona {
 			return result;
 		};
 
-		std::function<float(const VectorX&, int, DescentData*)> term2PartialDerivativeFunction =
-			[](const VectorX& varAngles, int varIndex, DescentData* dataPtr)->float {
+		std::function<float(const VectorX&, int, IKData*)> term2PartialDerivativeFunction =
+			[](const VectorX& varAngles, int varIndex, IKData* dataPtr)->float {
 			float result = 0;
 			glm::mat4 TA;
 			glm::mat4 TB;
@@ -120,8 +120,8 @@ namespace Mona {
 			result = dataPtr->betaValue * 2 * result;
 			return result;
 		};
-		FunctionTerm<DescentData> term2(term2Function, term2PartialDerivativeFunction);
-		std::function<void(VectorX&, DescentData*)>  postDescentStepCustomBehaviour = [](VectorX& args, DescentData* dataPtr)->void {
+		FunctionTerm<IKData> term2(term2Function, term2PartialDerivativeFunction);
+		std::function<void(VectorX&, IKData*)>  postDescentStepCustomBehaviour = [](VectorX& args, IKData* dataPtr)->void {
 			// aplicar restricciones de movimiento
 			for (int i = 0; i < args.size(); i++) {
 				int jIndex = dataPtr->jointIndexes[i];
@@ -138,16 +138,15 @@ namespace Mona {
 			setDescentTransformArrays(dataPtr);
 		};
 
-		auto terms = std::vector<FunctionTerm<DescentData>>({ term1, term2 });
-		m_gradientDescent = GradientDescent<DescentData>(terms,0,&m_descentData, postDescentStepCustomBehaviour);
+		auto terms = std::vector<FunctionTerm<IKData>>({ term1, term2 });
+		m_gradientDescent = GradientDescent<IKData>(terms,0,&m_ikData, postDescentStepCustomBehaviour);
 		setIKChains(ikChains);
-		setAnimationIndex(animIndex);
 	}
 
 	void InverseKinematics::setIKChains(std::vector<IKChain*> ikChains) {
-		m_descentData.ikChains = ikChains;
+		m_ikData.ikChains = ikChains;
 		m_ikChainNames = std::vector<std::string>(ikChains.size());
-		m_descentData.jointIndexes = {};
+		m_ikData.jointIndexes = {};
 		std::vector<JointIndex> jointIndexes;
 		for (int c = 0; c < ikChains.size(); c++) {
 			jointIndexes.insert(jointIndexes.end(), ikChains[c]->getJoints().begin(), ikChains[c]->getJoints().end());
@@ -160,52 +159,43 @@ namespace Mona {
 			}
 		}
 		funcUtils::sortUnique(jointIndexes);
-		m_descentData.jointIndexes = jointIndexes;
-		m_descentData.motionRanges = std::vector<glm::vec2>(m_descentData.jointIndexes.size());
-		for (int j = 0; j < m_descentData.jointIndexes.size(); j++) {
-			JointIndex jInd = m_descentData.jointIndexes[j];
-			m_descentData.motionRanges[j] = m_ikRig->getIKNode(jInd)->getMotionRange();
+		m_ikData.jointIndexes = jointIndexes;
+		m_ikData.motionRanges = std::vector<glm::vec2>(m_ikData.jointIndexes.size());
+		for (int j = 0; j < m_ikData.jointIndexes.size(); j++) {
+			JointIndex jInd = m_ikData.jointIndexes[j];
+			m_ikData.motionRanges[j] = m_ikRig->getIKNode(jInd)->getMotionRange();
 		}
-		m_gradientDescent.setArgNum(m_descentData.jointIndexes.size());
-		m_descentData.previousAngles = {};
-		m_descentData.rotationAxes.resize(m_descentData.jointIndexes.size());
-		m_descentData.baseAngles.resize(m_descentData.jointIndexes.size());
+		m_gradientDescent.setArgNum(m_ikData.jointIndexes.size());
+		m_ikData.previousAngles = {};
+		m_ikData.rotationAxes.resize(m_ikData.jointIndexes.size());
+		m_ikData.baseAngles.resize(m_ikData.jointIndexes.size());
 	}
 
-	void InverseKinematics::setAnimationIndex(AnimationIndex animationIndex) {
-		m_animationIndex = animationIndex;
-		m_descentData.rigConfig = m_ikRig->getAnimationConfig(animationIndex);
-		m_descentData.previousAngles = {};
-	}
+	std::vector<std::pair<JointIndex, glm::fquat>> InverseKinematics::solveIKChains(AnimationIndex animationIndex) {
 
-	std::vector<std::pair<JointIndex, glm::fquat>> InverseKinematics::solveIKChains(const std::vector<IKChain>& ikChains) {
-		MONA_ASSERT(ikChains.size() == m_ikChainNames.size(), "InverseKinematics: input chain names don't fit the ones that were set.");
-		for (int i = 0; i < ikChains.size(); i++) {
-			int ind = funcUtils::findIndex(m_ikChainNames, ikChains[i].getName());
-			MONA_ASSERT(i == -1, "InverseKinematics: input chain names don't fit the ones that were set.");
+		m_ikData.rigConfig = m_ikRig->getAnimationConfig(animationIndex);
+
+		FrameIndex previousFrameIndex = m_ikData.rigConfig->getNextFrameIndex()==0 ? m_ikData.rigConfig->getFrameNum()-1 : m_ikData.rigConfig->getNextFrameIndex()-1;
+		auto& baseRotations = m_ikData.rigConfig->getBaseJointRotations(m_ikData.rigConfig->getNextFrameIndex());
+		auto& dynamicRotations = m_ikData.rigConfig->getDynamicJointRotations(previousFrameIndex);
+		// recuperamos los angulos previamente usados de la animacion
+		m_ikData.previousAngles.resize(m_ikData.jointIndexes.size());
+		for (int i = 0; i < m_ikData.jointIndexes.size(); i++) {
+			m_ikData.previousAngles[i] = dynamicRotations[m_ikData.jointIndexes[i]].getRotationAngle();
 		}
 
-		auto& baseRotations = m_descentData.rigConfig->getBaseJointRotations();
-		// si no tenemos info de la configuracion calculada previa, tomamos la configuracion base del tiempo actual
-		if (m_descentData.previousAngles.size() == 0) {
-			m_descentData.previousAngles.resize(m_descentData.jointIndexes.size());
-			for (int i = 0; i < m_descentData.jointIndexes.size(); i++) {
-				m_descentData.previousAngles[i] = baseRotations[m_descentData.jointIndexes[i]].getRotationAngle();
-			}
-		}
-
-		for (int i = 0; i < m_descentData.jointIndexes.size(); i++) {
-			m_descentData.rotationAxes[i] = baseRotations[m_descentData.jointIndexes[i]].getRotationAxis();
-			m_descentData.baseAngles[i] = baseRotations[m_descentData.jointIndexes[i]].getRotationAngle();
+		for (int i = 0; i < m_ikData.jointIndexes.size(); i++) {
+			m_ikData.rotationAxes[i] = baseRotations[m_ikData.jointIndexes[i]].getRotationAxis();
+			m_ikData.baseAngles[i] = baseRotations[m_ikData.jointIndexes[i]].getRotationAngle();
 		}
 		// calcular arreglos de transformaciones
-		setDescentTransformArrays(&m_descentData);
-		VectorX computedAngles = m_gradientDescent.computeArgsMin(m_descentData.descentRate, m_descentData.maxIterations, m_descentData.previousAngles);
-		m_descentData.previousAngles = computedAngles;
+		setDescentTransformArrays(&m_ikData);
+		VectorX computedAngles = m_gradientDescent.computeArgsMin(m_ikData.descentRate, m_ikData.maxIterations, m_ikData.previousAngles);
+		m_ikData.previousAngles = computedAngles;
 		std::vector<std::pair<JointIndex, glm::fquat>> result(computedAngles.size());
-		auto dmicRot = m_descentData.rigConfig->getDynamicJointRotations();
-		for (int i = 0; i < m_descentData.jointIndexes.size(); i++) {
-			JointIndex jIndex = m_descentData.jointIndexes[i];
+		auto dmicRot = m_ikData.rigConfig->getDynamicJointRotations();
+		for (int i = 0; i < m_ikData.jointIndexes.size(); i++) {
+			JointIndex jIndex = m_ikData.jointIndexes[i];
 			dmicRot[i].setRotationAngle(computedAngles[i]);
 			result[i] = { jIndex, dmicRot[i].getQuatRotation() };
 		}

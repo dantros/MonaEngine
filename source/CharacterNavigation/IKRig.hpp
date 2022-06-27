@@ -9,6 +9,7 @@ namespace Mona{
     
     typedef int AnimationIndex;
     typedef int JointIndex;
+    typedef int ChainIndex;
     class IKRig{
         friend class IKNavigationComponent;
         friend class IKRigController;
@@ -51,6 +52,8 @@ namespace Mona{
             IKChain buildIKChain(ChainEnds chainEnds, std::string chainName);
             IKChain buildHipIKChain(std::string hipJointName);
             std::vector<IKChain*> getIKChainPtrs(bool includeHipChain=false);
+            std::vector<std::pair<JointIndex, glm::fquat>> calculateRotations(AnimationIndex animIndex);
+            std::vector<std::pair<ChainIndex, BezierSpline>> calculateEETrajectories(AnimationIndex animIndex, std::vector<ChainIndex> ikChains);
     };
 
 }

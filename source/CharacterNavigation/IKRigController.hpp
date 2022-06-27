@@ -15,7 +15,8 @@ namespace Mona {
 		IKRigController(AnimationController* animController, IKRig ikRig);
 		void addAnimation(std::shared_ptr<AnimationClip> animationClip);
 		int removeAnimation(std::shared_ptr<AnimationClip> animationClip);
-		void setIKRigConfigTime(float time, AnimationIndex animIndex);
+		void updateIKRigConfigTime(float time, AnimationIndex animIndex);
+		void updateIKRig(float time);
 	};
 
 

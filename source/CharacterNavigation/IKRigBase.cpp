@@ -10,7 +10,6 @@ namespace Mona{
 		m_jointScales.reserve(jointNum);
 		m_timeStamps = animation->m_animationTracks[0].rotationTimeStamps;
 		m_baseJointRotations.reserve(frameNum);
-		m_dynamicJointRotations.resize(jointNum);
 		for (int i = 0; i < jointNum;i++) {
 			m_jointPositions.push_back(animation->m_animationTracks[i].positions[0]);
 			m_jointScales.push_back(animation->m_animationTracks[i].scales[0]);
@@ -21,8 +20,10 @@ namespace Mona{
 				m_baseJointRotations[i][j] = JointRotation(animation->m_animationTracks[j].rotations[i]);
 			}
 		}
+		m_dynamicJointRotations = m_baseJointRotations;
 		m_animIndex = animationIndex;
 		m_forwardKinematics = forwardKinematics;
+		m_frameNum = frameNum;
 	}
 
 	std::vector<glm::mat4> IKRigConfig::getModelSpaceTransforms(bool useDynamicRotations) {

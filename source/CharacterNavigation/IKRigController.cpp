@@ -124,7 +124,7 @@ namespace Mona {
 		return -1;
 	}
 
-	void IKRigController::setIKRigConfigTime(float time, AnimationIndex animIndex) {
+	void IKRigController::updateIKRigConfigTime(float time, AnimationIndex animIndex) {
 		auto anim = m_ikRig.m_animations[animIndex];
 		auto& config = m_ikRig.m_animationConfigs[animIndex];
 		float samplingTime = anim->GetSamplingTime(time, m_animationController->GetIsLooping());
@@ -137,9 +137,17 @@ namespace Mona {
 				break;
 			}
 		}
-		for (int i = 0; i < config.m_dynamicJointRotations.size(); i++) {
-			config.m_dynamicJointRotations[i] = JointRotation(anim->m_animationTracks[i].rotations[config.m_nextFrameIndex]);
+		for (int i = 0; i < config.m_dynamicJointRotations[config.m_nextFrameIndex].size(); i++) {
+			config.m_dynamicJointRotations[config.m_nextFrameIndex][i] = JointRotation(anim->m_animationTracks[i].rotations[config.m_nextFrameIndex]);
 		}
+	}
+
+	void IKRigController::updateIKRig(float time) {
+		for (AnimationIndex i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {
+			updateIKRigConfigTime(time, i);
+		}
+
+
 	}
 
 

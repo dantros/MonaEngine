@@ -27,7 +27,7 @@ namespace Mona {
 
 	};
 
-	struct DescentData {
+	struct IKData {
 		// constants data
 		VectorX baseAngles;
 		float betaValue;
@@ -48,16 +48,15 @@ namespace Mona {
 
 	class InverseKinematics {
 		IKRig* m_ikRig;
-		GradientDescent<DescentData> m_gradientDescent;
-		DescentData m_descentData;
+		GradientDescent<IKData> m_gradientDescent;
+		IKData m_ikData;
 		std::vector<std::string> m_ikChainNames;
-		AnimationIndex m_animationIndex;
+		std::vector<VectorX> m_previousAnglesPerAnimation;
 	public:
 		InverseKinematics() = default;
-		InverseKinematics(IKRig* ikRig, std::vector<IKChain*> ikChains, AnimationIndex animIndex);
+		InverseKinematics(IKRig* ikRig, std::vector<IKChain*> ikChains);
 		void setIKChains(std::vector<IKChain*> ikChains);
-		void setAnimationIndex(AnimationIndex animationIndex);
-		std::vector<std::pair<JointIndex, glm::fquat>> solveIKChains(const std::vector<IKChain>& ikChains);
+		std::vector<std::pair<JointIndex, glm::fquat>> solveIKChains(AnimationIndex animationIndex);
 	};
 
 	

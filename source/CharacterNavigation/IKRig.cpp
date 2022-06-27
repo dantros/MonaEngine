@@ -36,7 +36,7 @@ namespace Mona {
 			}
 		}
 		// setear cinematica inversa
-		m_inverseKinematics = InverseKinematics(this, getIKChainPtrs(false), 0);
+		m_inverseKinematics = InverseKinematics(this, getIKChainPtrs(false));
 
 		// setear el la altura del rig
 		IKChain& leftLegChain = m_ikChains[1];
@@ -109,6 +109,10 @@ namespace Mona {
 		ikChain.m_name = hipJointName;
 		ikChain.m_joints = { hipInd };
 		return ikChain;
+	}
+
+	std::vector<std::pair<JointIndex, glm::fquat>> IKRig::calculateRotations(AnimationIndex animIndex) {
+		return m_inverseKinematics.solveIKChains(animIndex);
 	}
 
 }

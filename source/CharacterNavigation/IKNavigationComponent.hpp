@@ -33,10 +33,10 @@ namespace Mona {
 				return m_ikRigController.removeAnimation(animationClip);
 			}
 			void AddTerrain(const Terrain& terrain) {
-				m_ikRigController.m_ikRig.m_environmentData.addTerrain(terrain, m_staticMeshManagerPtr);
+				m_ikRigController.m_ikRig.m_trajectoryGenerator.m_environmentData.addTerrain(terrain, m_staticMeshManagerPtr);
 			}
 			int RemoveTerrain(const Terrain& terrain) {
-				return m_ikRigController.m_ikRig.m_environmentData.removeTerrain(terrain, m_staticMeshManagerPtr);
+				return m_ikRigController.m_ikRig.m_trajectoryGenerator.m_environmentData.removeTerrain(terrain, m_staticMeshManagerPtr);
 			}
 		private:
 			std::shared_ptr<AnimationClip> m_baseAnimationClip;

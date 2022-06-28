@@ -40,7 +40,7 @@ namespace Mona {
 		}
 	}
 
-	InverseKinematics::InverseKinematics(IKRig* ikRig, std::vector<IKChain*> ikChains) {
+	InverseKinematics::InverseKinematics(IKRig* ikRig, std::vector<ChainIndex> ikChains) {
 		m_ikRig = ikRig;
 		//creamos terminos para el descenso de gradiente
 		// termino 1 (acercar la animacion creada a la animacion original)
@@ -143,14 +143,18 @@ namespace Mona {
 		setIKChains(ikChains);
 	}
 
-	void InverseKinematics::setIKChains(std::vector<IKChain*> ikChains) {
-		m_ikData.ikChains = ikChains;
-		m_ikChainNames = std::vector<std::string>(ikChains.size());
+	void InverseKinematics::setIKChains(std::vector<ChainIndex> ikChains) {
+		std::vector<IKChain*> chainPtrs(ikChains.size());
+		for (int i = 0; i < ikChains.size(); i++) {
+			chainPtrs[i] = m_ikRig->getIKChain(ikChains[i]);
+		}
+		m_ikData.ikChains = chainPtrs;
+		m_ikChainNames = std::vector<std::string>(chainPtrs.size());
 		m_ikData.jointIndexes = {};
 		std::vector<JointIndex> jointIndexes;
-		for (int c = 0; c < ikChains.size(); c++) {
-			jointIndexes.insert(jointIndexes.end(), ikChains[c]->getJoints().begin(), ikChains[c]->getJoints().end());
-			m_ikChainNames[c] = ikChains[c]->getName();
+		for (int c = 0; c < chainPtrs.size(); c++) {
+			jointIndexes.insert(jointIndexes.end(), chainPtrs[c]->getJoints().begin(), chainPtrs[c]->getJoints().end());
+			m_ikChainNames[c] = chainPtrs[c]->getName();
 			for (int i = 0; i < c; i++) {
 				if (m_ikChainNames[i] == m_ikChainNames[c]) {
 					MONA_LOG_ERROR("InverseKinematics: chain names must all be different.");
@@ -166,7 +170,6 @@ namespace Mona {
 			m_ikData.motionRanges[j] = m_ikRig->getIKNode(jInd)->getMotionRange();
 		}
 		m_gradientDescent.setArgNum(m_ikData.jointIndexes.size());
-		m_ikData.previousAngles = {};
 		m_ikData.rotationAxes.resize(m_ikData.jointIndexes.size());
 		m_ikData.baseAngles.resize(m_ikData.jointIndexes.size());
 	}
@@ -191,7 +194,6 @@ namespace Mona {
 		// calcular arreglos de transformaciones
 		setDescentTransformArrays(&m_ikData);
 		VectorX computedAngles = m_gradientDescent.computeArgsMin(m_ikData.descentRate, m_ikData.maxIterations, m_ikData.previousAngles);
-		m_ikData.previousAngles = computedAngles;
 		std::vector<std::pair<JointIndex, glm::fquat>> result(computedAngles.size());
 		auto dmicRot = m_ikData.rigConfig->getDynamicJointRotations();
 		for (int i = 0; i < m_ikData.jointIndexes.size(); i++) {
@@ -201,9 +203,6 @@ namespace Mona {
 		}
 		return result;		
 	}
-
-
-
 
 
 

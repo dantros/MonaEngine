@@ -133,12 +133,14 @@ namespace Mona {
 		for (int i = 0; i < config.m_timeStamps.size(); i++) {
 			if (config.m_timeStamps[i] <= samplingTime) {
 				config.m_nextFrameIndex = (config.m_timeStamps.size()) % (i + 1);
-				config.m_requiresUpdate = config.m_nextFrameIndex != savedFrameVal;
+				config.m_requiresIKUpdate = config.m_nextFrameIndex != savedFrameVal;
 				break;
 			}
 		}
-		for (int i = 0; i < config.m_dynamicJointRotations[config.m_nextFrameIndex].size(); i++) {
-			config.m_dynamicJointRotations[config.m_nextFrameIndex][i] = JointRotation(anim->m_animationTracks[i].rotations[config.m_nextFrameIndex]);
+		if (config.m_requiresIKUpdate) {
+			for (int i = 0; i < config.m_dynamicJointRotations[config.m_nextFrameIndex].size(); i++) {
+				config.m_dynamicJointRotations[config.m_nextFrameIndex][i] = JointRotation(anim->m_animationTracks[i].rotations[config.m_nextFrameIndex]);
+			}
 		}
 	}
 

@@ -41,7 +41,6 @@ namespace Mona {
         BezierSpline eeTargetTrajectory;
         // Frames de apoyo (estaticos) del end effector
         std::vector<bool> eeSupportFrames;
-        glm::vec3 averageVelocity;
     };
     class IKRigConfig {
         friend class IKRig;
@@ -66,7 +65,7 @@ namespace Mona {
         // Indice del siguiente frame de la animacion
         FrameIndex m_nextFrameIndex = -1;
         // Indica si es necesario actualizar las rotaciones de las joints
-        bool m_requiresUpdate = true;
+        bool m_requiresIKUpdate = true;
         // Numero de frames(de rotacion) de la animacion decomprimida
         int m_frameNum;
     public:

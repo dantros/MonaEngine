@@ -4,6 +4,7 @@
 
 #include "IKRigBase.hpp"
 #include "Kinematics.hpp"
+#include "TrajectoryGenerator.hpp"
 
 namespace Mona{
     
@@ -11,8 +12,8 @@ namespace Mona{
     typedef int JointIndex;
     typedef int ChainIndex;
     class IKRig{
-        friend class IKNavigationComponent;
         friend class IKRigController;
+        friend class IKNavigationComponent;
         public:
             IKRig() = default;
             IKRig(std::shared_ptr<Skeleton> skeleton, RigData rigData, InnerComponentHandle rigidBodyHandle,
@@ -22,6 +23,7 @@ namespace Mona{
             const std::vector<int>& getTopology() const { return m_skeleton->m_parentIndices; };
             const std::vector<std::string>& getJointNames() const { return m_skeleton->m_jointNames; };
             IKNode* getIKNode(JointIndex jointIndex) { return &m_nodes[jointIndex]; };
+            IKChain* getIKChain(ChainIndex chainIndex) { return &m_ikChains[chainIndex]; };
 
         private:
             // Animaciones guardadas
@@ -36,7 +38,7 @@ namespace Mona{
             glm::vec3 m_angularVelocity;
             InnerComponentHandle m_rigidBodyHandle;
             InnerComponentHandle m_skeletalMeshHandle;
-            EnvironmentData m_environmentData;
+            TrajectoryGenerator m_trajectoryGenerator;
             ForwardKinematics m_forwardKinematics;
             InverseKinematics m_inverseKinematics;
             // Altura aproximada del rig, para calculos con distancias relativas

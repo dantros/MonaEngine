@@ -11,6 +11,11 @@ namespace Mona {
 	{
 		m_skeleton = skeleton;
 		m_forwardKinematics = ForwardKinematics(this);
+		std::vector<ChainIndex> ikChainsTG;
+		for (ChainIndex i = 0; i < m_ikChains.size(); i++) {
+			ikChainsTG.push_back(i);
+		}
+		m_trajectoryGenerator = TrajectoryGenerator(this, ikChainsTG, 0);
 
 		auto topology = getTopology();
 		auto jointNames = getJointNames();
@@ -36,7 +41,11 @@ namespace Mona {
 			}
 		}
 		// setear cinematica inversa
-		m_inverseKinematics = InverseKinematics(this, getIKChainPtrs(false));
+		std::vector<ChainIndex> ikChainsIK;
+		for (ChainIndex i = 1; i < m_ikChains.size(); i++) {
+			ikChainsIK.push_back(i);
+		}
+		m_inverseKinematics = InverseKinematics(this, ikChainsIK);
 
 		// setear el la altura del rig
 		IKChain& leftLegChain = m_ikChains[1];

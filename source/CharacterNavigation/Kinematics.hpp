@@ -10,6 +10,7 @@
 namespace Mona {
 	typedef int AnimationIndex;
 	typedef int JointIndex;
+	typedef int ChainIndex;
 
 	class IKRig;
 	class IKChain;
@@ -54,8 +55,8 @@ namespace Mona {
 		std::vector<VectorX> m_previousAnglesPerAnimation;
 	public:
 		InverseKinematics() = default;
-		InverseKinematics(IKRig* ikRig, std::vector<IKChain*> ikChains);
-		void setIKChains(std::vector<IKChain*> ikChains);
+		InverseKinematics(IKRig* ikRig, std::vector<ChainIndex> ikChains);
+		void setIKChains(std::vector<ChainIndex> ikChains);
 		std::vector<std::pair<JointIndex, glm::fquat>> solveIKChains(AnimationIndex animationIndex);
 	};
 

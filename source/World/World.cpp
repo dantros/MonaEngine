@@ -50,7 +50,7 @@ namespace Mona {
 		rigidBodyDataManager.SetLifetimePolicy(RigidBodyLifetimePolicy(&transformDataManager, &m_physicsCollisionSystem));
 		audioSourceDataManager.SetLifetimePolicy(AudioSourceComponentLifetimePolicy(&m_audioSystem));
 		ikNavigationDataManager.SetLifetimePolicy(IKNavigationLifetimePolicy(&transformDataManager, &staticMeshDataManager, 
-			&skeletalMeshDataManager, &rigidBodyDataManager, &ikNavigationDataManager));
+			&skeletalMeshDataManager,&ikNavigationDataManager));
 		m_window.StartUp(m_eventManager);
 		m_input.StartUp(m_eventManager);
 		m_objectManager.StartUp(expectedObjects);

@@ -28,10 +28,10 @@ namespace Mona{
     class BezierCurve {
         float bernsteinBP(int i, int n, float t);
         float normalizeT(float t);
-        int m_order;
+        int m_order = -1;
         std::vector<glm::vec3> m_controlPoints;
-        float m_minT;
-        float m_maxT;
+        float m_minT = 1;
+        float m_maxT = 0;
     public:
         BezierCurve(int order, std::vector<glm::vec3> controlPoints, float minT = 0, float maxT = 1);
         BezierCurve() = default;
@@ -53,12 +53,12 @@ namespace Mona{
         };
     private:
         std::vector<BezierCurve> m_bezierCurves;
-        float m_minT;
-        float m_maxT;
+        float m_minT = 1;
+        float m_maxT = 0;
         Order m_order;
     public:
         BezierSpline() = default;
-        BezierSpline(std::vector<glm::vec3> splinePoints, std::vector<float> tValues, Order order);
+        BezierSpline(std::vector<glm::vec3> splinePoints, std::vector<float> tValues, Order order = Order::CUBIC);
         glm::vec3 evalSpline(float t);
         glm::vec3 getVelocity(float t);
         int getOrder();

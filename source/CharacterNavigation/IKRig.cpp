@@ -5,17 +5,17 @@
 
 namespace Mona {
 
-	IKRig::IKRig(std::shared_ptr<Skeleton> skeleton, RigData rigData, InnerComponentHandle rigidBodyHandle,
-		InnerComponentHandle skeletalMeshHandle) :
-		m_rigidBodyHandle(rigidBodyHandle), m_skeletalMeshHandle(skeletalMeshHandle)
+	IKRig::IKRig(std::shared_ptr<Skeleton> skeleton, RigData rigData, InnerComponentHandle skeletalMeshHandle) :
+		m_skeletalMeshHandle(skeletalMeshHandle)
 	{
 		m_skeleton = skeleton;
 		m_forwardKinematics = ForwardKinematics(this);
-		std::vector<ChainIndex> ikChainsTG;
-		for (ChainIndex i = 0; i < m_ikChains.size(); i++) {
-			ikChainsTG.push_back(i);
+		std::vector<ChainIndex> regularIKChains;
+		ChainIndex hipIKChain = 0;
+		for (ChainIndex i = 1; i < m_ikChains.size(); i++) {
+			regularIKChains.push_back(i);
 		}
-		m_trajectoryGenerator = TrajectoryGenerator(this, ikChainsTG, 0);
+		m_trajectoryGenerator = TrajectoryGenerator(this, regularIKChains, hipIKChain);
 
 		auto topology = getTopology();
 		auto jointNames = getJointNames();
@@ -41,11 +41,7 @@ namespace Mona {
 			}
 		}
 		// setear cinematica inversa
-		std::vector<ChainIndex> ikChainsIK;
-		for (ChainIndex i = 1; i < m_ikChains.size(); i++) {
-			ikChainsIK.push_back(i);
-		}
-		m_inverseKinematics = InverseKinematics(this, ikChainsIK);
+		m_inverseKinematics = InverseKinematics(this, regularIKChains);
 
 		// setear el la altura del rig
 		IKChain& leftLegChain = m_ikChains[1];
@@ -57,15 +53,6 @@ namespace Mona {
 			legLenght += glm::distance(positions[currentJ], positions[parentJ]);
 		}
 		m_rigHeight = legLenght * 2;
-	}
-
-	glm::vec3 IKRig::getRBLinearVelocity(ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr) {
-		auto bodyVel = rigidBodyManagerPtr->GetComponentPointer(m_rigidBodyHandle)->GetLinearVelocity();
-		return { bodyVel[0], bodyVel[1], bodyVel[2] };
-	}
-
-	void IKRig::setRBLinearVelocity(glm::vec3 velocity, ComponentManager<RigidBodyComponent>* rigidBodyManagerPtr) {
-		rigidBodyManagerPtr->GetComponentPointer(m_rigidBodyHandle)->SetLinearVelocity({velocity[0], velocity[1], velocity[2]});
 	}
 
 	std::vector<IKChain*> IKRig::getIKChainPtrs(bool includeHipChain) {

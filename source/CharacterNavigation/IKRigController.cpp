@@ -107,7 +107,7 @@ namespace Mona {
 		}
 		for (int i = 0; i < m_ikRig.m_ikChains.size(); i++) {
 			m_ikRig.m_animationConfigs.back().m_ikChainTrajectoryData[i].eeSupportFrames = supportFramesPerChain[i];
-			m_ikRig.m_animationConfigs.back().m_ikChainTrajectoryData[i].eeBaseTrajectory = BezierSpline(splinePointsPerChain[i], timeStampsPerChain[i], BezierSpline::Order::CUBIC);
+			m_ikRig.m_animationConfigs.back().m_ikChainTrajectoryData[i].eeBaseTrajectory = BezierSpline(splinePointsPerChain[i], timeStampsPerChain[i]);
 		}
 
 		animationClip->RemoveRootMotion();

@@ -52,7 +52,6 @@ namespace Mona {
 		GradientDescent<IKData> m_gradientDescent;
 		IKData m_ikData;
 		std::vector<std::string> m_ikChainNames;
-		std::vector<VectorX> m_previousAnglesPerAnimation;
 	public:
 		InverseKinematics() = default;
 		InverseKinematics(IKRig* ikRig, std::vector<ChainIndex> ikChains);

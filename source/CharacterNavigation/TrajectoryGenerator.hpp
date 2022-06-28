@@ -20,9 +20,9 @@ namespace Mona{
         EnvironmentData m_environmentData;
         GradientDescent<TGData> m_gradientDescent;
     public:
-        TrajectoryGenerator(IKRig* ikRig, std::vector<ChainIndex> ikChains, ChainIndex hipIndex);
+        TrajectoryGenerator(IKRig* ikRig, std::vector<ChainIndex> regularChains, ChainIndex hipChain);
         TrajectoryGenerator() = default;
-        void setIKChains(std::vector<ChainIndex> ikChains, ChainIndex hipIndex);
+        void setIKChains(std::vector<ChainIndex> regularChains, ChainIndex hipChain);
 
 
     };

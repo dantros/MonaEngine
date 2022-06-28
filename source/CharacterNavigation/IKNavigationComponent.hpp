@@ -14,7 +14,7 @@ namespace Mona {
 		public:
 			friend class IKNavigationLifetimePolicy;
 			using LifetimePolicyType = IKNavigationLifetimePolicy;
-			using dependencies = DependencyList<SkeletalMeshComponent, RigidBodyComponent>;
+			using dependencies = DependencyList<SkeletalMeshComponent>;
 			static constexpr std::string_view componentName = "IKNavigationComponent";
 			static constexpr uint8_t componentIndex = GetComponentIndex(EComponentType::IKNavigationComponent);
 			IKNavigationComponent(RigData& rigData, std::shared_ptr<AnimationClip> baseAnimationClip) {
@@ -45,7 +45,6 @@ namespace Mona {
 			ComponentManager<TransformComponent>* m_transformManagerPtr = nullptr;
 			ComponentManager<StaticMeshComponent>* m_staticMeshManagerPtr = nullptr;
 			ComponentManager<SkeletalMeshComponent>* m_skeletalMeshManagerPtr = nullptr;
-			ComponentManager<RigidBodyComponent>* m_rigidBodyManagerPtr = nullptr;
 	};
 }
 

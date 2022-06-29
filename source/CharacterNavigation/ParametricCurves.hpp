@@ -21,7 +21,7 @@ namespace Mona{
         bool inTRange(float t);
         glm::vec3 evalCurve(int pointIndex);
         glm::vec3 getVelocity(int pointIndex);
-        void scaleTValues(float scale, float minIndex, float maxIndex);
+        void displacePointT(int pointIndex, float newT, bool scalePositions);
         void setCurvePoint(int pointIndex, glm::vec3 newValue);
     };
 

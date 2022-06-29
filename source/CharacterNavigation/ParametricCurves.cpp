@@ -35,17 +35,23 @@ namespace Mona{
         return (m_curvePoints[pointIndex] - m_curvePoints[pointIndex - 1]) / (m_tValues[pointIndex] - m_tValues[pointIndex - 1]);
     }
 
-    void DiscreteCurve::scaleTValues(float scale, float minIndex, float maxIndex) {
-        MONA_ASSERT(minIndex <= maxIndex, "DiscreteCurve: maxIndex must be greater or equal than minIndex.");
-        MONA_ASSERT(0 <= minIndex && maxIndex < m_curvePoints.size(), "DiscreteCurve: input min index and max index must be within bounds");
-        if (0 < minIndex) {
-            MONA_ASSERT(m_tValues[minIndex - 1] < m_tValues[minIndex] * scale, "DiscreteCurve: scaling must preseve order of t values.");
+    void DiscreteCurve::displacePointT(int pointIndex, float newT, bool scalePositions) {
+        MONA_ASSERT(inTRange(newT), "DiscreteCurve: new t must be within original t bounds");
+        glm::vec2 tRange = getTRange();
+        float oldT = m_tValues[pointIndex];
+        float fractionBelow = (newT - tRange[0]) / (oldT - tRange[0]);
+        float fractionAbove = (newT - tRange[1]) / (oldT - tRange[1]);
+        for (int i = 0; i < pointIndex; i++) {
+            tRange[i] = funcUtils::lerp(tRange[0], tRange[i], fractionBelow);
+            if (scalePositions) {
+                m_curvePoints[i] = funcUtils::lerp(m_curvePoints[0], m_curvePoints[i], fractionBelow);
+            }
         }
-        if (maxIndex < m_tValues.size()-1) {
-            MONA_ASSERT(m_tValues[maxIndex]*scale < m_tValues[maxIndex + 1], "DiscreteCurve: scaling must preseve order of t values.");
-        }
-        for (int i = minIndex; i <= maxIndex; i++) {
-            m_tValues[i] *= scale;
+        for (int i = pointIndex; i < m_curvePoints.size(); i++) {
+            tRange[i] = funcUtils::lerp(tRange[1], tRange[i], fractionAbove);
+            if (scalePositions) {
+                m_curvePoints[i] = funcUtils::lerp(m_curvePoints.back(), m_curvePoints[i], fractionAbove);
+            }
         }
     }
 

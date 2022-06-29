@@ -178,9 +178,8 @@ namespace Mona {
 
 		m_ikData.rigConfig = m_ikRig->getAnimationConfig(animationIndex);
 
-		FrameIndex previousFrameIndex = m_ikData.rigConfig->getNextFrameIndex()==0 ? m_ikData.rigConfig->getFrameNum()-1 : m_ikData.rigConfig->getNextFrameIndex()-1;
-		auto& baseRotations = m_ikData.rigConfig->getBaseJointRotations(m_ikData.rigConfig->getNextFrameIndex());
-		auto& dynamicRotations = m_ikData.rigConfig->getDynamicJointRotations(previousFrameIndex);
+		auto& baseRotations = m_ikData.rigConfig->getBaseJointRotations();
+		auto& dynamicRotations = m_ikData.rigConfig->getDynamicJointRotations(m_ikData.rigConfig->getCurrentFrameIndex());
 		// recuperamos los angulos previamente usados de la animacion
 		m_ikData.previousAngles.resize(m_ikData.jointIndexes.size());
 		for (int i = 0; i < m_ikData.jointIndexes.size(); i++) {

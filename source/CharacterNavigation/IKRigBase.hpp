@@ -45,6 +45,11 @@ namespace Mona {
     class IKRigConfig {
         friend class IKRig;
         friend class IKRigController;
+    public:
+        enum class AnimationType {
+            IDLE,
+            MOVING
+        };
     private:
         // Rotaciones para cada joint de la animacion base para cada frame 
         std::vector<std::vector<JointRotation>> m_baseJointRotations;
@@ -62,12 +67,15 @@ namespace Mona {
         std::vector<TrajectoryData> m_ikChainTrajectoryData;
         // Tiempo actual de la animacion
         float m_currentTime = -1;
+        // Indica el frame mas reciente de la animacion
+        FrameIndex m_currentFrameIndex = -1;
         // Indice del siguiente frame de la animacion
         FrameIndex m_nextFrameIndex = -1;
         // Indica si es necesario actualizar las rotaciones de las joints
         bool m_requiresIKUpdate = true;
         // Numero de frames(de rotacion) de la animacion decomprimida
         int m_frameNum;
+        AnimationType m_animType;
     public:
         const std::vector<JointRotation>& getBaseJointRotations() const { return m_baseJointRotations[m_nextFrameIndex]; }
         const std::vector<JointRotation>& getBaseJointRotations(FrameIndex frame) const { return m_baseJointRotations[frame]; }
@@ -81,6 +89,7 @@ namespace Mona {
         std::vector<JointRotation>* getDynamicJointRotationsPtr() { return &(m_dynamicJointRotations[m_nextFrameIndex]);  }
         float getCurrentTime() const { return m_currentTime; }
         FrameIndex getNextFrameIndex() const { return m_nextFrameIndex; }
+        FrameIndex getCurrentFrameIndex() const { return m_currentFrameIndex; }
         IKRigConfig(std::shared_ptr<AnimationClip> animation, AnimationIndex animIndex, ForwardKinematics* fk);
         std::vector<glm::mat4> getModelSpaceTransforms(bool useDynamicRotations);
         std::vector<glm::vec3> getModelSpacePositions(bool useDynamicRotations);

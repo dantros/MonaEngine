@@ -132,6 +132,7 @@ namespace Mona {
 		int savedFrameVal = config.m_nextFrameIndex;
 		for (int i = 0; i < config.m_timeStamps.size(); i++) {
 			if (config.m_timeStamps[i] <= samplingTime) {
+				config.m_currentFrameIndex = i;
 				config.m_nextFrameIndex = (config.m_timeStamps.size()) % (i + 1);
 				config.m_requiresIKUpdate = config.m_nextFrameIndex != savedFrameVal;
 				break;

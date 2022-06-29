@@ -7,8 +7,8 @@ namespace Mona{
         m_regularChains = regularChains;
         m_hipChain = hipChain;
         //creamos terminos para el descenso de gradiente
-        std::function<float(const VectorX&, TGData*)> term1Function =
-            [](const VectorX& varPCoord, TGData* dataPtr)->float {
+        std::function<float(const std::vector<float>&, TGData*)> term1Function =
+            [](const std::vector<float>& varPCoord, TGData* dataPtr)->float {
             float result = 0;
             for (int i = 0; i < dataPtr->pointIndexes.size(); i++) {
                 int pIndex = dataPtr->pointIndexes[i];
@@ -17,8 +17,8 @@ namespace Mona{
             return result;
         };
 
-        std::function<float(const VectorX&, int, TGData*)> term1PartialDerivativeFunction =
-            [](const VectorX& varPCoord, int varIndex, TGData* dataPtr)->float {
+        std::function<float(const std::vector<float>&, int, TGData*)> term1PartialDerivativeFunction =
+            [](const std::vector<float>& varPCoord, int varIndex, TGData* dataPtr)->float {
             int pIndex = dataPtr->pointIndexes[varIndex / 3];
             int coordIndex = varIndex % 3;
             float result = pIndex != 0 ? 
@@ -30,7 +30,7 @@ namespace Mona{
 
         FunctionTerm<TGData> term1(term1Function, term1PartialDerivativeFunction);
 
-        std::function<void(VectorX&, TGData*)>  postDescentStepCustomBehaviour = [](VectorX& varPCoord, TGData* dataPtr)->void {
+        std::function<void(std::vector<float>&, TGData*)>  postDescentStepCustomBehaviour = [](std::vector<float>& varPCoord, TGData* dataPtr)->void {
             glm::vec3 newPos;
             for (int i = 0; i < dataPtr->pointIndexes.size(); i++) {
                 for (int j = 0; j < 3; j++) {

@@ -6,7 +6,6 @@
 #include <memory>
 #include <utility>
 #include <glm/glm.hpp>
-#include <Eigen/Geometry>
 #include "JointPose.hpp"
 namespace Mona {
 	class Skeleton;

@@ -30,7 +30,7 @@ namespace Mona {
 
 	struct IKData {
 		// constants data
-		VectorX baseAngles;
+		std::vector<float> baseAngles;
 		float betaValue;
 		// variables data
 		std::vector<JointIndex> jointIndexes;
@@ -42,7 +42,7 @@ namespace Mona {
 		// other data
 		IKRigConfig* rigConfig;
 		std::vector<glm::vec2> motionRanges;
-		VectorX previousAngles;
+		std::vector<float> previousAngles;
 		float descentRate;
 		int maxIterations;
 	};

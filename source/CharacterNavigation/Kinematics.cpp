@@ -44,21 +44,25 @@ namespace Mona {
 		m_ikRig = ikRig;
 		//creamos terminos para el descenso de gradiente
 		// termino 1 (acercar la animacion creada a la animacion original)
-		std::function<float(const VectorX&, IKData*)> term1Function =
-			[](const VectorX& varAngles, IKData* dataPtr)->float{
-			return (varAngles - dataPtr->baseAngles).squaredNorm();
+		std::function<float(const std::vector<float>&, IKData*)> term1Function =
+			[](const std::vector<float>& varAngles, IKData* dataPtr)->float{
+			float result = 0;
+			for (int i = 0; i < varAngles.size(); i++) {
+				result += pow(varAngles[i] - dataPtr->baseAngles[i], 2);
+			}
+			return result;
 		};
 
-		std::function<float(const VectorX&, int, IKData*)> term1PartialDerivativeFunction =
-			[](const VectorX& varAngles, int varIndex, IKData* dataPtr)->float {
+		std::function<float(const std::vector<float>&, int, IKData*)> term1PartialDerivativeFunction =
+			[](const std::vector<float>& varAngles, int varIndex, IKData* dataPtr)->float {
 			return 2 * (varAngles[varIndex] - dataPtr->baseAngles[varIndex]);
 		};
 
 		FunctionTerm<IKData> term1(term1Function, term1PartialDerivativeFunction);
 
 		// termino 2 (seguir la curva deseada para el end effector)
-		std::function<float(const VectorX&, IKData*)> term2Function =
-			[](const VectorX& varAngles, IKData* dataPtr)->float {
+		std::function<float(const std::vector<float>&, IKData*)> term2Function =
+			[](const std::vector<float>& varAngles, IKData* dataPtr)->float {
 			float result = 0;
 			int eeIndex;
 			glm::vec4 baseVec(0, 0, 0, 1);
@@ -72,8 +76,8 @@ namespace Mona {
 			return result;
 		};
 
-		std::function<float(const VectorX&, int, IKData*)> term2PartialDerivativeFunction =
-			[](const VectorX& varAngles, int varIndex, IKData* dataPtr)->float {
+		std::function<float(const std::vector<float>&, int, IKData*)> term2PartialDerivativeFunction =
+			[](const std::vector<float>& varAngles, int varIndex, IKData* dataPtr)->float {
 			float result = 0;
 			glm::mat4 TA;
 			glm::mat4 TB;
@@ -121,7 +125,7 @@ namespace Mona {
 			return result;
 		};
 		FunctionTerm<IKData> term2(term2Function, term2PartialDerivativeFunction);
-		std::function<void(VectorX&, IKData*)>  postDescentStepCustomBehaviour = [](VectorX& args, IKData* dataPtr)->void {
+		std::function<void(std::vector<float>&, IKData*)>  postDescentStepCustomBehaviour = [](std::vector<float>& args, IKData* dataPtr)->void {
 			// aplicar restricciones de movimiento
 			for (int i = 0; i < args.size(); i++) {
 				int jIndex = dataPtr->jointIndexes[i];
@@ -192,7 +196,7 @@ namespace Mona {
 		}
 		// calcular arreglos de transformaciones
 		setDescentTransformArrays(&m_ikData);
-		VectorX computedAngles = m_gradientDescent.computeArgsMin(m_ikData.descentRate, m_ikData.maxIterations, m_ikData.previousAngles);
+		std::vector<float> computedAngles = m_gradientDescent.computeArgsMin(m_ikData.descentRate, m_ikData.maxIterations, m_ikData.previousAngles);
 		std::vector<std::pair<JointIndex, glm::fquat>> result(computedAngles.size());
 		auto dmicRot = m_ikData.rigConfig->getDynamicJointRotations();
 		for (int i = 0; i < m_ikData.jointIndexes.size(); i++) {

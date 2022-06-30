@@ -17,8 +17,8 @@ namespace Mona {
 			MONA_LOG_ERROR("IKRig: Animation must have stable rotations (fixed scales and positions per joint).");
 			return;
 		}
-		for (int i = 0; i < m_ikRig.m_animations.size(); i++) {
-			if (m_ikRig.m_animations[i]->GetAnimationName() == animationClip->GetAnimationName()) {
+		for (int i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {
+			if (m_ikRig.m_animationConfigs[i].m_animationClip->GetAnimationName() == animationClip->GetAnimationName()) {
 				MONA_LOG_WARNING("IKRig: Animation {0} for model {1} had already been added",
 					animationClip->GetAnimationName(), m_ikRig.m_skeleton->GetModelName());
 				return;
@@ -69,8 +69,8 @@ namespace Mona {
 			}
 		}
 
-		m_ikRig.m_animations.push_back(animationClip);
-		m_ikRig.m_animationConfigs.push_back(IKRigConfig(animationClip, m_ikRig.m_animations.size() - 1, &m_ikRig.m_forwardKinematics));
+		AnimationIndex newIndex = m_ikRig.m_animationConfigs.size();
+		m_ikRig.m_animationConfigs.push_back(IKRigConfig(animationClip, newIndex, &m_ikRig.m_forwardKinematics));
 
 
 		// Ahora guardamos las trayectorias originales de los ee y definimos sus frames de soporte
@@ -110,13 +110,14 @@ namespace Mona {
 			m_ikRig.m_animationConfigs.back().m_ikChainTrajectoryData[i].eeBaseTrajectory = BezierSpline(splinePointsPerChain[i], timeStampsPerChain[i]);
 		}
 
-		animationClip->RemoveRootMotion();
+		// Se remueve el movimiento de las caderas
+		// animationClip->RemoveRootMotion();
+		animationClip->RemoveJointMotion(m_ikRig.m_ikChains[0].getJoints()[0]);
 	}
 
 	int IKRigController::removeAnimation(std::shared_ptr<AnimationClip> animationClip) {
-		for (int i = 0; i < m_ikRig.m_animations.size(); i++) {
-			if (m_ikRig.m_animations[i] == animationClip) {
-				m_ikRig.m_animations.erase(m_ikRig.m_animations.begin() + i);
+		for (int i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {
+			if (m_ikRig.m_animationConfigs[i].m_animationClip == animationClip) {
 				m_ikRig.m_animationConfigs.erase(m_ikRig.m_animationConfigs.begin() + i);
 				return i;
 			}
@@ -125,9 +126,9 @@ namespace Mona {
 	}
 
 	void IKRigController::updateIKRigConfigTime(float time, AnimationIndex animIndex) {
-		auto anim = m_ikRig.m_animations[animIndex];
-		auto& config = m_ikRig.m_animationConfigs[animIndex];
-		float samplingTime = anim->GetSamplingTime(time, m_animationController->GetIsLooping());
+		IKRigConfig& config = m_ikRig.m_animationConfigs[animIndex];
+		auto anim = config.m_animationClip;
+		float samplingTime = anim->GetSamplingTime(time, true);
 		config.m_currentTime = samplingTime;
 		int savedFrameVal = config.m_nextFrameIndex;
 		for (int i = 0; i < config.m_timeStamps.size(); i++) {
@@ -142,6 +143,8 @@ namespace Mona {
 			for (int i = 0; i < config.m_dynamicJointRotations[config.m_nextFrameIndex].size(); i++) {
 				config.m_dynamicJointRotations[config.m_nextFrameIndex][i] = JointRotation(anim->m_animationTracks[i].rotations[config.m_nextFrameIndex]);
 			}
+			// si empezamos una nueva vuelta a la animacion
+			if (config.m_nextFrameIndex == 0) { config.m_reproductionCount += 1; }
 		}
 	}
 

@@ -1,10 +1,10 @@
 #include "TrajectoryGenerator.hpp"
+#include "IKRig.hpp"
 
 namespace Mona{
 
-    TrajectoryGenerator::TrajectoryGenerator(IKRig* ikRig, std::vector<ChainIndex> regularChains, ChainIndex hipChain) {
+    TrajectoryGenerator::TrajectoryGenerator(IKRig* ikRig, ChainIndex hipChain) {
         m_ikRig = ikRig;
-        m_regularChains = regularChains;
         m_hipChain = hipChain;
         //creamos terminos para el descenso de gradiente
         std::function<float(const std::vector<float>&, TGData*)> term1Function =
@@ -46,9 +46,33 @@ namespace Mona{
     }
 
 
-    void TrajectoryGenerator::setIKChains(std::vector<ChainIndex> regularChains, ChainIndex hipChain) {
-        m_regularChains = regularChains;
+    void TrajectoryGenerator::setHipKChain(ChainIndex hipChain) {
         m_hipChain = hipChain;
+    }
+
+    std::vector<std::pair<ChainIndex, BezierSpline>> setNewTrajectories(AnimationIndex animIndex, std::vector<ChainIndex> regularChains) {
+        // se necesitan para cada ee su posicion actual y la curva base, ambos en espacio global
+        // se usa "animationTime" que corresponde al tiempo de la aplicacion modificado con el playRate (-- distinto a samplingTime--)
+    }
+
+    BezierSpline TrajectoryGenerator::generateRegularTrajectory(ChainIndex regularChain, AnimationIndex animIndex) {
+        IKRigConfig* config = m_ikRig->getAnimationConfig(animIndex);
+        TrajectoryData* trData = config->getTrajectoryData(regularChain);
+        FrameIndex nextFrameIndex = config->getNextFrameIndex();
+
+        // chequemos que tipo de trayectoria hay que crear (estatica o dinamica)
+        // si es estatica
+        if (trData->eeSupportFrames[nextFrameIndex]) {
+            float finalTime = config->getTimeStamps()[nextFrameIndex];
+            for (FrameIndex f = nextFrameIndex + 1; f < config->getTimeStamps().size(); f++) {
+                if (trData->eeSupportFrames[f]) { finalTime = config->getTimeStamps()[f]; }
+                else { break; }
+            }
+        } // si es dinamica
+        else {
+
+        }
+        
     }
 
 

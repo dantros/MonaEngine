@@ -174,6 +174,24 @@ namespace Mona {
 		}
 	}
 
+	void AnimationClip::RemoveJointMotion(int jointIndex) {
+		//Remueve las translaciones del track de animacion asociado a una articulacion del esqueleto
+		for (uint32_t i = 0; i < m_animationTracks.size(); i++)
+		{
+			AnimationTrack& animationTrack = m_animationTracks[i];
+			uint32_t jointIndex = m_trackJointIndices[i];
+			if (jointIndex != jointIndex) continue;
+			for (uint32_t j = 0; j < animationTrack.positions.size(); j++)
+			{
+				animationTrack.positions[j] = glm::vec3(0.0f);
+			}
+			for (uint32_t j = 0; j < animationTrack.rotations.size(); j++)
+			{
+				animationTrack.rotations[j] = glm::identity<glm::fquat>();
+			}
+		}
+	}
+
 	float AnimationClip::GetSamplingTime(float time, bool isLooping) const {
 		if (isLooping)
 			return std::fmod(time, m_duration);

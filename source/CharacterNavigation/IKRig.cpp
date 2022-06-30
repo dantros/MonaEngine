@@ -10,12 +10,8 @@ namespace Mona {
 	{
 		m_skeleton = skeleton;
 		m_forwardKinematics = ForwardKinematics(this);
-		std::vector<ChainIndex> regularIKChains;
 		ChainIndex hipIKChain = 0;
-		for (ChainIndex i = 1; i < m_ikChains.size(); i++) {
-			regularIKChains.push_back(i);
-		}
-		m_trajectoryGenerator = TrajectoryGenerator(this, regularIKChains, hipIKChain);
+		m_trajectoryGenerator = TrajectoryGenerator(this, hipIKChain);
 
 		auto topology = getTopology();
 		auto jointNames = getJointNames();
@@ -41,6 +37,10 @@ namespace Mona {
 			}
 		}
 		// setear cinematica inversa
+		std::vector<ChainIndex> regularIKChains;
+		for (ChainIndex i = 1; i < m_ikChains.size(); i++) {
+			regularIKChains.push_back(i);
+		}
 		m_inverseKinematics = InverseKinematics(this, regularIKChains);
 
 		// setear el la altura del rig
@@ -53,15 +53,6 @@ namespace Mona {
 			legLenght += glm::distance(positions[currentJ], positions[parentJ]);
 		}
 		m_rigHeight = legLenght * 2;
-	}
-
-	std::vector<IKChain*> IKRig::getIKChainPtrs(bool includeHipChain) {
-		int startIndex = includeHipChain ? 0 : 1;
-		std::vector<IKChain*> chainPtrs(m_ikChains.size() - startIndex);
-		for (int i = startIndex; i < m_ikChains.size(); i++) {
-			chainPtrs.push_back(&m_ikChains[i]);
-		}
-		return chainPtrs;
 	}
 
 	IKChain IKRig::buildIKChain(ChainEnds chainEnds, std::string chainName) {

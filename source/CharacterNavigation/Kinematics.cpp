@@ -259,9 +259,8 @@ namespace Mona {
 
 	std::vector<glm::mat4> ForwardKinematics::JointSpaceTransforms(AnimationIndex animIndex, bool useDynamicRotations) {
 		std::vector<glm::mat4> jointSpaceTr(m_ikRig->getTopology().size());
-		auto anim = m_ikRig->getAnimation(animIndex);
-		auto config = m_ikRig->getAnimationConfig(animIndex);
-		auto& rotations = useDynamicRotations ? config->getDynamicJointRotations() : config->getBaseJointRotations();
+		IKRigConfig* config = m_ikRig->getAnimationConfig(animIndex);
+		const std::vector<JointRotation>& rotations = useDynamicRotations ? config->getDynamicJointRotations() : config->getBaseJointRotations();
 		for (int i = 0; i < m_ikRig->getTopology().size(); i++) {
 			jointSpaceTr[i] = glmUtils::translationToMat4(config->getJointPositions()[i]) *
 				glmUtils::rotationToMat4(rotations[i].getQuatRotation()) *

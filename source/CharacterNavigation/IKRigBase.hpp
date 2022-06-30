@@ -12,6 +12,7 @@ namespace Mona {
     typedef int AnimationIndex;
     typedef int JointIndex;
     typedef int FrameIndex;
+    typedef int ChainIndex;
     class ForwardKinematics;
 
     class JointRotation {
@@ -35,9 +36,9 @@ namespace Mona {
         glm::vec3 getRotationAxis() const { return m_rotationAxis; }
     };
     struct TrajectoryData {
-        // Trayectoria original del ee asociado a una ikChain
+        // Trayectoria original del ee asociado a una ikChain (model space previo a remocion de trayectoria de la cadera)
         BezierSpline eeBaseTrajectory;
-        // Trayectorias recalculada del ee asociado a una ikChain
+        // Trayectorias recalculada del ee asociado a una ikChain (model space)
         BezierSpline eeTargetTrajectory;
         // Frames de apoyo (estaticos) del end effector
         std::vector<bool> eeSupportFrames;
@@ -45,12 +46,9 @@ namespace Mona {
     class IKRigConfig {
         friend class IKRig;
         friend class IKRigController;
-    public:
-        enum class AnimationType {
-            IDLE,
-            MOVING
-        };
     private:
+        // Clip de animacion asociado a esta configuracion
+        std::shared_ptr<AnimationClip> m_animationClip;
         // Rotaciones para cada joint de la animacion base para cada frame 
         std::vector<std::vector<JointRotation>> m_baseJointRotations;
         // Rotaciones modificables para cada joint
@@ -59,6 +57,7 @@ namespace Mona {
         std::vector<glm::vec3> m_jointScales;
         // Posiciones para cada joint de la animacion base (fijas)
         std::vector<glm::vec3> m_jointPositions;
+        // Timestamps para las rotaciones indexadas por frame
         std::vector<float> m_timeStamps;
         // Indice de la animacion que le corresponde a esta configuracion
         AnimationIndex m_animIndex = -1;
@@ -75,8 +74,10 @@ namespace Mona {
         bool m_requiresIKUpdate = true;
         // Numero de frames(de rotacion) de la animacion decomprimida
         int m_frameNum;
-        AnimationType m_animType;
+        // Numero de veces que la animacion se ha reproducido
+        int m_reproductionCount = 0;
     public:
+        IKRigConfig(std::shared_ptr<AnimationClip> animation, AnimationIndex animIndex, ForwardKinematics* fk);
         const std::vector<JointRotation>& getBaseJointRotations() const { return m_baseJointRotations[m_nextFrameIndex]; }
         const std::vector<JointRotation>& getBaseJointRotations(FrameIndex frame) const { return m_baseJointRotations[frame]; }
         const std::vector<JointRotation>& getDynamicJointRotations() const { return m_dynamicJointRotations[m_nextFrameIndex]; }
@@ -86,15 +87,17 @@ namespace Mona {
         const std::vector<float>& getTimeStamps() const { return m_timeStamps; }
         AnimationIndex getAnimIndex() const { return m_animIndex; }
         int getFrameNum() const { return m_frameNum; }
+        float getAnimationTime(float timeStamp);
+        int getReproductionCount() const { return m_reproductionCount; }
         std::vector<JointRotation>* getDynamicJointRotationsPtr() { return &(m_dynamicJointRotations[m_nextFrameIndex]);  }
         float getCurrentTime() const { return m_currentTime; }
         FrameIndex getNextFrameIndex() const { return m_nextFrameIndex; }
         FrameIndex getCurrentFrameIndex() const { return m_currentFrameIndex; }
-        IKRigConfig(std::shared_ptr<AnimationClip> animation, AnimationIndex animIndex, ForwardKinematics* fk);
         std::vector<glm::mat4> getModelSpaceTransforms(bool useDynamicRotations);
         std::vector<glm::vec3> getModelSpacePositions(bool useDynamicRotations);
         std::vector<glm::vec3> getBaseModelSpacePositions(FrameIndex frame);
         std::vector<glm::mat4> getJointSpaceTransforms(bool useDynamicRotations);
+        TrajectoryData* getTrajectoryData(ChainIndex chainIndex) { return &(m_ikChainTrajectoryData[chainIndex]); }
     };
 
     struct JointData {
@@ -117,7 +120,7 @@ namespace Mona {
         std::string m_name;
         // Articulaciones que conforman la cadena, desde el origen hasta el ee
         std::vector<JointIndex> m_joints;
-        // Objetivo actual para el end effector (donde debe posicionarse)
+        // Objetivo actual para el end effector (donde debe posicionarse) (model space)
         glm::vec3 m_currentEETarget;
     public:
         IKChain() = default;

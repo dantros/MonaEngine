@@ -4,6 +4,7 @@
 namespace Mona{
 
 	IKRigConfig::IKRigConfig(std::shared_ptr<AnimationClip> animation, AnimationIndex animationIndex, ForwardKinematics* forwardKinematics) {
+		m_animationClip = animation;
 		int frameNum = animation->m_animationTracks[0].rotationTimeStamps.size();
 		int jointNum = animation->m_animationTracks.size();
 		m_jointPositions.reserve(jointNum);
@@ -37,6 +38,10 @@ namespace Mona{
 	}
 	std::vector<glm::mat4> IKRigConfig::getJointSpaceTransforms(bool useDynamicRotations) {
 		return m_forwardKinematics->JointSpaceTransforms(m_animIndex, useDynamicRotations);
+	}
+
+	float IKRigConfig::getAnimationTime(float timeStamp) {
+		return m_reproductionCount * m_animationClip->GetDuration() + timeStamp;
 	}
 
 	IKNode::IKNode(std::string jointName, JointIndex jointIndex, IKNode* parent, float weight) {

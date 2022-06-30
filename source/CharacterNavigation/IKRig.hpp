@@ -18,16 +18,13 @@ namespace Mona{
             IKRig() = default;
             IKRig(std::shared_ptr<Skeleton> skeleton, RigData rigData, InnerComponentHandle skeletalMeshHandle);
             IKRigConfig* getAnimationConfig(AnimationIndex animIndex) { return &m_animationConfigs[animIndex]; };
-            std::shared_ptr<AnimationClip> getAnimation(AnimationIndex animIndex) { return m_animations[animIndex]; };
             const std::vector<int>& getTopology() const { return m_skeleton->m_parentIndices; };
             const std::vector<std::string>& getJointNames() const { return m_skeleton->m_jointNames; };
             IKNode* getIKNode(JointIndex jointIndex) { return &m_nodes[jointIndex]; };
             IKChain* getIKChain(ChainIndex chainIndex) { return &m_ikChains[chainIndex]; };
 
         private:
-            // Animaciones guardadas
-            std::vector<std::shared_ptr<AnimationClip>> m_animations;
-            // Informacion de configuracion del IKRig por cada animacion guardada
+            // Informacion de configuracion del IKRig por cada animacion
             std::vector<IKRigConfig> m_animationConfigs;
             std::shared_ptr<Skeleton> m_skeleton;
 
@@ -47,7 +44,6 @@ namespace Mona{
             std::vector<IKChain> m_ikChains;
             IKChain buildIKChain(ChainEnds chainEnds, std::string chainName);
             IKChain buildHipIKChain(std::string hipJointName);
-            std::vector<IKChain*> getIKChainPtrs(bool includeHipChain=false);
             std::vector<std::pair<JointIndex, glm::fquat>> calculateRotations(AnimationIndex animIndex);
             std::vector<std::pair<ChainIndex, BezierSpline>> calculateEETrajectories(AnimationIndex animIndex, std::vector<ChainIndex> ikChains);
     };

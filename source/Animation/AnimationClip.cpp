@@ -174,7 +174,7 @@ namespace Mona {
 		}
 	}
 
-	void AnimationClip::RemoveJointMotion(int jointIndex) {
+	void AnimationClip::RemoveJointTranslation(int jointIndex) {
 		//Remueve las translaciones del track de animacion asociado a una articulacion del esqueleto
 		for (uint32_t i = 0; i < m_animationTracks.size(); i++)
 		{
@@ -185,6 +185,16 @@ namespace Mona {
 			{
 				animationTrack.positions[j] = glm::vec3(0.0f);
 			}
+		}
+	}
+
+	void AnimationClip::RemoveJointRotation(int jointIndex) {
+		//Remueve las translaciones del track de animacion asociado a una articulacion del esqueleto
+		for (uint32_t i = 0; i < m_animationTracks.size(); i++)
+		{
+			AnimationTrack& animationTrack = m_animationTracks[i];
+			uint32_t jointIndex = m_trackJointIndices[i];
+			if (jointIndex != jointIndex) continue;
 			for (uint32_t j = 0; j < animationTrack.rotations.size(); j++)
 			{
 				animationTrack.rotations[j] = glm::identity<glm::fquat>();

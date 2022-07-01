@@ -40,7 +40,8 @@ namespace Mona {
 			std::shared_ptr<Skeleton> skeleton,
 			bool removeRootMotion = true);
 		void RemoveRootMotion();
-		void RemoveJointMotion(int jointIndex);
+		void RemoveJointTranslation(int jointIndex);
+		void RemoveJointRotation(int jointIndex);
 
 		float GetSamplingTime(float time, bool isLooping) const;
 		std::pair<uint32_t, float> GetTimeFraction(const std::vector<float>& timeStamps, float time) const;

@@ -155,6 +155,11 @@ namespace Mona {
         inline T lerp(T minVal, T maxVal, float fraction) {
             return minVal + (maxVal - minVal) * fraction;
         }
+
+
+        inline float getFraction(float minVal, float maxVal, float val) {
+            return (val - minVal) / (maxVal - minVal);
+        }
 	}
     
 }

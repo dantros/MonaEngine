@@ -42,6 +42,8 @@ namespace Mona{
             std::vector<IKNode> m_nodes;
             // Arreglo de cadenas IK
             std::vector<IKChain> m_ikChains;
+            // Indice de la cadera
+            JointIndex m_hipJoint;
             IKChain buildIKChain(ChainEnds chainEnds, std::string chainName);
             IKChain buildHipIKChain(std::string hipJointName);
             std::vector<std::pair<JointIndex, glm::fquat>> calculateRotations(AnimationIndex animIndex);

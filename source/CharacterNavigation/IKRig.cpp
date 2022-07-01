@@ -11,7 +11,7 @@ namespace Mona {
 		m_skeleton = skeleton;
 		m_forwardKinematics = ForwardKinematics(this);
 		ChainIndex hipIKChain = 0;
-		m_trajectoryGenerator = TrajectoryGenerator(this, hipIKChain);
+		m_trajectoryGenerator = TrajectoryGenerator(this);
 
 		auto topology = getTopology();
 		auto jointNames = getJointNames();
@@ -23,8 +23,13 @@ namespace Mona {
 			m_nodes[i] = IKNode(jointNames[i], i, &m_nodes[topology[i]]);
 		}
 
+		// seteo de la cadera
+		JointIndex hipInd = funcUtils::findIndex(jointNames, rigData.hipJointName);
+		MONA_ASSERT(hipInd != -1, "IKRig: Input hip joint name was not a correct joint name.");
+		m_hipJoint = hipInd;	
+		
 		// construccion de las cadenas principales
-		m_ikChains = { buildHipIKChain(rigData.hipJointName), buildIKChain(rigData.leftLeg, "leftLeg"), buildIKChain(rigData.rightLeg, "rightLeg"),
+		m_ikChains = { buildIKChain(rigData.leftLeg, "leftLeg"), buildIKChain(rigData.rightLeg, "rightLeg"),
 		buildIKChain(rigData.leftFoot, "leftFoot"), buildIKChain(rigData.rightFoot, "rightFoot") };
 
 		// setear constraints y pesos
@@ -37,14 +42,14 @@ namespace Mona {
 			}
 		}
 		// setear cinematica inversa
-		std::vector<ChainIndex> regularIKChains;
-		for (ChainIndex i = 1; i < m_ikChains.size(); i++) {
-			regularIKChains.push_back(i);
+		std::vector<ChainIndex> ikChains;
+		for (ChainIndex i = 0; i < m_ikChains.size(); i++) {
+			ikChains.push_back(i);
 		}
-		m_inverseKinematics = InverseKinematics(this, regularIKChains);
+		m_inverseKinematics = InverseKinematics(this, ikChains);
 
 		// setear el la altura del rig
-		IKChain& leftLegChain = m_ikChains[1];
+		IKChain& leftLegChain = m_ikChains[0];
 		auto positions = m_animationConfigs[0].getModelSpacePositions(false);
 		float legLenght = 0;
 		for (int i = leftLegChain.m_joints.size() - 1; 0 < i ; i--) {
@@ -82,19 +87,6 @@ namespace Mona {
 		else {
 			MONA_LOG_ERROR("IKRig: Did not find an end effector named {0}", chainEnds.endEffectorName);
 		}
-		return ikChain;
-	}
-
-	IKChain IKRig::buildHipIKChain(std::string hipJointName) {
-		IKChain ikChain;
-		auto jointNames = getJointNames();
-		JointIndex hipInd = funcUtils::findIndex(jointNames, hipJointName);
-		if (hipInd == -1) {
-			MONA_LOG_ERROR("IKRig: Input hip joint name was not a correct joint name.");
-			return ikChain;
-		}
-		ikChain.m_name = hipJointName;
-		ikChain.m_joints = { hipInd };
 		return ikChain;
 	}
 

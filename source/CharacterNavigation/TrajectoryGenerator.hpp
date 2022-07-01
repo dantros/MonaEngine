@@ -19,18 +19,21 @@ namespace Mona{
     class IKRig;
     class TrajectoryGenerator {
         friend class IKNavigationComponent;
+    public:
+        enum class TrajectoryType {
+            STATIC,
+            DYNAMIC
+        };
     private:
         IKRig* m_ikRig;
         EnvironmentData m_environmentData;
         GradientDescent<TGData> m_gradientDescent;
         TGData m_tgData;
-        ChainIndex m_hipChain;
-        BezierSpline generateRegularTrajectory(ChainIndex regularChain, AnimationIndex animIndex);
+        std::pair<TrajectoryType, BezierSpline> generateRegularTrajectory(ChainIndex regularChain, AnimationIndex animIndex);
         BezierSpline generateHipTrajectory();
     public:
-        TrajectoryGenerator(IKRig* ikRig, ChainIndex hipChain);
+        TrajectoryGenerator(IKRig* ikRig);
         TrajectoryGenerator() = default;
-        void setHipKChain(ChainIndex hipChain);
         std::vector<std::pair<ChainIndex, BezierSpline>> setNewTrajectories(AnimationIndex animIndex, std::vector<ChainIndex> regularChains);
 
 

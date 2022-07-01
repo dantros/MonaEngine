@@ -35,7 +35,15 @@ namespace Mona {
         float getRotationAngle() const { return m_rotationAngle; }
         glm::vec3 getRotationAxis() const { return m_rotationAxis; }
     };
-    struct TrajectoryData {
+    struct HipTrajectoryData {
+        // Trayectoria original del ee asociado a una ikChain (model space previo a remocion de trayectoria de la cadera)
+        BezierSpline eeBaseTrajectory;
+        // Trayectorias recalculada del ee asociado a una ikChain (model space)
+        BezierSpline eeTargetTrajectory;
+        // Frames de apoyo (estaticos) del end effector
+        std::vector<bool> eeSupportFrames;
+    };
+    struct EETrajectoryData {
         // Trayectoria original del ee asociado a una ikChain (model space previo a remocion de trayectoria de la cadera)
         BezierSpline eeBaseTrajectory;
         // Trayectorias recalculada del ee asociado a una ikChain (model space)
@@ -63,7 +71,9 @@ namespace Mona {
         AnimationIndex m_animIndex = -1;
         ForwardKinematics* m_forwardKinematics;
         // Data de trayectoria para cada ikChain (mantiene orden del arreglo original de cadenas)
-        std::vector<TrajectoryData> m_ikChainTrajectoryData;
+        std::vector<EETrajectoryData> m_ikChainTrajectoryData;
+        // Data de trayectoria para la cadera
+        HipTrajectoryData m_hipTrajectoryData;
         // Tiempo actual de la animacion
         float m_currentTime = -1;
         // Indica el frame mas reciente de la animacion
@@ -72,8 +82,6 @@ namespace Mona {
         FrameIndex m_nextFrameIndex = -1;
         // Indica si es necesario actualizar las rotaciones de las joints
         bool m_requiresIKUpdate = true;
-        // Numero de frames(de rotacion) de la animacion decomprimida
-        int m_frameNum;
         // Numero de veces que la animacion se ha reproducido
         int m_reproductionCount = 0;
     public:
@@ -85,9 +93,7 @@ namespace Mona {
         const std::vector<glm::vec3>& getJointScales() const { return m_jointScales; }
         const std::vector<glm::vec3>& getJointPositions() const { return m_jointPositions; }
         const std::vector<float>& getTimeStamps() const { return m_timeStamps; }
-        AnimationIndex getAnimIndex() const { return m_animIndex; }
-        int getFrameNum() const { return m_frameNum; }
-        float getAnimationTime(float timeStamp);
+        float getAnimationTime(float timeStamp, int repCountOffset = 0);
         int getReproductionCount() const { return m_reproductionCount; }
         std::vector<JointRotation>* getDynamicJointRotationsPtr() { return &(m_dynamicJointRotations[m_nextFrameIndex]);  }
         float getCurrentTime() const { return m_currentTime; }
@@ -97,7 +103,8 @@ namespace Mona {
         std::vector<glm::vec3> getModelSpacePositions(bool useDynamicRotations);
         std::vector<glm::vec3> getBaseModelSpacePositions(FrameIndex frame);
         std::vector<glm::mat4> getJointSpaceTransforms(bool useDynamicRotations);
-        TrajectoryData* getTrajectoryData(ChainIndex chainIndex) { return &(m_ikChainTrajectoryData[chainIndex]); }
+        EETrajectoryData* getTrajectoryData(ChainIndex chainIndex) { return &(m_ikChainTrajectoryData[chainIndex]); }
+        HipTrajectoryData* getHipTrajectoryData() { return &m_hipTrajectoryData; }
     };
 
     struct JointData {

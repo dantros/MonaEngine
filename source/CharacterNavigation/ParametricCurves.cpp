@@ -5,6 +5,91 @@
 
 namespace Mona{
 
+    template <typename T>
+    LIC<T>::LIC(std::vector<T> curvePoints, std::vector<float> tValues) {
+        MONA_ASSERT(1 < curvePoints.size(), "LIC: must provide at least two points.");
+        MONA_ASSERT(curvePoints.size() == tValues.size(), "LIC: there must be exactly one tValue per spline point.");
+        // chequeamos que los tValues vengan correctamente ordenados
+        for (int i = 1; i < tValues.size(); i++) {
+            if (!(tValues[i - 1] < tValues[i])) {
+                MONA_LOG_ERROR("LIC: tValues must come in a strictly ascending order");
+                return;
+            }
+        }
+        m_curvePoints = curvePoints;
+        m_tValues = tValues;
+    }
+
+
+    template <typename T>
+    T LIC<T>::getLeftHandVelocity(float t) {
+        MONA_ASSERT(inTRange(t), "LIC: t must be a value between {0} and {1}.", m_tValues[0], m_tValues.back());
+        T zero = m_curvePoints[0] - m_curvePoints[0];
+        if (t == m_tValues[0]) { return zero }
+        for (int i = 0; i < m_tValues.size(); i++) {
+            if (m_tValues[i] == t) {
+                return (m_curvePoints[i] - m_curvePoints[i - 1]) / (m_tValues[i] - m_tValues[i - 1]);
+            }
+            else if (m_tValues[i] < t && t < m_tValues[i + 1]) {
+                return (m_curvePoints[i+1] - m_curvePoints[i]) / (m_tValues[i+1] - m_tValues[i]);
+            }
+        }
+        return zero;
+    }
+
+    template <typename T>
+    T LIC<T>::getRightHandVelocity(float t) {
+        MONA_ASSERT(inTRange(t), "LIC: t must be a value between {0} and {1}.", m_tValues[0], m_tValues.back());
+        T zero = m_curvePoints[0] - m_curvePoints[0];
+        if (t == m_tValues.back()) { return zero }
+        for (int i = 0; i < m_tValues.size(); i++) {
+            if (m_tValues[i] == t) {
+                return (m_curvePoints[i + 1] - m_curvePoints[i]) / (m_tValues[i + 1] - m_tValues[i]);
+            }
+            else if (m_tValues[i] < t && t < m_tValues[i+1]) {
+                return (m_curvePoints[i + 1] - m_curvePoints[i]) / (m_tValues[i + 1] - m_tValues[i]);
+            }
+        }
+        return zero;
+    }
+
+    template <typename T>
+    T LIC<T>::evalCurve(float t) {
+        MONA_ASSERT(inTRange(t), "LIC: t must be a value between {0} and {1}.", m_tValues[0], m_tValues.back());
+        T zero = m_curvePoints[0] - m_curvePoints[0];
+        for (int i = 0; i < m_tValues.size()-1; i++) {
+            if (m_tValues[i] <= t && t <= m_tValues[i + 1]) {
+                float fraction = funcUtils::getFraction(m_tValues[i], m_tValues[i + 1], t);
+                return funcUtils::lerp(m_curvePoints[i], m_curvePoints[i + 1], fraction);
+            }
+        }
+        return zero;
+    }
+
+    template <typename T>
+    void LIC<T>::displacePointT(int pointIndex, float newT, float pointScalingRatio) {
+        MONA_ASSERT(inTRange(t), "LIC: newT must be a value between {0} and {1}.", m_tValues[0], m_tValues.back());
+        glm::vec2 tRange = getTRange();
+        float oldT = m_tValues[pointIndex];
+        float fractionBelow = funcUtils::getFraction(tRange[0], oldT, newT);
+        float fractionAbove = funcUtils::getFraction(tRange[1], oldT, newT);
+        for (int i = 0; i < pointIndex; i++) {
+            tRange[i] = funcUtils::lerp(tRange[0], tRange[i], fractionBelow);
+            m_curvePoints[i] = funcUtils::lerp(m_curvePoints[0], m_curvePoints[i], fractionBelow * positionScalingRatio);
+        }
+        for (int i = pointIndex; i < m_curvePoints.size(); i++) {
+            tRange[i] = funcUtils::lerp(tRange[1], tRange[i], fractionAbove);
+            m_curvePoints[i] = funcUtils::lerp(m_curvePoints.back(), m_curvePoints[i], fractionAbove * positionScalingRatio);
+        }
+
+    }
+    template <typename T>
+    void LIC<T>::setCurvePoint(int pointIndex, T newValue) {
+        MONA_ASSERT(0 <= pointIndex && pointIndex < m_curvePoints.size(), "LIC: input index must be within bounds");
+        m_curvePoints[pointIndex] = newValue;
+    }
+
+
 
     DiscreteCurve::DiscreteCurve(std::vector<glm::vec3> curvePoints, std::vector<float> tValues) {
         MONA_ASSERT(1 < curvePoints.size(), "DiscreteCurve: must provide at least two points.");
@@ -35,23 +120,19 @@ namespace Mona{
         return (m_curvePoints[pointIndex] - m_curvePoints[pointIndex - 1]) / (m_tValues[pointIndex] - m_tValues[pointIndex - 1]);
     }
 
-    void DiscreteCurve::displacePointT(int pointIndex, float newT, bool scalePositions) {
+    void DiscreteCurve::displacePointT(int pointIndex, float newT, float positionScalingRatio) {
         MONA_ASSERT(inTRange(newT), "DiscreteCurve: new t must be within original t bounds");
         glm::vec2 tRange = getTRange();
         float oldT = m_tValues[pointIndex];
-        float fractionBelow = (newT - tRange[0]) / (oldT - tRange[0]);
-        float fractionAbove = (newT - tRange[1]) / (oldT - tRange[1]);
+        float fractionBelow = funcUtils::getFraction(tRange[0], oldT, newT);
+        float fractionAbove = funcUtils::getFraction(tRange[1], oldT, newT);
         for (int i = 0; i < pointIndex; i++) {
             tRange[i] = funcUtils::lerp(tRange[0], tRange[i], fractionBelow);
-            if (scalePositions) {
-                m_curvePoints[i] = funcUtils::lerp(m_curvePoints[0], m_curvePoints[i], fractionBelow);
-            }
+            m_curvePoints[i] = funcUtils::lerp(m_curvePoints[0], m_curvePoints[i], fractionBelow*positionScalingRatio);
         }
         for (int i = pointIndex; i < m_curvePoints.size(); i++) {
             tRange[i] = funcUtils::lerp(tRange[1], tRange[i], fractionAbove);
-            if (scalePositions) {
-                m_curvePoints[i] = funcUtils::lerp(m_curvePoints.back(), m_curvePoints[i], fractionAbove);
-            }
+            m_curvePoints[i] = funcUtils::lerp(m_curvePoints.back(), m_curvePoints[i], fractionAbove*positionScalingRatio);
         }
     }
 

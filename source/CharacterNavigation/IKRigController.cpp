@@ -112,7 +112,8 @@ namespace Mona {
 
 		// Se remueve el movimiento de las caderas
 		// animationClip->RemoveRootMotion();
-		animationClip->RemoveJointMotion(m_ikRig.m_ikChains[0].getJoints()[0]);
+		animationClip->RemoveJointRotation(m_ikRig.m_hipJoint);
+		animationClip->RemoveJointTranslation(m_ikRig.m_hipJoint);
 	}
 
 	int IKRigController::removeAnimation(std::shared_ptr<AnimationClip> animationClip) {
@@ -130,21 +131,21 @@ namespace Mona {
 		auto anim = config.m_animationClip;
 		float samplingTime = anim->GetSamplingTime(time, true);
 		config.m_currentTime = samplingTime;
-		int savedFrameVal = config.m_nextFrameIndex;
+		int savedCurrentFrameVal = config.m_currentFrameIndex;
+		int savedNextFrameVal = config.m_nextFrameIndex;
 		for (int i = 0; i < config.m_timeStamps.size(); i++) {
 			if (config.m_timeStamps[i] <= samplingTime) {
 				config.m_currentFrameIndex = i;
 				config.m_nextFrameIndex = (config.m_timeStamps.size()) % (i + 1);
-				config.m_requiresIKUpdate = config.m_nextFrameIndex != savedFrameVal;
+				config.m_requiresIKUpdate = config.m_nextFrameIndex != savedNextFrameVal;
 				break;
 			}
 		}
-		if (config.m_requiresIKUpdate) {
-			for (int i = 0; i < config.m_dynamicJointRotations[config.m_nextFrameIndex].size(); i++) {
-				config.m_dynamicJointRotations[config.m_nextFrameIndex][i] = JointRotation(anim->m_animationTracks[i].rotations[config.m_nextFrameIndex]);
-			}
+		if (config.m_requiresIKUpdate) {			
 			// si empezamos una nueva vuelta a la animacion
-			if (config.m_nextFrameIndex == 0) { config.m_reproductionCount += 1; }
+			if (savedCurrentFrameVal == (config.m_timeStamps.size()-1) && config.m_currentFrameIndex == 0) {
+				config.m_reproductionCount += 1;
+			}
 		}
 	}
 

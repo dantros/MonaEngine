@@ -24,7 +24,22 @@ namespace Mona {
 				return;
 			}
 		}
-		// descomprimimos las rotaciones de la animacion, repitiendo valores para que todas las articulaciones 
+
+		// Primero guardamos la informacion de traslacion y rotacion de la cadera que sera eliminada mas adelante
+		auto hipTrack = animationClip->m_animationTracks[animationClip->m_jointTrackIndices[m_ikRig.m_hipJoint]];
+		std::vector<glm::vec3> hipRotAxes(hipTrack.rotations.size());
+		std::vector<glm::vec1> hipRotAngles(hipTrack.rotations.size());
+
+		for (int i = 0; i < hipTrack.rotations.size(); i++) {
+			hipRotAxes[i] = glm::axis(hipTrack.rotations[i]);
+			hipRotAngles[i] = glm::vec1(glm::angle(hipTrack.rotations[i]));
+		}
+
+		m_ikRig.m_animationConfigs.back().m_hipTrajectoryData.hipOriginalRotationAngles = LIC<1>(hipRotAngles, hipTrack.rotationTimeStamps);
+		m_ikRig.m_animationConfigs.back().m_hipTrajectoryData.hipOriginalRotationAxes = LIC<3>(hipRotAxes, hipTrack.rotationTimeStamps);
+		m_ikRig.m_animationConfigs.back().m_hipTrajectoryData.hipOriginalTranslations = LIC<3>(hipTrack.positions, hipTrack.positionTimeStamps);
+
+		// Descomprimimos las rotaciones de la animacion, repitiendo valores para que todas las articulaciones 
 		// tengan el mismo numero de rotaciones
 		std::vector<AnimationClip::AnimationTrack>& tracks = animationClip->m_animationTracks;
 		int nTracks = tracks.size();
@@ -71,16 +86,17 @@ namespace Mona {
 
 		AnimationIndex newIndex = m_ikRig.m_animationConfigs.size();
 		m_ikRig.m_animationConfigs.push_back(IKRigConfig(animationClip, newIndex, &m_ikRig.m_forwardKinematics));
+		IKRigConfig* currentConfig = m_ikRig.getAnimationConfig(newIndex);
 
 
 		// Ahora guardamos las trayectorias originales de los ee y definimos sus frames de soporte
 		int frameNum = animationClip->m_animationTracks[0].rotationTimeStamps.size();
 		float minDistance = m_ikRig.m_rigHeight / 1000;
-		std::vector<float> tValues = animationClip->m_animationTracks[0].rotationTimeStamps;
+		std::vector<float> rotTimeStamps = animationClip->m_animationTracks[0].rotationTimeStamps;
 		std::vector<std::vector<glm::vec3>> curvePointsPerChain(m_ikRig.m_ikChains.size());
 		std::vector<std::vector<float>> timeStampsPerChain(m_ikRig.m_ikChains.size());
 		std::vector<std::vector<bool>> supportFramesPerChain(m_ikRig.m_ikChains.size());
-		std::vector<glm::vec3> positions = m_ikRig.m_animationConfigs.back().getBaseModelSpacePositions(0);
+		std::vector<glm::vec3> positions = currentConfig->getBaseModelSpacePositions(0);
 		std::vector<glm::vec3> previousPositions(positions.size());
 		std::fill(previousPositions.begin(), previousPositions.end(), glm::vec3(std::numeric_limits<float>::min()));
 		for (int j = 0; j < m_ikRig.m_ikChains.size(); j++) {
@@ -89,14 +105,14 @@ namespace Mona {
 			supportFramesPerChain[j].reserve(frameNum);
 		}
 		for (int i = 0; i < frameNum; i++) {
-			positions = m_ikRig.m_animationConfigs.back().getBaseModelSpacePositions(i);
+			positions = currentConfig->getBaseModelSpacePositions(i);
 			for (int j = 0; j < m_ikRig.m_ikChains.size(); j++) {
 				int eeIndex = m_ikRig.m_ikChains[j].getJoints().back();
 				bool isSupportFrame = glm::distance(positions[eeIndex], previousPositions[eeIndex]) <= minDistance;
 				supportFramesPerChain[j].push_back(isSupportFrame);
 				if (!isSupportFrame) { // si es suficientemente distinto al anterior, lo guardamos como parte de la curva
 					curvePointsPerChain[j].push_back(positions[eeIndex]);
-					timeStampsPerChain[j].push_back(tValues[i]);
+					timeStampsPerChain[j].push_back(rotTimeStamps[i]);
 				}
 			}
 			previousPositions = positions;
@@ -106,14 +122,17 @@ namespace Mona {
 			supportFramesPerChain[j][0] = supportFramesPerChain[j].back();
 		}
 		for (int i = 0; i < m_ikRig.m_ikChains.size(); i++) {
-			m_ikRig.m_animationConfigs.back().m_ikChainTrajectoryData[i].eeSupportFrames = supportFramesPerChain[i];
-			m_ikRig.m_animationConfigs.back().m_ikChainTrajectoryData[i].eeBaseTrajectory = LIC<3>(curvePointsPerChain[i], timeStampsPerChain[i]);
+			currentConfig->m_ikChainTrajectoryData[i].eeSupportFrames = supportFramesPerChain[i];
+			currentConfig->m_ikChainTrajectoryData[i].eeOriginalTrajectory = LIC<3>(curvePointsPerChain[i], timeStampsPerChain[i]);
 		}
 
 		// Se remueve el movimiento de las caderas
-		// animationClip->RemoveRootMotion();
 		animationClip->RemoveJointRotation(m_ikRig.m_hipJoint);
 		animationClip->RemoveJointTranslation(m_ikRig.m_hipJoint);
+		for (int i = 0; i < currentConfig->m_baseJointRotations[m_ikRig.m_hipJoint].size(); i++) {
+			currentConfig->m_baseJointRotations[m_ikRig.m_hipJoint][i] = JointRotation(glm::identity<glm::fquat>());
+		}
+
 	}
 
 	int IKRigController::removeAnimation(std::shared_ptr<AnimationClip> animationClip) {

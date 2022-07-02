@@ -36,16 +36,22 @@ namespace Mona {
         glm::vec3 getRotationAxis() const { return m_rotationAxis; }
     };
     struct HipTrajectoryData {
-        // Trayectoria original del ee asociado a una ikChain (model space previo a remocion de trayectoria de la cadera)
-        //LIC eeBaseTrajectory;
-        // Trayectorias recalculada del ee asociado a una ikChain (model space)
-        //LIC eeTargetTrajectory;
-        // Frames de apoyo (estaticos) del end effector
-        std::vector<bool> eeSupportFrames;
+        // Angulos de rotacion originales
+        LIC<1> hipOriginalRotationAngles;
+        // Ejes de rotacion originales
+        LIC<3> hipOriginalRotationAxes;
+        // Traslaciones originales
+        LIC<3> hipOriginalTranslations;
+        // Angulos de rotacion objetivo
+        LIC<1> hipTargetRotationAngles;
+        // Ejes de rotacion objetivo
+        LIC<3> hipTargetRotationAxes;
+        // Traslaciones objetivo
+        LIC<3> hipTargetTranslations;        
     };
     struct EETrajectoryData {
         // Trayectoria original del ee asociado a una ikChain (model space previo a remocion de trayectoria de la cadera)
-        LIC<3> eeBaseTrajectory;
+        LIC<3> eeOriginalTrajectory;
         // Trayectorias recalculada del ee asociado a una ikChain (model space)
         LIC<3> eeTargetTrajectory;
         // Frames de apoyo (estaticos) del end effector

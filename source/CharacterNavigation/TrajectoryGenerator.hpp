@@ -16,6 +16,7 @@ namespace Mona{
         LIC<D>* baseCurve;
         LIC<D>* varCurve;
         std::vector<int> pointIndexes;
+        std::vector<glm::vec<D, float>> minValues;
     };
 
     class IKRig;

@@ -39,6 +39,7 @@ namespace Mona{
                 newPos[j] = varPCoord[i * D + j];
             }
             int pIndex = dataPtr->pointIndexes[i];
+            newPos = glm::max<glm::vec<D, float>>(dataPtr->minValues[i], newPos);
             dataPtr->varCurve->setCurvePoint(pIndex, newPos);
         }
     };
@@ -79,7 +80,7 @@ namespace Mona{
             }
             else {
                 // Debemos llevar la posicion del ee en pseudo model space a model space y luego a global. luego de vuelta a model space
-                glm::vec3 pseudoMSPos = trData->eeBaseTrajectory.evalCurve(initialTime);
+                glm::vec3 pseudoMSPos = trData->eeOriginalTrajectory.evalCurve(initialTime);
                 //glm::vec3 pseudoMSHipPos = hipTrData->eeBaseTrajectory.evalCurve(initialTime);
                 //glm::vec3 msPos = pseudoMSPos - pseudoMSHipPos;
             }

@@ -18,6 +18,7 @@ namespace Mona {
         }
         m_curvePoints = curvePoints;
         m_tValues = tValues;
+        m_dimension = D;
     }
 
 
@@ -112,5 +113,12 @@ namespace Mona {
         }
     }
 
+    template <int D>
+    void LIC<D>::rotate(glm::fquat rotation) {
+        MONA_ASSERT(D == 3, "LIC: Quaternion rotation is only available for dimension 3 LICs.");
+        for (int i = 0; i < m_curvePoints.size(); i++) {
+            m_curvePoints[i] = glm::rotate(rotation, glm::vec4(m_curvePoints[i], 1));
+        }
+    }
     
 }

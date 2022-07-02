@@ -37,17 +37,17 @@ namespace Mona {
     };
     struct HipTrajectoryData {
         // Trayectoria original del ee asociado a una ikChain (model space previo a remocion de trayectoria de la cadera)
-        BezierSpline eeBaseTrajectory;
+        //LIC eeBaseTrajectory;
         // Trayectorias recalculada del ee asociado a una ikChain (model space)
-        BezierSpline eeTargetTrajectory;
+        //LIC eeTargetTrajectory;
         // Frames de apoyo (estaticos) del end effector
         std::vector<bool> eeSupportFrames;
     };
     struct EETrajectoryData {
         // Trayectoria original del ee asociado a una ikChain (model space previo a remocion de trayectoria de la cadera)
-        BezierSpline eeBaseTrajectory;
+        LIC<glm::vec3> eeBaseTrajectory;
         // Trayectorias recalculada del ee asociado a una ikChain (model space)
-        BezierSpline eeTargetTrajectory;
+        LIC<glm::vec3> eeTargetTrajectory;
         // Frames de apoyo (estaticos) del end effector
         std::vector<bool> eeSupportFrames;
     };

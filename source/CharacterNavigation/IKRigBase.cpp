@@ -24,7 +24,6 @@ namespace Mona{
 		m_dynamicJointRotations = m_baseJointRotations;
 		m_animIndex = animationIndex;
 		m_forwardKinematics = forwardKinematics;
-		m_frameNum = frameNum;
 	}
 
 	std::vector<glm::mat4> IKRigConfig::getModelSpaceTransforms(bool useDynamicRotations) {

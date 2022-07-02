@@ -11,11 +11,10 @@ namespace Mona{
     typedef int ChainIndex;
     typedef int AnimationIndex;
 
-    template <typename T>
+    template <int D>
     struct TGData {
-        LIC<T>* baseCurve;
-        LIC<T>* varCurve;
-        std::vector<T> baseVelocities;
+        LIC<D>* baseCurve;
+        LIC<D>* varCurve;
         std::vector<int> pointIndexes;
     };
 
@@ -30,12 +29,12 @@ namespace Mona{
     private:
         IKRig* m_ikRig;
         EnvironmentData m_environmentData;
-        GradientDescent<TGData<glm::vec1>> m_gradientDescent_dim1;
-        TGData<glm::vec1> m_tgData_dim1;
-        GradientDescent<TGData<glm::vec3>> m_gradientDescent_dim3;
-        TGData<glm::vec3> m_tgData_dim3;
-        std::pair<TrajectoryType, LIC<glm::vec3>> generateRegularTrajectory(ChainIndex regularChain, AnimationIndex animIndex);
-        LIC<glm::vec3> generateHipTrajectory();
+        GradientDescent<TGData<1>> m_gradientDescent_dim1;
+        TGData<1> m_tgData_dim1;
+        GradientDescent<TGData<3>> m_gradientDescent_dim3;
+        TGData<3> m_tgData_dim3;
+        std::pair<TrajectoryGenerator::TrajectoryType, LIC<3>> generateRegularTrajectory(ChainIndex regularChain, AnimationIndex animIndex);
+        LIC<3> generateHipTrajectory();
     public:
         TrajectoryGenerator(IKRig* ikRig);
         TrajectoryGenerator() = default;

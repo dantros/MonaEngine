@@ -4,10 +4,9 @@
 namespace Mona{
 
     // funciones para descenso de gradiente
-     //creamos terminos para el descenso de gradiente
     template <int D>
-    std::function<float(const std::vector<float>&, TGData<glm::vec<D,float>>*)> term1Function =
-        [](const std::vector<float>& varPCoord, TGData<glm::vec3>* dataPtr)->float {
+    std::function<float(const std::vector<float>&, TGData<D>*)> term1Function =
+        [](const std::vector<float>& varPCoord, TGData<D>* dataPtr)->float {
         float result = 0;
         for (int i = 0; i < dataPtr->pointIndexes.size(); i++) {
             int pIndex = dataPtr->pointIndexes[i];
@@ -19,9 +18,9 @@ namespace Mona{
     };
 
     template <int D>
-    std::function<float(const std::vector<float>&, int, TGData<glm::vec<D, float>>*)> term1PartialDerivativeFunction =
-        [](const std::vector<float>& varPCoord, int varIndex, TGData<glm::vec<D, float>>* dataPtr)->float {
-        int pIndex = dataPtr->pointIndexes[varIndex / dataPtr->D];
+    std::function<float(const std::vector<float>&, int, TGData<D>*)> term1PartialDerivativeFunction =
+        [](const std::vector<float>& varPCoord, int varIndex, TGData<D>* dataPtr)->float {
+        int pIndex = dataPtr->pointIndexes[varIndex / D];
         int coordIndex = varIndex % D;
         float tVal = dataPtr->varCurve->getTValues()[pIndex];
         float result = pIndex != 0 ?
@@ -32,8 +31,8 @@ namespace Mona{
     };
 
     template <int D>
-    std::function<void(std::vector<float>&, TGData<glm::vec<D, float>>*)>  postDescentStepCustomBehaviour = 
-        [](std::vector<float>& varPCoord, TGData<glm::vec<D, float>>* dataPtr)->void {
+    std::function<void(std::vector<float>&, TGData<D>*)>  postDescentStepCustomBehaviour = 
+        [](std::vector<float>& varPCoord, TGData<D>* dataPtr)->void {
         glm::vec<D, float> newPos;
         for (int i = 0; i < D; i++) {
             for (int j = 0; j < D; j++) {
@@ -49,12 +48,12 @@ namespace Mona{
         m_ikRig = ikRig;
        
         // descenso para angulos (dim 1)
-        FunctionTerm<TGData<glm::vec1>> dim1Term(term1Function<1>, term1PartialDerivativeFunction<1>);
-        m_gradientDescent_dim1 = GradientDescent<TGData<glm::vec1>>({ dim1Term }, 0, &m_tgData_dim1, postDescentStepCustomBehaviour<1>);
+        FunctionTerm<TGData<1>> dim1Term(term1Function<1>, term1PartialDerivativeFunction<1>);
+        m_gradientDescent_dim1 = GradientDescent<TGData<1>>({ dim1Term }, 0, &m_tgData_dim1, postDescentStepCustomBehaviour<1>);
 
         // descenso para posiciones (dim 3)
-        FunctionTerm<TGData<glm::vec3>> dim3Term(term1Function<3>, term1PartialDerivativeFunction<3>);
-        m_gradientDescent_dim3 = GradientDescent<TGData<glm::vec3>>({ dim3Term }, 0, &m_tgData_dim3, postDescentStepCustomBehaviour<3>);
+        FunctionTerm<TGData<3>> dim3Term(term1Function<3>, term1PartialDerivativeFunction<3>);
+        m_gradientDescent_dim3 = GradientDescent<TGData<3>>({ dim3Term }, 0, &m_tgData_dim3, postDescentStepCustomBehaviour<3>);
     }
 
     void setNewTrajectories(AnimationIndex animIndex, std::vector<ChainIndex> regularChains) {
@@ -63,7 +62,7 @@ namespace Mona{
         // se usa "animationTime" que corresponde al tiempo de la aplicacion modificado con el playRate (-- distinto a samplingTime--)
     }
 
-    std::pair<TrajectoryGenerator::TrajectoryType, LIC<glm::vec3>> TrajectoryGenerator::generateRegularTrajectory(ChainIndex regularChain, AnimationIndex animIndex) {
+    std::pair<TrajectoryGenerator::TrajectoryType, LIC<3>> TrajectoryGenerator::generateRegularTrajectory(ChainIndex regularChain, AnimationIndex animIndex) {
         IKRigConfig* config = m_ikRig->getAnimationConfig(animIndex);
         EETrajectoryData* trData = config->getTrajectoryData(regularChain);
         HipTrajectoryData* hipTrData = config->getHipTrajectoryData();
@@ -92,7 +91,7 @@ namespace Mona{
             finalTime = config->getAnimationTime(finalTime);
             std::vector<float> tValues = { initialTime, finalTime };
             std::vector<glm::vec3> splinePoints = { initialPos, initialPos };
-            return std::pair<TrajectoryType, LIC<glm::vec3>>(TrajectoryType::STATIC ,
+            return std::pair<TrajectoryType, LIC<3>>(TrajectoryType::STATIC ,
                 LIC(splinePoints, tValues));
         } // si es dinamica
         else {

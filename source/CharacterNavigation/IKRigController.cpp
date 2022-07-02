@@ -77,14 +77,14 @@ namespace Mona {
 		int frameNum = animationClip->m_animationTracks[0].rotationTimeStamps.size();
 		float minDistance = m_ikRig.m_rigHeight / 1000;
 		std::vector<float> tValues = animationClip->m_animationTracks[0].rotationTimeStamps;
-		std::vector<std::vector<glm::vec3>> splinePointsPerChain(m_ikRig.m_ikChains.size());
+		std::vector<std::vector<glm::vec3>> curvePointsPerChain(m_ikRig.m_ikChains.size());
 		std::vector<std::vector<float>> timeStampsPerChain(m_ikRig.m_ikChains.size());
 		std::vector<std::vector<bool>> supportFramesPerChain(m_ikRig.m_ikChains.size());
 		std::vector<glm::vec3> positions = m_ikRig.m_animationConfigs.back().getBaseModelSpacePositions(0);
 		std::vector<glm::vec3> previousPositions(positions.size());
 		std::fill(previousPositions.begin(), previousPositions.end(), glm::vec3(std::numeric_limits<float>::min()));
 		for (int j = 0; j < m_ikRig.m_ikChains.size(); j++) {
-			splinePointsPerChain[j].reserve(frameNum);
+			curvePointsPerChain[j].reserve(frameNum);
 			timeStampsPerChain[j].reserve(frameNum);
 			supportFramesPerChain[j].reserve(frameNum);
 		}
@@ -95,7 +95,7 @@ namespace Mona {
 				bool isSupportFrame = glm::distance(positions[eeIndex], previousPositions[eeIndex]) <= minDistance;
 				supportFramesPerChain[j].push_back(isSupportFrame);
 				if (!isSupportFrame) { // si es suficientemente distinto al anterior, lo guardamos como parte de la curva
-					splinePointsPerChain[j].push_back(positions[eeIndex]);
+					curvePointsPerChain[j].push_back(positions[eeIndex]);
 					timeStampsPerChain[j].push_back(tValues[i]);
 				}
 			}
@@ -107,7 +107,7 @@ namespace Mona {
 		}
 		for (int i = 0; i < m_ikRig.m_ikChains.size(); i++) {
 			m_ikRig.m_animationConfigs.back().m_ikChainTrajectoryData[i].eeSupportFrames = supportFramesPerChain[i];
-			m_ikRig.m_animationConfigs.back().m_ikChainTrajectoryData[i].eeBaseTrajectory = BezierSpline(splinePointsPerChain[i], timeStampsPerChain[i]);
+			m_ikRig.m_animationConfigs.back().m_ikChainTrajectoryData[i].eeBaseTrajectory = LIC<3>(curvePointsPerChain[i], timeStampsPerChain[i]);
 		}
 
 		// Se remueve el movimiento de las caderas

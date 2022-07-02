@@ -47,7 +47,7 @@ namespace Mona{
             IKChain buildIKChain(ChainEnds chainEnds, std::string chainName);
             IKChain buildHipIKChain(std::string hipJointName);
             std::vector<std::pair<JointIndex, glm::fquat>> calculateRotations(AnimationIndex animIndex);
-            std::vector<std::pair<ChainIndex, BezierSpline>> calculateEETrajectories(AnimationIndex animIndex, std::vector<ChainIndex> ikChains);
+            void calculateEETrajectories(AnimationIndex animIndex, std::vector<ChainIndex> ikChains);
     };
 
 }

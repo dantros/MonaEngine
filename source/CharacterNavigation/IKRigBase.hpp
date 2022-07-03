@@ -37,25 +37,33 @@ namespace Mona {
     };
     struct HipTrajectoryData {
         // Angulos de rotacion originales
-        LIC<1> hipOriginalRotationAngles;
+        LIC<1> originalRotationAngles;
         // Ejes de rotacion originales
-        LIC<3> hipOriginalRotationAxes;
+        LIC<3> originalRotationAxes;
         // Traslaciones originales
-        LIC<3> hipOriginalTranslations;
+        LIC<3> originalGlblTranslations;
+        // Direccion original de la cadera
+        glm::vec3 originalForwardDirection;
         // Angulos de rotacion objetivo
-        LIC<1> hipTargetRotationAngles;
+        LIC<1> targetRotationAngles;
         // Ejes de rotacion objetivo
-        LIC<3> hipTargetRotationAxes;
+        LIC<3> targetRotationAxes;
         // Traslaciones objetivo
-        LIC<3> hipTargetTranslations;        
+        LIC<3> targetGlblTranslations;
+        //
+        std::vector<glm::vec3> savedGlobalPositions;
     };
     struct EETrajectoryData {
-        // Trayectoria original del ee asociado a una ikChain (model space previo a remocion de trayectoria de la cadera)
-        LIC<3> eeOriginalTrajectory;
-        // Trayectorias recalculada del ee asociado a una ikChain (model space)
-        LIC<3> eeTargetTrajectory;
+        // Trayectoria original del ee asociado a una ikChain (global space previo a remocion de trayectoria de la cadera)
+        LIC<3> originalGlblTrajectory;
+        // Distancia original global a la cadera
+        LIC<1> originalGlblDistToHip;
+        // Trayectorias recalculada del ee asociado a una ikChain
+        LIC<3> targetGlblTrajectory;
         // Frames de apoyo (estaticos) del end effector
-        std::vector<bool> eeSupportFrames;
+        std::vector<bool> supportFrames;
+        //
+        std::vector<glm::vec3> savedGlobalPositions;
     };
     class IKRigConfig {
         friend class IKRig;

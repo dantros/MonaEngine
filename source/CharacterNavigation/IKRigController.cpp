@@ -35,10 +35,6 @@ namespace Mona {
 			hipRotAngles[i] = glm::vec1(glm::angle(hipTrack.rotations[i]));
 		}
 
-		m_ikRig.m_animationConfigs.back().m_hipTrajectoryData.hipOriginalRotationAngles = LIC<1>(hipRotAngles, hipTrack.rotationTimeStamps);
-		m_ikRig.m_animationConfigs.back().m_hipTrajectoryData.hipOriginalRotationAxes = LIC<3>(hipRotAxes, hipTrack.rotationTimeStamps);
-		m_ikRig.m_animationConfigs.back().m_hipTrajectoryData.hipOriginalTranslations = LIC<3>(hipTrack.positions, hipTrack.positionTimeStamps);
-
 		// Descomprimimos las rotaciones de la animacion, repitiendo valores para que todas las articulaciones 
 		// tengan el mismo numero de rotaciones
 		std::vector<AnimationClip::AnimationTrack>& tracks = animationClip->m_animationTracks;
@@ -122,9 +118,16 @@ namespace Mona {
 			supportFramesPerChain[j][0] = supportFramesPerChain[j].back();
 		}
 		for (int i = 0; i < m_ikRig.m_ikChains.size(); i++) {
-			currentConfig->m_ikChainTrajectoryData[i].eeSupportFrames = supportFramesPerChain[i];
-			currentConfig->m_ikChainTrajectoryData[i].eeOriginalTrajectory = LIC<3>(curvePointsPerChain[i], timeStampsPerChain[i]);
+			currentConfig->m_ikChainTrajectoryData[i].supportFrames = supportFramesPerChain[i];
+			currentConfig->m_ikChainTrajectoryData[i].originalGlblTrajectory = LIC<3>(curvePointsPerChain[i], timeStampsPerChain[i]);
+			currentConfig->m_ikChainTrajectoryData[i].originalGlblTrajectory.scale(glm::vec3(m_ikRig.m_scale));
 		}
+
+		currentConfig->m_hipTrajectoryData.originalRotationAngles = LIC<1>(hipRotAngles, hipTrack.rotationTimeStamps);
+		currentConfig->m_hipTrajectoryData.originalRotationAxes = LIC<3>(hipRotAxes, hipTrack.rotationTimeStamps);
+		currentConfig->m_hipTrajectoryData.originalGlblTranslations = LIC<3>(hipTrack.positions, hipTrack.positionTimeStamps);
+		currentConfig->m_hipTrajectoryData.originalGlblTranslations.scale(glm::vec3(m_ikRig.m_scale));
+		currentConfig->m_hipTrajectoryData.originalForwardDirection = glm::normalize(hipTrack.positions.back() - hipTrack.positions[0]);
 
 		// Se remueve el movimiento de las caderas
 		animationClip->RemoveJointRotation(m_ikRig.m_hipJoint);
@@ -143,6 +146,16 @@ namespace Mona {
 			}
 		}
 		return -1;
+	}
+
+	void IKRigController::updateTrajectories(AnimationIndex animIndex) {
+		// recalcular trayectorias de ee y caderas
+
+	}
+	void IKRigController::updateAnimation(AnimationIndex animIndex) {
+		// calcular nuevas rotaciones para la animacion con ik
+		// guardar posiciones globales de ee's y caderas generadas
+
 	}
 
 	void IKRigController::updateIKRigConfigTime(float time, AnimationIndex animIndex) {

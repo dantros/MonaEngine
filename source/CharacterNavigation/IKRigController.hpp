@@ -16,6 +16,8 @@ namespace Mona {
 		void addAnimation(std::shared_ptr<AnimationClip> animationClip);
 		int removeAnimation(std::shared_ptr<AnimationClip> animationClip);
 		void updateIKRigConfigTime(float time, AnimationIndex animIndex);
+		void updateTrajectories(AnimationIndex animIndex);
+		void updateAnimation(AnimationIndex animIndex);
 		void updateIKRig(float time);
 	};
 

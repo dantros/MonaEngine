@@ -65,7 +65,7 @@ namespace Mona {
     }
 
     template <int D>
-    void LIC<D>::displacePointT(int pointIndex, float newT, float pointScalingRatio) {
+    void LIC<D>::displacePointT(int pointIndex, float newT, bool scalePoints, float pointScalingRatio) {
         MONA_ASSERT(inTRange(newT), "LIC: newT must be a value between {0} and {1}.", m_tValues[0], m_tValues.back());
         glm::vec2 tRange = getTRange();
         float oldT = m_tValues[pointIndex];
@@ -73,14 +73,18 @@ namespace Mona {
         float fractionAbove = funcUtils::getFraction(tRange[1], oldT, newT);
         for (int i = 0; i < pointIndex; i++) {
             tRange[i] = funcUtils::lerp(tRange[0], tRange[i], fractionBelow);
-            m_curvePoints[i] = funcUtils::lerp(m_curvePoints[0], m_curvePoints[i], fractionBelow * pointScalingRatio);
+            if (scalePoints) {
+                m_curvePoints[i] = funcUtils::lerp(m_curvePoints[0], m_curvePoints[i], fractionBelow * pointScalingRatio);
+            }
         }
         for (int i = pointIndex; i < m_curvePoints.size(); i++) {
             tRange[i] = funcUtils::lerp(tRange[1], tRange[i], fractionAbove);
-            m_curvePoints[i] = funcUtils::lerp(m_curvePoints.back(), m_curvePoints[i], fractionAbove * pointScalingRatio);
+            if (scalePoints) {
+                m_curvePoints[i] = funcUtils::lerp(m_curvePoints.back(), m_curvePoints[i], fractionAbove * pointScalingRatio);
+            }
         }
-
     }
+
     template <int D>
     void LIC<D>::setCurvePoint(int pointIndex, glm::vec<D, float> newValue) {
         MONA_ASSERT(0 <= pointIndex && pointIndex < m_curvePoints.size(), "LIC: input index must be within bounds");

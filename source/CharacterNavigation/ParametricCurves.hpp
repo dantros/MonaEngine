@@ -27,7 +27,7 @@ namespace Mona{
         glm::vec<D, float> evalCurve(float t);
         glm::vec<D, float> getLeftHandVelocity(float t);
         glm::vec<D, float> getRightHandVelocity(float t);
-        void displacePointT(int pointIndex, float newT, float pointScalingRatio = 1);
+        void displacePointT(int pointIndex, float newT, bool scalePoints = true, float pointScalingRatio = 1);
         void setCurvePoint(int pointIndex, glm::vec<D, float> newValue);
         LIC getSubCurve(int minPointIndex, int maxPointIndex);
         void scale(glm::vec<D, float> scaling);

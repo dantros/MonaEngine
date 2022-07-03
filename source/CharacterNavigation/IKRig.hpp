@@ -30,8 +30,14 @@ namespace Mona{
 
             AnimationIndex m_currentAnim = 0;
             AnimationIndex m_targetAnim = -1;
-            glm::vec3 m_linearVelocity;
-            glm::vec3 m_angularVelocity;
+            // Direccion global de movimiento
+            glm::vec3 m_forwardDirection;
+            // Factor que multiplica el largo de las zancadas
+            float m_strideFactor;
+            // rapidez de giro
+            float m_angularSpeed;
+            // Escala global
+            float m_scale;
             InnerComponentHandle m_skeletalMeshHandle;
             TrajectoryGenerator m_trajectoryGenerator;
             ForwardKinematics m_forwardKinematics;

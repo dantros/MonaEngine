@@ -11,6 +11,7 @@ namespace Mona {
 	typedef int AnimationIndex;
 	typedef int JointIndex;
 	typedef int ChainIndex;
+	typedef int FrameIndex;
 
 	class IKRig;
 	class IKChain;
@@ -21,10 +22,11 @@ namespace Mona {
 	public:
 		ForwardKinematics(IKRig* ikRig);
 		ForwardKinematics() = default;
-		std::vector<glm::mat4> ModelSpaceTransforms(AnimationIndex animIndex, bool useDynamicRotations);
-		std::vector<glm::vec3> ModelSpacePositions(AnimationIndex animIndex, bool useDynamicRotations);
-		std::vector<glm::vec3> BaseModelSpacePositions(AnimationIndex animIndex, int frame);
-		std::vector<glm::mat4> JointSpaceTransforms(AnimationIndex animIndex, bool useDynamicRotations);
+		std::vector<glm::mat4> CustomSpaceTransforms(glm::mat4 baseTransform, AnimationIndex animIndex, FrameIndex frame, bool useDynamicRotations);
+		std::vector<glm::vec3> CustomSpacePositions(glm::mat4 baseTransform, AnimationIndex animIndex, FrameIndex frame, bool useDynamicRotations);
+		std::vector<glm::mat4> ModelSpaceTransforms(AnimationIndex animIndex, FrameIndex frame, bool useDynamicRotations);
+		std::vector<glm::vec3> ModelSpacePositions(AnimationIndex animIndex, FrameIndex frame, bool useDynamicRotations);
+		std::vector<glm::mat4> JointSpaceTransforms(AnimationIndex animIndex, FrameIndex frame, bool useDynamicRotations);
 
 	};
 

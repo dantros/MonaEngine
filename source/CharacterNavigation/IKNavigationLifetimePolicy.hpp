@@ -22,13 +22,15 @@ namespace Mona {
 			ikNav.m_staticMeshManagerPtr = m_staticMeshManagerPtr;
 			ikNav.m_transformManagerPtr = m_transformManagerPtr;
 
-			// validar clip base
 			InnerComponentHandle skeletalMeshHandle = m_ikNavigationManagerPtr->GetOwner(handle)->GetInnerComponentHandle<SkeletalMeshComponent>();
 			std::shared_ptr<Skeleton> skeletonPtr = m_skeletalMeshManagerPtr->GetComponentPointer(skeletalMeshHandle)->GetSkeleton();
 			AnimationController* animController = &m_skeletalMeshManagerPtr->GetComponentPointer(skeletalMeshHandle)->GetAnimationController();
 
+			InnerComponentHandle transformHandle = m_ikNavigationManagerPtr->GetOwner(handle)->GetInnerComponentHandle<TransformComponent>();
+			m_transformManagerPtr->GetComponentPointer(transformHandle)->SetScale(glm::vec3(ikNav.m_rigData.scale));
+
 			ikNav.m_ikRigController = IKRigController(animController, 
-				IKRig(skeletonPtr, ikNav.m_rigData, skeletalMeshHandle));
+				IKRig(skeletonPtr, ikNav.m_rigData, transformHandle));
 			// setear la animacion base
 			ikNav.AddAnimation(ikNav.m_baseAnimationClip);
 		}

@@ -5,13 +5,16 @@
 
 namespace Mona {
 
-	IKRig::IKRig(std::shared_ptr<Skeleton> skeleton, RigData rigData, InnerComponentHandle skeletalMeshHandle) :
-		m_skeletalMeshHandle(skeletalMeshHandle)
+	IKRig::IKRig(std::shared_ptr<Skeleton> skeleton, RigData rigData, InnerComponentHandle transformHandle)
 	{
 		m_skeleton = skeleton;
 		m_forwardKinematics = ForwardKinematics(this);
-		ChainIndex hipIKChain = 0;
-		m_trajectoryGenerator = TrajectoryGenerator(this);
+
+		std::vector<ChainIndex> ikChains;
+		for (ChainIndex i = 0; i < m_ikChains.size(); i++) {
+			ikChains.push_back(i);
+		}
+		m_trajectoryGenerator = TrajectoryGenerator(this, ikChains, transformHandle);
 
 		auto topology = getTopology();
 		auto jointNames = getJointNames();
@@ -32,20 +35,17 @@ namespace Mona {
 		m_ikChains = { buildIKChain(rigData.leftLeg, "leftLeg"), buildIKChain(rigData.rightLeg, "rightLeg"),
 		buildIKChain(rigData.leftFoot, "leftFoot"), buildIKChain(rigData.rightFoot, "rightFoot") };
 
-		// setear constraints y pesos
+		// setear constraints
 		for (int i = 0; i < m_nodes.size(); i++) {
 			JointData currData = rigData.jointData[m_nodes[i].m_jointName];
 			if (currData.enableIKRotation) {
 				m_nodes[i].m_minAngle = currData.minAngle;
 				m_nodes[i].m_maxAngle = currData.maxAngle;
-				m_nodes[i].m_weight = currData.weight;
 			}
 		}
+		// setear la escala
+		m_scale = rigData.scale;
 		// setear cinematica inversa
-		std::vector<ChainIndex> ikChains;
-		for (ChainIndex i = 0; i < m_ikChains.size(); i++) {
-			ikChains.push_back(i);
-		}
 		m_inverseKinematics = InverseKinematics(this, ikChains);
 
 		// setear el la altura del rig

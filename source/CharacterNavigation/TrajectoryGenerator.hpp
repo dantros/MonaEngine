@@ -16,10 +16,11 @@ namespace Mona{
         LIC<D>* baseCurve;
         LIC<D>* varCurve;
         std::vector<int> pointIndexes;
-        std::vector<glm::vec<D, float>> minValues;
+        std::vector<float> minValues; // tamaño D*pointIndexes.size()
     };
 
     class IKRig;
+    class IKRigConfig;
     class TrajectoryGenerator {
         friend class IKNavigationComponent;
     public:
@@ -30,16 +31,21 @@ namespace Mona{
     private:
         IKRig* m_ikRig;
         EnvironmentData m_environmentData;
+        std::vector<ChainIndex> m_ikChains;
+        InnerComponentHandle m_transformHandle;
         GradientDescent<TGData<1>> m_gradientDescent_dim1;
         TGData<1> m_tgData_dim1;
         GradientDescent<TGData<3>> m_gradientDescent_dim3;
         TGData<3> m_tgData_dim3;
-        std::pair<TrajectoryGenerator::TrajectoryType, LIC<3>> generateRegularTrajectory(ChainIndex regularChain, AnimationIndex animIndex);
-        LIC<3> generateHipTrajectory();
+        TrajectoryType generateEETrajectory(ChainIndex ikChain, IKRigConfig* config, 
+            glm::vec3 globalEEPos,
+            ComponentManager<TransformComponent>* transformManager,
+            ComponentManager<StaticMeshComponent>* staticMeshManager);
+        void generateHipTrajectory();
     public:
-        TrajectoryGenerator(IKRig* ikRig);
+        TrajectoryGenerator(IKRig* ikRig, std::vector<ChainIndex> ikChains, InnerComponentHandle transformHandle);
         TrajectoryGenerator() = default;
-        void setNewTrajectories(AnimationIndex animIndex, std::vector<ChainIndex> regularChains);
+        void generateTrajectories(AnimationIndex animIndex);
 
 
     };

@@ -101,7 +101,7 @@ namespace Mona {
 			supportFramesPerChain[j].reserve(frameNum);
 		}
 		for (int i = 0; i < frameNum; i++) {
-			positions = currentConfig->getBaseModelSpacePositions(i);
+			positions = currentConfig->getModelSpacePositions(i, false);
 			for (int j = 0; j < m_ikRig.m_ikChains.size(); j++) {
 				int eeIndex = m_ikRig.m_ikChains[j].getJoints().back();
 				bool isSupportFrame = glm::distance(positions[eeIndex], previousPositions[eeIndex]) <= minDistance;

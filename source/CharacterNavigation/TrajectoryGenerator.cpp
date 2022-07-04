@@ -35,19 +35,20 @@ namespace Mona{
     std::function<void(std::vector<float>&, TGData<D>*)>  postDescentStepCustomBehaviour = 
         [](std::vector<float>& varPCoord, TGData<D>* dataPtr)->void {
         glm::vec<D, float> newPos;
-        for (int i = 0; i < D; i++) {
+        for (int i = 0; i < dataPtr->pointIndexes.size(); i++) {
             for (int j = 0; j < D; j++) {
-                newPos[j] = varPCoord[i * D + j];
+                newPos[j] = std::max(dataPtr->minValues[i * D + j], varPCoord[i * D + j]);
             }
             int pIndex = dataPtr->pointIndexes[i];
-            newPos = glm::max<glm::vec<D, float>>(dataPtr->minValues[i], newPos);
             dataPtr->varCurve->setCurvePoint(pIndex, newPos);
         }
     };
 
 
-    TrajectoryGenerator::TrajectoryGenerator(IKRig* ikRig) {
+    TrajectoryGenerator::TrajectoryGenerator(IKRig* ikRig, std::vector<ChainIndex> ikChains, InnerComponentHandle transformHandle) {
         m_ikRig = ikRig;
+        m_ikChains = ikChains;
+        m_transformHandle = transformHandle;
        
         // descenso para angulos (dim 1)
         FunctionTerm<TGData<1>> dim1Term(term1Function<1>, term1PartialDerivativeFunction<1>);
@@ -76,38 +77,37 @@ namespace Mona{
 
     }
 
-    std::pair<TrajectoryGenerator::TrajectoryType, LIC<3>> TrajectoryGenerator::generateRegularTrajectory(ChainIndex regularChain, AnimationIndex animIndex) {
-        IKRigConfig* config = m_ikRig->getAnimationConfig(animIndex);
-        EETrajectoryData* trData = config->getTrajectoryData(regularChain);
+    TrajectoryGenerator::TrajectoryType TrajectoryGenerator::generateEETrajectory(ChainIndex ikChain, IKRigConfig* config, 
+        glm::vec3 globalEEPos,
+        ComponentManager<TransformComponent>* transformManager,
+        ComponentManager<StaticMeshComponent>* staticMeshManager) {
+        EETrajectoryData* trData = config->getTrajectoryData(ikChain);
         HipTrajectoryData* hipTrData = config->getHipTrajectoryData();
-        FrameIndex nextFrameIndex = config->getNextFrameIndex();
-        FrameIndex currentFrameIndex = config->getCurrentFrameIndex();
+        FrameIndex nextFrame = config->getNextFrameIndex();
+        FrameIndex currentFrame = config->getCurrentFrameIndex();
 
         // chequemos que tipo de trayectoria hay que crear (estatica o dinamica)
         // si es estatica
-        if (trData->supportFrames[nextFrameIndex]) {
-            float initialTime_loop = config->getTimeStamps()[currentFrameIndex];
-            float initialTime = config->getAnimationTime(initialTime_loop);
+        if (trData->supportFrames[nextFrame]) {
+            float initialTime = config->getAnimationTime(config->getTimeStamps()[currentFrame]);
             glm::vec3 initialPos;
             // chequear si hay una curva previa generada
             if (trData->targetGlblTrajectory.inTRange(initialTime)) {
-                initialPos = trData->targetGlblTrajectory.evalCurve(initialTime);
+                initialPos = trData->savedGlobalPositions[currentFrame];
             }
             else {
-                // Debemos llevar la posicion del ee en pseudo model space a model space y luego a global. luego de vuelta a model space
-                glm::vec3 pseudoMSPos = trData->originalGlblTrajectory.evalCurve(initialTime_loop);
-                glm::vec3 msPos = removeHipMotion(pseudoMSPos, initialTime_loop, config);
+                float x = globalEEPos[0];
+                float y = globalEEPos[1];
+                glm::vec3 initialPos = glm::vec3(x, y, m_environmentData.getTerrainHeight(x, y, transformManager, staticMeshManager));
             }
-            float finalTime = config->getTimeStamps()[nextFrameIndex];
-            for (FrameIndex f = nextFrameIndex + 1; f < config->getTimeStamps().size(); f++) {
+            float finalTime = config->getTimeStamps()[nextFrame];
+            for (FrameIndex f = nextFrame + 1; f < config->getTimeStamps().size(); f++) {
                 if (trData->supportFrames[f]) { finalTime = config->getTimeStamps()[f]; }
                 else { break; }
             }
             finalTime = config->getAnimationTime(finalTime);
-            std::vector<float> tValues = { initialTime, finalTime };
-            std::vector<glm::vec3> splinePoints = { initialPos, initialPos };
-            return std::pair<TrajectoryType, LIC<3>>(TrajectoryType::STATIC ,
-                LIC(splinePoints, tValues));
+            trData->targetGlblTrajectory = LIC<3>({ initialPos, initialPos }, { initialTime, finalTime });
+            return TrajectoryType::STATIC;
         } // si es dinamica
         else {
 

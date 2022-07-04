@@ -16,7 +16,7 @@ namespace Mona{
         friend class IKNavigationComponent;
         public:
             IKRig() = default;
-            IKRig(std::shared_ptr<Skeleton> skeleton, RigData rigData, InnerComponentHandle skeletalMeshHandle);
+            IKRig(std::shared_ptr<Skeleton> skeleton, RigData rigData, InnerComponentHandle transformHandle);
             IKRigConfig* getAnimationConfig(AnimationIndex animIndex) { return &m_animationConfigs[animIndex]; };
             const std::vector<int>& getTopology() const { return m_skeleton->m_parentIndices; };
             const std::vector<std::string>& getJointNames() const { return m_skeleton->m_jointNames; };
@@ -38,7 +38,6 @@ namespace Mona{
             float m_angularSpeed;
             // Escala global
             float m_scale;
-            InnerComponentHandle m_skeletalMeshHandle;
             TrajectoryGenerator m_trajectoryGenerator;
             ForwardKinematics m_forwardKinematics;
             InverseKinematics m_inverseKinematics;

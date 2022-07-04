@@ -115,8 +115,8 @@ namespace Mona {
         FrameIndex getCurrentFrameIndex() const { return m_currentFrameIndex; }
         std::vector<glm::mat4> getModelSpaceTransforms(bool useDynamicRotations);
         std::vector<glm::vec3> getModelSpacePositions(bool useDynamicRotations);
-        std::vector<glm::vec3> getBaseModelSpacePositions(FrameIndex frame);
-        std::vector<glm::mat4> getJointSpaceTransforms(bool useDynamicRotations);
+        std::vector<glm::vec3> getModelSpacePositions(FrameIndex frame, bool useDynamicRotations);
+        std::vector<glm::vec3> getCustomSpacePositions(glm::mat4 baseTransform, bool useDynamicRotations);
         EETrajectoryData* getTrajectoryData(ChainIndex chainIndex) { return &(m_ikChainTrajectoryData[chainIndex]); }
         HipTrajectoryData* getHipTrajectoryData() { return &m_hipTrajectoryData; }
     };
@@ -158,6 +158,7 @@ namespace Mona {
         ChainEnds rightLeg;
         ChainEnds leftFoot;
         ChainEnds rightFoot;
+        float scale;
         std::string hipJointName;
         void setJointData(std::string jointName, float minAngle, float maxAngle, float weight = 1, bool enableData = true);
         void enableJointData(std::string jointName, bool enableData);

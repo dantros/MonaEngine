@@ -27,16 +27,16 @@ namespace Mona{
 	}
 
 	std::vector<glm::mat4> IKRigConfig::getModelSpaceTransforms(bool useDynamicRotations) {
-		return m_forwardKinematics->ModelSpaceTransforms(m_animIndex, useDynamicRotations);
+		return m_forwardKinematics->ModelSpaceTransforms(m_animIndex, m_currentFrameIndex, useDynamicRotations);
 	}
 	std::vector<glm::vec3> IKRigConfig::getModelSpacePositions(bool useDynamicRotations) {
-		return m_forwardKinematics->ModelSpacePositions(m_animIndex, useDynamicRotations);
+		return m_forwardKinematics->ModelSpacePositions(m_animIndex, m_currentFrameIndex,useDynamicRotations);
 	}
-	std::vector<glm::vec3> IKRigConfig::getBaseModelSpacePositions(FrameIndex frame) {
-		return m_forwardKinematics->BaseModelSpacePositions(m_animIndex, frame);
+	std::vector<glm::vec3> IKRigConfig::getModelSpacePositions(FrameIndex frame, bool useDynamicRotations) {
+		return m_forwardKinematics->ModelSpacePositions(m_animIndex, frame, useDynamicRotations);
 	}
-	std::vector<glm::mat4> IKRigConfig::getJointSpaceTransforms(bool useDynamicRotations) {
-		return m_forwardKinematics->JointSpaceTransforms(m_animIndex, useDynamicRotations);
+	std::vector<glm::vec3> IKRigConfig::getCustomSpacePositions(glm::mat4 baseTransform, bool useDynamicRotations) {
+		return m_forwardKinematics->CustomSpacePositions(baseTransform, m_animIndex, m_currentFrameIndex, useDynamicRotations);
 	}
 
 	float IKRigConfig::getAnimationTime(float timeStamp, int repCountOffset) {

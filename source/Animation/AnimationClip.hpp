@@ -58,7 +58,6 @@ namespace Mona {
 		std::shared_ptr<Skeleton> m_skeletonPtr;
 		float m_duration = 1.0f;
 		std::string m_animationName;
-		bool m_stableRotations = false;
 	};
 }
 #endif

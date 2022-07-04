@@ -13,10 +13,47 @@ namespace Mona {
 			MONA_LOG_ERROR("IKRig: Input animation does not correspond to base skeleton.");
 			return;
 		}
-		if (!animationClip->m_stableRotations) {
-			MONA_LOG_ERROR("IKRig: Animation must have stable rotations (fixed scales and positions per joint).");
-			return;
+		
+		// Chequar si los escalamientos y traslaciones son constantes por joint.
+		// La cadera si puede tener traslaciones variables
+		bool stableRotations = true;
+		for (JointIndex i = 0; i < animationClip->m_jointTrackIndices.size(); i++) {
+			auto track = animationClip->m_animationTracks[animationClip->m_jointTrackIndices[i]];
+			glm::vec3 basePosition = track.positions[0];
+			glm::vec3 baseScale = track.scales[0];
+			for (int j = 1; j < track.positions.size(); j++) {
+				if (track.positions[j] != basePosition && i!=m_ikRig.m_hipJoint) {
+					stableRotations = false;
+					break;
+				}
+			}
+			for (int j = 1; j < track.scales.size(); j++) {
+				if (track.scales[j] != baseScale) {
+					stableRotations = false;
+					break;
+				}
+			}
+			if (!stableRotations) { 
+				MONA_LOG_ERROR("IKRigController: Animation must have stable rotations (fixed scales and positions per joint).");
+				return;
+			}
 		}
+		if (m_ikRig.m_hipJoint != 0) {
+			auto track = animationClip->m_animationTracks[animationClip->m_jointTrackIndices[0]];
+			for (int j = 0; j < track.positions.size(); j++) {
+				if (track.positions[j] != glm::vec3(0)) {
+					MONA_LOG_ERROR("IKRigController: The root, if is not the hip, cannot have translations.");
+					return;
+				}
+			}
+			for (int j = 0; j < track.rotations.size(); j++) {
+				if (track.rotations[j] != glm::identity<glm::fquat>()) {
+					MONA_LOG_ERROR("IKRigController: The root, if is not the hip, cannot have rotations.");
+					return;
+				}
+			}
+		}
+
 		for (int i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {
 			if (m_ikRig.m_animationConfigs[i].m_animationClip->GetAnimationName() == animationClip->GetAnimationName()) {
 				MONA_LOG_WARNING("IKRig: Animation {0} for model {1} had already been added",
@@ -33,6 +70,18 @@ namespace Mona {
 		for (int i = 0; i < hipTrack.rotations.size(); i++) {
 			hipRotAxes[i] = glm::axis(hipTrack.rotations[i]);
 			hipRotAngles[i] = glm::vec1(glm::angle(hipTrack.rotations[i]));
+		}
+		// Tambien, si la cadera no es la raiz, traspasamos la escalas del joint padre a la cadera
+		JointIndex parent = m_ikRig.getTopology()[m_ikRig.m_hipJoint];
+		if(parent != -1) {
+			auto parentTrack = animationClip->m_animationTracks[animationClip->m_jointTrackIndices[parent]];
+			MONA_ASSERT(m_ikRig.getTopology()[parent] == -1, "IKRigController: The hip must be the root or a direct child of the root.");
+			for (int i = 0; i < hipTrack.scales.size(); i++) {
+				hipTrack.scales[i] *= parentTrack.scales[0];
+			}
+			for (int i = 0; i < parentTrack.scales.size(); i++) {
+				parentTrack.scales[i] = glm::vec3(1);
+			}
 		}
 
 		// Descomprimimos las rotaciones de la animacion, repitiendo valores para que todas las articulaciones 
@@ -92,8 +141,8 @@ namespace Mona {
 		std::vector<std::vector<glm::vec3>> curvePointsPerChain(m_ikRig.m_ikChains.size());
 		std::vector<std::vector<float>> timeStampsPerChain(m_ikRig.m_ikChains.size());
 		std::vector<std::vector<bool>> supportFramesPerChain(m_ikRig.m_ikChains.size());
-		std::vector<glm::vec3> positions = currentConfig->getBaseModelSpacePositions(0);
-		std::vector<glm::vec3> previousPositions(positions.size());
+		std::vector<glm::vec3> positions(m_ikRig.getTopology().size());
+		std::vector<glm::vec3> previousPositions(m_ikRig.getTopology().size());
 		std::fill(previousPositions.begin(), previousPositions.end(), glm::vec3(std::numeric_limits<float>::min()));
 		for (int j = 0; j < m_ikRig.m_ikChains.size(); j++) {
 			curvePointsPerChain[j].reserve(frameNum);

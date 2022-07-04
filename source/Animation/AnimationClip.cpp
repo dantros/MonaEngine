@@ -65,21 +65,6 @@ namespace Mona {
 			RemoveRootMotion();
 		}
 
-		// Chequar si los escalamientos y traslaciones son constantes por joint.
-		m_stableRotations = true;
-		for (int i = 0; i < m_animationTracks.size(); i++) {
-			auto track = m_animationTracks[i];
-			glm::vec3 basePosition = track.positions[0];
-			glm::vec3 baseScale = track.scales[0];
-			for (int j = 1; j < track.positions.size(); j++) {
-				if (track.positions[j] != basePosition || track.scales[j] != baseScale) {
-					m_stableRotations = false;
-					break;
-				}
-			}
-			if (!m_stableRotations) { break; }
-		}
-
 		// Se guarda el nombre de la animacion
 		size_t pos = filePath.find_last_of("/\\");
 		std::string fileName = pos != std::string::npos ? filePath.substr(pos + 1) : filePath;	

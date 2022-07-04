@@ -6,6 +6,7 @@
 #include <sstream>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include "Log.hpp"
 
@@ -34,6 +35,26 @@ namespace Mona {
 
         inline glm::mat4 rotationToMat4(const glm::fquat& rotation) {
             return glm::toMat4(rotation);
+        }
+
+        inline glm::fquat rotationFromMat4(glm::mat4& transformMat) {
+            glm::vec3 scale;
+            glm::quat rotation;
+            glm::vec3 translation;
+            glm::vec3 skew;
+            glm::vec4 perspective;
+            glm::decompose(transformMat, scale, rotation, translation, skew, perspective);
+            return rotation;
+        }
+
+        inline glm::vec3 translationFromMat4(glm::mat4& transformMat) {
+            glm::vec3 scale;
+            glm::quat rotation;
+            glm::vec3 translation;
+            glm::vec3 skew;
+            glm::vec4 perspective;
+            glm::decompose(transformMat, scale, rotation, translation, skew, perspective);
+            return translation;
         }
     
     }

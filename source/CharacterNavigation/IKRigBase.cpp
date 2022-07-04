@@ -29,6 +29,9 @@ namespace Mona{
 	std::vector<glm::mat4> IKRigConfig::getModelSpaceTransforms(bool useDynamicRotations) {
 		return m_forwardKinematics->ModelSpaceTransforms(m_animIndex, m_currentFrameIndex, useDynamicRotations);
 	}
+	glm::mat4 IKRigConfig::getModelSpaceTransform(JointIndex jointIndex, FrameIndex frame, bool useDynamicRotations) {
+		return m_forwardKinematics->ModelSpaceTransform(m_animIndex, jointIndex, frame, useDynamicRotations);
+	}
 	std::vector<glm::vec3> IKRigConfig::getModelSpacePositions(bool useDynamicRotations) {
 		return m_forwardKinematics->ModelSpacePositions(m_animIndex, m_currentFrameIndex,useDynamicRotations);
 	}

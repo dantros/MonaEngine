@@ -23,8 +23,10 @@ namespace Mona {
 		ForwardKinematics(IKRig* ikRig);
 		ForwardKinematics() = default;
 		std::vector<glm::mat4> CustomSpaceTransforms(glm::mat4 baseTransform, AnimationIndex animIndex, FrameIndex frame, bool useDynamicRotations);
+		glm::mat4 CustomSpaceTransform(glm::mat4 baseTransform, JointIndex jointIndex, AnimationIndex animIndex, FrameIndex frame, bool useDynamicRotations);
 		std::vector<glm::vec3> CustomSpacePositions(glm::mat4 baseTransform, AnimationIndex animIndex, FrameIndex frame, bool useDynamicRotations);
 		std::vector<glm::mat4> ModelSpaceTransforms(AnimationIndex animIndex, FrameIndex frame, bool useDynamicRotations);
+		glm::mat4 ModelSpaceTransform(AnimationIndex animIndex, JointIndex jointIndex, FrameIndex frame, bool useDynamicRotations);
 		std::vector<glm::vec3> ModelSpacePositions(AnimationIndex animIndex, FrameIndex frame, bool useDynamicRotations);
 		std::vector<glm::mat4> JointSpaceTransforms(AnimationIndex animIndex, FrameIndex frame, bool useDynamicRotations);
 

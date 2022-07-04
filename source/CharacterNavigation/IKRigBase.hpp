@@ -114,6 +114,7 @@ namespace Mona {
         FrameIndex getNextFrameIndex() const { return m_nextFrameIndex; }
         FrameIndex getCurrentFrameIndex() const { return m_currentFrameIndex; }
         std::vector<glm::mat4> getModelSpaceTransforms(bool useDynamicRotations);
+        glm::mat4 getModelSpaceTransform(JointIndex jointIndex, FrameIndex frame, bool useDynamicRotations);
         std::vector<glm::vec3> getModelSpacePositions(bool useDynamicRotations);
         std::vector<glm::vec3> getModelSpacePositions(FrameIndex frame, bool useDynamicRotations);
         std::vector<glm::vec3> getCustomSpacePositions(glm::mat4 baseTransform, bool useDynamicRotations);

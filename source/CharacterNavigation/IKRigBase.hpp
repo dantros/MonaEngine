@@ -118,6 +118,7 @@ namespace Mona {
         std::vector<glm::vec3> getModelSpacePositions(bool useDynamicRotations);
         std::vector<glm::vec3> getModelSpacePositions(FrameIndex frame, bool useDynamicRotations);
         std::vector<glm::vec3> getCustomSpacePositions(glm::mat4 baseTransform, bool useDynamicRotations);
+        std::vector<glm::mat4> getJointSpaceTransforms(bool useDynamicRotations);
         EETrajectoryData* getTrajectoryData(ChainIndex chainIndex) { return &(m_ikChainTrajectoryData[chainIndex]); }
         HipTrajectoryData* getHipTrajectoryData() { return &m_hipTrajectoryData; }
     };

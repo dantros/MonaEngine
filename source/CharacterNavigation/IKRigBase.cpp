@@ -41,6 +41,9 @@ namespace Mona{
 	std::vector<glm::vec3> IKRigConfig::getCustomSpacePositions(glm::mat4 baseTransform, bool useDynamicRotations) {
 		return m_forwardKinematics->CustomSpacePositions(baseTransform, m_animIndex, m_currentFrameIndex, useDynamicRotations);
 	}
+	std::vector<glm::mat4> IKRigConfig::getJointSpaceTransforms(bool useDynamicRotations) {
+		return m_forwardKinematics->JointSpaceTransforms(m_animIndex, m_currentFrameIndex, useDynamicRotations);
+	}
 
 	float IKRigConfig::getAnimationTime(float timeStamp, int repCountOffset) {
 		return (m_reproductionCount + repCountOffset) * m_animationClip->GetDuration() + timeStamp;

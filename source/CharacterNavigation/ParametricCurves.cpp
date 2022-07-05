@@ -92,15 +92,32 @@ namespace Mona {
     }
 
     template <int D>
-    LIC<D> LIC<D>::getSubCurve(int minPointIndex, int maxPointIndex) {
-        MONA_ASSERT(minPointIndex < maxPointIndex, "LIC: max point index must be greater than min point index.");
-        std::vector<float> subCurveTValues(maxPointIndex - minPointIndex + 1);
-        std::vector<glm::vec<D, float>> subCurvePoints(maxPointIndex - minPointIndex + 1);
-        for (int i = minPointIndex; i <= maxPointIndex; i++) {
-            subCurveTValues[i] = m_tValues[i];
-            subCurvePoints[i] = m_curvePoints[i];
+    LIC<D> LIC<D>::sample(float minT, float maxT) {
+        MONA_ASSERT(minT < maxT, "LIC: maxT must be greater than minT.");
+        MONA_ASSERT(inTRange(minT) && inTRange(maxT), "LIC: Both minT and maxT must be in t range.")
+        std::vector<float> sampleTValues;
+        sampleTValues.reserve(m_tValues.size());
+        std::vector<glm::vec<D, float>> samplePoints;
+        samplePoints.reserve(m_tValues.size());
+        int startInd = 0;
+        for (int i = 0; i < m_tValues.size() - 1; i++) {
+            if (m_tValues[i] <= minT < m_tValues[i + 1) {
+                sampleTValues.push_back(minT);
+                samplePoints.push_back(evalCurve(minT));
+                startInd = i + 1;
+                break;
+            }
         }
-        return LIC(subCurvePoints, subCurveTValues);
+        for (int i = startInd; i < m_tValues.size() - 1; i++) {
+            sampleTValues.push_back(m_tValues[i]);
+            samplePoints.push_back(m_curvePoints[i]);
+            if (m_tValues[i] < maxT <= m_tValues[i + 1]) {
+                sampleTValues.push_back(maxT);
+                samplePoints.push_back(evalCurve(maxT));
+                break;
+            }
+        }
+        return LIC(samplePoints, sampleTValues);
     }
 
     template <int D>
@@ -123,6 +140,24 @@ namespace Mona {
         for (int i = 0; i < m_curvePoints.size(); i++) {
             m_curvePoints[i] = glm::rotate(rotation, glm::vec4(m_curvePoints[i], 1));
         }
+    }
+
+    template <int D>
+    void LIC<D>::offsetTValues(float offset) {
+        for (int i = 0; i < m_tValues.size(); i++) {
+            m_tValues[i] += offset;
+        }
+    }
+
+    template <int D>
+    static LIC<D> LIC<D>::join(const LIC& curve1, const LIC& curve2) {
+        MONA_ASSERT(curve1.m_tValues.back() < curve2.m_tValues[0], 
+            "LIC: tValues of the second curve must start afert tValues of the first curve end.");
+        std::vector<float> jointTValues = curve1.m_tValues;
+        jointTValues.insert(curve1.m_tValues.end(), curve2.m_tValues);
+        std::vector<glm::vec<D, float>> jointCurvePoints = curve1.m_curvePoints;
+        jointCurvePoints.insert(curve1.m_curvePoints.end(), curve2.m_curvePoints);
+        return LIC(jointCurvePoints, jointTValues);
     }
     
 }

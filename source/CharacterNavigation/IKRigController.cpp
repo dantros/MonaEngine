@@ -38,15 +38,10 @@ namespace Mona {
 		JointIndex parent = m_ikRig.getTopology()[m_ikRig.m_hipJoint];
 		while (parent != -1) {
 			auto track = animationClip->m_animationTracks[animationClip->m_jointTrackIndices[0]];
-			for (int j = 0; j < track.positions.size(); j++) {
-				if (track.positions[j] != glm::vec3(0)) {
-					MONA_LOG_ERROR("IKRigController: Joints above the hip in the hierarchy cannot have translations.");
-					return;
-				}
-			}
-			for (int j = 0; j < track.rotations.size(); j++) {
-				if (track.rotations[j] != glm::identity<glm::fquat>()) {
-					MONA_LOG_ERROR("IKRigController: Joints above the hip in the hierarchy cannot have rotations.");
+			glm::fquat baseRotation = track.rotations[0];
+			for (int j = 1; j < track.rotations.size(); j++) {
+				if (track.rotations[j] != baseRotation) {
+					MONA_LOG_ERROR("IKRigController: Joints above the hip in the hierarchy cannot have vatiable rotations.");
 					return;
 				}
 			}

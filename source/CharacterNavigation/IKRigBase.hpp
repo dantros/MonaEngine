@@ -108,6 +108,7 @@ namespace Mona {
         const std::vector<glm::vec3>& getJointPositions() const { return m_jointPositions; }
         const std::vector<float>& getTimeStamps() const { return m_timeStamps; }
         float getAnimationTime(float timeStamp, int repCountOffset = 0);
+        float getAnimationDuration() { return m_animationClip->GetDuration(); }
         int getReproductionCount() const { return m_reproductionCount; }
         std::vector<JointRotation>* getDynamicJointRotationsPtr() { return &(m_dynamicJointRotations[m_nextFrameIndex]);  }
         float getCurrentTime() const { return m_currentTime; }

@@ -29,11 +29,15 @@ namespace Mona{
         glm::vec<D, float> getRightHandVelocity(float t);
         void displacePointT(int pointIndex, float newT, bool scalePoints = true, float pointScalingRatio = 1);
         void setCurvePoint(int pointIndex, glm::vec<D, float> newValue);
-        LIC getSubCurve(int minPointIndex, int maxPointIndex);
+        LIC sample(float minT, float maxT);
+        void offsetTValues(float offset);
         void scale(glm::vec<D, float> scaling);
         void translate(glm::vec<D, float> translation);
         void rotate(glm::fquat rotation);
         int getDimension() { return m_dimension; }
+        static LIC join(const LIC& curve1, const LIC& curve2);
+        glm::vec<D, float> getStart() { return m_curvePoints[0]; }
+        glm::vec<D, float> getEnd() { return m_curvePoints.back(); }
     };   
 
 

@@ -90,15 +90,12 @@ namespace Mona{
         // si es estatica
         if (trData->supportFrames[nextFrame]) {
             float initialTime = config->getAnimationTime(config->getTimeStamps()[currentFrame]);
-            glm::vec3 initialPos;
+            glm::vec3 initialPos = trData->savedGlobalPositions[currentFrame];
             // chequear si hay una curva previa generada
-            if (trData->targetGlblTrajectory.inTRange(initialTime)) {
-                initialPos = trData->savedGlobalPositions[currentFrame];
-            }
-            else {
+            if (!trData->targetGlblTrajectory.inTRange(initialTime)) {
                 float x = globalEEPos[0];
                 float y = globalEEPos[1];
-                glm::vec3 initialPos = glm::vec3(x, y, m_environmentData.getTerrainHeight(x, y, transformManager, staticMeshManager));
+                initialPos = glm::vec3(x, y, m_environmentData.getTerrainHeight(x, y, transformManager, staticMeshManager));
             }
             float finalTime = config->getTimeStamps()[nextFrame];
             for (FrameIndex f = nextFrame + 1; f < config->getTimeStamps().size(); f++) {
@@ -110,6 +107,46 @@ namespace Mona{
             return TrajectoryType::STATIC;
         } // si es dinamica
         else {
+            // buscamos el frame en el que comienza la trayectoria
+            FrameIndex initialFrame = currentFrame;
+            for (int i = 0; i < config->getTimeStamps().size(); i++) {
+                initialFrame = 0 < initialFrame ? initialFrame - 1 : config->getTimeStamps().size() - 1;
+                if (trData->supportFrames[initialFrame]) { break; }
+            }
+            MONA_ASSERT(initialFrame != currentFrame, "TrajectoryGenerator: Trajectory must have a starting point.");
+            int repOffsetStart = initialFrame < currentFrame ? 0 : -1;
+            float initialTime = config->getAnimationTime(config->getTimeStamps()[initialFrame], repOffsetStart);
+            // buscamos el frame en el que termina la trayectoria
+            FrameIndex finalFrame = currentFrame;
+            FrameIndex testFrame = currentFrame;
+            for (int i = 0; i < config->getTimeStamps().size(); i++) {
+                testFrame = testFrame < config->getTimeStamps().size() - 1? testFrame + 1 : 0;
+                if (trData->supportFrames[testFrame]) { break; }
+                finalFrame = testFrame;
+            }
+            int repOffsetEnd = currentFrame <= finalFrame ? 0 : 1;
+            float finalTime = config->getAnimationTime(config->getTimeStamps()[finalFrame], repOffsetEnd);
+            // ahora se extrae una subcurva  de la trayectoria original para generar la trayectoria requerida
+            // hay que revisar si la trayectoria viene en una sola pieza
+            LIC<3> sampledCurve;
+            if (initialFrame < finalFrame) {
+                sampledCurve = trData->originalGlblTrajectory.sample(config->getTimeStamps()[initialFrame], config->getTimeStamps()[finalFrame]);
+            }
+            else {
+                LIC<3> part1 = trData->originalGlblTrajectory.sample(config->getTimeStamps()[initialFrame], config->getTimeStamps().back());
+                LIC<3> part2 = trData->originalGlblTrajectory.sample(config->getTimeStamps()[0], config->getTimeStamps()[finalFrame]);
+                part2.offsetTValues(config->getAnimationDuration());
+                part2.translate(-(part2.getStart() - part1.getEnd()));
+                sampledCurve = LIC<3>::join(part1, part2);
+            }
+            float tOffset = -config->getTimeStamps()[initialFrame] + initialTime;
+            sampledCurve.offsetTValues(tOffset);
+
+            glm::vec3 initialPos = trData->savedGlobalPositions[initialFrame];
+            // chequear si hay una curva previa generada
+            if (!trData->targetGlblTrajectory.inTRange(initialTime)) {
+                
+            }
 
         }
         

@@ -9,12 +9,13 @@ namespace Mona {
 	{
 		m_skeleton = skeleton;
 		m_forwardKinematics = ForwardKinematics(this);
+		m_transformHandle = transformHandle;
 
 		std::vector<ChainIndex> ikChains;
 		for (ChainIndex i = 0; i < m_ikChains.size(); i++) {
 			ikChains.push_back(i);
 		}
-		m_trajectoryGenerator = TrajectoryGenerator(this, ikChains, transformHandle);
+		m_trajectoryGenerator = TrajectoryGenerator(this, ikChains);
 
 		auto topology = getTopology();
 		auto jointNames = getJointNames();
@@ -92,6 +93,16 @@ namespace Mona {
 
 	std::vector<std::pair<JointIndex, glm::fquat>> IKRig::calculateRotations(AnimationIndex animIndex) {
 		return m_inverseKinematics.solveIKChains(animIndex);
+	}
+
+	glm::vec3 IKRig::getUpVector(ComponentManager<TransformComponent>* transformManager) {
+		return transformManager->GetComponentPointer(m_transformHandle)->GetUpVector();
+	}
+	glm::vec3 IKRig::getRightVector(ComponentManager<TransformComponent>* transformManager) {
+		return transformManager->GetComponentPointer(m_transformHandle)->GetRightVector();
+	}
+	glm::vec3 IKRig::getFrontVector(ComponentManager<TransformComponent>* transformManager) {
+		return transformManager->GetComponentPointer(m_transformHandle)->GetFrontVector();
 	}
 
 }

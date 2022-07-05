@@ -22,7 +22,9 @@ namespace Mona{
             const std::vector<std::string>& getJointNames() const { return m_skeleton->m_jointNames; };
             IKNode* getIKNode(JointIndex jointIndex) { return &m_nodes[jointIndex]; };
             IKChain* getIKChain(ChainIndex chainIndex) { return &m_ikChains[chainIndex]; };
-
+            glm::vec3 getUpVector(ComponentManager<TransformComponent>* transformManager);
+            glm::vec3 getRightVector(ComponentManager<TransformComponent>* transformManager);
+            glm::vec3 getFrontVector(ComponentManager<TransformComponent>* transformManager);
         private:
             // Informacion de configuracion del IKRig por cada animacion
             std::vector<IKRigConfig> m_animationConfigs;
@@ -31,7 +33,9 @@ namespace Mona{
             AnimationIndex m_currentAnim = 0;
             AnimationIndex m_targetAnim = -1;
             // Direccion global de movimiento
-            glm::vec3 m_forwardDirection;
+            glm::vec3 m_frontVector;
+            glm::vec3 m_upVector;
+            glm::vec3 m_rightVector;
             // Factor que multiplica el largo de las zancadas
             float m_strideFactor;
             // rapidez de giro
@@ -39,6 +43,7 @@ namespace Mona{
             // Escala global
             float m_scale;
             TrajectoryGenerator m_trajectoryGenerator;
+            InnerComponentHandle m_transformHandle;
             ForwardKinematics m_forwardKinematics;
             InverseKinematics m_inverseKinematics;
             // Altura aproximada del rig, para calculos con distancias relativas

@@ -23,7 +23,7 @@ namespace Mona {
 			std::vector<Terrain> m_terrains;
 		public:
 			EnvironmentData() = default;
-			float getTerrainHeight(float x, float y, ComponentManager<TransformComponent>* transformManager, 
+			float getTerrainHeight(float x, float y, glm::vec3 upVector, ComponentManager<TransformComponent>* transformManager, 
 				ComponentManager<StaticMeshComponent>* staticMeshManager);
 			void addTerrain(const Terrain& terrain, ComponentManager<StaticMeshComponent>* staticMeshManager);
 			int removeTerrain(const Terrain& terrain, ComponentManager<StaticMeshComponent>* staticMeshManager);

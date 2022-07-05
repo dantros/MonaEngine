@@ -51,7 +51,7 @@ namespace Mona {
 			void init(const std::vector<glm::vec3>& vertices, const std::vector<glm::vec3>& faces);
 			void init(const glm::vec2& bottomLeft, const glm::vec2& topRight, float (*heightFunc)(float, float));
 			bool isValid() { return m_isValid; }
-			float getHeight(float x, float y);
+			float getHeight(float x, float y, glm::vec3 upVector);
 	};
 
 }

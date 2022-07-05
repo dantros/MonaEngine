@@ -35,7 +35,8 @@ namespace Mona{
         void translate(glm::vec<D, float> translation);
         void rotate(glm::fquat rotation);
         int getDimension() { return m_dimension; }
-        static LIC join(const LIC& curve1, const LIC& curve2);
+        static LIC join(const LIC& curve1, const LIC& curve2, bool preserveLeft);
+        static LIC transition(const LIC& curve1, const LIC& curve2, float transitionT);
         glm::vec<D, float> getStart() { return m_curvePoints[0]; }
         glm::vec<D, float> getEnd() { return m_curvePoints.back(); }
     };   

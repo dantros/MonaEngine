@@ -45,10 +45,9 @@ namespace Mona{
     };
 
 
-    TrajectoryGenerator::TrajectoryGenerator(IKRig* ikRig, std::vector<ChainIndex> ikChains, InnerComponentHandle transformHandle) {
+    TrajectoryGenerator::TrajectoryGenerator(IKRig* ikRig, std::vector<ChainIndex> ikChains) {
         m_ikRig = ikRig;
         m_ikChains = ikChains;
-        m_transformHandle = transformHandle;
        
         // descenso para angulos (dim 1)
         FunctionTerm<TGData<1>> dim1Term(term1Function<1>, term1PartialDerivativeFunction<1>);
@@ -95,7 +94,8 @@ namespace Mona{
             if (!trData->targetGlblTrajectory.inTRange(initialTime)) {
                 float x = globalEEPos[0];
                 float y = globalEEPos[1];
-                initialPos = glm::vec3(x, y, m_environmentData.getTerrainHeight(x, y, transformManager, staticMeshManager));
+                initialPos = glm::vec3(x, y, m_environmentData.getTerrainHeight(x, y, m_ikRig->getUpVector(transformManager),
+                    transformManager, staticMeshManager));
             }
             float finalTime = config->getTimeStamps()[nextFrame];
             for (FrameIndex f = nextFrame + 1; f < config->getTimeStamps().size(); f++) {

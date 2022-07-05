@@ -411,11 +411,12 @@ namespace Mona{
         return interpolateVertexWValue(interpolated1, interpolated2, 1, y)[2];
     }
 
-    float HeightMap::getHeight(float x, float y) {
+    float HeightMap::getHeight(float x, float y, glm::vec3 upVector) {
         if (!withinBoundaries(x, y)) {
             MONA_LOG_WARNING("Point is out of bounds");
             return std::numeric_limits<float>::min();
         }
+        upVector = glm::normalize(upVector);
         // si tenemos la funcion de altura
         if (m_heightFunc != nullptr) {
             return m_heightFunc(x ,y);

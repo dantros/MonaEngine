@@ -150,14 +150,58 @@ namespace Mona {
     }
 
     template <int D>
-    static LIC<D> LIC<D>::join(const LIC& curve1, const LIC& curve2) {
-        MONA_ASSERT(curve1.m_tValues.back() < curve2.m_tValues[0], 
-            "LIC: tValues of the second curve must start afert tValues of the first curve end.");
-        std::vector<float> jointTValues = curve1.m_tValues;
-        jointTValues.insert(curve1.m_tValues.end(), curve2.m_tValues);
-        std::vector<glm::vec<D, float>> jointCurvePoints = curve1.m_curvePoints;
-        jointCurvePoints.insert(curve1.m_curvePoints.end(), curve2.m_curvePoints);
+    static LIC<D> LIC<D>::join(const LIC& curve1, const LIC& curve2, bool preserveLeft) {
+        std::vector<float> jointTValues;
+        jointTValues.reserve(curve1.m_curvePoints.size() + curve2.m_curvePoints.size());
+        std::vector<glm::vec<D, float>> jointCurvePoints;
+        jointCurvePoints.reserve(curve1.m_curvePoints.size() + curve2.m_curvePoints.size());
+        if (preserveLeft) {
+            jointTValues = curve1.m_tValues;
+            jointCurvePoints = curve1.m_curvePoints;
+            for (int i = 0; i < curve2.m_tValues.size(); i++) {
+                if (curve1.m_tValues.back() < curve2.m_tValues[i]) {
+                    jointTValues.insert(jointTValues.end(), curve2.m_tValues.begin() + i, curve2.m_tValues.end());
+                    jointCurvePoints.insert(jointCurvePoints.end(), curve2.m_curvePoints.begin() + i, curve2.m_curvePoints.end());
+                    break;
+                }
+            }
+        }
+        else {
+            for (int i = 0; i < curve1.m_tValues.size(); i++) {
+                if (curve2.m_tValues[0] <= curve1.m_tValues[i]) {
+                    jointTValues.insert(jointTValues.end(), curve2.m_tValues);
+                    jointCurvePoints.insert(jointCurvePoints.end(), curve2.m_curvePoints);
+                    break;
+                }
+                jointTValues.push_back(curve1.m_tValues[i]);
+                jointCurvePoints.push_back(curve1.m_curvePoints[i]);
+            }
+        }
         return LIC(jointCurvePoints, jointTValues);
+    }
+
+    template <int D>
+    static LIC<D> LIC<D>::transition(const LIC& curve1, const LIC& curve2, float transitionT) {
+        std::vector<float> transitionTValues;
+        transitionTValues.reserve(curve1.m_curvePoints.size() + curve2.m_curvePoints.size());
+        std::vector<glm::vec<D, float>> transitionCurvePoints;
+        transitionCurvePoints.reserve(curve1.m_curvePoints.size() + curve2.m_curvePoints.size());
+        for (int i = 0; i < curve1.m_tValues.size(); i++) {
+            if (curve1.m_tValues[i] < transitionT) {
+                transitionTValues.push_back(curve1.m_tValues[i]);
+                transitionCurvePoints.push_back(curve1.m_curvePoints[i]);
+            }
+            else {
+                break;
+            }
+        }
+        for (int i = 0; i < curve2.m_tValues.size(); i++) {
+            if ( transitionT <= curve2.m_tValues[i]) {
+                transitionTValues.push_back(curve2.m_tValues[i]);
+                transitionCurvePoints.push_back(curve2.m_curvePoints[i]);
+            }
+        }
+        return LIC(transitionCurvePoints, transitionTValues);
     }
     
 }

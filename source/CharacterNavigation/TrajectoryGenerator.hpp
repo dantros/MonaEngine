@@ -32,7 +32,6 @@ namespace Mona{
         IKRig* m_ikRig;
         EnvironmentData m_environmentData;
         std::vector<ChainIndex> m_ikChains;
-        InnerComponentHandle m_transformHandle;
         GradientDescent<TGData<1>> m_gradientDescent_dim1;
         TGData<1> m_tgData_dim1;
         GradientDescent<TGData<3>> m_gradientDescent_dim3;
@@ -43,7 +42,7 @@ namespace Mona{
             ComponentManager<StaticMeshComponent>* staticMeshManager);
         void generateHipTrajectory();
     public:
-        TrajectoryGenerator(IKRig* ikRig, std::vector<ChainIndex> ikChains, InnerComponentHandle transformHandle);
+        TrajectoryGenerator(IKRig* ikRig, std::vector<ChainIndex> ikChains);
         TrajectoryGenerator() = default;
         void generateTrajectories(AnimationIndex animIndex);
 

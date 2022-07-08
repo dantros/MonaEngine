@@ -64,6 +64,8 @@ namespace Mona {
         std::vector<bool> supportFrames;
         //
         std::vector<glm::vec3> savedGlobalPositions;
+        // Maxima diferencia de altura entre valores de la trayectoria original
+        float maxGlblHeightDelta;
     };
     class IKRigConfig {
         friend class IKRig;

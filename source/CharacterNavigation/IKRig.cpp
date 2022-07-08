@@ -95,14 +95,14 @@ namespace Mona {
 		return m_inverseKinematics.solveIKChains(animIndex);
 	}
 
-	glm::vec3 IKRig::getUpVector(ComponentManager<TransformComponent>* transformManager) {
-		return transformManager->GetComponentPointer(m_transformHandle)->GetUpVector();
+	glm::vec3 IKRig::getUpVector() {
+		return m_upVector;
 	}
-	glm::vec3 IKRig::getRightVector(ComponentManager<TransformComponent>* transformManager) {
-		return transformManager->GetComponentPointer(m_transformHandle)->GetRightVector();
+	glm::vec3 IKRig::getRightVector() {
+		return m_rightVector;
 	}
-	glm::vec3 IKRig::getFrontVector(ComponentManager<TransformComponent>* transformManager) {
-		return transformManager->GetComponentPointer(m_transformHandle)->GetFrontVector();
+	glm::vec3 IKRig::getFrontVector() {
+		return m_frontVector;
 	}
 
 }

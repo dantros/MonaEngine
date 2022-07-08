@@ -199,6 +199,9 @@ namespace Mona {
 			currentConfig->m_ikChainTrajectoryData[i].originalGlblTrajectory.scale(glm::vec3(m_ikRig.m_scale));
 		}
 
+		// calculo de la altura maxima para cada trayectoria original de los ee
+
+
 		
 
 		// Se remueve el movimiento de las caderas

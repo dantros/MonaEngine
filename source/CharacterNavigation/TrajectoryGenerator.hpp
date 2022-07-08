@@ -41,10 +41,20 @@ namespace Mona{
             ComponentManager<TransformComponent>* transformManager,
             ComponentManager<StaticMeshComponent>* staticMeshManager);
         void generateHipTrajectory();
+        glm::vec3 calcStrideStartingPoint(glm::vec3 referencePoint, float targetDistance, 
+            glm::vec2 targetDirection, int stepNum,
+            ComponentManager<TransformComponent>* transformManager,
+            ComponentManager<StaticMeshComponent>* staticMeshManager);
+        std::vector<glm::vec3> calcStrideData(glm::vec3 startingPoint, float targetDistance, 
+            glm::vec2 targetDirection, int stepNum,
+            ComponentManager<TransformComponent>* transformManager,
+            ComponentManager<StaticMeshComponent>* staticMeshManager);
     public:
         TrajectoryGenerator(IKRig* ikRig, std::vector<ChainIndex> ikChains);
         TrajectoryGenerator() = default;
         void generateTrajectories(AnimationIndex animIndex);
+        glm::vec3 getModelSpaceEETargetPos(ChainIndex ikChain);
+        glm::vec3 getHipTargetPos();
 
 
     };

@@ -191,9 +191,7 @@ namespace Mona {
                 transitionTValues.push_back(curve1.m_tValues[i]);
                 transitionCurvePoints.push_back(curve1.m_curvePoints[i]);
             }
-            else {
-                break;
-            }
+            else { break; }
         }
         for (int i = 0; i < curve2.m_tValues.size(); i++) {
             if ( transitionT <= curve2.m_tValues[i]) {
@@ -203,5 +201,16 @@ namespace Mona {
         }
         return LIC(transitionCurvePoints, transitionTValues);
     }
+
+    template <int D>
+    float LIC<D>::getTValue(int pointIndex) const {
+        MONA_ASSERT(0 <= pointIndex && pointIndex < m_tValues.size(), "LIC: input index must be within bounds.");
+        return m_tValues[pointIndex];
+    };
+    template <int D>
+    glm::vec<D, float> LIC<D>::getCurvePoint(int pointIndex) const { 
+        MONA_ASSERT(0 <= pointIndex && pointIndex < m_curvePoints.size(), "LIC: input index must be within bounds.");
+        return m_curvePoints[pointIndex]; 
+    };
     
 }

@@ -19,6 +19,7 @@ namespace Mona {
 		void updateTrajectories(AnimationIndex animIndex);
 		void updateAnimation(AnimationIndex animIndex);
 		void updateIKRig(float time);
+		void updateFrontVector(float time);
 	};
 
 

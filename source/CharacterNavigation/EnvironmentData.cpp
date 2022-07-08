@@ -12,7 +12,7 @@ namespace Mona{
         m_meshHandle = staticMeshObject.GetInnerComponentHandle<StaticMeshComponent>();
     }
 
-    float EnvironmentData::getTerrainHeight(float x, float y, ComponentManager<TransformComponent>* transformManager,
+    float EnvironmentData::getTerrainHeight(glm::vec2 xyPoint, ComponentManager<TransformComponent>* transformManager,
         ComponentManager<StaticMeshComponent>* staticMeshManager) {
         float maxHeight = std::numeric_limits<float>::min();
         for (int i = 0; i < m_terrains.size(); i++) {
@@ -26,7 +26,7 @@ namespace Mona{
             TransformComponent* staticMeshTransform = transformManager->GetComponentPointer(m_terrains[i].m_transformHandle);
 
             // trasladar punto a espacio local de la malla
-            glm::vec4 basePoint = { x, y, 0, 1};
+            glm::vec4 basePoint(xyPoint, 0, 1);
             glm::vec4 meshPoint = glm::inverse(staticMeshTransform->GetModelMatrix())*basePoint;
 
             float localHeight = heigtMap->getHeight(meshPoint[0], meshPoint[1]);

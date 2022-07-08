@@ -1,6 +1,7 @@
 #include "TrajectoryGenerator.hpp"
 #include "IKRig.hpp"
 #include "../Core/GlmUtils.hpp"
+#include "glm/gtx/rotate_vector.hpp"
 
 namespace Mona{
 
@@ -81,15 +82,15 @@ namespace Mona{
         ComponentManager<TransformComponent>* transformManager,
         ComponentManager<StaticMeshComponent>* staticMeshManager) {
         glm::vec2 refPointBase(referencePoint[0], referencePoint[1]);
-        std::vector<glm::vec3> collectedPoints(stepNum);
+        std::vector<glm::vec3> collectedPoints;
+        collectedPoints.reserve(stepNum);
         for (int i = 1; i <= stepNum; i++) {
             glm::vec2 testPoint = refPointBase + targetDirection * targetDistance * ((float)i / stepNum);
-            collectedPoints[i - 1] = glm::vec3(testPoint[0], testPoint[1],
-                m_environmentData.getTerrainHeight(testPoint[0], testPoint[1],
-                    transformManager, staticMeshManager));
+            collectedPoints.push_back(glm::vec3(testPoint, m_environmentData.getTerrainHeight(testPoint,
+                    transformManager, staticMeshManager)));
         }
         float minDistanceDiff = std::numeric_limits<float>::max();
-        glm::vec3 closest;
+        glm::vec3 closest = collectedPoints[0];
         for (int i = 0; i < collectedPoints.size(); i++) {
             float distDiff = std::abs(glm::distance(referencePoint, collectedPoints[i]) - targetDistance);
             if ( distDiff < minDistanceDiff) {
@@ -104,10 +105,30 @@ namespace Mona{
         glm::vec2 targetDirection, int stepNum,
         ComponentManager<TransformComponent>* transformManager,
         ComponentManager<StaticMeshComponent>* staticMeshManager) {
+        std::vector<glm::vec3> collectedPoints;
+        collectedPoints.reserve(stepNum);
+        for (int i = 1; i <= stepNum; i++) {
+            glm::vec2 testPoint = glm::vec2(startingPoint) + targetDirection * targetDistance * ((float)i / stepNum);
+            collectedPoints.push_back(glm::vec3(testPoint, 
+                m_environmentData.getTerrainHeight(testPoint, transformManager, staticMeshManager)));
+        }
+        std::vector<glm::vec3> strideDataPoints;
+        strideDataPoints.reserve(stepNum);
+        float previousDistance = 0;
+        for (int i = 0; i < collectedPoints.size(); i++) {
+            float distance = glm::distance(startingPoint, collectedPoints[i]);
+            if ( distance <= targetDistance &&  previousDistance*0.9 <= distance) {
+                strideDataPoints.push_back(collectedPoints[i]);
+                previousDistance = distance;
+            }
+            else { break; }
+        }
+        return strideDataPoints;
     }
 
     TrajectoryGenerator::TrajectoryType TrajectoryGenerator::generateEETrajectory(ChainIndex ikChain, IKRigConfig* config, 
         glm::vec3 globalEEPos,
+        float rotationAngle,
         ComponentManager<TransformComponent>* transformManager,
         ComponentManager<StaticMeshComponent>* staticMeshManager) {
         EETrajectoryData* trData = config->getTrajectoryData(ikChain);
@@ -122,9 +143,8 @@ namespace Mona{
             glm::vec3 initialPos = trData->savedGlobalPositions[currentFrame];
             // chequear si hay una curva previa generada
             if (!trData->targetGlblTrajectory.inTRange(initialTime)) {
-                float x = globalEEPos[0];
-                float y = globalEEPos[1];
-                initialPos = glm::vec3(x, y, m_environmentData.getTerrainHeight(x, y, transformManager, staticMeshManager));
+                initialPos = glm::vec3(glm::vec2(globalEEPos), 
+                    m_environmentData.getTerrainHeight(glm::vec2(globalEEPos), transformManager, staticMeshManager));
             }
             float finalTime = config->getTimeStamps()[nextFrame];
             for (FrameIndex f = nextFrame + 1; f < config->getTimeStamps().size(); f++) {
@@ -177,11 +197,13 @@ namespace Mona{
                 float referenceTime = config->getAnimationTime(config->getTimeStamps()[currentFrame]);
                 glm::vec3 origCurveStart = sampledCurve.getCurvePoint(0);
                 glm::vec3 origCurveReferencePoint = sampledCurve.evalCurve(referenceTime);
-                float floorDistanceToStart = glm::distance(glm::vec2(origCurveStart[0], origCurveStart[1]), 
-                    glm::vec2(origCurveReferencePoint[0], origCurveReferencePoint[1]));
-                glm::vec3 floorReferencePoint(globalEEPos[0], globalEEPos[1], m_environmentData.getTerrainHeight(globalEEPos[0], globalEEPos[1],
+                float floorDistanceToStart = glm::distance(glm::vec2(origCurveStart), glm::vec2(origCurveReferencePoint));
+                glm::vec3 floorReferencePoint(glm::vec2(globalEEPos), m_environmentData.getTerrainHeight(glm::vec2(globalEEPos),
                     transformManager, staticMeshManager));
-                initialPos = calcStrideStartingPoint(floorReferencePoint, floorDistanceToStart, 5, transformManager, staticMeshManager);
+                glm::vec2 origCurveReferenceDirection = glm::vec2(origCurveReferencePoint) - glm::vec2(origCurveStart);
+                glm::vec2 targetDirection = -glm::normalize(glm::rotate(origCurveReferenceDirection, rotationAngle));
+                initialPos = calcStrideStartingPoint(floorReferencePoint, floorDistanceToStart, 
+                    targetDirection, 5, transformManager, staticMeshManager);
             }
 
         }

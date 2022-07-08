@@ -1,6 +1,7 @@
 #include "IKRigController.hpp"
 #include "../Core/FuncUtils.hpp"
 #include "../Core/GlmUtils.hpp"
+#include "glm/gtx/rotate_vector.hpp"
 
 namespace Mona {
 
@@ -140,7 +141,8 @@ namespace Mona {
 		currentConfig->m_hipTrajectoryData.originalRotationAxes = LIC<3>(hipRotAxes, hipTimeStamps);
 		currentConfig->m_hipTrajectoryData.originalGlblTranslations = LIC<3>(hipTranslations, hipTimeStamps);
 		currentConfig->m_hipTrajectoryData.originalGlblTranslations.scale(glm::vec3(m_ikRig.m_scale));
-		currentConfig->m_hipTrajectoryData.originalForwardDirection = glm::normalize(hipTrack.positions.back() - hipTrack.positions[0]);
+		currentConfig->m_hipTrajectoryData.originalForwardDirection = glm::normalize(glm::vec2(hipTrack.positions.back()) - 
+			glm::vec2(hipTrack.positions[0]));
 
 		// Ahora guardamos las trayectorias originales de los ee y definimos sus frames de soporte
 		int frameNum = animationClip->m_animationTracks[0].rotationTimeStamps.size();
@@ -223,6 +225,11 @@ namespace Mona {
 		return -1;
 	}
 
+	void IKRigController::updateFrontVector(float time) {
+		float rotAngle = m_ikRig.m_angularSpeed * time;
+		m_ikRig.m_frontVector = glm::rotate(m_ikRig.m_frontVector, rotAngle);
+	}
+
 	void IKRigController::updateTrajectories(AnimationIndex animIndex) {
 		// recalcular trayectorias de ee y caderas
 
@@ -260,8 +267,7 @@ namespace Mona {
 		for (AnimationIndex i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {
 			updateIKRigConfigTime(time, i);
 		}
-
-
+		updateFrontVector(time);
 	}
 
 

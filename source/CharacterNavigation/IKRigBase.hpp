@@ -43,7 +43,7 @@ namespace Mona {
         // Traslaciones originales
         LIC<3> originalGlblTranslations;
         // Direccion original de la cadera
-        glm::vec3 originalForwardDirection;
+        glm::vec2 originalForwardDirection;
         // Angulos de rotacion objetivo
         LIC<1> targetRotationAngles;
         // Ejes de rotacion objetivo

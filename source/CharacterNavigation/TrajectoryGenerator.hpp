@@ -37,7 +37,7 @@ namespace Mona{
         GradientDescent<TGData<3>> m_gradientDescent_dim3;
         TGData<3> m_tgData_dim3;
         TrajectoryType generateEETrajectory(ChainIndex ikChain, IKRigConfig* config, 
-            glm::vec3 globalEEPos,
+            glm::vec3 globalEEPos, float rotationAngle,
             ComponentManager<TransformComponent>* transformManager,
             ComponentManager<StaticMeshComponent>* staticMeshManager);
         void generateHipTrajectory();

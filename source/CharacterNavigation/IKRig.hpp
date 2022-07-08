@@ -22,9 +22,10 @@ namespace Mona{
             const std::vector<std::string>& getJointNames() const { return m_skeleton->m_jointNames; };
             IKNode* getIKNode(JointIndex jointIndex) { return &m_nodes[jointIndex]; };
             IKChain* getIKChain(ChainIndex chainIndex) { return &m_ikChains[chainIndex]; };
-            glm::vec3 getRightVector();
-            glm::vec3 getFrontVector();
+            glm::vec2 getFrontVector() { return m_frontVector; }
             float getRigHeight() { return m_rigHeight; }
+            void setAngularSpeed(float angularSpeed) { m_angularSpeed = angularSpeed; }
+            float getAngularSpeed() { return m_angularSpeed; }
         private:
             // Informacion de configuracion del IKRig por cada animacion
             std::vector<IKRigConfig> m_animationConfigs;
@@ -33,9 +34,9 @@ namespace Mona{
             AnimationIndex m_currentAnim = 0;
             AnimationIndex m_targetAnim = -1;
             // Direccion global de movimiento
-            glm::vec3 m_frontVector;
-            //glm::vec3 m_upVector; debe ser (0,0,1)
-            glm::vec3 m_rightVector;
+            glm::vec2 m_frontVector;
+            //glm::vec3 m_upVector; (0,0,1)
+            //glm::vec2 m_rightVector; (1,0)
             // Factor que multiplica el largo de las zancadas
             float m_strideFactor;
             // rapidez de giro

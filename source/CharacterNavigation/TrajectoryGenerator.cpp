@@ -1,5 +1,4 @@
 #include "TrajectoryGenerator.hpp"
-#include "IKRig.hpp"
 #include "../Core/GlmUtils.hpp"
 #include "glm/gtx/rotate_vector.hpp"
 #include "glm/gtx/vector_angle.hpp"
@@ -15,7 +14,7 @@ namespace Mona{
             int pIndex = dataPtr->pointIndexes[i];
             float tVal = dataPtr->varCurve->getTValue(pIndex);
             result += glm::distance2(dataPtr->varCurve->getLeftHandVelocity(tVal),
-                dataPtr->baseCurve->getLeftHandVelocity(tVal));
+                dataPtr->baseVelocities[i]);
         }
         return result;
     };
@@ -27,7 +26,7 @@ namespace Mona{
         int coordIndex = varIndex % D;
         float tVal = dataPtr->varCurve->getTValue(pIndex);
         float result = pIndex != 0 ?
-            2 * (dataPtr->varCurve->getLeftHandVelocity(tVal)[coordIndex] - dataPtr->baseCurve->getLeftHandVelocity(tVal)[coordIndex])
+            2 * (dataPtr->varCurve->getLeftHandVelocity(tVal)[coordIndex] - dataPtr->baseVelocities[varIndex / D][coordIndex])
             / (dataPtr->varCurve->getTValue(pIndex) - dataPtr->varCurve->getTValue(pIndex - 1)) : 0;
 
         return result;
@@ -127,6 +126,38 @@ namespace Mona{
         return strideDataPoints;
     }
 
+    std::pair<FrameIndex, FrameIndex> TrajectoryGenerator::calcTrajectoryFrameRange(IKRigConfig* config, ChainIndex ikChain, 
+        TrajectoryType trajectoryType) {
+        EETrajectoryData* trData = config->getTrajectoryData(ikChain);
+        FrameIndex nextFrame = config->getNextFrameIndex();
+        FrameIndex currentFrame = config->getCurrentFrameIndex();
+        if (trajectoryType==TrajectoryType::STATIC) { // estatica
+            FrameIndex finalFrame = nextFrame;
+            for (int i = 0; i < config->getTimeStamps().size()-1; i++) {
+                if (!trData->supportFrames[config->getTimeStamps().size() % (finalFrame + 1)]) { break; }
+                finalFrame = config->getTimeStamps().size() % (finalFrame + 1);
+            }
+            return { currentFrame, finalFrame };
+        }
+        else { // dinamica
+            // buscamos el frame en el que comienza la trayectoria
+            FrameIndex initialFrame = currentFrame;
+            for (int i = 0; i < config->getTimeStamps().size()-1; i++) {
+                if (trData->supportFrames[initialFrame]) { break; }
+                initialFrame = 0 < initialFrame ? initialFrame - 1 : config->getTimeStamps().size() - 1;
+            }
+            MONA_ASSERT(initialFrame != nextFrame, "TrajectoryGenerator: Trajectory must have a starting point.");
+
+            // buscamos el frame en el que termina la trayectoria
+            FrameIndex finalFrame = nextFrame;
+            for (int i = 0; i < config->getTimeStamps().size()-1; i++) {
+                if (trData->supportFrames[config->getTimeStamps().size()%(finalFrame+1)]) { break; }
+                finalFrame = config->getTimeStamps().size() % (finalFrame + 1);
+            }
+            return { initialFrame, finalFrame };
+        }
+    }
+
     void TrajectoryGenerator::generateStaticTrajectory(ChainIndex ikChain, IKRigConfig* config,
         glm::vec3 globalEEPos,
         ComponentManager<TransformComponent>* transformManager,
@@ -134,19 +165,18 @@ namespace Mona{
         EETrajectoryData* trData = config->getTrajectoryData(ikChain);
         FrameIndex nextFrame = config->getNextFrameIndex();
         FrameIndex currentFrame = config->getCurrentFrameIndex();
-        float initialTime = config->getAnimationTime(config->getTimeStamps()[currentFrame]);
-        glm::vec3 initialPos = trData->savedGlobalPositions[currentFrame];
+        std::pair<FrameIndex, FrameIndex> frameRange = calcTrajectoryFrameRange(config, ikChain, TrajectoryType::STATIC);
+        FrameIndex initialFrame = frameRange.first;
+        FrameIndex finalFrame = frameRange.second;
+        float initialTime = config->getAnimationTime(config->getTimeStamps()[initialFrame]);
+        int repOffsetEnd = initialFrame <= finalFrame ? 0 : 1;
+        float finalTime = config->getAnimationTime(config->getTimeStamps()[finalFrame], repOffsetEnd);
+        glm::vec3 initialPos = trData->savedGlobalPositions[initialTime];
         // chequear si hay una curva previa generada
         if (!trData->targetGlblTrajectory.inTRange(initialTime)) {
             initialPos = glm::vec3(glm::vec2(globalEEPos),
                 m_environmentData.getTerrainHeight(glm::vec2(globalEEPos), transformManager, staticMeshManager));
         }
-        float finalTime = config->getTimeStamps()[nextFrame];
-        for (FrameIndex f = nextFrame + 1; f < config->getTimeStamps().size(); f++) {
-            if (trData->supportFrames[f]) { finalTime = config->getTimeStamps()[f]; }
-            else { break; }
-        }
-        finalTime = config->getAnimationTime(finalTime);
         trData->targetGlblTrajectory = LIC<3>({ initialPos, initialPos }, { initialTime, finalTime });
         trData->trajectoryType = TrajectoryType::STATIC;
     }
@@ -160,25 +190,16 @@ namespace Mona{
         FrameIndex nextFrame = config->getNextFrameIndex();
         FrameIndex currentFrame = config->getCurrentFrameIndex();
 
-        // buscamos el frame en el que comienza la trayectoria
-        FrameIndex initialFrame = currentFrame;
-        for (int i = 0; i < config->getTimeStamps().size(); i++) {
-            initialFrame = 0 < initialFrame ? initialFrame - 1 : config->getTimeStamps().size() - 1;
-            if (trData->supportFrames[initialFrame]) { break; }
-        }
-        MONA_ASSERT(initialFrame != currentFrame, "TrajectoryGenerator: Trajectory must have a starting point.");
+        std::pair<FrameIndex, FrameIndex> frameRange = calcTrajectoryFrameRange(config, ikChain, TrajectoryType::DYNAMIC);
+        FrameIndex initialFrame = frameRange.first;
+        FrameIndex finalFrame = frameRange.second;
+
         int repOffsetStart = initialFrame < currentFrame ? 0 : -1;
         float initialTime = config->getAnimationTime(config->getTimeStamps()[initialFrame], repOffsetStart);
-        // buscamos el frame en el que termina la trayectoria
-        FrameIndex finalFrame = currentFrame;
-        FrameIndex testFrame = currentFrame;
-        for (int i = 0; i < config->getTimeStamps().size(); i++) {
-            testFrame = testFrame < config->getTimeStamps().size() - 1 ? testFrame + 1 : 0;
-            if (trData->supportFrames[testFrame]) { break; }
-            finalFrame = testFrame;
-        }
-        int repOffsetEnd = currentFrame <= finalFrame ? 0 : 1;
+
+        int repOffsetEnd = currentFrame < finalFrame ? 0 : 1;
         float finalTime = config->getAnimationTime(config->getTimeStamps()[finalFrame], repOffsetEnd);
+
         // ahora se extrae una subcurva  de la trayectoria original para generar la trayectoria requerida
         // hay que revisar si la trayectoria viene en una sola pieza
         LIC<3> sampledCurve;
@@ -231,14 +252,68 @@ namespace Mona{
         }
         sampledCurve.rotate(targetRotation);        
 
-        sampledCurveStart = sampledCurve.getCurvePoint(0);
-        sampledCurveEnd = sampledCurve.getCurvePoint(sampledCurve.getNumberOfPoints() - 1);
         // escalarla y moverla para que calce con las posiciones
         float origLength = glm::distance(sampledCurveStart, sampledCurveEnd); // actualmente parte en el origen
         float targetLength = glm::distance(initialPos, finalPos);
         sampledCurve.scale(glm::vec3(targetLength/origLength));
         sampledCurve.translate(initialPos);
 
+        // setear los minimos de altura y aplicar el descenso de gradiente
+        m_tgData_dim3.pointIndexes.clear();
+        m_tgData_dim3.pointIndexes.reserve(sampledCurve.getNumberOfPoints());
+        m_tgData_dim3.baseVelocities.clear();
+        m_tgData_dim3.baseVelocities.reserve(sampledCurve.getNumberOfPoints());
+        m_tgData_dim3.minValues.clear();
+        m_tgData_dim3.minValues.reserve(sampledCurve.getNumberOfPoints() * 3);
+        int stridePointInd = 0;
+        float stridePointPreviousDist = glm::distance2(glm::vec2(sampledCurve.getCurvePoint(0)), glm::vec2(strideData[stridePointInd]));
+        std::vector<std::pair<int, int>> curvePointIndex_stridePointIndex;
+        for (int i = 1; i < sampledCurve.getNumberOfPoints(); i++) {
+            // Los extremos de la curva se mantendran fijos.
+            m_tgData_dim3.pointIndexes.push_back(i);
+            float currDist = glm::distance2(glm::vec2(sampledCurve.getCurvePoint(i)), glm::vec2(strideData[stridePointInd]));
+            if (stridePointPreviousDist < currDist) {
+                // si la distancia del punto actual es mayor, entonces el anterior se escoge como el mas cercano
+                curvePointIndex_stridePointIndex.push_back({i-1, stridePointInd});
+                stridePointInd += 1;
+                if (stridePointInd == strideData.size()) { break; }
+            }
+            else if (i == sampledCurve.getNumberOfPoints() - 1) {
+                curvePointIndex_stridePointIndex.push_back({ i, stridePointInd });
+            }
+        }
+        for (int i = 0; i < m_tgData_dim3.pointIndexes.size()*3;i++) {
+            m_tgData_dim3.minValues.push_back(std::numeric_limits<float>::min());
+        }
+        for (int i = 0; i < curvePointIndex_stridePointIndex.size(); i++){
+            int curvePointIndex = curvePointIndex_stridePointIndex[i].first;
+            int stridePointIndex = curvePointIndex_stridePointIndex[i].second;
+            // asignamos el valor minimo de z permitido al punto designado y a sus vecinos inmediatos
+            if (0 < curvePointIndex) {
+                m_tgData_dim3.minValues[(curvePointIndex - 1) * 3 + 2] = strideData[stridePointIndex][2];
+            }
+            m_tgData_dim3.minValues[(curvePointIndex) * 3 + 2] = strideData[stridePointIndex][2];
+            if (curvePointIndex < (m_tgData_dim3.pointIndexes.size() - 1)) {
+                m_tgData_dim3.minValues[(curvePointIndex + 1) * 3 + 2] = strideData[stridePointIndex][2];
+            }
+        }
+        // parametros iniciales y velocidades base
+        std::vector<float> initialArgs(m_tgData_dim3.pointIndexes.size() * 3);
+        for (int i = 0; i < m_tgData_dim3.pointIndexes.size(); i++) {
+            int pIndex = m_tgData_dim3.pointIndexes[i];
+            for (int j = 0; j < 2; j++) {
+                initialArgs[i * 3 + j] = sampledCurve.getCurvePoint(pIndex)[j];
+            }
+            m_tgData_dim3.baseVelocities.push_back(sampledCurve.getLeftHandVelocity(sampledCurve.getTValue(pIndex)));
+        }
+
+        // seteo de otros parametros (TODO)
+        m_tgData_dim3.descentRate;
+        m_tgData_dim3.maxIterations = 100;
+
+        m_gradientDescent_dim3.computeArgsMin(m_tgData_dim3.descentRate, m_tgData_dim3.maxIterations, initialArgs);
+
+        trData->targetGlblTrajectory = sampledCurve;
         trData->trajectoryType = TrajectoryType::DYNAMIC;
     }
 

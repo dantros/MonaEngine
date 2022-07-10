@@ -5,18 +5,23 @@
 #include "EnvironmentData.hpp"
 #include "GradientDescent.hpp"
 #include "ParametricCurves.hpp"
+#include "IKRig.hpp"
 
 namespace Mona{
 
     typedef int ChainIndex;
     typedef int AnimationIndex;
+    typedef int FrameIndex;
 
     template <int D>
     struct TGData {
-        LIC<D>* baseCurve;
+        std::vector<glm::vec<D,float>> baseVelocities;
         LIC<D>* varCurve;
         std::vector<int> pointIndexes;
         std::vector<float> minValues; // tamaño D*pointIndexes.size()
+
+        float descentRate;
+        int maxIterations;
     };
 
     class IKRig;
@@ -31,6 +36,7 @@ namespace Mona{
         TGData<1> m_tgData_dim1;
         GradientDescent<TGData<3>> m_gradientDescent_dim3;
         TGData<3> m_tgData_dim3;
+        std::pair<FrameIndex, FrameIndex> calcTrajectoryFrameRange(IKRigConfig* config, ChainIndex ikChain, TrajectoryType trajectoryType);
         void generateEETrajectory(ChainIndex ikChain, IKRigConfig* config, 
             glm::vec3 globalEEPos, float rotationAngle,
             ComponentManager<TransformComponent>* transformManager,

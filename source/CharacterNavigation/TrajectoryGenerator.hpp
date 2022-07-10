@@ -23,11 +23,6 @@ namespace Mona{
     class IKRigConfig;
     class TrajectoryGenerator {
         friend class IKNavigationComponent;
-    public:
-        enum class TrajectoryType {
-            STATIC,
-            DYNAMIC
-        };
     private:
         IKRig* m_ikRig;
         EnvironmentData m_environmentData;
@@ -36,11 +31,20 @@ namespace Mona{
         TGData<1> m_tgData_dim1;
         GradientDescent<TGData<3>> m_gradientDescent_dim3;
         TGData<3> m_tgData_dim3;
-        TrajectoryType generateEETrajectory(ChainIndex ikChain, IKRigConfig* config, 
+        void generateEETrajectory(ChainIndex ikChain, IKRigConfig* config, 
+            glm::vec3 globalEEPos, float rotationAngle,
+            ComponentManager<TransformComponent>* transformManager,
+            ComponentManager<StaticMeshComponent>* staticMeshManager);
+        void generateStaticTrajectory(ChainIndex ikChain, IKRigConfig* config,
+            glm::vec3 globalEEPos,
+            ComponentManager<TransformComponent>* transformManager,
+            ComponentManager<StaticMeshComponent>* staticMeshManager);
+        void generateDynamicTrajectory(ChainIndex ikChain, IKRigConfig* config,
             glm::vec3 globalEEPos, float rotationAngle,
             ComponentManager<TransformComponent>* transformManager,
             ComponentManager<StaticMeshComponent>* staticMeshManager);
         void generateHipTrajectory();
+
         glm::vec3 calcStrideStartingPoint(glm::vec3 referencePoint, float targetDistance, 
             glm::vec2 targetDirection, int stepNum,
             ComponentManager<TransformComponent>* transformManager,

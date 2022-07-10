@@ -101,7 +101,7 @@ namespace Mona {
         samplePoints.reserve(m_tValues.size());
         int startInd = 0;
         for (int i = 0; i < m_tValues.size() - 1; i++) {
-            if (m_tValues[i] <= minT < m_tValues[i + 1) {
+            if (m_tValues[i] <= minT < m_tValues[i + 1]) {
                 sampleTValues.push_back(minT);
                 samplePoints.push_back(evalCurve(minT));
                 startInd = i + 1;
@@ -134,9 +134,7 @@ namespace Mona {
         }
     }
 
-    template <int D>
-    void LIC<D>::rotate(glm::fquat rotation) {
-        MONA_ASSERT(D == 3, "LIC: Quaternion rotation is only available for dimension 3 LICs.");
+    void LIC<3>::rotate(glm::fquat rotation) {
         for (int i = 0; i < m_curvePoints.size(); i++) {
             m_curvePoints[i] = glm::rotate(rotation, glm::vec4(m_curvePoints[i], 1));
         }

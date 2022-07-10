@@ -2,6 +2,7 @@
 #include "IKRig.hpp"
 #include "../Core/GlmUtils.hpp"
 #include "glm/gtx/rotate_vector.hpp"
+#include "glm/gtx/vector_angle.hpp"
 
 namespace Mona{
 
@@ -59,7 +60,7 @@ namespace Mona{
         m_gradientDescent_dim3 = GradientDescent<TGData<3>>({ dim3Term }, 0, &m_tgData_dim3, postDescentStepCustomBehaviour<3>);
     }
 
-    void setNewTrajectories(AnimationIndex animIndex, std::vector<ChainIndex> regularChains) {
+    void setNewTrajectories(AnimationIndex animIndex, std::vector<ChainIndex> ikChains) {
         // las trayectorias anteriores siempre deben llegar hasta el currentFrame
         // se necesitan para cada ee su posicion actual y la curva base, ambos en espacio global
         // se usa "animationTime" que corresponde al tiempo de la aplicacion modificado con el playRate (-- distinto a samplingTime--)
@@ -126,88 +127,136 @@ namespace Mona{
         return strideDataPoints;
     }
 
-    TrajectoryGenerator::TrajectoryType TrajectoryGenerator::generateEETrajectory(ChainIndex ikChain, IKRigConfig* config, 
+    void TrajectoryGenerator::generateStaticTrajectory(ChainIndex ikChain, IKRigConfig* config,
+        glm::vec3 globalEEPos,
+        ComponentManager<TransformComponent>* transformManager,
+        ComponentManager<StaticMeshComponent>* staticMeshManager) {
+        EETrajectoryData* trData = config->getTrajectoryData(ikChain);
+        FrameIndex nextFrame = config->getNextFrameIndex();
+        FrameIndex currentFrame = config->getCurrentFrameIndex();
+        float initialTime = config->getAnimationTime(config->getTimeStamps()[currentFrame]);
+        glm::vec3 initialPos = trData->savedGlobalPositions[currentFrame];
+        // chequear si hay una curva previa generada
+        if (!trData->targetGlblTrajectory.inTRange(initialTime)) {
+            initialPos = glm::vec3(glm::vec2(globalEEPos),
+                m_environmentData.getTerrainHeight(glm::vec2(globalEEPos), transformManager, staticMeshManager));
+        }
+        float finalTime = config->getTimeStamps()[nextFrame];
+        for (FrameIndex f = nextFrame + 1; f < config->getTimeStamps().size(); f++) {
+            if (trData->supportFrames[f]) { finalTime = config->getTimeStamps()[f]; }
+            else { break; }
+        }
+        finalTime = config->getAnimationTime(finalTime);
+        trData->targetGlblTrajectory = LIC<3>({ initialPos, initialPos }, { initialTime, finalTime });
+        trData->trajectoryType = TrajectoryType::STATIC;
+    }
+
+    void TrajectoryGenerator::generateDynamicTrajectory(ChainIndex ikChain, IKRigConfig* config,
+        glm::vec3 globalEEPos, float rotationAngle,
+        ComponentManager<TransformComponent>* transformManager,
+        ComponentManager<StaticMeshComponent>* staticMeshManager) {
+
+        EETrajectoryData* trData = config->getTrajectoryData(ikChain);
+        FrameIndex nextFrame = config->getNextFrameIndex();
+        FrameIndex currentFrame = config->getCurrentFrameIndex();
+
+        // buscamos el frame en el que comienza la trayectoria
+        FrameIndex initialFrame = currentFrame;
+        for (int i = 0; i < config->getTimeStamps().size(); i++) {
+            initialFrame = 0 < initialFrame ? initialFrame - 1 : config->getTimeStamps().size() - 1;
+            if (trData->supportFrames[initialFrame]) { break; }
+        }
+        MONA_ASSERT(initialFrame != currentFrame, "TrajectoryGenerator: Trajectory must have a starting point.");
+        int repOffsetStart = initialFrame < currentFrame ? 0 : -1;
+        float initialTime = config->getAnimationTime(config->getTimeStamps()[initialFrame], repOffsetStart);
+        // buscamos el frame en el que termina la trayectoria
+        FrameIndex finalFrame = currentFrame;
+        FrameIndex testFrame = currentFrame;
+        for (int i = 0; i < config->getTimeStamps().size(); i++) {
+            testFrame = testFrame < config->getTimeStamps().size() - 1 ? testFrame + 1 : 0;
+            if (trData->supportFrames[testFrame]) { break; }
+            finalFrame = testFrame;
+        }
+        int repOffsetEnd = currentFrame <= finalFrame ? 0 : 1;
+        float finalTime = config->getAnimationTime(config->getTimeStamps()[finalFrame], repOffsetEnd);
+        // ahora se extrae una subcurva  de la trayectoria original para generar la trayectoria requerida
+        // hay que revisar si la trayectoria viene en una sola pieza
+        LIC<3> sampledCurve;
+        if (initialFrame < finalFrame) {
+            sampledCurve = trData->originalGlblTrajectory.sample(config->getTimeStamps()[initialFrame], config->getTimeStamps()[finalFrame]);
+        }
+        else {
+            LIC<3> part1 = trData->originalGlblTrajectory.sample(config->getTimeStamps()[initialFrame], config->getTimeStamps().back());
+            LIC<3> part2 = trData->originalGlblTrajectory.sample(config->getTimeStamps()[0], config->getTimeStamps()[finalFrame]);
+            part2.offsetTValues(config->getAnimationDuration());
+            part2.translate(-(part2.getStart() - part1.getEnd()));
+            sampledCurve = LIC<3>::join(part1, part2);
+        }
+        float tOffset = -config->getTimeStamps()[initialFrame] + initialTime;
+        sampledCurve.offsetTValues(tOffset);
+        glm::vec3 sampledCurveStart = sampledCurve.getCurvePoint(0);
+        glm::vec3 sampledCurveEnd = sampledCurve.getCurvePoint(sampledCurve.getNumberOfPoints() - 1);
+        glm::vec3 initialPos = trData->savedGlobalPositions[initialFrame];
+        // chequear si hay una curva previa generada
+        if (!trData->targetGlblTrajectory.inTRange(initialTime)) {
+            float referenceTime = config->getAnimationTime(config->getTimeStamps()[currentFrame]);
+            glm::vec3 sampledCurveReferencePoint = sampledCurve.evalCurve(referenceTime);
+            float floorDistanceToStart = glm::distance(glm::vec2(sampledCurveStart), glm::vec2(sampledCurveReferencePoint));
+            glm::vec3 floorReferencePoint(glm::vec2(globalEEPos), m_environmentData.getTerrainHeight(glm::vec2(globalEEPos),
+                transformManager, staticMeshManager));
+            glm::vec2 sampledCurveReferenceDirection = glm::vec2(sampledCurveReferencePoint) - glm::vec2(sampledCurveStart);
+            glm::vec2 targetDirection = -glm::normalize(glm::rotate(sampledCurveReferenceDirection, rotationAngle));
+            initialPos = calcStrideStartingPoint(floorReferencePoint, floorDistanceToStart,
+                targetDirection, 4, transformManager, staticMeshManager);
+        }
+        float targetDistance = glm::distance(sampledCurveStart, sampledCurveEnd);
+        glm::vec3 originalDirection = glm::normalize(sampledCurveEnd - sampledCurveStart);
+        glm::vec2 targetXYDirection = glm::rotate(glm::vec2(originalDirection), rotationAngle);
+        std::vector<glm::vec3> strideData = calcStrideData(initialPos, targetDistance, targetXYDirection, 8, transformManager, staticMeshManager);
+        if (strideData.size() == 0) { // si no es posible avanzar por la elevacion del terreno
+            generateStaticTrajectory(ikChain, config, globalEEPos, transformManager, staticMeshManager);
+            return;
+        }
+        glm::vec3 finalPos = strideData.back();
+        
+        // mover la curva al origen
+        sampledCurve.translate(-sampledCurveStart);
+        // rotarla la subtrayectoria para que quede en linea con las pos inicial y final
+        glm::fquat targetRotation = glm::identity<glm::fquat>();
+        glm::vec3 targetDirection = glm::normalize(finalPos - initialPos);
+        if (originalDirection != targetDirection) {
+            glm::vec3 rotAxis = glm::normalize(glm::cross(originalDirection, targetDirection));
+            float rotAngle = glm::orientedAngle(originalDirection, targetDirection, rotAxis);
+            targetRotation = glm::fquat(rotAngle, rotAxis);
+        }
+        sampledCurve.rotate(targetRotation);        
+
+        sampledCurveStart = sampledCurve.getCurvePoint(0);
+        sampledCurveEnd = sampledCurve.getCurvePoint(sampledCurve.getNumberOfPoints() - 1);
+        // escalarla y moverla para que calce con las posiciones
+        float origLength = glm::distance(sampledCurveStart, sampledCurveEnd); // actualmente parte en el origen
+        float targetLength = glm::distance(initialPos, finalPos);
+        sampledCurve.scale(glm::vec3(targetLength/origLength));
+        sampledCurve.translate(initialPos);
+
+        trData->trajectoryType = TrajectoryType::DYNAMIC;
+    }
+
+    void TrajectoryGenerator::generateEETrajectory(ChainIndex ikChain, IKRigConfig* config, 
         glm::vec3 globalEEPos,
         float rotationAngle,
         ComponentManager<TransformComponent>* transformManager,
         ComponentManager<StaticMeshComponent>* staticMeshManager) {
         EETrajectoryData* trData = config->getTrajectoryData(ikChain);
-        HipTrajectoryData* hipTrData = config->getHipTrajectoryData();
         FrameIndex nextFrame = config->getNextFrameIndex();
-        FrameIndex currentFrame = config->getCurrentFrameIndex();
-
         // chequemos que tipo de trayectoria hay que crear (estatica o dinamica)
         // si es estatica
         if (trData->supportFrames[nextFrame]) {
-            float initialTime = config->getAnimationTime(config->getTimeStamps()[currentFrame]);
-            glm::vec3 initialPos = trData->savedGlobalPositions[currentFrame];
-            // chequear si hay una curva previa generada
-            if (!trData->targetGlblTrajectory.inTRange(initialTime)) {
-                initialPos = glm::vec3(glm::vec2(globalEEPos), 
-                    m_environmentData.getTerrainHeight(glm::vec2(globalEEPos), transformManager, staticMeshManager));
-            }
-            float finalTime = config->getTimeStamps()[nextFrame];
-            for (FrameIndex f = nextFrame + 1; f < config->getTimeStamps().size(); f++) {
-                if (trData->supportFrames[f]) { finalTime = config->getTimeStamps()[f]; }
-                else { break; }
-            }
-            finalTime = config->getAnimationTime(finalTime);
-            trData->targetGlblTrajectory = LIC<3>({ initialPos, initialPos }, { initialTime, finalTime });
-            return TrajectoryType::STATIC;
+            generateStaticTrajectory(ikChain, config, globalEEPos, transformManager, staticMeshManager);
         } // si es dinamica
         else {
-            // buscamos el frame en el que comienza la trayectoria
-            FrameIndex initialFrame = currentFrame;
-            for (int i = 0; i < config->getTimeStamps().size(); i++) {
-                initialFrame = 0 < initialFrame ? initialFrame - 1 : config->getTimeStamps().size() - 1;
-                if (trData->supportFrames[initialFrame]) { break; }
-            }
-            MONA_ASSERT(initialFrame != currentFrame, "TrajectoryGenerator: Trajectory must have a starting point.");
-            int repOffsetStart = initialFrame < currentFrame ? 0 : -1;
-            float initialTime = config->getAnimationTime(config->getTimeStamps()[initialFrame], repOffsetStart);
-            // buscamos el frame en el que termina la trayectoria
-            FrameIndex finalFrame = currentFrame;
-            FrameIndex testFrame = currentFrame;
-            for (int i = 0; i < config->getTimeStamps().size(); i++) {
-                testFrame = testFrame < config->getTimeStamps().size() - 1? testFrame + 1 : 0;
-                if (trData->supportFrames[testFrame]) { break; }
-                finalFrame = testFrame;
-            }
-            int repOffsetEnd = currentFrame <= finalFrame ? 0 : 1;
-            float finalTime = config->getAnimationTime(config->getTimeStamps()[finalFrame], repOffsetEnd);
-            // ahora se extrae una subcurva  de la trayectoria original para generar la trayectoria requerida
-            // hay que revisar si la trayectoria viene en una sola pieza
-            LIC<3> sampledCurve;
-            if (initialFrame < finalFrame) {
-                sampledCurve = trData->originalGlblTrajectory.sample(config->getTimeStamps()[initialFrame], config->getTimeStamps()[finalFrame]);
-            }
-            else {
-                LIC<3> part1 = trData->originalGlblTrajectory.sample(config->getTimeStamps()[initialFrame], config->getTimeStamps().back());
-                LIC<3> part2 = trData->originalGlblTrajectory.sample(config->getTimeStamps()[0], config->getTimeStamps()[finalFrame]);
-                part2.offsetTValues(config->getAnimationDuration());
-                part2.translate(-(part2.getStart() - part1.getEnd()));
-                sampledCurve = LIC<3>::join(part1, part2);
-            }
-            float tOffset = -config->getTimeStamps()[initialFrame] + initialTime;
-            sampledCurve.offsetTValues(tOffset);
-
-            glm::vec3 initialPos = trData->savedGlobalPositions[initialFrame];
-            // chequear si hay una curva previa generada
-            if (!trData->targetGlblTrajectory.inTRange(initialTime)) {
-                float referenceTime = config->getAnimationTime(config->getTimeStamps()[currentFrame]);
-                glm::vec3 origCurveStart = sampledCurve.getCurvePoint(0);
-                glm::vec3 origCurveReferencePoint = sampledCurve.evalCurve(referenceTime);
-                float floorDistanceToStart = glm::distance(glm::vec2(origCurveStart), glm::vec2(origCurveReferencePoint));
-                glm::vec3 floorReferencePoint(glm::vec2(globalEEPos), m_environmentData.getTerrainHeight(glm::vec2(globalEEPos),
-                    transformManager, staticMeshManager));
-                glm::vec2 origCurveReferenceDirection = glm::vec2(origCurveReferencePoint) - glm::vec2(origCurveStart);
-                glm::vec2 targetDirection = -glm::normalize(glm::rotate(origCurveReferenceDirection, rotationAngle));
-                initialPos = calcStrideStartingPoint(floorReferencePoint, floorDistanceToStart, 
-                    targetDirection, 5, transformManager, staticMeshManager);
-            }
-
-        }
-        
+            generateDynamicTrajectory(ikChain, config, globalEEPos, rotationAngle, transformManager, staticMeshManager);
+        }        
     }
 
 

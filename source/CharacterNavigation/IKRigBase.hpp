@@ -53,6 +53,11 @@ namespace Mona {
         //
         std::vector<glm::vec3> savedGlobalPositions;
     };
+
+    enum class TrajectoryType {
+        STATIC,
+        DYNAMIC
+    };
     struct EETrajectoryData {
         // Trayectoria original del ee asociado a una ikChain (global space previo a remocion de trayectoria de la cadera)
         LIC<3> originalGlblTrajectory;
@@ -66,6 +71,8 @@ namespace Mona {
         std::vector<glm::vec3> savedGlobalPositions;
         // Maxima diferencia de altura entre valores de la trayectoria original
         float maxGlblHeightDelta;
+        // tipo de trayectoria actual
+        TrajectoryType trajectoryType;
     };
     class IKRigConfig {
         friend class IKRig;

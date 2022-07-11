@@ -49,7 +49,9 @@ namespace Mona{
             glm::vec3 globalEEPos, float rotationAngle,
             ComponentManager<TransformComponent>* transformManager,
             ComponentManager<StaticMeshComponent>* staticMeshManager);
-        void generateHipTrajectory();
+        void generateHipTrajectory(IKRigConfig* config, float rotationAngle, glm::vec3 globalHipPos,
+            ComponentManager<TransformComponent>* transformManager,
+            ComponentManager<StaticMeshComponent>* staticMeshManager);
 
         glm::vec3 calcStrideStartingPoint(glm::vec3 referencePoint, float targetDistance, 
             glm::vec2 targetDirection, int stepNum,
@@ -62,7 +64,8 @@ namespace Mona{
     public:
         TrajectoryGenerator(IKRig* ikRig, std::vector<ChainIndex> ikChains);
         TrajectoryGenerator() = default;
-        void generateTrajectories(AnimationIndex animIndex);
+        void generateNewTrajectories(AnimationIndex animIndex, ComponentManager<TransformComponent>* transformManager,
+            ComponentManager<StaticMeshComponent>* staticMeshManager);
         glm::vec3 getModelSpaceEETargetPos(ChainIndex ikChain);
         glm::vec3 getHipTargetPos();
 

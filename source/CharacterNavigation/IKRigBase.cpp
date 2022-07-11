@@ -45,8 +45,8 @@ namespace Mona{
 		return m_forwardKinematics->JointSpaceTransforms(m_animIndex, m_currentFrameIndex, useDynamicRotations);
 	}
 
-	float IKRigConfig::getAnimationTime(float timeStamp, int repCountOffset) {
-		return (m_reproductionCount + repCountOffset) * m_animationClip->GetDuration() + timeStamp;
+	float IKRigConfig::getReproductionTime(FrameIndex frame, int repCountOffset) {
+		return (m_reproductionCount + repCountOffset) * m_animationClip->GetDuration() + m_timeStamps[frame];
 	}
 
 	IKNode::IKNode(std::string jointName, JointIndex jointIndex, IKNode* parent, float weight) {

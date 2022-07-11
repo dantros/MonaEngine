@@ -36,6 +36,7 @@ namespace Mona {
         glm::vec3 getRotationAxis() const { return m_rotationAxis; }
     };
     struct HipTrajectoryData {
+        LIC<3> originalGlblTrajectory;
         // Angulos de rotacion originales
         LIC<1> originalRotationAngles;
         // Ejes de rotacion originales
@@ -43,7 +44,7 @@ namespace Mona {
         // Traslaciones originales
         LIC<3> originalGlblTranslations;
         // Direccion original de la cadera
-        glm::vec2 originalForwardDirection;
+        glm::vec2 originalFrontVector;
         // Angulos de rotacion objetivo
         LIC<1> targetRotationAngles;
         // Ejes de rotacion objetivo
@@ -51,6 +52,7 @@ namespace Mona {
         // Traslaciones objetivo
         LIC<3> targetGlblTranslations;
         //
+        LIC<3> targetGlblTrajectory;
         std::vector<glm::vec3> savedGlobalPositions;
     };
 
@@ -69,8 +71,6 @@ namespace Mona {
         std::vector<bool> supportFrames;
         //
         std::vector<glm::vec3> savedGlobalPositions;
-        // Maxima diferencia de altura entre valores de la trayectoria original
-        float maxGlblHeightDelta;
         // tipo de trayectoria actual
         TrajectoryType trajectoryType;
     };
@@ -116,7 +116,7 @@ namespace Mona {
         const std::vector<glm::vec3>& getJointScales() const { return m_jointScales; }
         const std::vector<glm::vec3>& getJointPositions() const { return m_jointPositions; }
         const std::vector<float>& getTimeStamps() const { return m_timeStamps; }
-        float getAnimationTime(float timeStamp, int repCountOffset = 0);
+        float getReproductionTime(FrameIndex frame, int repCountOffset = 0);
         float getAnimationDuration() { return m_animationClip->GetDuration(); }
         int getReproductionCount() const { return m_reproductionCount; }
         std::vector<JointRotation>* getDynamicJointRotationsPtr() { return &(m_dynamicJointRotations[m_nextFrameIndex]);  }

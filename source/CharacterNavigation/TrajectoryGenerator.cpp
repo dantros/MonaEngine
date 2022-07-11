@@ -59,12 +59,6 @@ namespace Mona{
         m_gradientDescent_dim3 = GradientDescent<TGData<3>>({ dim3Term }, 0, &m_tgData_dim3, postDescentStepCustomBehaviour<3>);
     }
 
-    void setNewTrajectories(AnimationIndex animIndex, std::vector<ChainIndex> ikChains) {
-        // las trayectorias anteriores siempre deben llegar hasta el currentFrame
-        // se necesitan para cada ee su posicion actual y la curva base, ambos en espacio global
-        // se usa "animationTime" que corresponde al tiempo de la aplicacion modificado con el playRate (-- distinto a samplingTime--)
-    }
-
     glm::vec3 removeHipMotion(glm::vec3 pseudoModelSpacePos, float animationLoopTime, IKRigConfig* config) {
         auto hipTrData = config->getHipTrajectoryData();
         float pseudoMSHipRotAngle = hipTrData->originalRotationAngles.evalCurve(animationLoopTime)[0];
@@ -168,9 +162,9 @@ namespace Mona{
         std::pair<FrameIndex, FrameIndex> frameRange = calcTrajectoryFrameRange(config, ikChain, TrajectoryType::STATIC);
         FrameIndex initialFrame = frameRange.first;
         FrameIndex finalFrame = frameRange.second;
-        float initialTime = config->getAnimationTime(config->getTimeStamps()[initialFrame]);
+        float initialTime = config->getReproductionTime(initialFrame);
         int repOffsetEnd = initialFrame <= finalFrame ? 0 : 1;
-        float finalTime = config->getAnimationTime(config->getTimeStamps()[finalFrame], repOffsetEnd);
+        float finalTime = config->getReproductionTime(finalFrame, repOffsetEnd);
         glm::vec3 initialPos = trData->savedGlobalPositions[initialTime];
         // chequear si hay una curva previa generada
         if (!trData->targetGlblTrajectory.inTRange(initialTime)) {
@@ -195,10 +189,10 @@ namespace Mona{
         FrameIndex finalFrame = frameRange.second;
 
         int repOffsetStart = initialFrame < currentFrame ? 0 : -1;
-        float initialTime = config->getAnimationTime(config->getTimeStamps()[initialFrame], repOffsetStart);
+        float initialTime = config->getReproductionTime(initialFrame, repOffsetStart);
 
         int repOffsetEnd = currentFrame < finalFrame ? 0 : 1;
-        float finalTime = config->getAnimationTime(config->getTimeStamps()[finalFrame], repOffsetEnd);
+        float finalTime = config->getReproductionTime(finalFrame, repOffsetEnd);
 
         // ahora se extrae una subcurva  de la trayectoria original para generar la trayectoria requerida
         // hay que revisar si la trayectoria viene en una sola pieza
@@ -220,7 +214,7 @@ namespace Mona{
         glm::vec3 initialPos = trData->savedGlobalPositions[initialFrame];
         // chequear si hay una curva previa generada
         if (!trData->targetGlblTrajectory.inTRange(initialTime)) {
-            float referenceTime = config->getAnimationTime(config->getTimeStamps()[currentFrame]);
+            float referenceTime = config->getReproductionTime(currentFrame);
             glm::vec3 sampledCurveReferencePoint = sampledCurve.evalCurve(referenceTime);
             float floorDistanceToStart = glm::distance(glm::vec2(sampledCurveStart), glm::vec2(sampledCurveReferencePoint));
             glm::vec3 floorReferencePoint(glm::vec2(globalEEPos), m_environmentData.getTerrainHeight(glm::vec2(globalEEPos),
@@ -307,14 +301,17 @@ namespace Mona{
             m_tgData_dim3.baseVelocities.push_back(sampledCurve.getLeftHandVelocity(sampledCurve.getTValue(pIndex)));
         }
 
+        trData->targetGlblTrajectory = sampledCurve;
+        trData->trajectoryType = TrajectoryType::DYNAMIC;
+
         // seteo de otros parametros (TODO)
         m_tgData_dim3.descentRate;
         m_tgData_dim3.maxIterations = 100;
 
+        m_tgData_dim3.varCurve = &trData->targetGlblTrajectory;
         m_gradientDescent_dim3.computeArgsMin(m_tgData_dim3.descentRate, m_tgData_dim3.maxIterations, initialArgs);
 
-        trData->targetGlblTrajectory = sampledCurve;
-        trData->trajectoryType = TrajectoryType::DYNAMIC;
+        
     }
 
     void TrajectoryGenerator::generateEETrajectory(ChainIndex ikChain, IKRigConfig* config, 
@@ -334,6 +331,60 @@ namespace Mona{
         }        
     }
 
+    void TrajectoryGenerator::generateHipTrajectory(IKRigConfig* config, float rotationAngle, glm::vec3 globalHipPos,
+        ComponentManager<TransformComponent>* transformManager,
+        ComponentManager<StaticMeshComponent>* staticMeshManager) {
+
+        bool allStatic = true;
+        for (int i = 0; i < m_ikChains.size(); i++) {
+            ChainIndex ikChain = m_ikChains[i];
+            if (config->getTrajectoryData(ikChain)->trajectoryType == TrajectoryType::DYNAMIC) { allStatic = false; }
+        }
+
+        HipTrajectoryData* hipTrData = config->getHipTrajectoryData();
+        FrameIndex currentFrame = config->getCurrentFrameIndex();
+        
+        if (allStatic) {
+            float initialTime = config->getReproductionTime(currentFrame);
+            glm::vec3 initialPos = hipTrData->savedGlobalPositions[initialTime];
+            // chequear si hay una curva previa generada
+            if (!hipTrData->targetGlblTranslations.inTRange(initialTime)) {
+                
+            }
+        }
+        else {
+            for (int i = 0; i < m_ikChains.size(); i++) {
+            }
+        }
+    }
+
+
+    void TrajectoryGenerator::generateNewTrajectories(AnimationIndex animIndex,
+        ComponentManager<TransformComponent>* transformManager,
+        ComponentManager<StaticMeshComponent>* staticMeshManager) {
+        // las trayectorias anteriores siempre deben llegar hasta el currentFrame
+
+        IKRigConfig* config = m_ikRig->getAnimationConfig(animIndex);
+
+        glm::mat4 baseTransform = transformManager->GetComponentPointer(m_ikRig->getTransformHandle())->GetModelMatrix();
+        std::vector<glm::vec3> globalPositions = config->getCustomSpacePositions(baseTransform, true);
+        float xyRotationAngle = glm::orientedAngle(glm::vec3(config->getHipTrajectoryData()->originalFrontVector, 0),
+            glm::vec3(m_ikRig->getFrontVector(),0), glm::vec3(0, 0, 1));
+
+
+        bool allStatic = true;
+        for (int i = 0; i < m_ikChains.size(); i++) {
+            ChainIndex ikChain = m_ikChains[i];
+            JointIndex eeIndex = m_ikRig->getIKChain(ikChain)->getJoints().back();
+            generateEETrajectory(ikChain, config, globalPositions[eeIndex], xyRotationAngle, transformManager, staticMeshManager);
+        }
+
+        // queda setear la trayectoria de la cadera
+        generateHipTrajectory(config, global)
+        
+        
+
+    }
 
 
 

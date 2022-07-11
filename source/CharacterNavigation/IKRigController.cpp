@@ -107,16 +107,28 @@ namespace Mona {
 		m_ikRig.m_animationConfigs.push_back(IKRigConfig(animationClip, newIndex, &m_ikRig.m_forwardKinematics));
 		IKRigConfig* currentConfig = m_ikRig.getAnimationConfig(newIndex);
 
+		// numero de rotaciones por joint con la animaciond descomprimida
+		int frameNum = animationClip->m_animationTracks[0].rotationTimeStamps.size();
+
+		// minima distancia entre posiciones de un frame a otro para considerarlo un movimiento
+		float minDistance = m_ikRig.m_rigHeight / 1000;
+
 		// Guardamos la informacion de traslacion y rotacion de la cadera, antes de eliminarla
 		auto hipTrack = animationClip->m_animationTracks[animationClip->m_jointTrackIndices[m_ikRig.m_hipJoint]];
-		std::vector<float> hipTimeStamps = hipTrack.positionTimeStamps;
-		std::vector<glm::vec3> hipRotAxes(hipTimeStamps.size());
-		std::vector<glm::vec1> hipRotAngles(hipTimeStamps.size());
-		std::vector<glm::vec3> hipTranslations(hipTimeStamps.size());
-		glm::vec3 hipScale;
+		std::vector<float> hipTimeStamps;
+		hipTimeStamps.reserve(frameNum);
+		std::vector<glm::vec3> hipRotAxes;
+		hipRotAxes.reserve(frameNum);
+		std::vector<glm::vec1> hipRotAngles;
+		hipRotAngles.reserve(frameNum);
+		std::vector<glm::vec3> hipTranslations;
+		hipTranslations.reserve(frameNum);
+		std::vector<glm::vec3> hipPositions;
+		hipPositions.reserve(frameNum);
 		JointIndex hipIndex = m_ikRig.m_hipJoint;
-		for (int i = 0; i < hipTimeStamps.size(); i++) {
-			float timeStamp = hipTimeStamps[i];
+		glm::vec3 previousHipPosition(std::numeric_limits<float>::min());
+		for (int i = 0; i < frameNum; i++) {
+			float timeStamp = hipTrack.rotationTimeStamps[i];
 			JointIndex parent = hipIndex;
 			glm::mat4 hipTransform = glm::identity<glm::mat4>();
 			while (parent != -1) {
@@ -125,28 +137,33 @@ namespace Mona {
 					glmUtils::scaleToMat4(animationClip->GetScale(timeStamp, parent, true));
 				parent = m_ikRig.getTopology()[parent];
 			}
-			glm::vec3 scale;
-			glm::quat rotation;
-			glm::vec3 translation;
-			glm::vec3 skew;
-			glm::vec4 perspective;
-			glm::decompose(hipTransform, scale, rotation, translation, skew, perspective);
-			hipRotAngles[i] = glm::vec1(glm::angle(rotation));
-			hipRotAxes[i] = glm::axis(rotation);
-			hipTranslations[i] = translation;
-			if (i == 0) { hipScale = scale; }
+			glm::vec3 hipPosition = hipTransform * glm::identity<glm::vec4>();
+			if (minDistance <= glm::distance(hipPosition, previousHipPosition) || i==(frameNum-1)) {
+				glm::vec3 scale;
+				glm::quat rotation;
+				glm::vec3 translation;
+				glm::vec3 skew;
+				glm::vec4 perspective;
+				glm::decompose(hipTransform, scale, rotation, translation, skew, perspective);
+				hipRotAngles.push_back(glm::vec1(glm::angle(rotation)));
+				hipRotAxes.push_back(glm::axis(rotation));
+				hipTranslations.push_back(translation);
+				hipPositions.push_back(hipPosition);
+				hipTimeStamps.push_back(timeStamp);
+			}
+			previousHipPosition = hipPosition;
 		}
 
 		currentConfig->m_hipTrajectoryData.originalRotationAngles = LIC<1>(hipRotAngles, hipTimeStamps);
 		currentConfig->m_hipTrajectoryData.originalRotationAxes = LIC<3>(hipRotAxes, hipTimeStamps);
 		currentConfig->m_hipTrajectoryData.originalGlblTranslations = LIC<3>(hipTranslations, hipTimeStamps);
 		currentConfig->m_hipTrajectoryData.originalGlblTranslations.scale(glm::vec3(m_ikRig.m_scale));
-		currentConfig->m_hipTrajectoryData.originalForwardDirection = glm::normalize(glm::vec2(hipTrack.positions.back()) - 
+		currentConfig->m_hipTrajectoryData.originalGlblTrajectory = LIC<3>(hipPositions, hipTimeStamps);
+		currentConfig->m_hipTrajectoryData.originalGlblTrajectory.scale(glm::vec3(m_ikRig.m_scale));
+		currentConfig->m_hipTrajectoryData.originalFrontVector = glm::normalize(glm::vec2(hipTrack.positions.back()) - 
 			glm::vec2(hipTrack.positions[0]));
 
 		// Ahora guardamos las trayectorias originales de los ee y definimos sus frames de soporte
-		int frameNum = animationClip->m_animationTracks[0].rotationTimeStamps.size();
-		float minDistance = m_ikRig.m_rigHeight / 1000;
 		std::vector<float> rotTimeStamps = animationClip->m_animationTracks[0].rotationTimeStamps;
 		std::vector<std::vector<glm::vec3>> curvePointsPerChain(m_ikRig.m_ikChains.size());
 		std::vector<std::vector<float>> timeStampsPerChain(m_ikRig.m_ikChains.size());
@@ -184,7 +201,8 @@ namespace Mona {
 				int eeIndex = m_ikRig.m_ikChains[j].getJoints().back();
 				bool isSupportFrame = glm::distance(positions[eeIndex], previousPositions[eeIndex]) <= minDistance;
 				supportFramesPerChain[j].push_back(isSupportFrame);
-				if (!isSupportFrame) { // si es suficientemente distinto al anterior, lo guardamos como parte de la curva
+				// si es suficientemente distinto al anterior o es el ultimo valor, lo guardamos como parte de la curva
+				if (!isSupportFrame || j == (frameNum-1)) { 
 					curvePointsPerChain[j].push_back(positions[eeIndex]);
 					timeStampsPerChain[j].push_back(rotTimeStamps[i]);
 				}
@@ -201,8 +219,20 @@ namespace Mona {
 			currentConfig->m_ikChainTrajectoryData[i].originalGlblTrajectory.scale(glm::vec3(m_ikRig.m_scale));
 		}
 
-		// calculo de la altura maxima para cada trayectoria original de los ee
-
+		// calculo de las distancias a la cadera para cada trayectoria original de los ee
+		HipTrajectoryData* hipTrData = currentConfig->getHipTrajectoryData();
+		for (int i = 0; i < m_ikRig.m_ikChains.size(); i++) {
+			EETrajectoryData* trData = currentConfig->getTrajectoryData(i);
+			int pointNum = trData->originalGlblTrajectory.getNumberOfPoints();
+			std::vector<float> tValues(pointNum);
+			std::vector<glm::vec1> distances(pointNum);
+			for (int j = 0; j < pointNum; j++) {
+				tValues[j] = trData->originalGlblTrajectory.getTValue(j);
+				distances[j] = glm::vec1(glm::distance(hipTrData->originalGlblTrajectory.evalCurve(tValues[j]), 
+					trData->originalGlblTrajectory.getCurvePoint(j)));
+			}
+			trData->originalGlblDistToHip = LIC<1>(distances, tValues);		
+		}
 
 		
 

@@ -49,6 +49,10 @@ namespace Mona{
 		return (m_reproductionCount + repCountOffset) * m_animationClip->GetDuration() + m_timeStamps[frame];
 	}
 
+	float IKRigConfig::getReproductionTime(float animationTime, int repCountOffset) {
+		return (m_reproductionCount + repCountOffset) * m_animationClip->GetDuration() + animationTime;
+	}
+
 	float IKRigConfig::getAnimationTime(float reproductionTime) {
 		if (0 <= reproductionTime) {
 			return fmod(reproductionTime, m_animationClip->GetDuration());

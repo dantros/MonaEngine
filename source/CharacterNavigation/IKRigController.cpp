@@ -257,7 +257,7 @@ namespace Mona {
 		IKRigConfig& config = m_ikRig.m_animationConfigs[animIndex];
 		auto anim = config.m_animationClip;
 		float samplingTime = anim->GetSamplingTime(time, true);
-		config.m_currentTime = samplingTime;
+		config.m_currentReproductionTime = config.getReproductionTime(samplingTime);
 		int savedCurrentFrameVal = config.m_currentFrameIndex;
 		int savedNextFrameVal = config.m_nextFrameIndex;
 		for (int i = 0; i < config.m_timeStamps.size(); i++) {

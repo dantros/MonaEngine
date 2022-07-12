@@ -96,7 +96,7 @@ namespace Mona {
         // Data de trayectoria para la cadera
         HipTrajectoryData m_hipTrajectoryData;
         // Tiempo actual de la animacion
-        float m_currentTime = -1;
+        float m_currentReproductionTime = -1;
         // Indica el frame mas reciente de la animacion
         FrameIndex m_currentFrameIndex = -1;
         // Indice del siguiente frame de la animacion
@@ -113,6 +113,7 @@ namespace Mona {
         const std::vector<JointRotation>& getDynamicJointRotations(FrameIndex frame) const { return m_dynamicJointRotations[frame]; }
         const std::vector<glm::vec3>& getJointScales() const { return m_jointScales; }
         const std::vector<glm::vec3>& getJointPositions() const { return m_jointPositions; }
+        float getReproductionTime(float animationTime, int repCountOffset = 0);
         float getReproductionTime(FrameIndex frame, int repCountOffset = 0);
         float getAnimationTime(FrameIndex frame) { return m_timeStamps[frame]; }
         float getAnimationTime(float reproductionTime);
@@ -120,7 +121,7 @@ namespace Mona {
         int getFrameNum() { return m_timeStamps.size(); }
         int getReproductionCount() const { return m_reproductionCount; }
         std::vector<JointRotation>* getDynamicJointRotationsPtr() { return &(m_dynamicJointRotations[m_nextFrameIndex]);  }
-        float getCurrentTime() const { return m_currentTime; }
+        float getCurrentReproductionTime() const { return m_currentReproductionTime; }
         FrameIndex getNextFrameIndex() const { return m_nextFrameIndex; }
         FrameIndex getCurrentFrameIndex() const { return m_currentFrameIndex; }
         std::vector<glm::mat4> getModelSpaceTransforms(bool useDynamicRotations);

@@ -301,15 +301,20 @@ namespace Mona{
             m_tgData_dim3.baseVelocities.push_back(sampledCurve.getLeftHandVelocity(sampledCurve.getTValue(pIndex)));
         }
 
-        trData->targetGlblTrajectory = sampledCurve;
-        trData->trajectoryType = TrajectoryType::DYNAMIC;
-
         // seteo de otros parametros (TODO)
         m_tgData_dim3.descentRate;
         m_tgData_dim3.maxIterations = 100;
-
-        m_tgData_dim3.varCurve = &trData->targetGlblTrajectory;
+        m_tgData_dim3.varCurve = &sampledCurve;
         m_gradientDescent_dim3.computeArgsMin(m_tgData_dim3.descentRate, m_tgData_dim3.maxIterations, initialArgs);
+
+        float transitionTime = config->getReproductionTime(nextFrame);
+        if (trData->targetGlblTrajectory.inTRange(transitionTime)) {
+            trData->targetGlblTrajectory = LIC<3>::transition(trData->targetGlblTrajectory, sampledCurve, transitionTime);
+        }
+        else {
+            trData->targetGlblTrajectory = sampledCurve;
+        }
+        trData->trajectoryType = TrajectoryType::DYNAMIC;
 
         
     }
@@ -331,58 +336,39 @@ namespace Mona{
         }        
     }
 
-    float TrajectoryGenerator::calcHipAdjustedHeight(IKRigConfig* config, glm::vec2 basePoint, float reproductionTime, int stepNum) {
+    float TrajectoryGenerator::calcHipAdjustedHeight(IKRigConfig* config, glm::vec2 basePoint, float reproductionTime, int granularity) {
         HipTrajectoryData* hipTrData = config->getHipTrajectoryData();
         float animationTime = config->getAnimationTime(reproductionTime);
 
         // distancias originales de ee's con cadera
-        std::vector<float> origDistances(m_ikChains.size());
         std::vector<float> origZDistances(m_ikChains.size());
-        float maxValue_zDist = std::numeric_limits<float>::min();
-        int maxValIndex_zDist = -1;
         for (int i = 0; i < m_ikChains.size(); i++) {
             EETrajectoryData* trData = config->getTrajectoryData(m_ikChains[i]);
             glm::vec3 hipPoint = hipTrData->originalGlblTrajectory.evalCurve(animationTime);
             glm::vec3 eePoint = trData->originalGlblTrajectory.evalCurve(animationTime);
-            origDistances[i] = glm::distance(hipPoint, eePoint);
             origZDistances[i] = abs(hipPoint[2] - eePoint[2]);
-            if (maxValue_zDist < origZDistances[i]) {
-                maxValIndex_zDist = origZDistances[i];
-                maxValIndex_zDist = i;
+        }
+
+        // valor mas bajo de z para las tr actuales de los ee
+        float minZ = std::numeric_limits<float>::max();
+        int minZIndex = -1;
+        EETrajectoryData* trData;
+        for (int i = 0; i < m_ikChains.size(); i++) {
+            trData = config->getTrajectoryData(m_ikChains[i]);
+            float time = reproductionTime;
+            if (!trData->targetGlblTrajectory.inTRange(time)) {
+                float delta0 = abs(trData->targetGlblTrajectory.getTRange()[0] - reproductionTime);
+                float delta1 = abs(trData->targetGlblTrajectory.getTRange()[1] - reproductionTime);
+                time = trData->targetGlblTrajectory.getTRange()[0];
+                if (delta1 < delta0) { time = trData->targetGlblTrajectory.getTRange()[1]; }
+            }
+            glm::vec3 eePoint = trData->targetGlblTrajectory.evalCurve(time);
+            if (eePoint[2] < minZ) { 
+                minZIndex = i;
+                minZ = eePoint[2]; 
             }
         }
-        // buscamos el maximo valor para z, tal que no se sobrepase ninguna de las distancias originales
-        EETrajectoryData* trData = config->getTrajectoryData(m_ikChains[maxValIndex_zDist]);
-        float adjustedHeight = trData->targetGlblTrajectory.evalCurve(reproductionTime)[2] + maxValue_zDist;
-        for (int i = 0; i < stepNum; i++) {
-            float maxDistDiff = std::numeric_limits<float>::min();
-            for (int j = 0; j < m_ikChains.size(); j++) {
-                trData = config->getTrajectoryData(m_ikChains[j]);
-                float distDiff = 0;
-                float currentDistance = 0;
-                if (trData->targetGlblTrajectory.inTRange(reproductionTime)) {
-                    currentDistance = glm::distance(trData->targetGlblTrajectory.evalCurve(reproductionTime),
-                        glm::vec3(basePoint, adjustedHeight));
-                }
-                else {
-                    float closestTime = std::min(abs(trData->targetGlblTrajectory.getTRange()[0] - reproductionTime),
-                        abs(trData->targetGlblTrajectory.getTRange()[1] - reproductionTime));
-                    currentDistance = abs(trData->targetGlblTrajectory.evalCurve(closestTime)[2] - adjustedHeight);
-                }
-                distDiff = currentDistance - origDistances[j];
-                
-                if (distDiff > maxDistDiff) {
-                    maxDistDiff = distDiff;
-                }
-            }
-            // si nos pasamos en distancia
-            if (maxDistDiff > 0) {
-                adjustedHeight -= maxDistDiff * 0.7;
-            }
-            else {
-                adjustedHeight += abs(maxDistDiff) * 0.7;
-            }
-        }
+        float adjustedHeight = minZ + origZDistances[minZIndex];
         return adjustedHeight;
     }
 
@@ -398,53 +384,17 @@ namespace Mona{
 
         HipTrajectoryData* hipTrData = config->getHipTrajectoryData();
         FrameIndex currentFrame = config->getCurrentFrameIndex();
+        FrameIndex nextFrame = config->getNextFrameIndex();
         
         if (allStatic) {
             float initialTime = config->getReproductionTime(currentFrame);
-            float initialTime_anim = config->getAnimationTime(currentFrame);
             glm::vec2 basePoint(globalHipPos);
             glm::vec3 initialPos = hipTrData->savedGlobalPositions[initialTime];
             // chequear si hay una curva previa generada
             if (!hipTrData->targetGlblTranslations.inTRange(initialTime)) {
-                // distancias originales de ee's con cadera
-                std::vector<float> origDistances(m_ikChains.size());
-                std::vector<float> origZDiffs(m_ikChains.size());
-                float maxValue_zDist = std::numeric_limits<float>::min();
-                int maxValIndex_zDist = -1;
-                for (int i = 0; i < m_ikChains.size(); i++) {
-                    EETrajectoryData* trData = config->getTrajectoryData(m_ikChains[i]);
-                    glm::vec3 hipPoint = hipTrData->originalGlblTrajectory.evalCurve(initialTime_anim);
-                    glm::vec3 eePoint = trData->originalGlblTrajectory.evalCurve(initialTime_anim);
-                    origDistances[i] = glm::distance(hipPoint, eePoint);
-                    origZDiffs[i] = hipPoint[2] - eePoint[2];
-                    if (maxValue_zDist < abs(origZDiffs[i])) {
-                        maxValIndex_zDist = abs(origZDiffs[i]);
-                        maxValIndex_zDist = i;
-                    }
-                }
-                // buscamos el maximo valor para z, tal que no se sobrepase ninguna de las distancias originales
-                EETrajectoryData* trData = config->getTrajectoryData(m_ikChains[maxValIndex_zDist]);
-                float adjustmentValue = maxValue_zDist/2;
-                float adjustedHeight = trData->targetGlblTrajectory.evalCurve(initialTime)[2];
-                for (int i = 0; i < 10;i ++) {
-                    bool increased = false;
-                    for (int j = 0; j < m_ikChains.size(); j++) {
-                        trData = config->getTrajectoryData(m_ikChains[j]);
-                        float currentDistance = glm::distance(trData->targetGlblTrajectory.evalCurve(initialTime),
-                            glm::vec3(basePoint, adjustedHeight));
-                        if (currentDistance < origDistances[j]) {
-                            adjustedHeight += adjustmentValue;
-                            adjustmentValue /= 2;
-                            increased = true;
-                            break;
-                        }
-                    }
-                    if (!increased) {
-                        adjustedHeight -= adjustmentValue;
-                        adjustmentValue /= 2;
-                    }
-                }
+                initialPos = glm::vec3(basePoint, calcHipAdjustedHeight(config, basePoint, initialTime, 15));
             }
+
         }
         else {
             for (int i = 0; i < m_ikChains.size(); i++) {

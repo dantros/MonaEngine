@@ -63,8 +63,6 @@ namespace Mona {
     struct EETrajectoryData {
         // Trayectoria original del ee asociado a una ikChain (global space previo a remocion de trayectoria de la cadera)
         LIC<3> originalGlblTrajectory;
-        // Distancia original global a la cadera
-        LIC<1> originalGlblDistToHip;
         // Trayectorias recalculada del ee asociado a una ikChain
         LIC<3> targetGlblTrajectory;
         // Frames de apoyo (estaticos) del end effector
@@ -115,9 +113,11 @@ namespace Mona {
         const std::vector<JointRotation>& getDynamicJointRotations(FrameIndex frame) const { return m_dynamicJointRotations[frame]; }
         const std::vector<glm::vec3>& getJointScales() const { return m_jointScales; }
         const std::vector<glm::vec3>& getJointPositions() const { return m_jointPositions; }
-        const std::vector<float>& getTimeStamps() const { return m_timeStamps; }
         float getReproductionTime(FrameIndex frame, int repCountOffset = 0);
+        float getAnimationTime(FrameIndex frame) { return m_timeStamps[frame]; }
+        float getAnimationTime(float reproductionTime);
         float getAnimationDuration() { return m_animationClip->GetDuration(); }
+        int getFrameNum() { return m_timeStamps.size(); }
         int getReproductionCount() const { return m_reproductionCount; }
         std::vector<JointRotation>* getDynamicJointRotationsPtr() { return &(m_dynamicJointRotations[m_nextFrameIndex]);  }
         float getCurrentTime() const { return m_currentTime; }

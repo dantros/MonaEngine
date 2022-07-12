@@ -217,24 +217,7 @@ namespace Mona {
 			currentConfig->m_ikChainTrajectoryData[i].supportFrames = supportFramesPerChain[i];
 			currentConfig->m_ikChainTrajectoryData[i].originalGlblTrajectory = LIC<3>(curvePointsPerChain[i], timeStampsPerChain[i]);
 			currentConfig->m_ikChainTrajectoryData[i].originalGlblTrajectory.scale(glm::vec3(m_ikRig.m_scale));
-		}
-
-		// calculo de las distancias a la cadera para cada trayectoria original de los ee
-		HipTrajectoryData* hipTrData = currentConfig->getHipTrajectoryData();
-		for (int i = 0; i < m_ikRig.m_ikChains.size(); i++) {
-			EETrajectoryData* trData = currentConfig->getTrajectoryData(i);
-			int pointNum = trData->originalGlblTrajectory.getNumberOfPoints();
-			std::vector<float> tValues(pointNum);
-			std::vector<glm::vec1> distances(pointNum);
-			for (int j = 0; j < pointNum; j++) {
-				tValues[j] = trData->originalGlblTrajectory.getTValue(j);
-				distances[j] = glm::vec1(glm::distance(hipTrData->originalGlblTrajectory.evalCurve(tValues[j]), 
-					trData->originalGlblTrajectory.getCurvePoint(j)));
-			}
-			trData->originalGlblDistToHip = LIC<1>(distances, tValues);		
-		}
-
-		
+		}		
 
 		// Se remueve el movimiento de las caderas
 		animationClip->RemoveJointRotation(m_ikRig.m_hipJoint);

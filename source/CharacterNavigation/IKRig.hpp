@@ -22,6 +22,7 @@ namespace Mona{
             const std::vector<std::string>& getJointNames() const { return m_skeleton->m_jointNames; };
             IKNode* getIKNode(JointIndex jointIndex) { return &m_nodes[jointIndex]; };
             IKChain* getIKChain(ChainIndex chainIndex) { return &m_ikChains[chainIndex]; };
+            JointIndex getHipJoint() { return m_hipJoint; }
             glm::vec2 getFrontVector() { return m_frontVector; }
             float getRigHeight() { return m_rigHeight; }
             void setAngularSpeed(float angularSpeed) { m_angularSpeed = angularSpeed; }
@@ -57,7 +58,6 @@ namespace Mona{
             // Indice de la cadera
             JointIndex m_hipJoint;
             IKChain buildIKChain(ChainEnds chainEnds, std::string chainName);
-            IKChain buildHipIKChain(std::string hipJointName);
             std::vector<std::pair<JointIndex, glm::fquat>> calculateRotations(AnimationIndex animIndex);
             void calculateEETrajectories(AnimationIndex animIndex, std::vector<ChainIndex> ikChains);
     };

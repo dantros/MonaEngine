@@ -49,10 +49,11 @@ namespace Mona{
             glm::vec3 globalEEPos, float rotationAngle,
             ComponentManager<TransformComponent>* transformManager,
             ComponentManager<StaticMeshComponent>* staticMeshManager);
-        void generateHipTrajectory(IKRigConfig* config, float rotationAngle, glm::vec3 globalHipPos,
+        void generateHipTrajectory(IKRigConfig* config, glm::vec3 globalHipPos, float rotationAngle,
             ComponentManager<TransformComponent>* transformManager,
             ComponentManager<StaticMeshComponent>* staticMeshManager);
 
+        float calcHipAdjustedHeight(IKRigConfig* config, glm::vec2 basePoint, float reproductionTime, int stepNum);
         glm::vec3 calcStrideStartingPoint(glm::vec3 referencePoint, float targetDistance, 
             glm::vec2 targetDirection, int stepNum,
             ComponentManager<TransformComponent>* transformManager,

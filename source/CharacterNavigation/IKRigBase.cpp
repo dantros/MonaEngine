@@ -49,6 +49,18 @@ namespace Mona{
 		return (m_reproductionCount + repCountOffset) * m_animationClip->GetDuration() + m_timeStamps[frame];
 	}
 
+	float IKRigConfig::getAnimationTime(float reproductionTime) {
+		if (0 <= reproductionTime) {
+			return fmod(reproductionTime, m_animationClip->GetDuration());
+		}
+		else {
+			while (reproductionTime < 0) {
+				reproductionTime += m_animationClip->GetDuration();
+			}
+			return fmod(reproductionTime, m_animationClip->GetDuration());
+		}
+	}
+
 	IKNode::IKNode(std::string jointName, JointIndex jointIndex, IKNode* parent, float weight) {
 		m_jointName = jointName;
 		m_jointIndex = jointIndex;

@@ -127,26 +127,26 @@ namespace Mona{
         FrameIndex currentFrame = config->getCurrentFrameIndex();
         if (trajectoryType==TrajectoryType::STATIC) { // estatica
             FrameIndex finalFrame = nextFrame;
-            for (int i = 0; i < config->getTimeStamps().size()-1; i++) {
-                if (!trData->supportFrames[config->getTimeStamps().size() % (finalFrame + 1)]) { break; }
-                finalFrame = config->getTimeStamps().size() % (finalFrame + 1);
+            for (int i = 0; i < config->getFrameNum()-1; i++) {
+                if (!trData->supportFrames[config->getFrameNum() % (finalFrame + 1)]) { break; }
+                finalFrame = config->getFrameNum() % (finalFrame + 1);
             }
             return { currentFrame, finalFrame };
         }
         else { // dinamica
             // buscamos el frame en el que comienza la trayectoria
             FrameIndex initialFrame = currentFrame;
-            for (int i = 0; i < config->getTimeStamps().size()-1; i++) {
+            for (int i = 0; i < config->getFrameNum() -1; i++) {
                 if (trData->supportFrames[initialFrame]) { break; }
-                initialFrame = 0 < initialFrame ? initialFrame - 1 : config->getTimeStamps().size() - 1;
+                initialFrame = 0 < initialFrame ? initialFrame - 1 : config->getFrameNum() - 1;
             }
             MONA_ASSERT(initialFrame != nextFrame, "TrajectoryGenerator: Trajectory must have a starting point.");
 
             // buscamos el frame en el que termina la trayectoria
             FrameIndex finalFrame = nextFrame;
-            for (int i = 0; i < config->getTimeStamps().size()-1; i++) {
-                if (trData->supportFrames[config->getTimeStamps().size()%(finalFrame+1)]) { break; }
-                finalFrame = config->getTimeStamps().size() % (finalFrame + 1);
+            for (int i = 0; i < config->getFrameNum() - 1; i++) {
+                if (trData->supportFrames[config->getFrameNum() %(finalFrame+1)]) { break; }
+                finalFrame = config->getFrameNum() % (finalFrame + 1);
             }
             return { initialFrame, finalFrame };
         }
@@ -198,16 +198,16 @@ namespace Mona{
         // hay que revisar si la trayectoria viene en una sola pieza
         LIC<3> sampledCurve;
         if (initialFrame < finalFrame) {
-            sampledCurve = trData->originalGlblTrajectory.sample(config->getTimeStamps()[initialFrame], config->getTimeStamps()[finalFrame]);
+            sampledCurve = trData->originalGlblTrajectory.sample(config->getAnimationTime(initialFrame), config->getAnimationTime(finalFrame));
         }
         else {
-            LIC<3> part1 = trData->originalGlblTrajectory.sample(config->getTimeStamps()[initialFrame], config->getTimeStamps().back());
-            LIC<3> part2 = trData->originalGlblTrajectory.sample(config->getTimeStamps()[0], config->getTimeStamps()[finalFrame]);
+            LIC<3> part1 = trData->originalGlblTrajectory.sample(config->getAnimationTime(initialFrame), config->getAnimationTime(config->getFrameNum()-1));
+            LIC<3> part2 = trData->originalGlblTrajectory.sample(config->getAnimationTime(0), config->getAnimationTime(finalFrame));
             part2.offsetTValues(config->getAnimationDuration());
             part2.translate(-(part2.getStart() - part1.getEnd()));
             sampledCurve = LIC<3>::join(part1, part2);
         }
-        float tOffset = -config->getTimeStamps()[initialFrame] + initialTime;
+        float tOffset = -config->getAnimationTime(initialFrame) + initialTime;
         sampledCurve.offsetTValues(tOffset);
         glm::vec3 sampledCurveStart = sampledCurve.getCurvePoint(0);
         glm::vec3 sampledCurveEnd = sampledCurve.getCurvePoint(sampledCurve.getNumberOfPoints() - 1);
@@ -331,6 +331,61 @@ namespace Mona{
         }        
     }
 
+    float TrajectoryGenerator::calcHipAdjustedHeight(IKRigConfig* config, glm::vec2 basePoint, float reproductionTime, int stepNum) {
+        HipTrajectoryData* hipTrData = config->getHipTrajectoryData();
+        float animationTime = config->getAnimationTime(reproductionTime);
+
+        // distancias originales de ee's con cadera
+        std::vector<float> origDistances(m_ikChains.size());
+        std::vector<float> origZDistances(m_ikChains.size());
+        float maxValue_zDist = std::numeric_limits<float>::min();
+        int maxValIndex_zDist = -1;
+        for (int i = 0; i < m_ikChains.size(); i++) {
+            EETrajectoryData* trData = config->getTrajectoryData(m_ikChains[i]);
+            glm::vec3 hipPoint = hipTrData->originalGlblTrajectory.evalCurve(animationTime);
+            glm::vec3 eePoint = trData->originalGlblTrajectory.evalCurve(animationTime);
+            origDistances[i] = glm::distance(hipPoint, eePoint);
+            origZDistances[i] = abs(hipPoint[2] - eePoint[2]);
+            if (maxValue_zDist < origZDistances[i]) {
+                maxValIndex_zDist = origZDistances[i];
+                maxValIndex_zDist = i;
+            }
+        }
+        // buscamos el maximo valor para z, tal que no se sobrepase ninguna de las distancias originales
+        EETrajectoryData* trData = config->getTrajectoryData(m_ikChains[maxValIndex_zDist]);
+        float adjustedHeight = trData->targetGlblTrajectory.evalCurve(reproductionTime)[2] + maxValue_zDist;
+        for (int i = 0; i < stepNum; i++) {
+            float maxDistDiff = std::numeric_limits<float>::min();
+            for (int j = 0; j < m_ikChains.size(); j++) {
+                trData = config->getTrajectoryData(m_ikChains[j]);
+                float distDiff = 0;
+                float currentDistance = 0;
+                if (trData->targetGlblTrajectory.inTRange(reproductionTime)) {
+                    currentDistance = glm::distance(trData->targetGlblTrajectory.evalCurve(reproductionTime),
+                        glm::vec3(basePoint, adjustedHeight));
+                }
+                else {
+                    float closestTime = std::min(abs(trData->targetGlblTrajectory.getTRange()[0] - reproductionTime),
+                        abs(trData->targetGlblTrajectory.getTRange()[1] - reproductionTime));
+                    currentDistance = abs(trData->targetGlblTrajectory.evalCurve(closestTime)[2] - adjustedHeight);
+                }
+                distDiff = currentDistance - origDistances[j];
+                
+                if (distDiff > maxDistDiff) {
+                    maxDistDiff = distDiff;
+                }
+            }
+            // si nos pasamos en distancia
+            if (maxDistDiff > 0) {
+                adjustedHeight -= maxDistDiff * 0.7;
+            }
+            else {
+                adjustedHeight += abs(maxDistDiff) * 0.7;
+            }
+        }
+        return adjustedHeight;
+    }
+
     void TrajectoryGenerator::generateHipTrajectory(IKRigConfig* config, float rotationAngle, glm::vec3 globalHipPos,
         ComponentManager<TransformComponent>* transformManager,
         ComponentManager<StaticMeshComponent>* staticMeshManager) {
@@ -346,10 +401,49 @@ namespace Mona{
         
         if (allStatic) {
             float initialTime = config->getReproductionTime(currentFrame);
+            float initialTime_anim = config->getAnimationTime(currentFrame);
+            glm::vec2 basePoint(globalHipPos);
             glm::vec3 initialPos = hipTrData->savedGlobalPositions[initialTime];
             // chequear si hay una curva previa generada
             if (!hipTrData->targetGlblTranslations.inTRange(initialTime)) {
-                
+                // distancias originales de ee's con cadera
+                std::vector<float> origDistances(m_ikChains.size());
+                std::vector<float> origZDiffs(m_ikChains.size());
+                float maxValue_zDist = std::numeric_limits<float>::min();
+                int maxValIndex_zDist = -1;
+                for (int i = 0; i < m_ikChains.size(); i++) {
+                    EETrajectoryData* trData = config->getTrajectoryData(m_ikChains[i]);
+                    glm::vec3 hipPoint = hipTrData->originalGlblTrajectory.evalCurve(initialTime_anim);
+                    glm::vec3 eePoint = trData->originalGlblTrajectory.evalCurve(initialTime_anim);
+                    origDistances[i] = glm::distance(hipPoint, eePoint);
+                    origZDiffs[i] = hipPoint[2] - eePoint[2];
+                    if (maxValue_zDist < abs(origZDiffs[i])) {
+                        maxValIndex_zDist = abs(origZDiffs[i]);
+                        maxValIndex_zDist = i;
+                    }
+                }
+                // buscamos el maximo valor para z, tal que no se sobrepase ninguna de las distancias originales
+                EETrajectoryData* trData = config->getTrajectoryData(m_ikChains[maxValIndex_zDist]);
+                float adjustmentValue = maxValue_zDist/2;
+                float adjustedHeight = trData->targetGlblTrajectory.evalCurve(initialTime)[2];
+                for (int i = 0; i < 10;i ++) {
+                    bool increased = false;
+                    for (int j = 0; j < m_ikChains.size(); j++) {
+                        trData = config->getTrajectoryData(m_ikChains[j]);
+                        float currentDistance = glm::distance(trData->targetGlblTrajectory.evalCurve(initialTime),
+                            glm::vec3(basePoint, adjustedHeight));
+                        if (currentDistance < origDistances[j]) {
+                            adjustedHeight += adjustmentValue;
+                            adjustmentValue /= 2;
+                            increased = true;
+                            break;
+                        }
+                    }
+                    if (!increased) {
+                        adjustedHeight -= adjustmentValue;
+                        adjustmentValue /= 2;
+                    }
+                }
             }
         }
         else {
@@ -380,10 +474,7 @@ namespace Mona{
         }
 
         // queda setear la trayectoria de la cadera
-        generateHipTrajectory(config, global)
-        
-        
-
+        generateHipTrajectory(config, globalPositions[m_ikRig->getHipJoint()], xyRotationAngle, transformManager, staticMeshManager);  
     }
 
 

@@ -36,16 +36,17 @@ namespace Mona{
         TGData<1> m_tgData_dim1;
         GradientDescent<TGData<3>> m_gradientDescent_dim3;
         TGData<3> m_tgData_dim3;
-        std::pair<FrameIndex, FrameIndex> calcTrajectoryFrameRange(IKRigConfig* config, ChainIndex ikChain, TrajectoryType trajectoryType);
         void generateEETrajectory(ChainIndex ikChain, IKRigConfig* config, 
             glm::vec3 globalEEPos, float rotationAngle,
             ComponentManager<TransformComponent>* transformManager,
             ComponentManager<StaticMeshComponent>* staticMeshManager);
-        void generateStaticTrajectory(ChainIndex ikChain, IKRigConfig* config,
+        void generateStaticTrajectory(LIC<3> baseCurve, 
+            ChainIndex ikChain, IKRigConfig* config,
             glm::vec3 globalEEPos,
             ComponentManager<TransformComponent>* transformManager,
             ComponentManager<StaticMeshComponent>* staticMeshManager);
-        void generateDynamicTrajectory(ChainIndex ikChain, IKRigConfig* config,
+        void generateDynamicTrajectory(LIC<3> baseCurve, 
+            ChainIndex ikChain, IKRigConfig* config,
             glm::vec3 globalEEPos, float rotationAngle,
             ComponentManager<TransformComponent>* transformManager,
             ComponentManager<StaticMeshComponent>* staticMeshManager);
@@ -53,12 +54,12 @@ namespace Mona{
             ComponentManager<TransformComponent>* transformManager,
             ComponentManager<StaticMeshComponent>* staticMeshManager);
 
-        float calcHipAdjustedHeight(IKRigConfig* config, glm::vec2 basePoint, float reproductionTime, int stepNum);
-        glm::vec3 calcStrideStartingPoint(glm::vec3 referencePoint, float targetDistance, 
+        float calcHipAdjustedHeight(IKRigConfig* config, glm::vec2 basePoint, float reproductionTime);
+        glm::vec3 calcStrideStartingPoint(float supportHeight, glm::vec3 referencePoint, float targetDistance, 
             glm::vec2 targetDirection, int stepNum,
             ComponentManager<TransformComponent>* transformManager,
             ComponentManager<StaticMeshComponent>* staticMeshManager);
-        std::vector<glm::vec3> calcStrideData(glm::vec3 startingPoint, float targetDistance, 
+        std::vector<glm::vec3> calcStrideData(float supportHeight, glm::vec3 startingPoint, float targetDistance,
             glm::vec2 targetDirection, int stepNum,
             ComponentManager<TransformComponent>* transformManager,
             ComponentManager<StaticMeshComponent>* staticMeshManager);

@@ -22,6 +22,9 @@ namespace Mona{
         LIC(std::vector<glm::vec<D, float>> curvePoints, std::vector<float> tValues);
         glm::vec2 getTRange() { return glm::vec2({ m_tValues[0], m_tValues.back() }); }
         bool inTRange(float t) { return m_tValues[0] <= t && t <= m_tValues.back(); }
+        bool inOpenTRange(float t) { return m_tValues[0] < t && t < m_tValues.back(); }
+        bool inOpenRightTRange(float t) { return m_tValues[0] <= t && t < m_tValues.back(); }
+        bool inOpenLeftTRange(float t) { return m_tValues[0] < t && t <= m_tValues.back(); }
         float getTValue(int pointIndex) const;
         glm::vec<D, float> getCurvePoint(int pointIndex) const;
         int getNumberOfPoints() const { return m_curvePoints.size(); }

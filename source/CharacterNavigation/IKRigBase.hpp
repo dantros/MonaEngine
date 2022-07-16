@@ -60,17 +60,39 @@ namespace Mona {
         STATIC,
         DYNAMIC
     };
-    struct EETrajectoryData {
-        // Trayectoria original del ee asociado a una ikChain (global space previo a remocion de trayectoria de la cadera)
-        LIC<3> originalGlblTrajectory;
-        // Trayectorias recalculada del ee asociado a una ikChain
-        LIC<3> targetGlblTrajectory;
-        // Frames de apoyo (estaticos) del end effector
-        std::vector<bool> supportFrames;
-        //
-        std::vector<glm::vec3> savedGlobalPositions;
-        // tipo de trayectoria actual
-        TrajectoryType trajectoryType;
+    enum class  AnimationType {
+        IDLE,
+        MOVING
+    };
+
+
+    class EETrajectory {
+        friend class EETrajectoryData;
+        LIC<3> m_trajectory;
+        TrajectoryType m_trajectoryType;
+    public:
+        EETrajectory() = default;
+        EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType);
+        bool isDynamic() { return m_trajectoryType == TrajectoryType::DYNAMIC; }
+        LIC<3>& getEETrajectory() { return m_trajectory; }
+    };
+    class EETrajectoryData {
+        friend class IKRigController;
+        // Trayectoria original del ee asociado a una ikChain. Descompuesta en sub trayectorias (estaticas y dinamicas)
+        std::vector<EETrajectory> m_originalGlblSubTrajectories;
+        // Trayectoria objetivo generada
+        EETrajectory m_targetGlblTrajectory;;
+        // Altura base en cada frame, considerando los valores en los frames de soporte
+        std::vector<float> m_supportHeights;
+        // Posiciones guardadas calculadas para frames previos con IK
+        std::vector<glm::vec3> m_savedGlobalPositions;
+    public:
+        EETrajectory getSubTrajectory(float animationTime);
+        glm::vec3 getSavedGlobalPosition(FrameIndex frame) { return m_savedGlobalPositions[frame]; }
+        float getSupportHeight(FrameIndex frame) { return m_supportHeights[frame]; }
+        EETrajectory& getTargetGlblTrajectory() { return m_targetGlblTrajectory; }
+        void setTargetGlblTrajectory(LIC<3> trajectory, TrajectoryType trajectoryType) { m_targetGlblTrajectory = EETrajectory(trajectory, trajectoryType); }
+
     };
     class IKRigConfig {
         friend class IKRig;
@@ -105,6 +127,10 @@ namespace Mona {
         bool m_requiresIKUpdate = true;
         // Numero de veces que la animacion se ha reproducido
         int m_reproductionCount = 0;
+        //
+        AnimationType m_animationType;
+        // ajustar animationTime input al rango correspondiente (del arreglo de timeStamps)
+        float adjustAnimationTime(float animationTime);
     public:
         IKRigConfig(std::shared_ptr<AnimationClip> animation, AnimationIndex animIndex, ForwardKinematics* fk);
         const std::vector<JointRotation>& getBaseJointRotations() const { return m_baseJointRotations[m_nextFrameIndex]; }
@@ -115,8 +141,9 @@ namespace Mona {
         const std::vector<glm::vec3>& getJointPositions() const { return m_jointPositions; }
         float getReproductionTime(float animationTime, int repCountOffset = 0);
         float getReproductionTime(FrameIndex frame, int repCountOffset = 0);
-        float getAnimationTime(FrameIndex frame) { return m_timeStamps[frame]; }
+        float getAnimationTime(FrameIndex frame);
         float getAnimationTime(float reproductionTime);
+        FrameIndex getFrame(float animationTime);
         float getAnimationDuration() { return m_animationClip->GetDuration(); }
         int getFrameNum() { return m_timeStamps.size(); }
         int getReproductionCount() const { return m_reproductionCount; }
@@ -132,6 +159,7 @@ namespace Mona {
         std::vector<glm::mat4> getJointSpaceTransforms(bool useDynamicRotations);
         EETrajectoryData* getTrajectoryData(ChainIndex chainIndex) { return &(m_ikChainTrajectoryData[chainIndex]); }
         HipTrajectoryData* getHipTrajectoryData() { return &m_hipTrajectoryData; }
+        AnimationType getAnimationType() { return m_animationType; }
     };
 
     struct JointData {

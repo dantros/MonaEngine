@@ -46,23 +46,56 @@ namespace Mona{
 	}
 
 	float IKRigConfig::getReproductionTime(FrameIndex frame, int repCountOffset) {
-		return (m_reproductionCount + repCountOffset) * m_animationClip->GetDuration() + m_timeStamps[frame];
+		MONA_ASSERT(0 <= frame && frame < m_timeStamps.size(), "IKRigConfig: FrameIndex outside of range.");
+		return (m_reproductionCount + repCountOffset) * m_animationClip->GetDuration() - m_timeStamps[0] + m_timeStamps[frame];
+	}
+
+	float IKRigConfig::adjustAnimationTime(float animationTime) {
+		if (animationTime < m_timeStamps[0]) {
+			while (animationTime < m_timeStamps[0]) {
+				animationTime += getAnimationDuration();
+			}
+		}
+		else if (m_timeStamps[0] + getAnimationDuration() < animationTime) {
+			while (m_timeStamps[0] + getAnimationDuration() < animationTime) {
+				animationTime -= getAnimationDuration();
+			}
+		}
+		return animationTime;
 	}
 
 	float IKRigConfig::getReproductionTime(float animationTime, int repCountOffset) {
-		return (m_reproductionCount + repCountOffset) * m_animationClip->GetDuration() + animationTime;
+		// llevar el tiempo al rango correcto
+		animationTime = adjustAnimationTime(animationTime);
+		return (m_reproductionCount + repCountOffset) * m_animationClip->GetDuration() - m_timeStamps[0] + animationTime;
+	}
+
+	float IKRigConfig::getAnimationTime(FrameIndex frame) { 
+		MONA_ASSERT(0 <= frame && frame < m_timeStamps.size(), "IKRigConfig: FrameIndex outside of range.");
+		return m_timeStamps[frame]; 
 	}
 
 	float IKRigConfig::getAnimationTime(float reproductionTime) {
 		if (0 <= reproductionTime) {
-			return fmod(reproductionTime, m_animationClip->GetDuration());
+			return fmod(reproductionTime, m_animationClip->GetDuration()) + m_timeStamps[0];
 		}
 		else {
 			while (reproductionTime < 0) {
 				reproductionTime += m_animationClip->GetDuration();
 			}
-			return fmod(reproductionTime, m_animationClip->GetDuration());
+			return fmod(reproductionTime, m_animationClip->GetDuration()) + m_timeStamps[0];
 		}
+	}
+
+	FrameIndex IKRigConfig::getFrame(float animationTime) {
+		// llevar el tiempo al rango correcto
+		animationTime = adjustAnimationTime(animationTime);
+		for (FrameIndex i = 0; i < m_timeStamps.size()-1; i++) {
+			if (m_timeStamps[i] <= animationTime < m_timeStamps[i + 1]) {
+				return i;
+			}
+		}
+		return -1;
 	}
 
 	IKNode::IKNode(std::string jointName, JointIndex jointIndex, IKNode* parent, float weight) {
@@ -130,6 +163,21 @@ namespace Mona{
 	void JointRotation::setRotationAxis(glm::vec3 rotationAxis) {
 		m_quatRotation = glm::angleAxis(m_rotationAngle, rotationAxis);
 		m_rotationAxis = rotationAxis;
+	}
+
+	EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType) {
+		m_trajectory = trajectory;
+		m_trajectoryType = trajectoryType;
+	}
+
+	EETrajectory EETrajectoryData::getSubTrajectory(float animationTime) {
+		for (int i = 0; i < m_originalGlblSubTrajectories.size(); i++) {
+			if (m_originalGlblSubTrajectories[i].m_trajectory.inOpenRightTRange(animationTime)) {
+				return m_originalGlblSubTrajectories[i];
+			}
+		}
+		MONA_LOG_ERROR("EETrajectoryData: AnimationTime was not valid.");
+		return EETrajectory();
 	}
     
 }

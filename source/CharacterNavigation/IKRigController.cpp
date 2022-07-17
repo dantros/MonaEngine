@@ -154,13 +154,13 @@ namespace Mona {
 			previousHipPosition = hipPosition;
 		}
 
-		currentConfig->m_hipTrajectoryData.originalRotationAngles = LIC<1>(hipRotAngles, hipTimeStamps);
-		currentConfig->m_hipTrajectoryData.originalRotationAxes = LIC<3>(hipRotAxes, hipTimeStamps);
-		currentConfig->m_hipTrajectoryData.originalGlblTranslations = LIC<3>(hipTranslations, hipTimeStamps);
-		currentConfig->m_hipTrajectoryData.originalGlblTranslations.scale(glm::vec3(m_ikRig.m_scale));
-		currentConfig->m_hipTrajectoryData.originalGlblTrajectory = LIC<3>(hipPositions, hipTimeStamps);
-		currentConfig->m_hipTrajectoryData.originalGlblTrajectory.scale(glm::vec3(m_ikRig.m_scale));
-		currentConfig->m_hipTrajectoryData.originalFrontVector = glm::normalize(glm::vec2(hipTrack.positions.back()) - 
+		currentConfig->m_hipTrajectoryData.m_originalRotationAngles = LIC<1>(hipRotAngles, hipTimeStamps);
+		currentConfig->m_hipTrajectoryData.m_originalRotationAxes = LIC<3>(hipRotAxes, hipTimeStamps);
+		currentConfig->m_hipTrajectoryData.m_originalTranslations = LIC<3>(hipTranslations, hipTimeStamps);
+		currentConfig->m_hipTrajectoryData.m_originalTranslations.scale(glm::vec3(m_ikRig.m_scale));
+		currentConfig->m_hipTrajectoryData.m_originalTrajectory = LIC<3>(hipPositions, hipTimeStamps);
+		currentConfig->m_hipTrajectoryData.m_originalTrajectory.scale(glm::vec3(m_ikRig.m_scale));
+		currentConfig->m_hipTrajectoryData.m_originalFrontVector = glm::normalize(glm::vec2(hipTrack.positions.back()) - 
 			glm::vec2(hipTrack.positions[0]));
 
 		// Ahora guardamos las trayectorias originales de los ee y definimos sus frames de soporte
@@ -227,7 +227,7 @@ namespace Mona {
 					FrameIndex finalFrame;
 					while (supportFramesPerChain[i][j]) {
 						supportHeight = glblPositionsPerChain[i][j][2];
-						currentConfig->m_ikChainTrajectoryData[i].supportHeights[j] = supportHeight;
+						currentConfig->m_ikChainTrajectoryData[i].m_supportHeights[j] = supportHeight;
 						finalFrame = j;
 						j += 1;
 						if (j == frameNum) { break; }
@@ -245,7 +245,7 @@ namespace Mona {
 					std::vector<glm::vec3> curvePoints_1 = { glblPositionsPerChain[i][initialFrame]};
 					std::vector<float> tValues_1 = {currentConfig->getAnimationTime(initialFrame)};
 					while (!supportFramesPerChain[i][j]) {
-						currentConfig->m_ikChainTrajectoryData[i].supportHeights[j] = supportHeight;
+						currentConfig->m_ikChainTrajectoryData[i].m_supportHeights[j] = supportHeight;
 						curvePoints_1.push_back(glblPositionsPerChain[i][j]);
 						tValues_1.push_back(currentConfig->getAnimationTime(j));
 						j += 1;
@@ -256,14 +256,14 @@ namespace Mona {
 					}
 					if (!incompleteTr) { // si llegamos a un frame de soporte sin salirnos del arreglo
 						supportHeight = glblPositionsPerChain[i][j][2];
-						currentConfig->m_ikChainTrajectoryData[i].supportHeights[j] = supportHeight;
+						currentConfig->m_ikChainTrajectoryData[i].m_supportHeights[j] = supportHeight;
 						subTrajectories.push_back(EETrajectory(LIC<3>(curvePoints_1, tValues_1), TrajectoryType::DYNAMIC));
 					}
 					else {
 						std::vector<glm::vec3> curvePoints_2;
 						std::vector<float> tValues_2;
 						for (FrameIndex k = 0; k < firstSF; k++) {
-							currentConfig->m_ikChainTrajectoryData[i].supportHeights[k] = supportHeight;
+							currentConfig->m_ikChainTrajectoryData[i].m_supportHeights[k] = supportHeight;
 							curvePoints_2.push_back(glblPositionsPerChain[i][k]);
 							tValues_2.push_back(currentConfig->getAnimationTime(k));
 						}
@@ -282,7 +282,28 @@ namespace Mona {
 				}				
 			}
 			// asignamos las sub trayectorias a la cadena correspondiente
-			currentConfig->m_ikChainTrajectoryData[i].originalGlblSubTrajectories = subTrajectories;
+			currentConfig->m_ikChainTrajectoryData[i].m_originalSubTrajectories = subTrajectories;
+		}
+
+		// guardamos los tiempos de maxima altitud de la cadera
+		LIC<3>& hipTr = currentConfig->getHipTrajectoryData()->m_originalTrajectory;
+		for (int i = 0; i < m_ikRig.m_ikChains.size(); i++) {
+			EEGlobalTrajectoryData& trData = currentConfig->m_ikChainTrajectoryData[i];
+			for (int j = 0; j < trData.m_originalSubTrajectories.size(); j++) {
+				float maxZ = std::numeric_limits<float>::min();
+				float savedT = std::numeric_limits<float>::min();
+				LIC<3>& currentCurve = trData.m_originalSubTrajectories[j].getEETrajectory();
+				for (int k = 0; k < currentCurve.getNumberOfPoints(); k++) {
+					float tValue = currentCurve.getTValue(k);
+					float hipZ = hipTr.evalCurve(tValue)[2];
+					if (maxZ < hipZ) { 
+						maxZ = hipZ;
+						savedT = tValue;
+					}
+				}
+				currentConfig->m_ikChainTrajectoryData[i].m_originalSubTrajectories[j].m_hipMaxAltitudeTimeFraction = 
+					funcUtils::getFraction(currentCurve.getTRange()[0], currentCurve.getTRange()[1], savedT);
+			}	
 		}
 
 		

@@ -40,12 +40,12 @@ namespace Mona{
             glm::vec3 globalEEPos, float rotationAngle,
             ComponentManager<TransformComponent>* transformManager,
             ComponentManager<StaticMeshComponent>* staticMeshManager);
-        void generateStaticTrajectory(LIC<3> baseCurve, 
+        void generateStaticTrajectory(EETrajectory baseTrajectory,
             ChainIndex ikChain, IKRigConfig* config,
             glm::vec3 globalEEPos,
             ComponentManager<TransformComponent>* transformManager,
             ComponentManager<StaticMeshComponent>* staticMeshManager);
-        void generateDynamicTrajectory(LIC<3> baseCurve, 
+        void generateDynamicTrajectory(EETrajectory baseTrajectory,
             ChainIndex ikChain, IKRigConfig* config,
             glm::vec3 globalEEPos, float rotationAngle,
             ComponentManager<TransformComponent>* transformManager,

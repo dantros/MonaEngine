@@ -91,7 +91,7 @@ namespace Mona{
 		// llevar el tiempo al rango correcto
 		animationTime = adjustAnimationTime(animationTime);
 		for (FrameIndex i = 0; i < m_timeStamps.size()-1; i++) {
-			if (m_timeStamps[i] <= animationTime < m_timeStamps[i + 1]) {
+			if (m_timeStamps[i] <= animationTime && animationTime < m_timeStamps[i + 1]) {
 				return i;
 			}
 		}
@@ -170,10 +170,10 @@ namespace Mona{
 		m_trajectoryType = trajectoryType;
 	}
 
-	EETrajectory EETrajectoryData::getSubTrajectory(float animationTime) {
-		for (int i = 0; i < m_originalGlblSubTrajectories.size(); i++) {
-			if (m_originalGlblSubTrajectories[i].m_trajectory.inOpenRightTRange(animationTime)) {
-				return m_originalGlblSubTrajectories[i];
+	EETrajectory EEGlobalTrajectoryData::getSubTrajectory(float animationTime) {
+		for (int i = 0; i < m_originalSubTrajectories.size(); i++) {
+			if (m_originalSubTrajectories[i].getEETrajectory().inOpenRightTRange(animationTime)) {
+				return m_originalSubTrajectories[i];
 			}
 		}
 		MONA_LOG_ERROR("EETrajectoryData: AnimationTime was not valid.");

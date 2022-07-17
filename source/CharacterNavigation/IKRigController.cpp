@@ -15,6 +15,13 @@ namespace Mona {
 			MONA_LOG_ERROR("IKRig: Input animation does not correspond to base skeleton.");
 			return;
 		}
+		for (int i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {
+			if (m_ikRig.m_animationConfigs[i].m_animationClip->GetAnimationName() == animationClip->GetAnimationName()) {
+				MONA_LOG_WARNING("IKRig: Animation {0} for model {1} had already been added",
+					animationClip->GetAnimationName(), m_ikRig.m_skeleton->GetModelName());
+				return;
+			}
+		}
 		
 		// Chequar si los escalamientos y traslaciones son constantes por joint.
 		// La cadera si puede tener traslaciones variables
@@ -24,38 +31,43 @@ namespace Mona {
 			glm::vec3 baseScale = track.scales[0];
 			for (int j = 1; j < track.positions.size(); j++) {
 				if (track.positions[j] != basePosition && i!=m_ikRig.m_hipJoint) {
-					MONA_LOG_ERROR("IKRigController: Animation must have fixed translations per joint).");
+					MONA_LOG_ERROR("IKRigController: Animation must have fixed translations per joint.");
 					return;
 				}
 			}
 			for (int j = 1; j < track.scales.size(); j++) {
 				if (track.scales[j] != baseScale) {
-					MONA_LOG_ERROR("IKRigController: Animation must have fixed scales per joint).");
+					MONA_LOG_ERROR("IKRigController: Animation must have fixed scales per joint.");
 					return;
 				}
 			}
 		}
+
 
 		JointIndex parent = m_ikRig.getTopology()[m_ikRig.m_hipJoint];
 		while (parent != -1) {
 			auto track = animationClip->m_animationTracks[animationClip->m_jointTrackIndices[0]];
-			glm::fquat baseRotation = track.rotations[0];
-			for (int j = 1; j < track.rotations.size(); j++) {
-				if (track.rotations[j] != baseRotation) {
-					MONA_LOG_ERROR("IKRigController: Joints above the hip in the hierarchy cannot have vatiable rotations.");
+			for (int j = 0; j < track.rotations.size(); j++) {
+				if (track.rotations[j] != glm::identity<glm::fquat>()) {
+					MONA_LOG_ERROR("IKRigController: Joints above the hip in the hierarchy cannot have rotations.");
 					return;
 				}
 			}
-			parent = m_ikRig.getTopology()[m_ikRig.m_hipJoint];
+			for (int j = 0; j < track.positions.size(); j++) {
+				if (track.positions[j] != glm::vec3(0)) {
+					MONA_LOG_ERROR("IKRigController: Joints above the hip in the hierarchy cannot have translations.");
+					return;
+				}
+			}
 		}
 
-		for (int i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {
-			if (m_ikRig.m_animationConfigs[i].m_animationClip->GetAnimationName() == animationClip->GetAnimationName()) {
-				MONA_LOG_WARNING("IKRig: Animation {0} for model {1} had already been added",
-					animationClip->GetAnimationName(), m_ikRig.m_skeleton->GetModelName());
-				return;
-			}
-		}		
+		// se eliminan las escalas de cadera hacia arriba en la jerarquia
+		parent = m_ikRig.getTopology()[m_ikRig.m_hipJoint];
+		while (parent != -1) {
+			animationClip->RemoveJointScaling(parent);
+			parent = m_ikRig.getTopology()[m_ikRig.m_hipJoint];
+		}
+		animationClip->RemoveJointScaling(m_ikRig.m_hipJoint);	
 
 		// Descomprimimos las rotaciones de la animacion, repitiendo valores para que todas las articulaciones 
 		// tengan el mismo numero de rotaciones
@@ -305,8 +317,6 @@ namespace Mona {
 					funcUtils::getFraction(currentCurve.getTRange()[0], currentCurve.getTRange()[1], savedT);
 			}	
 		}
-
-		
 
 		// Se remueve el movimiento de las caderas
 		animationClip->RemoveJointRotation(m_ikRig.m_hipJoint);

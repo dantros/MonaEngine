@@ -136,7 +136,7 @@ namespace Mona{
 
     void TrajectoryGenerator::generateDynamicTrajectory(EETrajectory baseTrajectory, 
         ChainIndex ikChain, IKRigConfig* config,
-        glm::vec3 globalEEPos, float rotationAngle,
+        glm::vec3 globalEEPos, float xyMovementRotAngle,
         ComponentManager<TransformComponent>* transformManager,
         ComponentManager<StaticMeshComponent>* staticMeshManager) {
 
@@ -161,7 +161,7 @@ namespace Mona{
             glm::vec3 floorReferencePoint(glm::vec2(globalEEPos), m_environmentData.getTerrainHeight(glm::vec2(globalEEPos),
                 transformManager, staticMeshManager));
             glm::vec2 sampledCurveReferenceDirection = glm::vec2(sampledCurveReferencePoint) - glm::vec2(baseCurve.getStart());
-            glm::vec2 targetDirection = -glm::normalize(glm::rotate(sampledCurveReferenceDirection, rotationAngle));
+            glm::vec2 targetDirection = -glm::normalize(glm::rotate(sampledCurveReferenceDirection, xyMovementRotAngle));
             float supportHeight = trData->getSupportHeight(initialFrame);
             initialPos = calcStrideStartingPoint(supportHeight, floorReferencePoint, floorDistanceToStart,
                 targetDirection, 4, transformManager, staticMeshManager);
@@ -170,7 +170,7 @@ namespace Mona{
         float targetDistance = baseDistance*baseTrajectory.getHipMaxAltitudeTimeFraction()
             + baseDistance*(1- baseTrajectory.getHipMaxAltitudeTimeFraction())*m_ikRig->getStrideFactor();
         glm::vec3 originalDirection = glm::normalize(baseCurve.getEnd() - baseCurve.getStart());
-        glm::vec2 targetXYDirection = glm::rotate(glm::vec2(originalDirection), rotationAngle);
+        glm::vec2 targetXYDirection = glm::rotate(glm::vec2(originalDirection), xyMovementRotAngle);
         float supportHeight = trData->getSupportHeight(initialFrame);
         std::vector<glm::vec3> strideData = calcStrideData(supportHeight, initialPos, targetDistance, targetXYDirection, 8, transformManager, staticMeshManager);
         if (strideData.size() == 0) { // si no es posible avanzar por la elevacion del terreno
@@ -323,7 +323,8 @@ namespace Mona{
         return adjustedHeight;
     }
 
-    void TrajectoryGenerator::generateHipTrajectory(IKRigConfig* config, float rotationAngle, glm::vec3 globalHipPos,
+    void TrajectoryGenerator::generateHipTrajectory(IKRigConfig* config, glm::mat4 globalHipTransform, 
+        float xyMovementRotAngle,
         ComponentManager<TransformComponent>* transformManager,
         ComponentManager<StaticMeshComponent>* staticMeshManager) {
 
@@ -342,33 +343,47 @@ namespace Mona{
         if (allStatic) {
             float initialTime = config->getReproductionTime(currentFrame);
             glm::vec2 basePoint(globalHipPos);
-            glm::vec3 initialPos = hipTrData->getSavedPosition(currentFrame);
+            float initialRotAngle = hipTrData->getSavedRotationAngle(currentFrame);
+            glm::vec3 initialRotAxis = hipTrData->getSavedRotationAxis(currentFrame);
+            glm::vec3 initialTrans = hipTrData->getSavedTransalation(currentFrame);
             // chequear si hay una curva previa generada
-            if (!hipTrData->getTargetTrajectory().inTRange(initialTime)) {
+            if (!hipTrData->getTargetTranslations().inTRange(initialTime)) {
                 initialPos = glm::vec3(basePoint, calcHipAdjustedHeight(config, basePoint, initialTime));
             }
-            LIC<3> newHipTr({ initialPos, initialPos }, { initialTime, initialTime + config->getAnimationDuration() });
-            hipTrData->setTargetTrajectory(newHipTr);
+            LIC<1> newHipRotAngles({ glm::vec1(initialRotAngle), glm::vec1(initialRotAngle) }, { initialTime, initialTime + config->getAnimationDuration() });
+            LIC<3> newHipRotAxes({ initialRotAxis, initialRotAxis }, { initialTime, initialTime + config->getAnimationDuration() });
+            LIC<3> newHipTrans({ initialTrans, initialTrans }, { initialTime, initialTime + config->getAnimationDuration() });
+            hipTrData->setTargetRotationAngles(newHipRotAngles);
+            hipTrData->setTargetRotationAxes(newHipRotAxes);
+            hipTrData->setTargetTranslations(newHipTrans);
         }
         else {
             HipGlobalTrajectoryData* hipTrData = config->getHipTrajectoryData();
             // buscamos la curva dinamica a la que le quede mas tiempo
-            float tInfLimit = std::numeric_limits<float>::min();
-            float tSupLimit = std::numeric_limits<float>::min();
+            float tInfLimitRep = std::numeric_limits<float>::min();
+            float tSupLimitRep = std::numeric_limits<float>::min();
             EETrajectory baseDynTr;
             for (int i = 0; i < m_ikChains.size(); i++) {
                 EEGlobalTrajectoryData* trData = config->getEETrajectoryData(m_ikChains[i]);
                 EETrajectory& currTr = trData->getTargetTrajectory();
                 float tCurrentSupLimit = currTr.getEETrajectory().getTRange()[1];
-                if (currTr.isDynamic() && tSupLimit < tCurrentSupLimit) {
-                    tSupLimit = tCurrentSupLimit;
-                    tInfLimit = currTr.getEETrajectory().getTRange()[0];
+                if (currTr.isDynamic() && tSupLimitRep < tCurrentSupLimit) {
+                    tSupLimitRep = tCurrentSupLimit;
+                    tInfLimitRep = currTr.getEETrajectory().getTRange()[0];
                     baseDynTr = currTr;
                 }
             }
-            LIC<3> originalCurveTr = hipTrData->getOriginalTranslations().sample(tInfLimit, tSupLimit);
-            LIC<1> originalCurveRotAngl = hipTrData->getOriginalRotationAngles().sample(tInfLimit, tSupLimit);
-            LIC<3> originalCurveRotAx = hipTrData->getOriginalRotationAxes().sample(tInfLimit, tSupLimit);
+            float tInfLimitAnim = config->getAnimationTime(tInfLimitRep);
+            float tSupLimitAnim = config->getAnimationTime(tSupLimitRep);
+
+            // primer paso: calculo del punto inicial de la trayectoria
+            glm::vec3 initialPos = hipTrData->getSavedPosition(config->getFrame(tInfLimitAnim));
+            if(hipTrData->)
+            glm::vec3 initialPos(glm::vec2(globalHipPos), calcHipAdjustedHeight(config, glm::vec2(globalHipPos), tInfLimitRep));
+
+            LIC<3> originalCurveTr = hipTrData->getOriginalTranslations().sample(tInfLimitAnim, tSupLimitAnim);
+            LIC<1> originalCurveRotAngl = hipTrData->getOriginalRotationAngles().sample(tInfLimitAnim, tSupLimitAnim);
+            LIC<3> originalCurveRotAx = hipTrData->getOriginalRotationAxes().sample(tInfLimitAnim, tSupLimitAnim);
         }
     }
 

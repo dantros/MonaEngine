@@ -47,10 +47,10 @@ namespace Mona{
             ComponentManager<StaticMeshComponent>* staticMeshManager);
         void generateDynamicTrajectory(EETrajectory baseTrajectory,
             ChainIndex ikChain, IKRigConfig* config,
-            glm::vec3 globalEEPos, float rotationAngle,
+            glm::vec3 globalEEPos, float xyMovementRotAngle,
             ComponentManager<TransformComponent>* transformManager,
             ComponentManager<StaticMeshComponent>* staticMeshManager);
-        void generateHipTrajectory(IKRigConfig* config, glm::vec3 globalHipPos, float rotationAngle,
+        void generateHipTrajectory(IKRigConfig* config, glm::mat4 globalHipTransform, float xyMovementRotAngle,
             ComponentManager<TransformComponent>* transformManager,
             ComponentManager<StaticMeshComponent>* staticMeshManager);
 

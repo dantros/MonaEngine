@@ -42,6 +42,7 @@ namespace Mona {
 		void RemoveRootMotion();
 		void RemoveJointTranslation(int jointIndex);
 		void RemoveJointRotation(int jointIndex);
+		void RemoveJointScaling(int jointIndex);
 
 		float GetSamplingTime(float time, bool isLooping) const;
 		std::pair<uint32_t, float> GetTimeFraction(const std::vector<float>& timeStamps, float time) const;

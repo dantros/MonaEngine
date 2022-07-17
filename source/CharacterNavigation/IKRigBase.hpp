@@ -35,7 +35,7 @@ namespace Mona {
         float getRotationAngle() const { return m_rotationAngle; }
         glm::vec3 getRotationAxis() const { return m_rotationAxis; }
     };
-    struct HipGlobalTrajectoryData {
+    class HipGlobalTrajectoryData {
         friend class IKRigController;
         LIC<3> m_originalTrajectory;
         // Angulos de rotacion originales
@@ -46,18 +46,27 @@ namespace Mona {
         LIC<3> m_originalTranslations;
         // Direccion original de la cadera
         glm::vec2 m_originalFrontVector;
-        // Trayectoria objetivo
-        LIC<3> m_targetTrajectory;
-        std::vector<glm::vec3> m_savedPositions;
+        LIC<1> m_targetRotationAngles;
+        LIC<3> m_targetRotationAxes;
+        LIC<3> m_targetTranslations;
+        std::vector<glm::vec3> m_savedTranslations;
+        std::vector<float> m_savedRotationAngles;
+        std::vector<glm::vec3> m_savedRotationAxes;
     public:
         LIC<3> getOriginalTrajectory() { return m_originalTrajectory; }
         LIC<1> getOriginalRotationAngles() { return m_originalRotationAngles; }
         LIC<3> getOriginalRotationAxes() { return m_originalRotationAxes; }
         LIC<3> getOriginalTranslations() { return m_originalTranslations; }
         glm::vec2 getOriginalFrontVector() { return m_originalFrontVector; }
-        glm::vec3 getSavedPosition(FrameIndex frame) { return m_savedPositions[frame]; }
-        LIC<3> getTargetTrajectory() { return m_targetTrajectory; }
-        void setTargetTrajectory(LIC<3> targetTrajectory) { m_targetTrajectory = targetTrajectory; };
+        glm::vec3 getSavedTransalation(FrameIndex frame) { return m_savedTranslations[frame]; }
+        float getSavedRotationAngle(FrameIndex frame) { return m_savedRotationAngles[frame]; }
+        glm::vec3 getSavedRotationAxis(FrameIndex frame) { return m_savedRotationAxes[frame]; }
+        LIC<1> getTargetRotationAngles() { return m_targetRotationAngles; }
+        LIC<3> getTargetRotationAxes() { return m_targetRotationAxes; }
+        LIC<3> getTargetTranslations() { return m_targetTranslations; }
+        void setTargetRotationAngles(LIC<1> targetRotationAngles) { m_targetRotationAngles = targetRotationAngles; }
+        void setTargetRotationAxes(LIC<3> targetRotationAxes) { m_targetRotationAxes = targetRotationAxes; }
+        void setTargetTranslations(LIC<3> targetTranslations) { m_targetTranslations = targetTranslations; }
     };
 
     enum class TrajectoryType {

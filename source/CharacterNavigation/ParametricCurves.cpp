@@ -219,5 +219,27 @@ namespace Mona {
         }
         return m_tValues.size() - 1;
     }
+
+    template <int D>
+    int LIC<D>::getPointIndex(float tValue, bool getNext) const {
+        if (tValue < m_tValues[0]) {
+            if (!getNext) {
+                MONA_LOG_ERROR("LIC: There is no point at t={0} or before", tValue);
+            }
+            return 0;
+        }
+        for (int i = 1; i < m_tValues.size() - 1; i++) {
+            if (m_tValues[i] <= tValue && tValue <= m_tValues[i + 1]) {
+                if (tValue == m_tValues[i]) { return i; }
+                if (tValue == m_tValues[i + 1]) { return i + 1; }
+                if (getNext) { return i + 1; }
+                return i;
+            }
+        }
+        if (getNext) {
+            MONA_LOG_ERROR("LIC: There is no point at t={0} or after", tValue);
+        }
+        return m_tValues.size() - 1;
+    }
     
 }

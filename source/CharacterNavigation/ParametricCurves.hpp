@@ -29,6 +29,7 @@ namespace Mona{
         glm::vec<D, float> getCurvePoint(int pointIndex) const;
         int getNumberOfPoints() const { return m_curvePoints.size(); }
         int getClosestPointIndex(float tValue) const;
+        int getPointIndex(float tValue, bool getNext = false) const;
         glm::vec<D, float> evalCurve(float t);
         // Velocidad desde la izquierda
         glm::vec<D, float> getVelocity(float t);
@@ -45,9 +46,7 @@ namespace Mona{
         static LIC transition(const LIC& curve1, const LIC& curve2, float transitionT);
         glm::vec<D, float> getStart() { return m_curvePoints[0]; }
         glm::vec<D, float> getEnd() { return m_curvePoints.back(); }
-    };   
-
-
+    };
     
 }
 

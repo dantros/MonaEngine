@@ -162,12 +162,7 @@ namespace Mona{
                 targetDirection, 4, transformManager, staticMeshManager);
         }
 
-        float hipHighTime = baseCurve.getTValue(baseTrajectory.getHipMaxAltitudeIndex());
-        glm::vec3 hipHighPoint = baseCurve.evalCurve(hipHighTime);
-        float startToHigh = glm::dot((hipHighPoint - baseCurve.getStart()), (baseCurve.getEnd() - baseCurve.getStart()));
-        float highToEnd = glm::dot((baseCurve.getEnd() - hipHighPoint), (baseCurve.getEnd() - baseCurve.getStart()));
-
-        float targetDistance = startToHigh + highToEnd*m_ikRig->getStrideFactor();
+        float targetDistance = glm::distance(baseCurve.getStart(), baseCurve.getEnd());
         glm::vec3 originalDirection = glm::normalize(baseCurve.getEnd() - baseCurve.getStart());
         glm::vec2 targetXYDirection = glm::rotate(glm::vec2(originalDirection), xyMovementRotAngle);
         float supportHeight = trData->getSupportHeight(initialFrame);
@@ -354,7 +349,7 @@ namespace Mona{
             glm::vec2 basePoint(initialTrans);
             // chequear si hay una curva previa generada
             if (!hipTrData->getTargetTranslations().inTRange(initialTime)) {
-                initialTrans = glm::vec3(basePoint, calcHipAdjustedHeight(config, basePoint, initialTime));
+                initialTrans = glm::vec3(basePoint, calcHipAdjustedHeight(config, basePoint, initialTime, config->getAnimationTime(currentFrame)));
             }
             LIC<1> newHipRotAngles({ glm::vec1(initialRotAngle), glm::vec1(initialRotAngle) }, { initialTime, initialTime + config->getAnimationDuration() });
             LIC<3> newHipRotAxes({ initialRotAxis, initialRotAxis }, { initialTime, initialTime + config->getAnimationDuration() });
@@ -397,13 +392,15 @@ namespace Mona{
             hipRotAnglCurve.offsetTValues(-tInfLimitAnim + tInfLimitRep);
             hipRotAxCurve.offsetTValues(-tInfLimitAnim + tInfLimitRep);
 
+            float hipOriginalXYDistance = glm::length(glm::vec2(hipTrCurve.getEnd() - hipTrCurve.getStart()));
+
             // primer paso: calculo del punto inicial de la trayectoria
             float initialRotAngle = hipTrData->getSavedRotationAngle(currentFrame);
             glm::vec3 initialRotAxis = hipTrData->getSavedRotationAxis(currentFrame);
             glm::vec3 initialTrans = hipTrData->getSavedTranslation(currentFrame);
             // chequear si hay una curva previa generada
             if (!hipTrData->getTargetTranslations().inTRange(tInfLimitRep)) {
-                initialTrans = glm::vec3(glm::vec2(initialTrans), calcHipAdjustedHeight(config, glm::vec2(initialTrans), tInfLimitRep));
+                initialTrans = glm::vec3(glm::vec2(initialTrans), calcHipAdjustedHeight(config, glm::vec2(initialTrans), tInfLimitRep, tInfLimitAnim));
             }
             
             // segundo paso: ajustar punto de maxima altura
@@ -422,10 +419,10 @@ namespace Mona{
             float hipHighNewTimeFraction = funcUtils::getFraction(0, startHighNewTime + highEndNewTime, startHighNewTime);
             float hipHighNewTime = funcUtils::lerp(baseEETargetCurve.getTRange()[0], baseEETargetCurve.getTRange()[1], hipHighNewTimeFraction);
 
-            int hipHighPointIndex = hipTrCurve.getClosestPointIndex(hipHighOriginalTime);
-            hipTrCurve.displacePointT(hipHighPointIndex, hipHighNewTime, true);
-            hipRotAnglCurve.displacePointT(hipHighPointIndex, hipHighNewTime, true);
-            hipRotAxCurve.displacePointT(hipHighPointIndex, hipHighNewTime, false);
+            int hipHighPointIndex_hip = hipTrCurve.getClosestPointIndex(hipHighOriginalTime);
+            hipTrCurve.displacePointT(hipHighPointIndex_hip, hipHighNewTime, true);
+            hipRotAnglCurve.displacePointT(hipHighPointIndex_hip, hipHighNewTime, true);
+            hipRotAxCurve.displacePointT(hipHighPointIndex_hip, hipHighNewTime, false);
 
             // la curva de traslacion generada hasta este punto se utiliza para ajustar la curva
             // final en el descenso de gradiente
@@ -433,12 +430,12 @@ namespace Mona{
             LIC<3> hipFinalTrCurve = hipTrCurve;
             // tercer paso: encontrar el punto final
             // creamos una curva que represente la trayectoria de caida
-            glm::vec3 fall1 = hipTrCurve.getCurvePoint(hipHighPointIndex);
-            float fall1_time = hipTrCurve.getTValue(hipHighPointIndex);
+            glm::vec3 fall1 = hipTrCurve.getCurvePoint(hipHighPointIndex_hip);
+            float fall1_time = hipTrCurve.getTValue(hipHighPointIndex_hip);
             glm::vec3 fall2(0);
             float fall2_time = 0;
             int pointNum = 0;
-            for (int i = hipHighPointIndex; i < hipTrCurve.getNumberOfPoints(); i++) {
+            for (int i = hipHighPointIndex_hip; i < hipTrCurve.getNumberOfPoints(); i++) {
                 fall2 += hipTrCurve.getCurvePoint(i);
                 fall2_time += hipTrCurve.getTValue(i);
                 pointNum += 1;
@@ -456,25 +453,58 @@ namespace Mona{
             float originalTDiff = fallCurve.getTRange()[1] - fallCurve.getTRange()[0];
             float baseEEOriginalXYDist = glm::length(glm::vec2(baseEEOriginalCurve.getEnd() - baseEEOriginalCurve.evalCurve(hipHighOriginalTime)));
             float baseEETargetXYDist = glm::length(glm::vec2(baseEETargetCurve.getEnd() - baseEETargetCurve.evalCurve(hipHighNewTime)));
+            float xyDistRatio = baseEETargetXYDist / baseEEOriginalXYDist;
+            float calcTDiff = originalTDiff * xyDistRatio;
 
-            // ajustamos la altura del punto encontrado e el segundo paso
-            //hipHighNewPoint = hipFinalTrCurve.getCurvePoint(hipHighPointIndex);
-            float calcHeight = calcHipAdjustedHeight(config, glm::vec2(hipHighNewPoint), hipFinalTrCurve.getTValue(hipHighPointIndex));
-            hipHighNewPoint = glm::vec3(glm::vec2(hipHighNewPoint), calcHeight);
-            hipFinalTrCurve.setCurvePoint(hipHighPointIndex, hipHighNewPoint);
+            // con el t encontrado y la aceleracion calculamos el punto final
+            glm::vec3 finalTrans;
+            // si el t cae antes de que termine la curva original
+            float calcT = hipTrCurve.getTValue(hipHighPointIndex_hip) + calcTDiff;
+            if (calcT <= hipTrCurve.getTRange()[1]) {
+                finalTrans = hipTrCurve.evalCurve(calcT);
+            }
+            else {// si no
+                finalTrans = hipTrCurve.getEnd();
+                glm::vec3 calcVel = hipTrCurve.getVelocity(hipTrCurve.getTRange()[1]);
+                int accSteps = 15;
+                for (int i = 1; i <= accSteps; i++) {
+                    finalTrans += calcVel * ((float)i / accSteps);
+                    calcVel += fallAcc * calcTDiff * ((float)i / accSteps);
+                }
+            }
+            std::vector<glm::vec3> newPoints;
+            std::vector<float> newTimes;
+            for (int i = 0; i < hipTrCurve.getNumberOfPoints(); i++) {
+                if (hipTrCurve.getTValue(i) < calcT) {
+                    newPoints.push_back(hipTrCurve.getCurvePoint(i));
+                    newTimes.push_back(hipTrCurve.getTValue(i));
+                }
+                else {
+                    newPoints.push_back(finalTrans);
+                    newTimes.push_back(calcT);
+                    break;
+                }
+            }
 
-
+            LIC<3> hipFinalTrCurve(newPoints, newTimes);
             // actualizamos la orientacion de la curva y la trasladamos la curva al punto encontrado
-            hipTrCurve.translate(-hipTrCurve.getStart()); // llevar al origen
+            hipFinalTrCurve.translate(-hipFinalTrCurve.getStart()); // llevar al origen
             // escalamos la trayectoria para ajustarla a la distancia recorrida
             float baseEEOriginalXYDist = glm::length(glm::vec2(baseEEOriginalCurve.getEnd() - baseEEOriginalCurve.getStart()));
             float baseEETargetXYDist = glm::length(glm::vec2(baseEETargetCurve.getEnd() - baseEETargetCurve.getStart()));
-            float distScale = baseEETargetXYDist / baseEEOriginalXYDist;
-
+            float eeXYDistScale = baseEETargetXYDist / baseEEOriginalXYDist;
+            float hipNewXYDist = glm::length(glm::vec2(hipFinalTrCurve.getEnd() - hipFinalTrCurve.getStart()));
+            float hipXYDistScale = hipNewXYDist / hipOriginalXYDistance;
+            float hipEEXYDistRatio = hipXYDistScale / eeXYDistScale;
+            glm::vec3 scalingVec(glm::vec2((hipFinalTrCurve.getEnd() - hipFinalTrCurve.getStart()) * (1 / hipEEXYDistRatio)), 0);
+            hipFinalTrCurve.scale(scalingVec);
             glm::fquat xyRot(xyMovementRotAngle, glm::vec3(0, 0, 1));
-            hipTrCurve.rotate(xyRot);
-            hipTrCurve.translate(initialTrans);
+            hipFinalTrCurve.rotate(xyRot);
+            hipFinalTrCurve.translate(initialTrans);
 
+            hipTrData->setTargetRotationAngles(hipRotAnglCurve);
+            hipTrData->setTargetRotationAxes(hipRotAxCurve);
+            hipTrData->setTargetTranslations(hipFinalTrCurve);
         }
     }
 
@@ -485,9 +515,6 @@ namespace Mona{
         // las trayectorias anteriores siempre deben llegar hasta el currentFrame
 
         IKRigConfig* config = m_ikRig->getAnimationConfig(animIndex);
-
-        glm::mat4 baseTransform = transformManager->GetComponentPointer(m_ikRig->getTransformHandle())->GetModelMatrix();
-        std::vector<glm::vec3> globalPositions = config->getCustomSpacePositions(baseTransform, true);
         float xyRotationAngle = glm::orientedAngle(glm::vec3(config->getHipTrajectoryData()->getOriginalFrontVector(), 0),
             glm::vec3(m_ikRig->getFrontVector(),0), glm::vec3(0, 0, 1));
 
@@ -496,11 +523,11 @@ namespace Mona{
         for (int i = 0; i < m_ikChains.size(); i++) {
             ChainIndex ikChain = m_ikChains[i];
             JointIndex eeIndex = m_ikRig->getIKChain(ikChain)->getJoints().back();
-            generateEETrajectory(ikChain, config, globalPositions[eeIndex], xyRotationAngle, transformManager, staticMeshManager);
+            generateEETrajectory(ikChain, config, xyRotationAngle, transformManager, staticMeshManager);
         }
 
         // queda setear la trayectoria de la cadera
-        generateHipTrajectory(config, globalPositions[m_ikRig->getHipJoint()], xyRotationAngle, transformManager, staticMeshManager);  
+        generateHipTrajectory(config, xyRotationAngle, transformManager, staticMeshManager);  
     }
 
 

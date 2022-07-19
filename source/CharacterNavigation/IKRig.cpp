@@ -61,13 +61,6 @@ namespace Mona {
 		m_rigHeight = legLenght * 2;
 	}
 
-	void IKRig::setStrideFactor(float strideFactor) {
-		float lowerL = 0.5;
-		float upperL = 1.5;
-		MONA_ASSERT(lowerL <= strideFactor && strideFactor <= upperL, "IKRig: strideFactor must be a value between {0} and {1}", lowerL, upperL);
-		m_strideFactor = strideFactor;
-	}
-
 	IKChain IKRig::buildIKChain(ChainEnds chainEnds, std::string chainName) {
 		MONA_ASSERT(chainEnds.baseJointName.empty() || chainEnds.endEffectorName.empty(), "IKRig: Joint names cannot be empty!");
 		MONA_ASSERT(chainEnds.baseJointName != chainEnds.endEffectorName, "IKRig: Base joint and end effector must be different!");

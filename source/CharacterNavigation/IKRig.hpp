@@ -28,8 +28,6 @@ namespace Mona{
             void setAngularSpeed(float angularSpeed) { m_angularSpeed = angularSpeed; }
             float getAngularSpeed() { return m_angularSpeed; }
             InnerComponentHandle getTransformHandle() { return m_transformHandle; }
-            float getStrideFactor() { return m_strideFactor; }
-            void setStrideFactor(float strideFactor);
         private:
             // Informacion de configuracion del IKRig por cada animacion
             std::vector<IKRigConfig> m_animationConfigs;
@@ -41,8 +39,6 @@ namespace Mona{
             glm::vec2 m_frontVector;
             //glm::vec3 m_upVector; (0,0,1)
             //glm::vec2 m_rightVector; (1,0)
-            // Factor que multiplica el largo de las zancadas
-            float m_strideFactor;
             // rapidez de giro
             float m_angularSpeed;
             // Escala global

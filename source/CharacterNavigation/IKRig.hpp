@@ -29,6 +29,7 @@ namespace Mona{
             float getAngularSpeed() { return m_angularSpeed; }
             InnerComponentHandle getTransformHandle() { return m_transformHandle; }
             float getStrideFactor() { return m_strideFactor; }
+            void setStrideFactor(float strideFactor);
         private:
             // Informacion de configuracion del IKRig por cada animacion
             std::vector<IKRigConfig> m_animationConfigs;

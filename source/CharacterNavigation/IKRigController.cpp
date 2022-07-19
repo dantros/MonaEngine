@@ -43,10 +43,17 @@ namespace Mona {
 			}
 		}
 
+		auto hipTrack = animationClip->m_animationTracks[animationClip->m_jointTrackIndices[m_ikRig.m_hipJoint]];
+		for (int i = 0; i < hipTrack.scales.size(); i++) {
+			if (hipTrack.scales[i] != glm::vec3(hipTrack.scales[i][0])) {
+				MONA_LOG_ERROR("IKRigController: Hip joint must have uniform scale.");
+				return;
+			}
+		}
 
 		JointIndex parent = m_ikRig.getTopology()[m_ikRig.m_hipJoint];
 		while (parent != -1) {
-			auto track = animationClip->m_animationTracks[animationClip->m_jointTrackIndices[0]];
+			auto track = animationClip->m_animationTracks[animationClip->m_jointTrackIndices[parent]];
 			for (int j = 0; j < track.rotations.size(); j++) {
 				if (track.rotations[j] != glm::identity<glm::fquat>()) {
 					MONA_LOG_ERROR("IKRigController: Joints above the hip in the hierarchy cannot have rotations.");
@@ -59,13 +66,19 @@ namespace Mona {
 					return;
 				}
 			}
+			for (int j = 0; j < track.scales.size(); j++) {
+				if (track.scales[j] != glm::vec3(track.scales[j][0])) {
+					MONA_LOG_ERROR("IKRigController: Joints above the hip in the hierarchy must have uniform scales.");
+					return;
+				}
+			}
 		}
 
 		// se eliminan las escalas de cadera hacia arriba en la jerarquia
 		parent = m_ikRig.getTopology()[m_ikRig.m_hipJoint];
 		while (parent != -1) {
 			animationClip->RemoveJointScaling(parent);
-			parent = m_ikRig.getTopology()[m_ikRig.m_hipJoint];
+			parent = m_ikRig.getTopology()[parent];
 		}
 		animationClip->RemoveJointScaling(m_ikRig.m_hipJoint);	
 
@@ -303,18 +316,17 @@ namespace Mona {
 			EEGlobalTrajectoryData& trData = currentConfig->m_ikChainTrajectoryData[i];
 			for (int j = 0; j < trData.m_originalSubTrajectories.size(); j++) {
 				float maxZ = std::numeric_limits<float>::min();
-				float savedT = std::numeric_limits<float>::min();
-				LIC<3>& currentCurve = trData.m_originalSubTrajectories[j].getEETrajectory();
+				int savedIndex = -1;
+				LIC<3>& currentCurve = trData.m_originalSubTrajectories[j].getEECurve();
 				for (int k = 0; k < currentCurve.getNumberOfPoints(); k++) {
 					float tValue = currentCurve.getTValue(k);
 					float hipZ = hipTr.evalCurve(tValue)[2];
 					if (maxZ < hipZ) { 
 						maxZ = hipZ;
-						savedT = tValue;
+						savedIndex = k;
 					}
 				}
-				currentConfig->m_ikChainTrajectoryData[i].m_originalSubTrajectories[j].m_hipMaxAltitudeTimeFraction = 
-					funcUtils::getFraction(currentCurve.getTRange()[0], currentCurve.getTRange()[1], savedT);
+				currentConfig->m_ikChainTrajectoryData[i].m_originalSubTrajectories[j].m_hipMaxAltitudeIndex = savedIndex;
 			}	
 		}
 

@@ -13,10 +13,9 @@ namespace Mona{
     typedef int AnimationIndex;
     typedef int FrameIndex;
 
-    template <int D>
     struct TGData {
-        std::vector<glm::vec<D,float>> baseVelocities;
-        LIC<D>* varCurve;
+        std::vector<glm::vec3> baseVelocities;
+        LIC<3>* varCurve;
         std::vector<int> pointIndexes;
         std::vector<float> minValues; // tamaño D*pointIndexes.size()
 
@@ -32,29 +31,26 @@ namespace Mona{
         IKRig* m_ikRig;
         EnvironmentData m_environmentData;
         std::vector<ChainIndex> m_ikChains;
-        GradientDescent<TGData<1>> m_gradientDescent_dim1;
-        TGData<1> m_tgData_dim1;
-        GradientDescent<TGData<3>> m_gradientDescent_dim3;
-        TGData<3> m_tgData_dim3;
-        void generateEETrajectory(ChainIndex ikChain, IKRigConfig* config, 
-            glm::vec3 globalEEPos, float rotationAngle,
+        GradientDescent<TGData> m_gradientDescent;
+        TGData m_tgData;
+        void generateEETrajectory(ChainIndex ikChain, IKRigConfig* config, float xyMovementRotAngle,
             ComponentManager<TransformComponent>* transformManager,
             ComponentManager<StaticMeshComponent>* staticMeshManager);
         void generateStaticTrajectory(EETrajectory baseTrajectory,
             ChainIndex ikChain, IKRigConfig* config,
-            glm::vec3 globalEEPos,
             ComponentManager<TransformComponent>* transformManager,
             ComponentManager<StaticMeshComponent>* staticMeshManager);
         void generateDynamicTrajectory(EETrajectory baseTrajectory,
             ChainIndex ikChain, IKRigConfig* config,
-            glm::vec3 globalEEPos, float xyMovementRotAngle,
+            float xyMovementRotAngle,
             ComponentManager<TransformComponent>* transformManager,
             ComponentManager<StaticMeshComponent>* staticMeshManager);
-        void generateHipTrajectory(IKRigConfig* config, glm::mat4 globalHipTransform, float xyMovementRotAngle,
+        void generateHipTrajectory(IKRigConfig* config, float xyMovementRotAngle,
             ComponentManager<TransformComponent>* transformManager,
             ComponentManager<StaticMeshComponent>* staticMeshManager);
 
-        float calcHipAdjustedHeight(IKRigConfig* config, glm::vec2 basePoint, float reproductionTime);
+        float calcHipAdjustedHeight(IKRigConfig* config, glm::vec2 basePoint, float targetCurvesTime_rep,
+            float originalCurvesTime_anim);
         glm::vec3 calcStrideStartingPoint(float supportHeight, glm::vec3 referencePoint, float targetDistance, 
             glm::vec2 targetDirection, int stepNum,
             ComponentManager<TransformComponent>* transformManager,

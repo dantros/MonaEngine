@@ -58,7 +58,7 @@ namespace Mona {
         LIC<3> getOriginalRotationAxes() { return m_originalRotationAxes; }
         LIC<3> getOriginalTranslations() { return m_originalTranslations; }
         glm::vec2 getOriginalFrontVector() { return m_originalFrontVector; }
-        glm::vec3 getSavedTransalation(FrameIndex frame) { return m_savedTranslations[frame]; }
+        glm::vec3 getSavedTranslation(FrameIndex frame) { return m_savedTranslations[frame]; }
         float getSavedRotationAngle(FrameIndex frame) { return m_savedRotationAngles[frame]; }
         glm::vec3 getSavedRotationAxis(FrameIndex frame) { return m_savedRotationAxes[frame]; }
         LIC<1> getTargetRotationAngles() { return m_targetRotationAngles; }
@@ -82,16 +82,20 @@ namespace Mona {
     class EETrajectory {
         friend class IKRigController;
         friend class EETrajectoryData;
-        LIC<3> m_trajectory;
+        LIC<3> m_curve;
         TrajectoryType m_trajectoryType;
-        // Tiempo en que ocurre la maxima altura de la cadera (dentro del rango t de esta trayectoria)
-        float m_hipMaxAltitudeTimeFraction = -1;
+        // Indice del punto de la curva que tiene el tiempo en el que ocurre la
+        // de maxima altura de la cadera
+        int m_hipMaxAltitudeIndex = -1;
     public:
         EETrajectory() = default;
         EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType);
         bool isDynamic() { return m_trajectoryType == TrajectoryType::DYNAMIC; }
-        LIC<3>& getEETrajectory() { return m_trajectory; }
-        float getHipMaxAltitudeTimeFraction() { return m_hipMaxAltitudeTimeFraction; }
+        LIC<3>& getEECurve() { return m_curve; }
+        int getHipMaxAltitudeIndex() {
+            MONA_ASSERT(m_hipMaxAltitudeIndex != -1, "EETrajectory: Accessing unitialized value.");
+            return m_hipMaxAltitudeIndex; 
+        }
     };
     class EEGlobalTrajectoryData {
         friend class IKRigController;
@@ -146,8 +150,6 @@ namespace Mona {
         int m_reproductionCount = 0;
         //
         AnimationType m_animationType;
-        // ajustar animationTime input al rango correspondiente (del arreglo de timeStamps)
-        float adjustAnimationTime(float animationTime);
     public:
         IKRigConfig(std::shared_ptr<AnimationClip> animation, AnimationIndex animIndex, ForwardKinematics* fk);
         const std::vector<JointRotation>& getBaseJointRotations() const { return m_baseJointRotations[m_nextFrameIndex]; }
@@ -177,6 +179,8 @@ namespace Mona {
         EEGlobalTrajectoryData* getEETrajectoryData(ChainIndex chainIndex) { return &(m_ikChainTrajectoryData[chainIndex]); }
         HipGlobalTrajectoryData* getHipTrajectoryData() { return &m_hipTrajectoryData; }
         AnimationType getAnimationType() { return m_animationType; }
+        // ajustar animationTime input al rango correspondiente (del arreglo de timeStamps)
+        float adjustAnimationTime(float animationTime);
     };
 
     struct JointData {

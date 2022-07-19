@@ -28,9 +28,11 @@ namespace Mona{
         float getTValue(int pointIndex) const;
         glm::vec<D, float> getCurvePoint(int pointIndex) const;
         int getNumberOfPoints() const { return m_curvePoints.size(); }
+        int getClosestPointIndex(float tValue) const;
         glm::vec<D, float> evalCurve(float t);
-        glm::vec<D, float> getLeftHandVelocity(float t);
-        glm::vec<D, float> getRightHandVelocity(float t);
+        // Velocidad desde la izquierda
+        glm::vec<D, float> getVelocity(float t);
+        glm::vec<D, float> getAcceleration(int pointIndex);
         void displacePointT(int pointIndex, float newT, bool scalePoints = true, float pointScalingRatio = 1);
         void setCurvePoint(int pointIndex, glm::vec<D, float> newValue);
         LIC sample(float minT, float maxT);

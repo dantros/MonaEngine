@@ -23,7 +23,7 @@ namespace Mona {
 
 
     template <int D>
-    glm::vec<D, float> LIC<D>::getLeftHandVelocity(float t) {
+    glm::vec<D, float> LIC<D>::getVelocity(float t) {
         MONA_ASSERT(inTRange(t), "LIC: t must be a value between {0} and {1}.", m_tValues[0], m_tValues.back());
         if (t == m_tValues[0]) { return glm::zero<glm::vec<D, float>>;}
         for (int i = 0; i < m_tValues.size(); i++) {
@@ -38,18 +38,9 @@ namespace Mona {
     }
 
     template <int D>
-    glm::vec<D, float> LIC<D>::getRightHandVelocity(float t) {
-        MONA_ASSERT(inTRange(t), "LIC: t must be a value between {0} and {1}.", m_tValues[0], m_tValues.back());
-        if (t == m_tValues.back()) { return glm::zero<glm::vec<D, float>>;}
-        for (int i = 0; i < m_tValues.size(); i++) {
-            if (m_tValues[i] == t) {
-                return (m_curvePoints[i + 1] - m_curvePoints[i]) / (m_tValues[i + 1] - m_tValues[i]);
-            }
-            else if (m_tValues[i] < t && t < m_tValues[i + 1]) {
-                return (m_curvePoints[i + 1] - m_curvePoints[i]) / (m_tValues[i + 1] - m_tValues[i]);
-            }
-        }
-        return glm::zero<glm::vec<D, float>>;
+    glm::vec<D, float> LIC<D>::getAcceleration(int pointIndex) {
+        MONA_ASSERT(0 < pointIndex && pointIndex < m_tValues.size() - 1), "LIC: pointIndex must be an inner point.";
+        return (getVelocity(getTValue(pointIndex + 1)) - getVelocity(getTValue(pointIndex)))/(getTValue(pointIndex + 1) - getTValue(pointIndex));
     }
 
     template <int D>
@@ -210,5 +201,23 @@ namespace Mona {
         MONA_ASSERT(0 <= pointIndex && pointIndex < m_curvePoints.size(), "LIC: input index must be within bounds.");
         return m_curvePoints[pointIndex]; 
     };
+
+    template <int D>
+    int LIC<D>::getClosestPointIndex(float tValue) const {
+        if (tValue < m_tValues[0]) {
+            return 0;
+        }
+        for (int i = 1; i < m_tValues.size() - 1; i++) {
+            if (m_tValues[i] <= tValue && tValue <= m_tValues[i + 1]) {
+                if ((m_tValues[i + 1] - tValue) <= (tValue - m_tValues[i]) {
+                    return i+1;
+                }
+                else {
+                    return i;
+                }
+            }
+        }
+        return m_tValues.size() - 1;
+    }
     
 }

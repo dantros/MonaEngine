@@ -424,10 +424,6 @@ namespace Mona{
             hipRotAnglCurve.displacePointT(hipHighPointIndex_hip, hipHighNewTime, true);
             hipRotAxCurve.displacePointT(hipHighPointIndex_hip, hipHighNewTime, false);
 
-            // la curva de traslacion generada hasta este punto se utiliza para ajustar la curva
-            // final en el descenso de gradiente
-
-            LIC<3> hipFinalTrCurve = hipTrCurve;
             // tercer paso: encontrar el punto final
             // creamos una curva que represente la trayectoria de caida
             glm::vec3 fall1 = hipTrCurve.getCurvePoint(hipHighPointIndex_hip);
@@ -486,25 +482,75 @@ namespace Mona{
                 }
             }
 
-            LIC<3> hipFinalTrCurve(newPoints, newTimes);
+            LIC<3> hipTrCurveAdjustedFall(newPoints, newTimes);
             // actualizamos la orientacion de la curva y la trasladamos la curva al punto encontrado
-            hipFinalTrCurve.translate(-hipFinalTrCurve.getStart()); // llevar al origen
+            hipTrCurveAdjustedFall.translate(-hipTrCurveAdjustedFall.getStart()); // llevar al origen
             // escalamos la trayectoria para ajustarla a la distancia recorrida
             float baseEEOriginalXYDist = glm::length(glm::vec2(baseEEOriginalCurve.getEnd() - baseEEOriginalCurve.getStart()));
             float baseEETargetXYDist = glm::length(glm::vec2(baseEETargetCurve.getEnd() - baseEETargetCurve.getStart()));
             float eeXYDistScale = baseEETargetXYDist / baseEEOriginalXYDist;
-            float hipNewXYDist = glm::length(glm::vec2(hipFinalTrCurve.getEnd() - hipFinalTrCurve.getStart()));
+            float hipNewXYDist = glm::length(glm::vec2(hipTrCurveAdjustedFall.getEnd() - hipTrCurveAdjustedFall.getStart()));
             float hipXYDistScale = hipNewXYDist / hipOriginalXYDistance;
             float hipEEXYDistRatio = hipXYDistScale / eeXYDistScale;
-            glm::vec3 scalingVec(glm::vec2((hipFinalTrCurve.getEnd() - hipFinalTrCurve.getStart()) * (1 / hipEEXYDistRatio)), 0);
-            hipFinalTrCurve.scale(scalingVec);
+            glm::vec3 scalingVec(glm::vec2((hipTrCurveAdjustedFall.getEnd() - hipTrCurveAdjustedFall.getStart()) * (1 / hipEEXYDistRatio)), 0);
+            hipTrCurveAdjustedFall.scale(scalingVec);
             glm::fquat xyRot(xyMovementRotAngle, glm::vec3(0, 0, 1));
-            hipFinalTrCurve.rotate(xyRot);
-            hipFinalTrCurve.translate(initialTrans);
+            hipTrCurveAdjustedFall.rotate(xyRot);
+            hipTrCurveAdjustedFall.translate(initialTrans);
 
-            hipTrData->setTargetRotationAngles(hipRotAnglCurve);
-            hipTrData->setTargetRotationAxes(hipRotAxCurve);
-            hipTrData->setTargetTranslations(hipFinalTrCurve);
+            // falta modificar el valor de z del punto de maxima altura y luego aplicar descenso de gradiente
+            LIC<3> hipTrFinalCurve = hipTrCurveAdjustedFall;
+
+            glm::vec2 hipHighBasePoint = glm::vec2(hipTrFinalCurve.getCurvePoint(hipHighPointIndex_hip));
+            glm::vec3 hipHighAdjustedZ = glm::vec3(hipHighBasePoint, calcHipAdjustedHeight(config, hipHighBasePoint, 
+                hipHighNewTime, hipHighOriginalTime));
+            hipTrFinalCurve.setCurvePoint(hipHighPointIndex_hip, hipHighAdjustedZ);
+
+            m_tgData.pointIndexes.clear();
+            m_tgData.pointIndexes.reserve(hipTrCurveAdjustedFall.getNumberOfPoints());
+            m_tgData.baseVelocities.clear();
+            m_tgData.baseVelocities.reserve(hipTrCurveAdjustedFall.getNumberOfPoints());
+            m_tgData.minValues.clear();
+            m_tgData.minValues.reserve(hipTrCurveAdjustedFall.getNumberOfPoints() * 3);
+            for (int i = 1; i < hipTrCurveAdjustedFall.getNumberOfPoints(); i++) {
+                // Los extremos de la curva se mantendran fijos.
+                if (i != hipHighPointIndex_hip) {
+                    m_tgData.pointIndexes.push_back(i);
+                    for (int i = 0; i < 3; i++) {
+                        m_tgData.minValues.push_back(std::numeric_limits<float>::min());
+                    }
+                }
+                
+                
+            }
+
+            // valores iniciales y velocidades base
+            std::vector<float> initialArgs(m_tgData.pointIndexes.size() * 3);
+            for (int i = 0; i < m_tgData.pointIndexes.size(); i++) {
+                int pIndex = m_tgData.pointIndexes[i];
+                for (int j = 0; j < 2; j++) {
+                    initialArgs[i * 3 + j] = hipTrCurveAdjustedFall.getCurvePoint(pIndex)[j];
+                }
+                m_tgData.baseVelocities.push_back(hipTrCurveAdjustedFall.getVelocity(hipTrCurveAdjustedFall.getTValue(pIndex)));
+            }
+
+            // seteo de otros parametros (TODO)
+            m_tgData.descentRate;
+            m_tgData.maxIterations = 100;
+            m_tgData.varCurve = &hipTrFinalCurve;
+            m_gradientDescent.computeArgsMin(m_tgData.descentRate, m_tgData.maxIterations, initialArgs);
+
+            float transitionTime = config->getCurrentReproductionTime();
+            if (hipTrData->getTargetTranslations().inTRange(transitionTime)) {
+                hipTrData->setTargetTranslations(LIC<3>::transition(hipTrData->getTargetTranslations(), hipTrFinalCurve, transitionTime));
+                hipTrData->setTargetRotationAngles(LIC<1>::transition(hipTrData->getTargetRotationAngles(), hipRotAnglCurve, transitionTime));
+                hipTrData->setTargetRotationAxes(LIC<3>::transition(hipTrData->getTargetRotationAxes(), hipRotAxCurve, transitionTime));
+            }
+            else {
+                hipTrData->setTargetRotationAngles(hipRotAnglCurve);
+                hipTrData->setTargetRotationAxes(hipRotAxCurve);
+                hipTrData->setTargetTranslations(hipTrFinalCurve);
+            }
         }
     }
 

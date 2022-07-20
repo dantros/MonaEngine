@@ -49,8 +49,7 @@ namespace Mona {
 		glm::vec3 GetPosition(float time, int joint, bool isLooping);
 		glm::fquat GetRotation(float time, int joint, bool isLooping);
 		glm::vec3 GetScale(float time, int joint, bool isLooping);
-		void SetNearestRotation(glm::fquat newRotation, float time, int joint, bool isLooping);
-		void AddRotation(glm::fquat newRotation, float time, int joint, bool isLooping);
+		void SetRotation(glm::fquat newRotation, int frameIndex, int joint);
 
 		std::vector<AnimationTrack> m_animationTracks;
 		std::vector<std::string> m_trackJointNames;

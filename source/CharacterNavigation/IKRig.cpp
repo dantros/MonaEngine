@@ -95,4 +95,10 @@ namespace Mona {
 		return m_inverseKinematics.solveIKChains(animIndex);
 	}
 
+
+	void IKRig::calculateTrajectories(AnimationIndex animIndex, ComponentManager<TransformComponent>* transformManager,
+		ComponentManager<StaticMeshComponent>* staticMeshManager) {
+		m_trajectoryGenerator.generateNewTrajectories(animIndex, transformManager, staticMeshManager);
+	}
+
 }

@@ -66,6 +66,7 @@ namespace Mona{
             ComponentManager<StaticMeshComponent>* staticMeshManager);
         glm::vec3 getModelSpaceEETargetPos(ChainIndex ikChain);
         glm::vec3 getHipTargetPos();
+        std::vector<ChainIndex> getIKChains() { return m_ikChains; }
 
 
     };

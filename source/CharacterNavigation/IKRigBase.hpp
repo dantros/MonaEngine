@@ -145,7 +145,7 @@ namespace Mona {
         // Indice del siguiente frame de la animacion
         FrameIndex m_nextFrameIndex = -1;
         // Indica si es necesario actualizar las rotaciones de las joints
-        bool m_requiresIKUpdate = true;
+        bool m_onFrame = true;
         // Numero de veces que la animacion se ha reproducido
         int m_reproductionCount = 0;
         //
@@ -174,7 +174,7 @@ namespace Mona {
         glm::mat4 getModelSpaceTransform(JointIndex jointIndex, FrameIndex frame, bool useDynamicRotations);
         std::vector<glm::vec3> getModelSpacePositions(bool useDynamicRotations);
         std::vector<glm::vec3> getModelSpacePositions(FrameIndex frame, bool useDynamicRotations);
-        std::vector<glm::vec3> getCustomSpacePositions(glm::mat4 baseTransform, bool useDynamicRotations);
+        std::vector<glm::mat4> getCustomSpaceTransforms(glm::mat4 baseTransform, FrameIndex frame, bool useDynamicRotations);
         std::vector<glm::mat4> getJointSpaceTransforms(bool useDynamicRotations);
         EEGlobalTrajectoryData* getEETrajectoryData(ChainIndex chainIndex) { return &(m_ikChainTrajectoryData[chainIndex]); }
         HipGlobalTrajectoryData* getHipTrajectoryData() { return &m_hipTrajectoryData; }

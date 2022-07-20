@@ -278,62 +278,10 @@ namespace Mona {
 		return localScale;
 	}
 
-	void AnimationClip::SetNearestRotation(glm::fquat newRotation, float time, int joint, bool isLooping) {
-		//Primero se obtiene el tiempo de muestreo correcto
-		float newTime = GetSamplingTime(time, isLooping);
+	void AnimationClip::SetRotation(glm::fquat newRotation, int frameIndex, int joint) {
 		AnimationTrack& animationTrack = m_animationTracks[m_jointTrackIndices[joint]];
-		int targetIndex;
-		if (animationTrack.rotations.size() > 1)
-		{
-			std::pair<uint32_t, float> fp = GetTimeFraction(animationTrack.rotationTimeStamps, newTime);
-			int indexBefore = fp.first - 1;
-			int indexAfter = fp.first % animationTrack.rotations.size();
-			if (fp.second < 0.5) { targetIndex = indexBefore; }
-			else { targetIndex = indexAfter; }
-		}
-		else {
-			targetIndex = 0;
-		}
-		animationTrack.rotations[targetIndex] = newRotation;
-	}
-
-	void AnimationClip::AddRotation(glm::fquat newRotation, float time, int joint, bool isLooping) {
-		//Primero se obtiene el tiempo de muestreo correcto
-		float newTime = GetSamplingTime(time, isLooping);
-		AnimationTrack& animationTrack = m_animationTracks[m_jointTrackIndices[joint]];
-		int targetIndex;
-		if (animationTrack.rotations.size() > 1)
-		{
-			std::pair<uint32_t, float> fp = GetTimeFraction(animationTrack.rotationTimeStamps, newTime);
-			int indexBefore = fp.first - 1;
-			int indexAfter = fp.first % animationTrack.rotations.size();
-			if (fp.second == 0) { animationTrack.rotations[indexBefore] = newRotation; }
-			else if (fp.second == 1) { animationTrack.rotations[indexAfter] = newRotation; }
-			else {
-				auto it1 = animationTrack.rotations.begin();
-				auto it2 = animationTrack.rotationTimeStamps.begin();
-				animationTrack.rotations.insert(it1 + indexAfter, newRotation);
-				animationTrack.rotationTimeStamps.insert(it2 + indexAfter, newTime);
-			}
-		}
-		else {
-			float savedTime = animationTrack.rotationTimeStamps[0];
-			if (newTime == savedTime) {
-				animationTrack.rotations[0] = newRotation;
-			}
-			else {
-				auto it1 = animationTrack.rotations.begin();
-				auto it2 = animationTrack.rotationTimeStamps.begin();
-				if (newTime < savedTime) {
-					animationTrack.rotations.insert(it1, newRotation);
-					animationTrack.rotationTimeStamps.insert(it2, newTime);
-				}
-				else {
-					animationTrack.rotations.insert(it1 + 1, newRotation);
-					animationTrack.rotationTimeStamps.insert(it2 + 1, newTime);
-				}
-			}
-		}
+		MONA_ASSERT(0 <= frameIndex && frameIndex < animationTrack.rotations.size(), "AnimationClip: frame index out of range.");
+		animationTrack.rotations[frameIndex] = newRotation;
 	}
 
 }

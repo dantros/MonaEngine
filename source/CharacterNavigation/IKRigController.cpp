@@ -354,14 +354,42 @@ namespace Mona {
 		m_ikRig.m_frontVector = glm::rotate(m_ikRig.m_frontVector, rotAngle);
 	}
 
-	void IKRigController::updateTrajectories(AnimationIndex animIndex) {
-		// recalcular trayectorias de ee y caderas
+	void IKRigController::updateTrajectories(AnimationIndex animIndex, ComponentManager<TransformComponent>* transformManager,
+		ComponentManager<StaticMeshComponent>* staticMeshManager) {
+		// guardado de posiciones globales ee y cadera. se realiza al llegar a un frame de la animacion
+		IKRigConfig& config = m_ikRig.m_animationConfigs[animIndex];
+		glm::mat4 baseTransform = transformManager->GetComponentPointer(m_ikRig.getTransformHandle())->GetModelMatrix();
+		FrameIndex currentFrame = config.getCurrentFrameIndex();
+		std::vector<glm::mat4> globalTransforms = config.getCustomSpaceTransforms(baseTransform, currentFrame, true);
+		std::vector<ChainIndex> ikChains = m_ikRig.m_trajectoryGenerator.getIKChains();
 
+		EEGlobalTrajectoryData* trData;
+		for (int i = 0; i < ikChains.size(); i++) {
+			trData = config.getEETrajectoryData(ikChains[i]);
+			JointIndex ee = m_ikRig.m_ikChains[ikChains[i]].getJoints().back();
+			trData->m_savedPositions[currentFrame] = globalTransforms[ee] * glm::vec4(0, 0, 0, 1);
+		}
+
+		HipGlobalTrajectoryData* hipTrData = config.getHipTrajectoryData();
+		glm::mat4 hipTransform = globalTransforms[m_ikRig.m_hipJoint];
+		glm::vec3 hipScale; glm::fquat hipRot; glm::vec3 hipTrans; glm::vec3 hipSkew; glm::vec4 hipPers;
+		glm::decompose(hipTransform, hipScale, hipRot, hipTrans, hipSkew, hipPers);
+		hipTrData->m_savedTranslations[currentFrame] = hipTrans;
+		hipTrData->m_savedRotationAngles[currentFrame] = glm::angle(hipRot);
+		hipTrData->m_savedRotationAxes[currentFrame] = glm::axis(hipRot);
+
+		// recalcular trayectorias de ee y caderas
+		m_ikRig.calculateTrajectories(animIndex, transformManager, staticMeshManager);
 	}
 	void IKRigController::updateAnimation(AnimationIndex animIndex) {
 		// calcular nuevas rotaciones para la animacion con ik
-		// guardar posiciones globales de ee's y caderas generadas
-
+		std::vector<std::pair<JointIndex, glm::fquat>> calculatedRotations = m_ikRig.calculateRotations(animIndex);
+		IKRigConfig& config = m_ikRig.m_animationConfigs[animIndex];
+		auto anim = config.m_animationClip;
+		FrameIndex nextFrame = config.getNextFrameIndex();
+		for (int i = 0; i < calculatedRotations.size(); i++) {
+			anim->SetRotation(calculatedRotations[i].second, nextFrame, calculatedRotations[i].first);
+		}
 	}
 
 	void IKRigController::updateIKRigConfigTime(float time, AnimationIndex animIndex) {
@@ -369,17 +397,17 @@ namespace Mona {
 		auto anim = config.m_animationClip;
 		float samplingTime = anim->GetSamplingTime(time, true);
 		config.m_currentReproductionTime = config.getReproductionTime(samplingTime);
-		int savedCurrentFrameVal = config.m_currentFrameIndex;
-		int savedNextFrameVal = config.m_nextFrameIndex;
+		FrameIndex savedCurrentFrameVal = config.m_currentFrameIndex;
 		for (int i = 0; i < config.m_timeStamps.size(); i++) {
-			if (config.m_timeStamps[i] <= samplingTime) {
+			float nextTimeStamp = i < config.m_timeStamps.size() ? config.m_timeStamps[i + 1] : config.getAnimationDuration();
+			if (config.m_timeStamps[i] <= samplingTime && samplingTime < nextTimeStamp) {
 				config.m_currentFrameIndex = i;
 				config.m_nextFrameIndex = (config.m_timeStamps.size()) % (i + 1);
-				config.m_requiresIKUpdate = config.m_nextFrameIndex != savedNextFrameVal;
+				config.m_onFrame = config.m_currentFrameIndex != savedCurrentFrameVal;
 				break;
 			}
 		}
-		if (config.m_requiresIKUpdate) {			
+		if (config.m_onFrame) {			
 			// si empezamos una nueva vuelta a la animacion
 			if (savedCurrentFrameVal == (config.m_timeStamps.size()-1) && config.m_currentFrameIndex == 0) {
 				config.m_reproductionCount += 1;
@@ -387,11 +415,14 @@ namespace Mona {
 		}
 	}
 
-	void IKRigController::updateIKRig(float time) {
+	void IKRigController::updateIKRig(float time, ComponentManager<TransformComponent>* transformManager,
+		ComponentManager<StaticMeshComponent>* staticMeshManager) {
 		for (AnimationIndex i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {
 			updateIKRigConfigTime(time, i);
 		}
 		updateFrontVector(time);
+		updateTrajectories(m_ikRig.m_currentAnim, transformManager, staticMeshManager);
+		updateAnimation(m_ikRig.m_currentAnim);
 	}
 
 

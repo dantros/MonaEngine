@@ -7,33 +7,30 @@ namespace Mona{
 		m_animationClip = animation;
 		int frameNum = animation->m_animationTracks[0].rotationTimeStamps.size();
 		int jointNum = animation->m_animationTracks.size();
-		m_jointPositions.reserve(jointNum);
-		m_jointScales.reserve(jointNum);
+		m_jointPositions.resize(jointNum);
+		m_jointScales.resize(jointNum);
 		m_timeStamps = animation->m_animationTracks[0].rotationTimeStamps;
-		m_baseJointRotations.reserve(frameNum);
+		m_baseJointRotations.resize(frameNum);
 		for (int i = 0; i < jointNum;i++) {
-			m_jointPositions.push_back(animation->m_animationTracks[i].positions[0]);
-			m_jointScales.push_back(animation->m_animationTracks[i].scales[0]);
+			m_jointPositions[i] = animation->m_animationTracks[i].positions[0];
+			m_jointScales[i] = animation->m_animationTracks[i].scales[0];
 		}
-		for (int i = 0; i < frameNum; i++) {
-			m_baseJointRotations.push_back(std::vector<JointRotation>(jointNum));
-			for (int j = 0; j < jointNum; j++) {
-				m_baseJointRotations[i][j] = JointRotation(animation->m_animationTracks[j].rotations[i]);
+		for (FrameIndex i = 0; i < frameNum; i++) {
+			m_baseJointRotations[i]  = std::vector<JointRotation>(jointNum);
+			for (JointIndex j = 0; j < jointNum; j++) {
+				int trackIndex = animation->m_jointTrackIndices[j];
+				m_baseJointRotations[i][j] = JointRotation(animation->m_animationTracks[trackIndex].rotations[i]);
 			}
 		}
 		m_dynamicJointRotations = m_baseJointRotations;
 		m_animIndex = animationIndex;
 		m_forwardKinematics = forwardKinematics;
 	}
-
-	std::vector<glm::mat4> IKRigConfig::getModelSpaceTransforms(bool useDynamicRotations) {
-		return m_forwardKinematics->ModelSpaceTransforms(m_animIndex, m_currentFrameIndex, useDynamicRotations);
-	}
 	glm::mat4 IKRigConfig::getModelSpaceTransform(JointIndex jointIndex, FrameIndex frame, bool useDynamicRotations) {
 		return m_forwardKinematics->ModelSpaceTransform(m_animIndex, jointIndex, frame, useDynamicRotations);
 	}
-	std::vector<glm::vec3> IKRigConfig::getModelSpacePositions(bool useDynamicRotations) {
-		return m_forwardKinematics->ModelSpacePositions(m_animIndex, m_currentFrameIndex,useDynamicRotations);
+	std::vector<glm::mat4> IKRigConfig::getModelSpaceTransforms(FrameIndex frame, bool useDynamicRotations) {
+		return m_forwardKinematics->ModelSpaceTransforms(m_animIndex, frame, useDynamicRotations);
 	}
 	std::vector<glm::vec3> IKRigConfig::getModelSpacePositions(FrameIndex frame, bool useDynamicRotations) {
 		return m_forwardKinematics->ModelSpacePositions(m_animIndex, frame, useDynamicRotations);
@@ -41,8 +38,8 @@ namespace Mona{
 	std::vector<glm::mat4> IKRigConfig::getCustomSpaceTransforms(glm::mat4 baseTransform, FrameIndex frame, bool useDynamicRotations) {
 		return m_forwardKinematics->CustomSpaceTransforms(baseTransform, m_animIndex, frame, useDynamicRotations);
 	}
-	std::vector<glm::mat4> IKRigConfig::getJointSpaceTransforms(bool useDynamicRotations) {
-		return m_forwardKinematics->JointSpaceTransforms(m_animIndex, m_currentFrameIndex, useDynamicRotations);
+	std::vector<glm::mat4> IKRigConfig::getJointSpaceTransforms(FrameIndex frame, bool useDynamicRotations) {
+		return m_forwardKinematics->JointSpaceTransforms(m_animIndex, frame, useDynamicRotations);
 	}
 
 	float IKRigConfig::getReproductionTime(FrameIndex frame, int repCountOffset) {

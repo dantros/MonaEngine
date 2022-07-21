@@ -26,8 +26,8 @@ namespace Mona {
 	}
 
 	void setDescentTransformArrays(IKData* dataPtr) {
-		dataPtr->forwardModelSpaceTransforms = dataPtr->rigConfig->getModelSpaceTransforms(true);
-		dataPtr->jointSpaceTransforms = dataPtr->rigConfig->getJointSpaceTransforms(true);
+		dataPtr->forwardModelSpaceTransforms = dataPtr->rigConfig->getModelSpaceTransforms(dataPtr->rigConfig->getCurrentFrameIndex(), true);
+		dataPtr->jointSpaceTransforms = dataPtr->rigConfig->getJointSpaceTransforms(dataPtr->rigConfig->getCurrentFrameIndex(), true);
 		IKChain ikChain;
 		std::vector<glm::mat4>* bt;
 		for (int c = 0; c < dataPtr->ikChains.size(); c++) {

@@ -98,12 +98,11 @@ namespace Mona {
         float getCurrentReproductionTime() const { return m_currentReproductionTime; }
         FrameIndex getNextFrameIndex() const { return m_nextFrameIndex; }
         FrameIndex getCurrentFrameIndex() const { return m_currentFrameIndex; }
-        std::vector<glm::mat4> getModelSpaceTransforms(bool useDynamicRotations);
         glm::mat4 getModelSpaceTransform(JointIndex jointIndex, FrameIndex frame, bool useDynamicRotations);
-        std::vector<glm::vec3> getModelSpacePositions(bool useDynamicRotations);
+        std::vector<glm::mat4> getModelSpaceTransforms(FrameIndex frame, bool useDynamicRotations);
         std::vector<glm::vec3> getModelSpacePositions(FrameIndex frame, bool useDynamicRotations);
         std::vector<glm::mat4> getCustomSpaceTransforms(glm::mat4 baseTransform, FrameIndex frame, bool useDynamicRotations);
-        std::vector<glm::mat4> getJointSpaceTransforms(bool useDynamicRotations);
+        std::vector<glm::mat4> getJointSpaceTransforms(FrameIndex frame, bool useDynamicRotations);
         EEGlobalTrajectoryData* getEETrajectoryData(ChainIndex chainIndex) { return &(m_ikChainTrajectoryData[chainIndex]); }
         HipGlobalTrajectoryData* getHipTrajectoryData() { return &m_hipTrajectoryData; }
         AnimationType getAnimationType() { return m_animationType; }

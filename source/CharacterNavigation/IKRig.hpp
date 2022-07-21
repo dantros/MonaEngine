@@ -40,6 +40,7 @@ namespace Mona{
             //glm::vec2 m_rightVector; (1,0)
             // rapidez de giro
             float m_angularSpeed;
+            float m_rotationAngle = 0;;
             // Escala global
             float m_scale;
             TrajectoryGenerator m_trajectoryGenerator;

@@ -19,7 +19,6 @@ namespace Mona{
 
     class HipGlobalTrajectoryData {
         friend class IKRigController;
-        LIC<3> m_originalTrajectory;
         // Angulos de rotacion originales
         LIC<1> m_originalRotationAngles;
         // Ejes de rotacion originales
@@ -35,7 +34,6 @@ namespace Mona{
         std::vector<float> m_savedRotationAngles;
         std::vector<glm::vec3> m_savedRotationAxes;
     public:
-        LIC<3> getOriginalTrajectory() { return m_originalTrajectory; }
         LIC<1> getOriginalRotationAngles() { return m_originalRotationAngles; }
         LIC<3> getOriginalRotationAxes() { return m_originalRotationAxes; }
         LIC<3> getOriginalTranslations() { return m_originalTranslations; }

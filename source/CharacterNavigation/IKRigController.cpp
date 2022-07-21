@@ -79,12 +79,12 @@ namespace Mona {
 		}
 
 		// se eliminan las escalas de cadera hacia arriba en la jerarquia
-		parent = m_ikRig.getTopology()[m_ikRig.m_hipJoint];
+		/*parent = m_ikRig.getTopology()[m_ikRig.m_hipJoint];
 		while (parent != -1) {
 			animationClip->RemoveJointScaling(parent);
 			parent = m_ikRig.getTopology()[parent];
 		}
-		animationClip->RemoveJointScaling(m_ikRig.m_hipJoint);	
+		animationClip->RemoveJointScaling(m_ikRig.m_hipJoint);*/	
 
 		// Descomprimimos las rotaciones de la animacion, repitiendo valores para que todas las articulaciones 
 		// tengan el mismo numero de rotaciones
@@ -109,7 +109,6 @@ namespace Mona {
 			int minTimeIndexesIndex = 0;
 			for (int i = 0; i < nTracks; i++) {
 				if (minTimeIndexesIndex < minTimeIndexes.size() && minTimeIndexes[minTimeIndexesIndex] == i) { // track actual tiene un timestamp minimo
-					currentTimeIndexes[i] += 1;
 					minTimeIndexesIndex += 1;
 				}
 				else {
@@ -121,8 +120,8 @@ namespace Mona {
 					auto timeRotIt = tracks[i].rotationTimeStamps.begin() + insertOffset;
 					tracks[i].rotations.insert(rotIt, tracks[i].rotations[valIndex]);
 					tracks[i].rotationTimeStamps.insert(timeRotIt, currentMinTime);
-					currentTimeIndexes[i] += 1;
 				}
+				currentTimeIndexes[i] += 1;
 			}
 
 			// actualizamos las condiciones
@@ -151,8 +150,6 @@ namespace Mona {
 		hipRotAngles.reserve(frameNum);
 		std::vector<glm::vec3> hipTranslations;
 		hipTranslations.reserve(frameNum);
-		std::vector<glm::vec3> hipPositions;
-		hipPositions.reserve(frameNum);
 		JointIndex hipIndex = m_ikRig.m_hipJoint;
 		glm::vec3 previousHipPosition(std::numeric_limits<float>::min());
 		for (int i = 0; i < frameNum; i++) {
@@ -176,7 +173,6 @@ namespace Mona {
 				hipRotAngles.push_back(glm::vec1(glm::angle(rotation)));
 				hipRotAxes.push_back(glm::axis(rotation));
 				hipTranslations.push_back(translation);
-				hipPositions.push_back(hipPosition);
 				hipTimeStamps.push_back(timeStamp);
 			}
 			previousHipPosition = hipPosition;
@@ -186,8 +182,6 @@ namespace Mona {
 		currentConfig->m_hipTrajectoryData.m_originalRotationAxes = LIC<3>(hipRotAxes, hipTimeStamps);
 		currentConfig->m_hipTrajectoryData.m_originalTranslations = LIC<3>(hipTranslations, hipTimeStamps);
 		currentConfig->m_hipTrajectoryData.m_originalTranslations.scale(glm::vec3(m_ikRig.m_scale));
-		currentConfig->m_hipTrajectoryData.m_originalTrajectory = LIC<3>(hipPositions, hipTimeStamps);
-		currentConfig->m_hipTrajectoryData.m_originalTrajectory.scale(glm::vec3(m_ikRig.m_scale));
 		currentConfig->m_hipTrajectoryData.m_originalFrontVector = glm::normalize(glm::vec2(hipTrack.positions.back()) - 
 			glm::vec2(hipTrack.positions[0]));
 
@@ -205,15 +199,10 @@ namespace Mona {
 		}
 		for (int i = 0; i < frameNum; i++) {
 			// calculo de las transformaciones
-			for (int j = 0; i < transforms.size(); j++) {
-				transforms[j] = glm::identity<glm::mat4>();
-			}
 			float timeStamp = rotTimeStamps[i];
-			transforms[0] = glmUtils::translationToMat4(animationClip->GetPosition(timeStamp, 0, true)) *
-				glmUtils::rotationToMat4(animationClip->GetRotation(timeStamp, 0, true)) *
-				glmUtils::scaleToMat4(animationClip->GetScale(timeStamp, 0, true));
-			for (int j = 1; j < m_ikRig.getTopology().size(); j++) {
-				transforms[j] = transforms[m_ikRig.getTopology()[j]] *
+			for (int j = 0; j < m_ikRig.getTopology().size(); j++) {
+				glm::mat4 baseTransform = j == 0 ? glm::identity<glm::mat4>() : transforms[m_ikRig.getTopology()[j]];
+				transforms[j] = baseTransform *
 					glmUtils::translationToMat4(animationClip->GetPosition(timeStamp, j, true)) *
 					glmUtils::rotationToMat4(animationClip->GetRotation(timeStamp, j, true)) *
 					glmUtils::scaleToMat4(animationClip->GetScale(timeStamp, j, true));
@@ -251,14 +240,17 @@ namespace Mona {
 			float supportHeight;
 			for (FrameIndex j = firstSF; j < frameNum; j++) {
 				if (supportFramesPerChain[i][j]) {
-					FrameIndex initialFrame = 0 < (j - 1) ? (j - 1) : (frameNum - 1);
+					FrameIndex initialFrame = 0 < j ? (j - 1) : (frameNum - 1);
 					FrameIndex finalFrame;
 					while (supportFramesPerChain[i][j]) {
 						supportHeight = glblPositionsPerChain[i][j][2];
 						currentConfig->m_ikChainTrajectoryData[i].m_supportHeights[j] = supportHeight;
 						finalFrame = j;
 						j += 1;
-						if (j == frameNum) { break; }
+						if (j == frameNum) {
+							j = 0; // volvemos al principio para completar las curvas (dinamicas) faltantes
+							break; 
+						}
 					}
 					// armar trayectoria estatica
 					glm::vec3 staticPos = glblPositionsPerChain[i][j];
@@ -268,7 +260,7 @@ namespace Mona {
 
 				}
 				else {
-					FrameIndex initialFrame = j - 1;
+					FrameIndex initialFrame = 0 < j ? (j - 1) : (frameNum - 1);
 					bool incompleteTr = false;
 					std::vector<glm::vec3> curvePoints_1 = { glblPositionsPerChain[i][initialFrame]};
 					std::vector<float> tValues_1 = {currentConfig->getAnimationTime(initialFrame)};
@@ -301,11 +293,11 @@ namespace Mona {
 						part2.translate(part1.getEnd() - part2.getStart());
 						// luego hacemos el desplazamiento temporal
 						part2.offsetTValues(currentConfig->getAnimationDuration());
-						LIC<3> dynamicTr = LIC<3>::join(part1, part2);
-						subTrajectories.push_back(EETrajectory(dynamicTr, TrajectoryType::DYNAMIC));
+						LIC<3> dynamicCurve = LIC<3>::join(part1, part2);
+						subTrajectories.push_back(EETrajectory(dynamicCurve, TrajectoryType::DYNAMIC));
 						// falta agregar la misma curva pero al comienzo del arreglo (con otro desplazamiento temporal)
-						dynamicTr.offsetTValues(-currentConfig->getAnimationDuration());
-						subTrajectories.insert(subTrajectories.begin() ,EETrajectory(dynamicTr, TrajectoryType::DYNAMIC));
+						dynamicCurve.offsetTValues(-currentConfig->getAnimationDuration());
+						subTrajectories.insert(subTrajectories.begin() ,EETrajectory(dynamicCurve, TrajectoryType::DYNAMIC));
 					}
 				}				
 			}
@@ -314,7 +306,7 @@ namespace Mona {
 		}
 
 		// guardamos los tiempos de maxima altitud de la cadera
-		LIC<3>& hipTr = currentConfig->getHipTrajectoryData()->m_originalTrajectory;
+		LIC<3>& hipTr = currentConfig->getHipTrajectoryData()->m_originalTranslations;
 		for (int i = 0; i < m_ikRig.m_ikChains.size(); i++) {
 			EEGlobalTrajectoryData& trData = currentConfig->m_ikChainTrajectoryData[i];
 			for (int j = 0; j < trData.m_originalSubTrajectories.size(); j++) {
@@ -342,7 +334,7 @@ namespace Mona {
 
 	}
 
-	int IKRigController::removeAnimation(std::shared_ptr<AnimationClip> animationClip) {
+	AnimationIndex IKRigController::removeAnimation(std::shared_ptr<AnimationClip> animationClip) {
 		for (int i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {
 			if (m_ikRig.m_animationConfigs[i].m_animationClip == animationClip) {
 				m_ikRig.m_animationConfigs.erase(m_ikRig.m_animationConfigs.begin() + i);
@@ -352,9 +344,9 @@ namespace Mona {
 		return -1;
 	}
 
-	void IKRigController::updateFrontVector(float time) {
-		float rotAngle = m_ikRig.m_angularSpeed * time;
-		m_ikRig.m_frontVector = glm::rotate(m_ikRig.m_frontVector, rotAngle);
+	void IKRigController::updateFrontVector(float timeStep) {
+		m_ikRig.m_rotationAngle += m_ikRig.m_angularSpeed * timeStep;
+		m_ikRig.m_frontVector = glm::rotate(m_ikRig.m_frontVector, m_ikRig.m_rotationAngle);
 	}
 
 	void IKRigController::updateTrajectories(AnimationIndex animIndex, ComponentManager<TransformComponent>& transformManager,
@@ -409,7 +401,7 @@ namespace Mona {
 			float nextTimeStamp = i < config.m_timeStamps.size() ? config.m_timeStamps[i + 1] : config.getAnimationDuration();
 			if (config.m_timeStamps[i] <= samplingTime && samplingTime < nextTimeStamp) {
 				config.m_currentFrameIndex = i;
-				config.m_nextFrameIndex = (config.m_timeStamps.size()) % (i + 1);
+				config.m_nextFrameIndex = (i + 1) % (config.m_timeStamps.size());
 				config.m_onFrame = config.m_currentFrameIndex != savedCurrentFrameVal;
 				break;
 			}
@@ -429,7 +421,7 @@ namespace Mona {
 		for (AnimationIndex i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {
 			updateIKRigConfigTime(m_time, i);
 		}
-		updateFrontVector(m_time);
+		updateFrontVector(timeStep);
 		updateTrajectories(m_ikRig.m_currentAnim, transformManager, staticMeshManager);
 		updateAnimation(m_ikRig.m_currentAnim);
 

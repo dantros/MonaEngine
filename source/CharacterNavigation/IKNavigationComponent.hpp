@@ -3,8 +3,6 @@
 #define IKNAVIGATIONCOMPONENT_HPP
 
 #include <string_view>
-#include "../World/ComponentHandle.hpp"
-#include "../World/ComponentManager.hpp"
 #include "../World/ComponentTypes.hpp"
 #include "IKRigController.hpp"
 namespace Mona {
@@ -32,19 +30,17 @@ namespace Mona {
 			int RemoveAnimation(std::shared_ptr<AnimationClip> animationClip) {
 				return m_ikRigController.removeAnimation(animationClip);
 			}
-			void AddTerrain(const Terrain& terrain) {
-				m_ikRigController.m_ikRig.m_trajectoryGenerator.m_environmentData.addTerrain(terrain, m_staticMeshManagerPtr);
+			void AddTerrain(const GameObject& staticMeshObject) {
+				m_ikRigController.m_ikRig.m_trajectoryGenerator.m_environmentData.addTerrain(staticMeshObject);
 			}
-			int RemoveTerrain(const Terrain& terrain) {
-				return m_ikRigController.m_ikRig.m_trajectoryGenerator.m_environmentData.removeTerrain(terrain, m_staticMeshManagerPtr);
+			int RemoveTerrain(const GameObject& staticMeshObject) {
+				return m_ikRigController.m_ikRig.m_trajectoryGenerator.m_environmentData.removeTerrain(staticMeshObject);
 			}
+			IKRigController& GetIKRigController() { return m_ikRigController; }
 		private:
 			std::shared_ptr<AnimationClip> m_baseAnimationClip;
 			RigData m_rigData;
 			IKRigController m_ikRigController;
-			ComponentManager<TransformComponent>* m_transformManagerPtr = nullptr;
-			ComponentManager<StaticMeshComponent>* m_staticMeshManagerPtr = nullptr;
-			ComponentManager<SkeletalMeshComponent>* m_skeletalMeshManagerPtr = nullptr;
 	};
 }
 

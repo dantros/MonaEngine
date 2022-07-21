@@ -3,6 +3,7 @@
 #include "../Core/FuncUtils.hpp"
 #include "glm/gtx/rotate_vector.hpp"
 #include "glm/gtx/vector_angle.hpp"
+#include "IKRig.hpp"
 
 namespace Mona{
 
@@ -58,8 +59,8 @@ namespace Mona{
     glm::vec3 TrajectoryGenerator::calcStrideStartingPoint(float supportHeight,
         glm::vec3 referencePoint, float targetDistance, 
         glm::vec2 targetDirection, int stepNum,
-        ComponentManager<TransformComponent>* transformManager,
-        ComponentManager<StaticMeshComponent>* staticMeshManager) {
+        ComponentManager<TransformComponent>& transformManager,
+        ComponentManager<StaticMeshComponent>& staticMeshManager) {
         glm::vec2 refPointBase(referencePoint[0], referencePoint[1]);
         std::vector<glm::vec3> collectedPoints;
         collectedPoints.reserve(stepNum);
@@ -83,8 +84,8 @@ namespace Mona{
 
     std::vector<glm::vec3> TrajectoryGenerator::calcStrideData(float supportHeight, glm::vec3 startingPoint, float targetDistance,
         glm::vec2 targetDirection, int stepNum,
-        ComponentManager<TransformComponent>* transformManager,
-        ComponentManager<StaticMeshComponent>* staticMeshManager) {
+        ComponentManager<TransformComponent>& transformManager,
+        ComponentManager<StaticMeshComponent>& staticMeshManager) {
         std::vector<glm::vec3> collectedPoints;
         collectedPoints.reserve(stepNum);
         for (int i = 1; i <= stepNum; i++) {
@@ -108,8 +109,8 @@ namespace Mona{
 
     void TrajectoryGenerator::generateStaticTrajectory(EETrajectory baseTrajectory,
         ChainIndex ikChain, IKRigConfig* config,
-        ComponentManager<TransformComponent>* transformManager,
-        ComponentManager<StaticMeshComponent>* staticMeshManager) {
+        ComponentManager<TransformComponent>& transformManager,
+        ComponentManager<StaticMeshComponent>& staticMeshManager) {
         EEGlobalTrajectoryData* trData = config->getEETrajectoryData(ikChain);
 
         LIC<3>& baseCurve = baseTrajectory.getEECurve();
@@ -131,8 +132,8 @@ namespace Mona{
 
     void TrajectoryGenerator::generateDynamicTrajectory(EETrajectory baseTrajectory, 
         ChainIndex ikChain, IKRigConfig* config, float xyMovementRotAngle,
-        ComponentManager<TransformComponent>* transformManager,
-        ComponentManager<StaticMeshComponent>* staticMeshManager) {
+        ComponentManager<TransformComponent>& transformManager,
+        ComponentManager<StaticMeshComponent>& staticMeshManager) {
 
         LIC<3>& baseCurve = baseTrajectory.getEECurve();
         EEGlobalTrajectoryData* trData = config->getEETrajectoryData(ikChain);
@@ -259,8 +260,8 @@ namespace Mona{
     }
 
     void TrajectoryGenerator::generateEETrajectory(ChainIndex ikChain, IKRigConfig* config, float xyMovementRotAngle,
-        ComponentManager<TransformComponent>* transformManager,
-        ComponentManager<StaticMeshComponent>* staticMeshManager) {
+        ComponentManager<TransformComponent>& transformManager,
+        ComponentManager<StaticMeshComponent>& staticMeshManager) {
         EEGlobalTrajectoryData* trData = config->getEETrajectoryData(ikChain);
         FrameIndex currentFrame = config->getCurrentFrameIndex();
         float currentAnimTime = config->getAnimationTime(currentFrame);
@@ -326,8 +327,8 @@ namespace Mona{
 
     void TrajectoryGenerator::generateHipTrajectory(IKRigConfig* config,
         float xyMovementRotAngle,
-        ComponentManager<TransformComponent>* transformManager,
-        ComponentManager<StaticMeshComponent>* staticMeshManager) {
+        ComponentManager<TransformComponent>& transformManager,
+        ComponentManager<StaticMeshComponent>& staticMeshManager) {
 
         bool allStatic = true;
         FrameIndex currentFrame = config->getCurrentFrameIndex();
@@ -447,10 +448,10 @@ namespace Mona{
 
             // calculamos el t aproximado del final de la caida
             float originalTDiff = fallCurve.getTRange()[1] - fallCurve.getTRange()[0];
-            float baseEEOriginalXYDist = glm::length(glm::vec2(baseEEOriginalCurve.getEnd() - baseEEOriginalCurve.evalCurve(hipHighOriginalTime)));
-            float baseEETargetXYDist = glm::length(glm::vec2(baseEETargetCurve.getEnd() - baseEETargetCurve.evalCurve(hipHighNewTime)));
-            float xyDistRatio = baseEETargetXYDist / baseEEOriginalXYDist;
-            float calcTDiff = originalTDiff * xyDistRatio;
+            float baseEEOriginalXYFallDist = glm::length(glm::vec2(baseEEOriginalCurve.getEnd() - baseEEOriginalCurve.evalCurve(hipHighOriginalTime)));
+            float baseEETargetXYFallDist = glm::length(glm::vec2(baseEETargetCurve.getEnd() - baseEETargetCurve.evalCurve(hipHighNewTime)));
+            float xyFallDistRatio = baseEETargetXYFallDist / baseEEOriginalXYFallDist;
+            float calcTDiff = originalTDiff * xyFallDistRatio;
 
             // con el t encontrado y la aceleracion calculamos el punto final
             glm::vec3 finalTrans;
@@ -488,10 +489,10 @@ namespace Mona{
             // escalamos la trayectoria para ajustarla a la distancia recorrida
             float baseEEOriginalXYDist = glm::length(glm::vec2(baseEEOriginalCurve.getEnd() - baseEEOriginalCurve.getStart()));
             float baseEETargetXYDist = glm::length(glm::vec2(baseEETargetCurve.getEnd() - baseEETargetCurve.getStart()));
-            float eeXYDistScale = baseEETargetXYDist / baseEEOriginalXYDist;
+            float eeXYDistRatio = baseEETargetXYDist / baseEEOriginalXYDist;
             float hipNewXYDist = glm::length(glm::vec2(hipTrCurveAdjustedFall.getEnd() - hipTrCurveAdjustedFall.getStart()));
-            float hipXYDistScale = hipNewXYDist / hipOriginalXYDistance;
-            float hipEEXYDistRatio = hipXYDistScale / eeXYDistScale;
+            float hipXYDistRatio = hipNewXYDist / hipOriginalXYDistance;
+            float hipEEXYDistRatio = hipXYDistRatio / eeXYDistRatio;
             glm::vec3 scalingVec(glm::vec2((hipTrCurveAdjustedFall.getEnd() - hipTrCurveAdjustedFall.getStart()) * (1 / hipEEXYDistRatio)), 0);
             hipTrCurveAdjustedFall.scale(scalingVec);
             glm::fquat xyRot(xyMovementRotAngle, glm::vec3(0, 0, 1));
@@ -556,8 +557,8 @@ namespace Mona{
 
 
     void TrajectoryGenerator::generateNewTrajectories(AnimationIndex animIndex,
-        ComponentManager<TransformComponent>* transformManager,
-        ComponentManager<StaticMeshComponent>* staticMeshManager) {
+        ComponentManager<TransformComponent>& transformManager,
+        ComponentManager<StaticMeshComponent>& staticMeshManager) {
         // las trayectorias anteriores siempre deben llegar hasta el currentFrame
 
         IKRigConfig* config = m_ikRig->getAnimationConfig(animIndex);

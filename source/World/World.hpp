@@ -28,6 +28,7 @@
 #include "../Animation/AnimationSystem.hpp"
 #include "../Animation/SkeletalMeshComponent.hpp"
 #include "../Animation/JointPose.hpp"
+#include "../CharacterNavigation/IKNavigationSystem.hpp"
 #include "../CharacterNavigation/IKNavigationComponent.hpp"
 #include "../CharacterNavigation/IKNavigationLifetimePolicy.hpp"
 
@@ -142,6 +143,8 @@ namespace Mona {
 
 		AnimationSystem m_animationSystem;
 		std::unique_ptr<DebugDrawingSystem> m_debugDrawingSystem;
+
+		IKNavigationSystem m_ikNavigationSystyem;
 
 		
 	};

@@ -39,7 +39,7 @@ namespace Mona {
 
     template <int D>
     glm::vec<D, float> LIC<D>::getAcceleration(int pointIndex) {
-        MONA_ASSERT(0 < pointIndex && pointIndex < m_tValues.size() - 1), "LIC: pointIndex must be an inner point.";
+        MONA_ASSERT(0 < pointIndex && pointIndex < m_tValues.size() - 1, "LIC: pointIndex must be an inner point.");
         return (getVelocity(getTValue(pointIndex + 1)) - getVelocity(getTValue(pointIndex)))/(getTValue(pointIndex + 1) - getTValue(pointIndex));
     }
 
@@ -209,12 +209,8 @@ namespace Mona {
         }
         for (int i = 1; i < m_tValues.size() - 1; i++) {
             if (m_tValues[i] <= tValue && tValue <= m_tValues[i + 1]) {
-                if ((m_tValues[i + 1] - tValue) <= (tValue - m_tValues[i]) {
-                    return i+1;
-                }
-                else {
-                    return i;
-                }
+                if ((m_tValues[i + 1] - tValue) <= (tValue - m_tValues[i])) { return i+1; }
+                else { return i; }
             }
         }
         return m_tValues.size() - 1;

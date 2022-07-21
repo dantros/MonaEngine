@@ -7,6 +7,7 @@
 #include "../PhysicsCollision/RigidBodyLifetimePolicy.hpp"
 #include "../Animation/SkeletalMeshComponent.hpp"
 #include "ParametricCurves.hpp"
+#include "TrajectoryGenerator.hpp"
 
 namespace Mona {
     typedef int AnimationIndex;
@@ -35,86 +36,15 @@ namespace Mona {
         float getRotationAngle() const { return m_rotationAngle; }
         glm::vec3 getRotationAxis() const { return m_rotationAxis; }
     };
-    class HipGlobalTrajectoryData {
-        friend class IKRigController;
-        LIC<3> m_originalTrajectory;
-        // Angulos de rotacion originales
-        LIC<1> m_originalRotationAngles;
-        // Ejes de rotacion originales
-        LIC<3> m_originalRotationAxes;
-        // Traslaciones originales
-        LIC<3> m_originalTranslations;
-        // Direccion original de la cadera
-        glm::vec2 m_originalFrontVector;
-        LIC<1> m_targetRotationAngles;
-        LIC<3> m_targetRotationAxes;
-        LIC<3> m_targetTranslations;
-        std::vector<glm::vec3> m_savedTranslations;
-        std::vector<float> m_savedRotationAngles;
-        std::vector<glm::vec3> m_savedRotationAxes;
-    public:
-        LIC<3> getOriginalTrajectory() { return m_originalTrajectory; }
-        LIC<1> getOriginalRotationAngles() { return m_originalRotationAngles; }
-        LIC<3> getOriginalRotationAxes() { return m_originalRotationAxes; }
-        LIC<3> getOriginalTranslations() { return m_originalTranslations; }
-        glm::vec2 getOriginalFrontVector() { return m_originalFrontVector; }
-        glm::vec3 getSavedTranslation(FrameIndex frame) { return m_savedTranslations[frame]; }
-        float getSavedRotationAngle(FrameIndex frame) { return m_savedRotationAngles[frame]; }
-        glm::vec3 getSavedRotationAxis(FrameIndex frame) { return m_savedRotationAxes[frame]; }
-        LIC<1> getTargetRotationAngles() { return m_targetRotationAngles; }
-        LIC<3> getTargetRotationAxes() { return m_targetRotationAxes; }
-        LIC<3> getTargetTranslations() { return m_targetTranslations; }
-        void setTargetRotationAngles(LIC<1> targetRotationAngles) { m_targetRotationAngles = targetRotationAngles; }
-        void setTargetRotationAxes(LIC<3> targetRotationAxes) { m_targetRotationAxes = targetRotationAxes; }
-        void setTargetTranslations(LIC<3> targetTranslations) { m_targetTranslations = targetTranslations; }
-    };
+    
 
-    enum class TrajectoryType {
-        STATIC,
-        DYNAMIC
-    };
+
     enum class  AnimationType {
         IDLE,
         MOVING
     };
 
-
-    class EETrajectory {
-        friend class IKRigController;
-        friend class EETrajectoryData;
-        LIC<3> m_curve;
-        TrajectoryType m_trajectoryType;
-        // Indice del punto de la curva que tiene el tiempo en el que ocurre la
-        // de maxima altura de la cadera
-        int m_hipMaxAltitudeIndex = -1;
-    public:
-        EETrajectory() = default;
-        EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType);
-        bool isDynamic() { return m_trajectoryType == TrajectoryType::DYNAMIC; }
-        LIC<3>& getEECurve() { return m_curve; }
-        int getHipMaxAltitudeIndex() {
-            MONA_ASSERT(m_hipMaxAltitudeIndex != -1, "EETrajectory: Accessing unitialized value.");
-            return m_hipMaxAltitudeIndex; 
-        }
-    };
-    class EEGlobalTrajectoryData {
-        friend class IKRigController;
-        // Trayectoria original del ee asociado a una ikChain. Descompuesta en sub trayectorias (estaticas y dinamicas)
-        std::vector<EETrajectory> m_originalSubTrajectories;
-        // Trayectoria objetivo generada
-        EETrajectory m_targetTrajectory;;
-        // Altura base en cada frame, considerando los valores en los frames de soporte
-        std::vector<float> m_supportHeights;
-        // Posiciones guardadas calculadas para frames previos con IK
-        std::vector<glm::vec3> m_savedPositions;
-    public:
-        EETrajectory getSubTrajectory(float animationTime);
-        glm::vec3 getSavedPosition(FrameIndex frame) { return m_savedPositions[frame]; }
-        float getSupportHeight(FrameIndex frame) { return m_supportHeights[frame]; }
-        EETrajectory& getTargetTrajectory() { return m_targetTrajectory; }
-        void setTargetTrajectory(LIC<3> trajectory, TrajectoryType trajectoryType) { m_targetTrajectory = EETrajectory(trajectory, trajectoryType); }
-
-    };
+    
     class IKRigConfig {
         friend class IKRig;
         friend class IKRigController;
@@ -152,10 +82,8 @@ namespace Mona {
         AnimationType m_animationType;
     public:
         IKRigConfig(std::shared_ptr<AnimationClip> animation, AnimationIndex animIndex, ForwardKinematics* fk);
-        const std::vector<JointRotation>& getBaseJointRotations() const { return m_baseJointRotations[m_nextFrameIndex]; }
         const std::vector<JointRotation>& getBaseJointRotations(FrameIndex frame) const { return m_baseJointRotations[frame]; }
-        const std::vector<JointRotation>& getDynamicJointRotations() const { return m_dynamicJointRotations[m_nextFrameIndex]; }
-        const std::vector<JointRotation>& getDynamicJointRotations(FrameIndex frame) const { return m_dynamicJointRotations[frame]; }
+        std::vector<JointRotation>* getDynamicJointRotations(FrameIndex frame) { return &(m_dynamicJointRotations[frame]); }
         const std::vector<glm::vec3>& getJointScales() const { return m_jointScales; }
         const std::vector<glm::vec3>& getJointPositions() const { return m_jointPositions; }
         float getReproductionTime(float animationTime, int repCountOffset = 0);

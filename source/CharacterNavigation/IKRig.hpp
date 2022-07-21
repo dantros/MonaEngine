@@ -4,7 +4,6 @@
 
 #include "IKRigBase.hpp"
 #include "Kinematics.hpp"
-#include "TrajectoryGenerator.hpp"
 
 namespace Mona{
     
@@ -57,8 +56,8 @@ namespace Mona{
             JointIndex m_hipJoint;
             IKChain buildIKChain(ChainEnds chainEnds, std::string chainName);
             std::vector<std::pair<JointIndex, glm::fquat>> calculateRotations(AnimationIndex animIndex);
-            void calculateTrajectories(AnimationIndex animIndex, ComponentManager<TransformComponent>* transformManager,
-                ComponentManager<StaticMeshComponent>* staticMeshManager);
+            void calculateTrajectories(AnimationIndex animIndex, ComponentManager<TransformComponent>& transformManager,
+                ComponentManager<StaticMeshComponent>& staticMeshManager);
     };
 
 }

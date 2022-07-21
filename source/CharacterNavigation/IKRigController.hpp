@@ -9,18 +9,20 @@ namespace Mona {
 	class IKRigController {
 		friend class IKNavigationComponent;
 		IKRig m_ikRig;
-		AnimationController* m_animationController;
+		InnerComponentHandle m_skeletalMeshHandle;
+		float m_time = 0;
 	public:
 		IKRigController() = default;
-		IKRigController(AnimationController* animController, IKRig ikRig);
+		IKRigController(InnerComponentHandle skeletalMeshHandle, IKRig ikRig);
+		void validateTerrains(ComponentManager<StaticMeshComponent>& staticMeshManager);
 		void addAnimation(std::shared_ptr<AnimationClip> animationClip);
 		int removeAnimation(std::shared_ptr<AnimationClip> animationClip);
 		void updateIKRigConfigTime(float time, AnimationIndex animIndex);
-		void updateTrajectories(AnimationIndex animIndex, ComponentManager<TransformComponent>* transformManager,
-			ComponentManager<StaticMeshComponent>* staticMeshManager);
+		void updateTrajectories(AnimationIndex animIndex, ComponentManager<TransformComponent>& transformManager,
+			ComponentManager<StaticMeshComponent>& staticMeshManager);
 		void updateAnimation(AnimationIndex animIndex);
-		void updateIKRig(float time, ComponentManager<TransformComponent>* transformManager,
-			ComponentManager<StaticMeshComponent>* staticMeshManager);
+		void updateIKRig(float timeStep, ComponentManager<TransformComponent>& transformManager,
+			ComponentManager<StaticMeshComponent>& staticMeshManager, ComponentManager<SkeletalMeshComponent>& skeletalMeshManager);
 		void updateFrontVector(float time);
 	};
 

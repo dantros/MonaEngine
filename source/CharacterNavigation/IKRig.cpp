@@ -96,8 +96,8 @@ namespace Mona {
 	}
 
 
-	void IKRig::calculateTrajectories(AnimationIndex animIndex, ComponentManager<TransformComponent>* transformManager,
-		ComponentManager<StaticMeshComponent>* staticMeshManager) {
+	void IKRig::calculateTrajectories(AnimationIndex animIndex, ComponentManager<TransformComponent>& transformManager,
+		ComponentManager<StaticMeshComponent>& staticMeshManager) {
 		m_trajectoryGenerator.generateNewTrajectories(animIndex, transformManager, staticMeshManager);
 	}
 

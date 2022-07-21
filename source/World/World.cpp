@@ -49,7 +49,7 @@ namespace Mona {
 		const GameObjectID expectedObjects = config.getValueOrDefault<int>("expected_number_of_gameobjects", 1000);
 		rigidBodyDataManager.SetLifetimePolicy(RigidBodyLifetimePolicy(&transformDataManager, &m_physicsCollisionSystem));
 		audioSourceDataManager.SetLifetimePolicy(AudioSourceComponentLifetimePolicy(&m_audioSystem));
-		ikNavigationDataManager.SetLifetimePolicy(IKNavigationLifetimePolicy(&transformDataManager, &staticMeshDataManager, 
+		ikNavigationDataManager.SetLifetimePolicy(IKNavigationLifetimePolicy(&transformDataManager, 
 			&skeletalMeshDataManager,&ikNavigationDataManager));
 		m_window.StartUp(m_eventManager);
 		m_input.StartUp(m_eventManager);
@@ -148,9 +148,11 @@ namespace Mona {
 		auto& spotLightDataManager = GetComponentManager<SpotLightComponent>();
 		auto& pointLightDataManager = GetComponentManager<PointLightComponent>();
 		auto& skeletalMeshDataManager = GetComponentManager<SkeletalMeshComponent>();
+		auto& ikNavigationDataManager = GetComponentManager<IKNavigationComponent>();
 		m_input.Update();
 		m_physicsCollisionSystem.StepSimulation(timeStep);
 		m_physicsCollisionSystem.SubmitCollisionEvents(*this, m_eventManager, rigidBodyDataManager);
+		m_ikNavigationSystyem.UpdateAllRigs(ikNavigationDataManager, transformDataManager, staticMeshDataManager, skeletalMeshDataManager, timeStep);
 		m_animationSystem.UpdateAllPoses(skeletalMeshDataManager, timeStep);
 		m_objectManager.UpdateGameObjects(*this, m_eventManager, timeStep);
 		m_application.UserUpdate(*this, timeStep);

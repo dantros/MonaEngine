@@ -40,18 +40,13 @@ namespace Mona{
             HeightMap* heigtMap = staticMesh->GetHeightMap();
             TransformComponent* staticMeshTransform = transformManager.GetComponentPointer(m_terrains[i].m_transformHandle);
 
+            // TODO
             // encontrar una linea perpendicular al plano xy de la malla y buscar su
             // interseccion con el plano xy global
             // encontrar el up vector adecuado para usar en el espacio local de la malla
-            // trasladar punto a espacio local de la malla
-            glm::vec4 basePoint(xyPoint, 0, 1);
-            glm::vec4 meshPoint = glm::inverse(staticMeshTransform->GetModelMatrix())*basePoint;
 
-            float localHeight = heigtMap->getHeight(meshPoint[0], meshPoint[1]);
-            glm::vec4 localResult = { meshPoint[0], meshPoint[1], localHeight, 1 };
-            // volver a espacio global
-            glm::vec4 globalResult = staticMeshTransform->GetModelMatrix() * localResult;
-            if (globalResult[2] > maxHeight) { maxHeight = globalResult[2]; }
+            float result = heigtMap->getHeight(xyPoint[0], xyPoint[1]);
+            if (result > maxHeight) { maxHeight = result; }
         }
         return maxHeight;
     }

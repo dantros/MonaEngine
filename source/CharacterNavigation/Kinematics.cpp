@@ -41,19 +41,20 @@ namespace Mona {
 	}
 
 	// terminos para el descenso de gradiente
-		// termino 1 (acercar la animacion creada a la animacion original)
+	
+	// termino 1 (acercar la animacion creada a la animacion original)
 	std::function<float(const std::vector<float>&, IKData*)> term1Function =
 		[](const std::vector<float>& varAngles, IKData* dataPtr)->float {
 		float result = 0;
 		for (int i = 0; i < varAngles.size(); i++) {
 			result += pow(varAngles[i] - dataPtr->baseAngles[i], 2);
 		}
-		return result;
+		return dataPtr->alphaValue * result;
 	};
 
 	std::function<float(const std::vector<float>&, int, IKData*)> term1PartialDerivativeFunction =
 		[](const std::vector<float>& varAngles, int varIndex, IKData* dataPtr)->float {
-		return 2 * (varAngles[varIndex] - dataPtr->baseAngles[varIndex]);
+		return dataPtr->alphaValue * 2 * (varAngles[varIndex] - dataPtr->baseAngles[varIndex]);
 	};
 
 	// termino 2 (seguir la curva deseada para el end effector)
@@ -68,8 +69,7 @@ namespace Mona {
 			eePos = glm::vec3(dataPtr->forwardModelSpaceTransforms[eeIndex] * baseVec);
 			result += glm::length2(eePos - dataPtr->ikChains[c]->getCurrentEETarget());
 		}
-		result = dataPtr->betaValue * result;
-		return result;
+		return  dataPtr->betaValue * result;
 	};
 
 	std::function<float(const std::vector<float>&, int, IKData*)> term2PartialDerivativeFunction =
@@ -112,8 +112,22 @@ namespace Mona {
 				}
 			}
 		}
-		result = dataPtr->betaValue * 2 * result;
-		return result;
+		return dataPtr->betaValue * 2 * result;
+	};
+
+	// termino 3 (acercar los valores actuales a los del frame anterior)
+	std::function<float(const std::vector<float>&, IKData*)> term3Function =
+		[](const std::vector<float>& varAngles, IKData* dataPtr)->float {
+		float result = 0;
+		for (int i = 0; i < varAngles.size(); i++) {
+			result += pow(varAngles[i] - dataPtr->previousAngles[i], 2);
+		}
+		return dataPtr->gammaValue * result;
+	};
+
+	std::function<float(const std::vector<float>&, int, IKData*)> term3PartialDerivativeFunction =
+		[](const std::vector<float>& varAngles, int varIndex, IKData* dataPtr)->float {
+		return dataPtr->gammaValue * 2 * (varAngles[varIndex] - dataPtr->previousAngles[varIndex]);
 	};
 
 	std::function<void(std::vector<float>&, IKData*)>  postDescentStepCustomBehaviour = [](std::vector<float>& args, IKData* dataPtr)->void {
@@ -137,7 +151,8 @@ namespace Mona {
 		m_ikRig = ikRig;
 		FunctionTerm<IKData> term1(term1Function, term1PartialDerivativeFunction);		
 		FunctionTerm<IKData> term2(term2Function, term2PartialDerivativeFunction);
-		auto terms = std::vector<FunctionTerm<IKData>>({ term1, term2 });
+		FunctionTerm<IKData> term3(term3Function, term3PartialDerivativeFunction);
+		auto terms = std::vector<FunctionTerm<IKData>>({ term1, term2, term3 });
 		m_gradientDescent = GradientDescent<IKData>(terms,0,&m_ikData, postDescentStepCustomBehaviour);
 		setIKChains(ikChains);
 	}

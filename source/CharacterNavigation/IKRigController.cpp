@@ -47,14 +47,6 @@ namespace Mona {
 			}
 		}
 
-		auto hipTrack = animationClip->m_animationTracks[animationClip->m_jointTrackIndices[m_ikRig.m_hipJoint]];
-		for (int i = 0; i < hipTrack.scales.size(); i++) {
-			if (hipTrack.scales[i] != glm::vec3(hipTrack.scales[i][0])) {
-				MONA_LOG_ERROR("IKRigController: Hip joint must have uniform scale.");
-				return;
-			}
-		}
-
 		JointIndex parent = m_ikRig.getTopology()[m_ikRig.m_hipJoint];
 		while (parent != -1) {
 			auto track = animationClip->m_animationTracks[animationClip->m_jointTrackIndices[parent]];
@@ -70,21 +62,7 @@ namespace Mona {
 					return;
 				}
 			}
-			for (int j = 0; j < track.scales.size(); j++) {
-				if (track.scales[j] != glm::vec3(track.scales[j][0])) {
-					MONA_LOG_ERROR("IKRigController: Joints above the hip in the hierarchy must have uniform scales.");
-					return;
-				}
-			}
 		}
-
-		// se eliminan las escalas de cadera hacia arriba en la jerarquia
-		/*parent = m_ikRig.getTopology()[m_ikRig.m_hipJoint];
-		while (parent != -1) {
-			animationClip->RemoveJointScaling(parent);
-			parent = m_ikRig.getTopology()[parent];
-		}
-		animationClip->RemoveJointScaling(m_ikRig.m_hipJoint);*/	
 
 		// Descomprimimos las rotaciones de la animacion, repitiendo valores para que todas las articulaciones 
 		// tengan el mismo numero de rotaciones
@@ -142,6 +120,7 @@ namespace Mona {
 		float minDistance = m_ikRig.m_rigHeight / 1000;
 
 		// Guardamos la informacion de traslacion y rotacion de la cadera, antes de eliminarla
+		auto hipTrack = animationClip->m_animationTracks[animationClip->m_jointTrackIndices[m_ikRig.m_hipJoint]];
 		std::vector<float> hipTimeStamps;
 		hipTimeStamps.reserve(frameNum);
 		std::vector<glm::vec3> hipRotAxes;
@@ -152,6 +131,7 @@ namespace Mona {
 		hipTranslations.reserve(frameNum);
 		JointIndex hipIndex = m_ikRig.m_hipJoint;
 		glm::vec3 previousHipPosition(std::numeric_limits<float>::min());
+		glm::mat4 glblScaleTransform = glmUtils::scaleToMat4(glm::vec3(m_ikRig.m_scale));
 		for (int i = 0; i < frameNum; i++) {
 			float timeStamp = hipTrack.rotationTimeStamps[i];
 			JointIndex parent = hipIndex;
@@ -163,12 +143,9 @@ namespace Mona {
 				parent = m_ikRig.getTopology()[parent];
 			}
 			glm::vec3 hipPosition = hipTransform * glm::vec4(0,0,0,1);
+			hipTransform = glblScaleTransform * hipTransform;
 			if (minDistance <= glm::distance(hipPosition, previousHipPosition) || i==(frameNum-1)) {
-				glm::vec3 scale;
-				glm::quat rotation;
-				glm::vec3 translation;
-				glm::vec3 skew;
-				glm::vec4 perspective;
+				glm::vec3 scale; glm::quat rotation; glm::vec3 translation;	glm::vec3 skew;	glm::vec4 perspective;
 				glm::decompose(hipTransform, scale, rotation, translation, skew, perspective);
 				hipRotAngles.push_back(glm::vec1(glm::angle(rotation)));
 				hipRotAxes.push_back(glm::axis(rotation));
@@ -181,7 +158,6 @@ namespace Mona {
 		currentConfig->m_hipTrajectoryData.m_originalRotationAngles = LIC<1>(hipRotAngles, hipTimeStamps);
 		currentConfig->m_hipTrajectoryData.m_originalRotationAxes = LIC<3>(hipRotAxes, hipTimeStamps);
 		currentConfig->m_hipTrajectoryData.m_originalTranslations = LIC<3>(hipTranslations, hipTimeStamps);
-		currentConfig->m_hipTrajectoryData.m_originalTranslations.scale(glm::vec3(m_ikRig.m_scale));
 		currentConfig->m_hipTrajectoryData.m_originalFrontVector = glm::normalize(glm::vec2(hipTrack.positions.back()) - 
 			glm::vec2(hipTrack.positions[0]));
 
@@ -254,8 +230,8 @@ namespace Mona {
 					}
 					// armar trayectoria estatica
 					glm::vec3 staticPos = glblPositionsPerChain[i][j];
-					LIC<3> staticTr({ staticPos, staticPos }, { currentConfig->getAnimationTime(initialFrame), 
-						currentConfig->getAnimationTime(finalFrame) });
+					float finalTime = finalFrame == frameNum - 1 ? currentConfig->getAnimationDuration() : currentConfig->getAnimationTime(finalFrame);
+					LIC<3> staticTr({ staticPos, staticPos }, { currentConfig->getAnimationTime(initialFrame), finalTime });
 					subTrajectories.push_back(EETrajectory(staticTr, TrajectoryType::STATIC));
 
 				}
@@ -379,20 +355,21 @@ namespace Mona {
 			// asignar objetivos a ee's
 			float targetTime = config.getReproductionTime(config.getNextFrameIndex());
 			std::vector<ChainIndex> tgChainIndices = m_ikRig.m_trajectoryGenerator.getIKChains();
+			glm::mat4 toModelSpace = glm::inverse(glmUtils::translationToMat4(hipTrData->getTargetTranslation(targetTime)) *
+				glmUtils::rotationToMat4(hipTrData->getTargetRotation(targetTime)) *
+				glmUtils::scaleToMat4(glm::vec3(m_ikRig.m_scale)));
 			for (int i = 0; i < tgChainIndices.size();i++) {
 				ChainIndex cIndex = tgChainIndices[i];
 				IKChain* ikChain = m_ikRig.getIKChain(cIndex);
 				trData = config.getEETrajectoryData(cIndex);
-				glm::vec3 eeTarget = glm::inverse(baseTransform) *
+				glm::vec3 eeTarget = toModelSpace *
 					glm::vec4(trData->getTargetTrajectory().getEECurve().evalCurve(targetTime), 1);
 				ikChain->setCurrentEETarget(eeTarget);
 			}
 		}	
 		// setear transformacion global
-		glm::fquat glblRot = glm::angleAxis(hipTrData->getTargetRotationAngles().evalCurve(
-		config.getCurrentReproductionTime())[0],
-			hipTrData->getOriginalRotationAxes().evalCurve(config.getCurrentReproductionTime()));
-		glm::vec3 glblTr = hipTrData->getTargetTranslations().evalCurve(config.getCurrentReproductionTime());
+		glm::fquat glblRot = hipTrData->getTargetRotation(config.getCurrentReproductionTime());
+		glm::vec3 glblTr = hipTrData->getTargetTranslation(config.getCurrentReproductionTime());
 		transformManager.GetComponentPointer(m_ikRig.getTransformHandle())->SetRotation(glblRot);
 		transformManager.GetComponentPointer(m_ikRig.getTransformHandle())->SetTranslation(glblTr);
 	}

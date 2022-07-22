@@ -18,7 +18,7 @@ namespace Mona {
 		glm::vec3 tangent;
 		glm::vec3 bitangent;
 	};
-	
+
 	Mesh::~Mesh() {
 		if (m_vertexArrayID)
 			ClearData();
@@ -163,14 +163,14 @@ namespace Mona {
 			for (int i = 0; i < numVertices; i++) {
 				vertexPositions.push_back(vertices[i].position);
 			}
-			for (int i = 0; i < faces.size(); i+=3) {
+			for (int i = 0; i < faces.size(); i += 3) {
 				glm::vec3 f = { faces[i], faces[i + 1], faces[i + 2] };
 				groupedFaces.push_back(f);
 			}
 			m_heightMap = HeightMap();
 			m_heightMap.init(vertexPositions, groupedFaces);
 		}
-		
+
 	}
 
 	Mesh::Mesh(PrimitiveType type) :
@@ -181,34 +181,34 @@ namespace Mona {
 	{
 		switch (type)
 		{
-			case Mona::Mesh::PrimitiveType::Plane:
-			{
-				CreatePlane();
-				break;
-			}
-			case Mona::Mesh::PrimitiveType::Cube:
-			{
-				CreateCube();
-				break;
-			}
-			case Mona::Mesh::PrimitiveType::Sphere:
-			{
-				CreateSphere();
-				break;
-			}
-			default:
-			{
+		case Mona::Mesh::PrimitiveType::Plane:
+		{
+			CreatePlane();
+			break;
+		}
+		case Mona::Mesh::PrimitiveType::Cube:
+		{
+			CreateCube();
+			break;
+		}
+		case Mona::Mesh::PrimitiveType::Sphere:
+		{
+			CreateSphere();
+			break;
+		}
+		default:
+		{
 
-				CreateSphere();
-				break;
-			}
+			CreateSphere();
+			break;
+		}
 		}
 	}
 
 	glm::vec3 surfaceColor(glm::vec3 baseColor, float modifier) {
 		return { baseColor[0] * modifier, baseColor[1] * modifier / 2, baseColor[2] };
 	}
-	
+
 
 	int orientationTest(const Vertex& v1, const Vertex& v2, const Vertex& testV, float epsilon) { //arista de v1 a v2, +1 si el punto esta a arriba, -1 abajo,0 si es colineal, error(-2) si v1 y v2 iguales
 		float x1 = v1[0];
@@ -221,7 +221,7 @@ namespace Mona {
 			orientationV1V2 = -1;
 		}
 
-		if (std::abs(testV[0] - v1[0]) <= epsilon && std::abs(testV[1] - v1[1]) <= epsilon || 
+		if (std::abs(testV[0] - v1[0]) <= epsilon && std::abs(testV[1] - v1[1]) <= epsilon ||
 			std::abs(testV[0] - v2[0]) <= epsilon && std::abs(testV[1] - v2[1]) <= epsilon) {
 			return 0;
 		}
@@ -244,7 +244,7 @@ namespace Mona {
 		else { return 0; }
 	}
 	Mesh::Mesh(const glm::vec2& minXY, const glm::vec2& maxXY, int numInnerVerticesWidth, int numInnerVerticesHeight,
-		float (*heightFunc)(float, float), bool createHeightMap, bool useHeightInterpolation):
+		float (*heightFunc)(float, float), bool createHeightMap, bool useHeightInterpolation) :
 		m_vertexArrayID(0),
 		m_vertexBufferID(0),
 		m_indexBufferID(0),
@@ -265,7 +265,7 @@ namespace Mona {
 				float y = minXY[1] + stepY * j;
 				float z = heightFunc(x, y);
 				numVertices += 1;
-				vertices.insert(vertices.end(), { x, y, z, 0, 0, 0, 0, 0, 0, 0, 0 } ); // falta rellenar valores
+				vertices.insert(vertices.end(), { x, y, z, 0, 0, 0, 0, 0, 0, 0, 0 }); // falta rellenar valores
 			}
 		}
 
@@ -274,9 +274,9 @@ namespace Mona {
 		{
 			return i * (numInnerVerticesHeight + 2) + j;
 		};
-    
+
 		// We generate quads for each cell connecting 4 neighbor vertices
-		for (int i = 0; i < numInnerVerticesWidth + 1; i++){
+		for (int i = 0; i < numInnerVerticesWidth + 1; i++) {
 			for (int j = 0; j < numInnerVerticesHeight + 1; j++) {
 				// Getting indices for all vertices in this quad
 				unsigned int isw = index(i, j);
@@ -300,8 +300,8 @@ namespace Mona {
 		}
 		for (int i = 0; i < faces.size(); i += 3) {
 			glm::vec3 v1 = vertexPositions[faces[i]];
-			glm::vec3 v2 = vertexPositions[faces[i+1]];
-			glm::vec3 v3 = vertexPositions[faces[i+2]];
+			glm::vec3 v2 = vertexPositions[faces[i + 1]];
+			glm::vec3 v3 = vertexPositions[faces[i + 2]];
 			glm::vec3 f = { faces[i], faces[i + 1], faces[i + 2] };
 			int orientation = orientationTest(v1, v2, v3, 0.00001f);
 			if (orientation == -1) {
@@ -311,18 +311,18 @@ namespace Mona {
 			// Guardamos una cara por cada vertice para extraer normales y tangentes
 			if (oneFacePerVertex[faces[i]].empty()) {
 				oneFacePerVertex[faces[i]].push_back(vertexPositions[faces[i]]);
-				oneFacePerVertex[faces[i]].push_back(vertexPositions[faces[i+1]]);
-				oneFacePerVertex[faces[i]].push_back(vertexPositions[faces[i+2]]);
+				oneFacePerVertex[faces[i]].push_back(vertexPositions[faces[i + 1]]);
+				oneFacePerVertex[faces[i]].push_back(vertexPositions[faces[i + 2]]);
 			}
-			if (oneFacePerVertex[faces[i+1]].empty()) {
-				oneFacePerVertex[faces[i+1]].push_back(vertexPositions[faces[i]]);
-				oneFacePerVertex[faces[i+1]].push_back(vertexPositions[faces[i + 1]]);
-				oneFacePerVertex[faces[i+1]].push_back(vertexPositions[faces[i + 2]]);
+			if (oneFacePerVertex[faces[i + 1]].empty()) {
+				oneFacePerVertex[faces[i + 1]].push_back(vertexPositions[faces[i]]);
+				oneFacePerVertex[faces[i + 1]].push_back(vertexPositions[faces[i + 1]]);
+				oneFacePerVertex[faces[i + 1]].push_back(vertexPositions[faces[i + 2]]);
 			}
-			if (oneFacePerVertex[faces[i+2]].empty()) {
-				oneFacePerVertex[faces[i+2]].push_back(vertexPositions[faces[i]]);
-				oneFacePerVertex[faces[i+2]].push_back(vertexPositions[faces[i + 1]]);
-				oneFacePerVertex[faces[i+2]].push_back(vertexPositions[faces[i + 2]]);
+			if (oneFacePerVertex[faces[i + 2]].empty()) {
+				oneFacePerVertex[faces[i + 2]].push_back(vertexPositions[faces[i]]);
+				oneFacePerVertex[faces[i + 2]].push_back(vertexPositions[faces[i + 1]]);
+				oneFacePerVertex[faces[i + 2]].push_back(vertexPositions[faces[i + 2]]);
 			}
 		}
 
@@ -332,7 +332,7 @@ namespace Mona {
 			glm::vec3 v1 = oneFacePerVertex[vertexIndex][0];
 			glm::vec3 v2 = oneFacePerVertex[vertexIndex][1];
 			glm::vec3 v3 = oneFacePerVertex[vertexIndex][2];
-			glm::vec3 normal = glm::normalize(glm::cross((v2 - v1),(v3 - v1)));
+			glm::vec3 normal = glm::normalize(glm::cross((v2 - v1), (v3 - v1)));
 			vertices[i + 3] = normal[0];
 			vertices[i + 4] = normal[1];
 			vertices[i + 5] = normal[2];
@@ -347,8 +347,8 @@ namespace Mona {
 
 		if (createHeightMap) {
 			m_heightMap = HeightMap();
-			if(useHeightInterpolation){ m_heightMap.init(vertexPositions, groupedFaces); }
-			else{m_heightMap.init({ minXY[0], minXY[1] }, { maxXY[0], maxXY[1] }, heightFunc); }
+			if (useHeightInterpolation) { m_heightMap.init(vertexPositions, groupedFaces); }
+			else { m_heightMap.init({ minXY[0], minXY[1] }, { maxXY[0], maxXY[1] }, heightFunc); }
 		}
 
 		//Comienza el paso de los datos en CPU a GPU usando OpenGL
@@ -359,7 +359,7 @@ namespace Mona {
 		glGenBuffers(1, &m_vertexBufferID);
 		glGenBuffers(1, &m_indexBufferID);
 		glBindBuffer(GL_ARRAY_BUFFER, m_vertexBufferID);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float)* static_cast<unsigned int>(vertices.size()), vertices.data(), GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * static_cast<unsigned int>(vertices.size()), vertices.data(), GL_STATIC_DRAW);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexBufferID);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * static_cast<unsigned int>(faces.size()), faces.data(), GL_STATIC_DRAW);
 		//Un vertice de la malla se ve como
@@ -374,7 +374,7 @@ namespace Mona {
 		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*)(8 * sizeof(float)));
 		glEnableVertexAttribArray(4);
 		glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*)(11 * sizeof(float)));
-			
+
 	}
 
 	void Mesh::CreateCube() noexcept {

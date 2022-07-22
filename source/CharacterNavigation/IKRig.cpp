@@ -51,7 +51,7 @@ namespace Mona {
 
 		// setear el la altura del rig
 		IKChain& leftLegChain = m_ikChains[0];
-		auto positions = m_animationConfigs[0].getModelSpacePositions(false);
+		auto positions = m_animationConfigs[0].getModelSpacePositions(m_animationConfigs[0].getCurrentFrameIndex(), false);
 		float legLenght = 0;
 		for (int i = leftLegChain.m_joints.size() - 1; 0 < i ; i--) {
 			JointIndex currentJ = leftLegChain.m_joints[i];

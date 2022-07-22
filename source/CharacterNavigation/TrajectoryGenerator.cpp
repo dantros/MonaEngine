@@ -22,6 +22,14 @@ namespace Mona{
         return EETrajectory();
     }
 
+    glm::fquat HipGlobalTrajectoryData::getTargetRotation(float reproductionTime) {
+        return glm::angleAxis(m_targetRotationAngles.evalCurve(reproductionTime)[0], m_targetRotationAxes.evalCurve(reproductionTime));
+    }
+
+    glm::vec3 HipGlobalTrajectoryData::getTargetTranslation(float reproductionTime) {
+        return m_targetTranslations.evalCurve(reproductionTime);
+    }
+
     // funciones para descenso de gradiente
     std::function<float(const std::vector<float>&, TGData*)> term1Function =
         [](const std::vector<float>& varPCoord, TGData* dataPtr)->float {

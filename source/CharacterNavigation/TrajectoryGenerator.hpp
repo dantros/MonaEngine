@@ -44,6 +44,8 @@ namespace Mona{
         LIC<1> getTargetRotationAngles() { return m_targetRotationAngles; }
         LIC<3> getTargetRotationAxes() { return m_targetRotationAxes; }
         LIC<3> getTargetTranslations() { return m_targetTranslations; }
+        glm::fquat getTargetRotation(float reproductionTime);
+        glm::vec3 getTargetTranslation(float reproductionTime);
         void setTargetRotationAngles(LIC<1> targetRotationAngles) { m_targetRotationAngles = targetRotationAngles; }
         void setTargetRotationAxes(LIC<3> targetRotationAxes) { m_targetRotationAxes = targetRotationAxes; }
         void setTargetTranslations(LIC<3> targetTranslations) { m_targetTranslations = targetTranslations; }

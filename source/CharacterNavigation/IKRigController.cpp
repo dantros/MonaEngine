@@ -352,6 +352,7 @@ namespace Mona {
 	void IKRigController::updateTrajectories(AnimationIndex animIndex, ComponentManager<TransformComponent>& transformManager,
 		ComponentManager<StaticMeshComponent>& staticMeshManager) {
 		IKRigConfig& config = m_ikRig.m_animationConfigs[animIndex];
+		HipGlobalTrajectoryData* hipTrData = config.getHipTrajectoryData();
 		if (config.m_onFrame) { // se realiza al llegar a un frame de la animacion
 			// guardado de posiciones globales ee y cadera
 			glm::mat4 baseTransform = transformManager.GetComponentPointer(m_ikRig.getTransformHandle())->GetModelMatrix();
@@ -365,8 +366,6 @@ namespace Mona {
 				JointIndex ee = m_ikRig.m_ikChains[ikChains[i]].getJoints().back();
 				trData->m_savedPositions[currentFrame] = globalTransforms[ee] * glm::vec4(0, 0, 0, 1);
 			}
-
-			HipGlobalTrajectoryData* hipTrData = config.getHipTrajectoryData();
 			glm::mat4 hipTransform = globalTransforms[m_ikRig.m_hipJoint];
 			glm::vec3 hipScale; glm::fquat hipRot; glm::vec3 hipTrans; glm::vec3 hipSkew; glm::vec4 hipPers;
 			glm::decompose(hipTransform, hipScale, hipRot, hipTrans, hipSkew, hipPers);
@@ -376,7 +375,26 @@ namespace Mona {
 
 			// recalcular trayectorias de ee y caderas
 			m_ikRig.calculateTrajectories(animIndex, transformManager, staticMeshManager);
-		}		
+
+			// asignar objetivos a ee's
+			float targetTime = config.getReproductionTime(config.getNextFrameIndex());
+			std::vector<ChainIndex> tgChainIndices = m_ikRig.m_trajectoryGenerator.getIKChains();
+			for (int i = 0; i < tgChainIndices.size();i++) {
+				ChainIndex cIndex = tgChainIndices[i];
+				IKChain* ikChain = m_ikRig.getIKChain(cIndex);
+				trData = config.getEETrajectoryData(cIndex);
+				glm::vec3 eeTarget = glm::inverse(baseTransform) *
+					glm::vec4(trData->getTargetTrajectory().getEECurve().evalCurve(targetTime), 1);
+				ikChain->setCurrentEETarget(eeTarget);
+			}
+		}	
+		// setear transformacion global
+		glm::fquat glblRot = glm::angleAxis(hipTrData->getTargetRotationAngles().evalCurve(
+		config.getCurrentReproductionTime())[0],
+			hipTrData->getOriginalRotationAxes().evalCurve(config.getCurrentReproductionTime()));
+		glm::vec3 glblTr = hipTrData->getTargetTranslations().evalCurve(config.getCurrentReproductionTime());
+		transformManager.GetComponentPointer(m_ikRig.getTransformHandle())->SetRotation(glblRot);
+		transformManager.GetComponentPointer(m_ikRig.getTransformHandle())->SetTranslation(glblTr);
 	}
 	void IKRigController::updateAnimation(AnimationIndex animIndex) {
 		IKRigConfig& config = m_ikRig.m_animationConfigs[animIndex];

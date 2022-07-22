@@ -137,6 +137,7 @@ namespace Mona {
         const std::string& getName() const { return m_name; };
         const std::vector<JointIndex>& getJoints() const { return m_joints; };
         const glm::vec3& getCurrentEETarget() const { return m_currentEETarget; };
+        void setCurrentEETarget(glm::vec3 currentEETarget) { m_currentEETarget = currentEETarget; }
     };
     struct RigData {
         friend class IKRig;

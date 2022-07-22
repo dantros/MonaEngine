@@ -161,20 +161,5 @@ namespace Mona{
 		m_quatRotation = glm::angleAxis(m_rotationAngle, rotationAxis);
 		m_rotationAxis = rotationAxis;
 	}
-
-	EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType) {
-		m_curve = trajectory;
-		m_trajectoryType = trajectoryType;
-	}
-
-	EETrajectory EEGlobalTrajectoryData::getSubTrajectory(float animationTime) {
-		for (int i = 0; i < m_originalSubTrajectories.size(); i++) {
-			if (m_originalSubTrajectories[i].getEECurve().inOpenRightTRange(animationTime)) {
-				return m_originalSubTrajectories[i];
-			}
-		}
-		MONA_LOG_ERROR("EETrajectoryData: AnimationTime was not valid.");
-		return EETrajectory();
-	}
     
 }

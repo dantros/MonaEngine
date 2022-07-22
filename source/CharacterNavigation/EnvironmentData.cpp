@@ -7,10 +7,10 @@
 #include <glm/glm.hpp>
 namespace Mona{        
 
-    Terrain::Terrain(const GameObject& staticMeshObject) {
-        MONA_ASSERT(staticMeshObject.HasComponent<StaticMeshComponent>(), "EnvironmentData: Terrain object must have a satitc mesh component");
-        m_transformHandle = staticMeshObject.GetInnerComponentHandle<TransformComponent>();
-        m_meshHandle = staticMeshObject.GetInnerComponentHandle<StaticMeshComponent>();
+    Terrain::Terrain(const GameObjectHandle<GameObject>& staticMeshObject) {
+        MONA_ASSERT(staticMeshObject->HasComponent<StaticMeshComponent>(), "EnvironmentData: Terrain object must have a satitc mesh component");
+        m_transformHandle = staticMeshObject->GetInnerComponentHandle<TransformComponent>();
+        m_meshHandle = staticMeshObject->GetInnerComponentHandle<StaticMeshComponent>();
     }
 
     void EnvironmentData::validateTerrains(ComponentManager<StaticMeshComponent>& staticMeshManager) {
@@ -51,14 +51,14 @@ namespace Mona{
         return maxHeight;
     }
 
-    void EnvironmentData::addTerrain(const GameObject& staticMeshObject) {
+    void EnvironmentData::addTerrain(const GameObjectHandle<GameObject>& staticMeshObject) {
         Terrain terrain(staticMeshObject);
         m_terrains.push_back(terrain);  
     }
 
-    int EnvironmentData::removeTerrain(const GameObject& staticMeshObject) {
-        MONA_ASSERT(staticMeshObject.HasComponent<StaticMeshComponent>(), "EnvironmentData: Terrain object must have a satitc mesh component");
-        InnerComponentHandle meshInnerHandle = staticMeshObject.GetInnerComponentHandle<StaticMeshComponent>();
+    int EnvironmentData::removeTerrain(const GameObjectHandle<GameObject>& staticMeshObject) {
+        MONA_ASSERT(staticMeshObject->HasComponent<StaticMeshComponent>(), "EnvironmentData: Terrain object must have a satitc mesh component");
+        InnerComponentHandle meshInnerHandle = staticMeshObject->GetInnerComponentHandle<StaticMeshComponent>();
         for (int i = 0; i < m_terrains.size(); i++) {
             if (m_terrains[i].m_meshHandle.m_generation == meshInnerHandle.m_generation && m_terrains[i].m_meshHandle.m_index==meshInnerHandle.m_index) {
                 m_terrains.erase(m_terrains.begin() + i);

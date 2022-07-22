@@ -30,10 +30,10 @@ namespace Mona {
 			int RemoveAnimation(std::shared_ptr<AnimationClip> animationClip) {
 				return m_ikRigController.removeAnimation(animationClip);
 			}
-			void AddTerrain(const GameObject& staticMeshObject) {
+			void AddTerrain(const GameObjectHandle<GameObject>& staticMeshObject) {
 				m_ikRigController.m_ikRig.m_trajectoryGenerator.m_environmentData.addTerrain(staticMeshObject);
 			}
-			int RemoveTerrain(const GameObject& staticMeshObject) {
+			int RemoveTerrain(const GameObjectHandle<GameObject>& staticMeshObject) {
 				return m_ikRigController.m_ikRig.m_trajectoryGenerator.m_environmentData.removeTerrain(staticMeshObject);
 			}
 			IKRigController& GetIKRigController() { return m_ikRigController; }

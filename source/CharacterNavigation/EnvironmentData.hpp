@@ -2,7 +2,7 @@
 #ifndef ENVIRONMENTDATA_HPP
 #define ENVIRONMENTDATA_HPP
 
-#include "../World/GameObject.hpp"
+#include "../World/GameObjectHandle.hpp"
 #include "../World/TransformComponent.hpp"
 #include "../Rendering/StaticMeshComponent.hpp"
 #include "../World/GameObjectTypes.hpp"
@@ -11,7 +11,7 @@ namespace Mona {
 	class Terrain {
 		friend class EnvironmentData;
 	private:
-		Terrain(const GameObject& staticMeshObject);
+		Terrain(const GameObjectHandle<GameObject>& staticMeshObject);
 		InnerComponentHandle m_transformHandle;
 		InnerComponentHandle m_meshHandle;
 	};
@@ -23,8 +23,8 @@ namespace Mona {
 			EnvironmentData() = default;
 			float getTerrainHeight(glm::vec2 xyPoint, ComponentManager<TransformComponent>& transformManager,
 				ComponentManager<StaticMeshComponent>& staticMeshManager);
-			void addTerrain(const GameObject& staticMeshObject);
-			int removeTerrain(const GameObject& staticMeshObject);
+			void addTerrain(const GameObjectHandle<GameObject>& staticMeshObject);
+			int removeTerrain(const GameObjectHandle<GameObject>& staticMeshObject);
 			void validateTerrains(ComponentManager<StaticMeshComponent>& staticMeshManager);
 	};
 

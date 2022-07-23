@@ -10,7 +10,6 @@ namespace Mona {
 	class AnimationController {
 		friend class AnimationSystem;
 		friend class World;
-		friend class IKRig;
 	public:
 		AnimationController(std::shared_ptr<AnimationClip> animation) noexcept;
 		void PlayAnimation(std::shared_ptr<AnimationClip> animation) noexcept;

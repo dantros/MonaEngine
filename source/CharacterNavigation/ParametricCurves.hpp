@@ -1,14 +1,15 @@
 #pragma once
 #ifndef PARAMETRICCURVES_HPP
 #define PARAMETRICCURVES_HPP
+
 #include "glm/glm.hpp"
 #include <glm/gtx/quaternion.hpp>
 #include <vector>
 
 namespace Mona{
 
-    // linearly interpolated curve
     template <int D>
+    // linearly interpolated curve
     class LIC {
     private:
         // puntos de la curva

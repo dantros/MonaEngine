@@ -1,5 +1,6 @@
 #include "IKRigBase.hpp"
 #include "Kinematics.hpp"
+#include "../Animation/AnimationClip.hpp"
 
 namespace Mona{
 
@@ -45,6 +46,9 @@ namespace Mona{
 	float IKRigConfig::getReproductionTime(FrameIndex frame, int repCountOffset) {
 		MONA_ASSERT(0 <= frame && frame < m_timeStamps.size(), "IKRigConfig: FrameIndex outside of range.");
 		return (m_reproductionCount + repCountOffset) * m_animationClip->GetDuration() - m_timeStamps[0] + m_timeStamps[frame];
+	}
+	float IKRigConfig::getAnimationDuration() {
+		return m_animationClip->GetDuration(); 
 	}
 
 	float IKRigConfig::adjustAnimationTime(float animationTime) {

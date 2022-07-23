@@ -3,10 +3,6 @@
 #define IKRIGBASE_HPP
 
 #include <memory>
-#include "EnvironmentData.hpp"
-#include "../PhysicsCollision/RigidBodyLifetimePolicy.hpp"
-#include "../Animation/SkeletalMeshComponent.hpp"
-#include "ParametricCurves.hpp"
 #include "TrajectoryGenerator.hpp"
 
 namespace Mona {
@@ -15,7 +11,7 @@ namespace Mona {
     typedef int FrameIndex;
     typedef int ChainIndex;
     class ForwardKinematics;
-
+    class AnimationClip;
     class JointRotation {
     private:
         // Rotacion en formato cuaternion
@@ -91,7 +87,7 @@ namespace Mona {
         float getAnimationTime(FrameIndex frame);
         float getAnimationTime(float reproductionTime);
         FrameIndex getFrame(float animationTime);
-        float getAnimationDuration() { return m_animationClip->GetDuration(); }
+        float getAnimationDuration();
         int getFrameNum() { return m_timeStamps.size(); }
         int getReproductionCount() const { return m_reproductionCount; }
         std::vector<JointRotation>* getDynamicJointRotationsPtr() { return &(m_dynamicJointRotations[m_nextFrameIndex]);  }

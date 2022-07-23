@@ -1,6 +1,7 @@
 #pragma once
 #ifndef IKNAVIGATIONSYSTEM_HPP
 #define IKNAVIGATIONSYSTEM_HPP
+
 #include "../World/TransformComponent.hpp"
 #include "../Rendering/StaticMeshComponent.hpp"
 #include "../Animation/SkeletalMeshComponent.hpp"

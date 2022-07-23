@@ -1,6 +1,7 @@
 #include "IKRig.hpp"
 #include "../Core/Log.hpp"
 #include "../Core/FuncUtils.hpp"
+#include "../Animation/Skeleton.hpp"
 
 
 namespace Mona {
@@ -60,6 +61,13 @@ namespace Mona {
 		}
 		m_rigHeight = legLenght * 2;
 	}
+
+	const std::vector<int>& IKRig::getTopology() const { 
+		return m_skeleton->m_parentIndices; 
+	};
+	const std::vector<std::string>& IKRig::getJointNames() const { 
+		return m_skeleton->m_jointNames; 
+	};
 
 	IKChain IKRig::buildIKChain(ChainEnds chainEnds, std::string chainName) {
 		MONA_ASSERT(chainEnds.baseJointName.empty() || chainEnds.endEffectorName.empty(), "IKRig: Joint names cannot be empty!");

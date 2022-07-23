@@ -12,7 +12,6 @@ namespace Mona {
 	class AnimationClip {
 	public:
 		friend class AnimationClipManager;
-		friend class IKRig;
 		friend class IKRigConfig;
 		friend class IKRigController;
 		using jointIndex = uint32_t;

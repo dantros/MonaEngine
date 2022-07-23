@@ -10,6 +10,7 @@ namespace Mona{
     typedef int AnimationIndex;
     typedef int JointIndex;
     typedef int ChainIndex;
+    class Skeleton;
     class IKRig{
         friend class IKRigController;
         friend class IKNavigationComponent;
@@ -17,8 +18,8 @@ namespace Mona{
             IKRig() = default;
             IKRig(std::shared_ptr<Skeleton> skeleton, RigData rigData, InnerComponentHandle transformHandle);
             IKRigConfig* getAnimationConfig(AnimationIndex animIndex) { return &m_animationConfigs[animIndex]; };
-            const std::vector<int>& getTopology() const { return m_skeleton->m_parentIndices; };
-            const std::vector<std::string>& getJointNames() const { return m_skeleton->m_jointNames; };
+            const std::vector<int>& getTopology() const;
+            const std::vector<std::string>& getJointNames() const;
             IKNode* getIKNode(JointIndex jointIndex) { return &m_nodes[jointIndex]; };
             IKChain* getIKChain(ChainIndex chainIndex) { return &m_ikChains[chainIndex]; };
             JointIndex getHipJoint() { return m_hipJoint; }

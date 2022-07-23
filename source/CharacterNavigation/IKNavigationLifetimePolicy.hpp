@@ -1,11 +1,9 @@
 #pragma once
 #ifndef IKNAVIGATIONLIFETIMEPOLICY_HPP
 #define IKNAVIGATIONLIFETIMEPOLICY_HPP
+
 #include "IKNavigationComponent.hpp"
-#include "../World/TransformComponent.hpp"
-#include "../Rendering/StaticMeshComponent.hpp"
-#include "../World/ComponentManager.hpp"
-#include "EnvironmentData.hpp"
+
 namespace Mona {
 	class IKNavigationLifetimePolicy {
 	public:

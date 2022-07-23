@@ -145,9 +145,7 @@ public:
 		//AddDirectionalLight(world, glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(-135.0f), 15.0f);
 		auto character = world.CreateGameObject<IKRigCharacter>();
 		auto terrainObject = AddTerrain(world);
-		world.GetComponentHandle<Mona::IKNavigationComponent>(character)->AddTerrain(terrainObject);
-
-		
+		world.GetComponentHandle<Mona::IKNavigationComponent>(character)->AddTerrain(terrainObject);		
 	}
 
 	virtual void UserShutDown(Mona::World& world) noexcept override {
@@ -182,5 +180,5 @@ int main()
 	IKNav app;
 	Mona::Engine engine(app);
 	engine.StartMainLoop();
-	
+	return 0;
 }

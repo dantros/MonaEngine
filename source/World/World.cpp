@@ -152,7 +152,11 @@ namespace Mona {
 		m_input.Update();
 		m_physicsCollisionSystem.StepSimulation(timeStep);
 		m_physicsCollisionSystem.SubmitCollisionEvents(*this, m_eventManager, rigidBodyDataManager);
-		m_ikNavigationSystyem.UpdateAllRigs(ikNavigationDataManager, transformDataManager, staticMeshDataManager, skeletalMeshDataManager, timeStep);
+		m_ikNavigationSystyem.UpdateAllRigs(ikNavigationDataManager, 
+			transformDataManager, 
+			staticMeshDataManager, 
+			skeletalMeshDataManager, 
+			timeStep);
 		m_animationSystem.UpdateAllPoses(skeletalMeshDataManager, timeStep);
 		m_objectManager.UpdateGameObjects(*this, m_eventManager, timeStep);
 		m_application.UserUpdate(*this, timeStep);

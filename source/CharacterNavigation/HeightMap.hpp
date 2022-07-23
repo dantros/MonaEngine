@@ -6,8 +6,6 @@
 #include <glm/glm.hpp>
 #include <unordered_map>
 
-
-
 namespace Mona {
     
 	typedef glm::vec3 Vertex;

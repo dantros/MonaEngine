@@ -2,7 +2,6 @@ set(MONA_HEADERS
 				CharacterNavigation/IKRigBase.hpp
 				CharacterNavigation/IKNavigationSystem.hpp
 				CharacterNavigation/IKNavigationLifetimePolicy.hpp
-				CharacterNavigation/Retargeting.hpp
 				CharacterNavigation/IKNavigationComponent.hpp
 				CharacterNavigation/HeightMap.hpp
 				CharacterNavigation/EnvironmentData.hpp
@@ -87,7 +86,6 @@ set(MONA_HEADERS
 set(MONA_SOURCES
 				CharacterNavigation/IKRigBase.cpp
 				CharacterNavigation/IKNavigationSystem.cpp
-				CharacterNavigation/Retargeting.cpp
 				CharacterNavigation/HeightMap.cpp
 				CharacterNavigation/EnvironmentData.cpp
 				CharacterNavigation/IKRig.cpp

@@ -1,7 +1,10 @@
+#pragma once
 #ifndef IKRIGCONTROLLER_HPP
 #define IKRIGCONTROLLER_HPP
 
 #include "IKRig.hpp"
+#include "../World/ComponentManager.hpp"
+#include "../Animation/SkeletalMeshComponent.hpp"
 
 namespace Mona {
 

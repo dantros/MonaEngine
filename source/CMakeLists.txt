@@ -90,8 +90,6 @@ set(MONA_SOURCES
 				CharacterNavigation/EnvironmentData.cpp
 				CharacterNavigation/IKRig.cpp
 				CharacterNavigation/Kinematics.cpp
-				CharacterNavigation/GradientDescent.cpp
-				CharacterNavigation/ParametricCurves.cpp
 				CharacterNavigation/TrajectoryGenerator.cpp
 				CharacterNavigation/IKRigController.cpp
 				Core/Config.cpp

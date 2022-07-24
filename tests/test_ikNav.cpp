@@ -25,8 +25,8 @@ void AddDirectionalLight(Mona::World& world, const glm::vec3& axis, float angle,
 Mona::GameObjectHandle<Mona::GameObject> AddTerrain(Mona::World& world) {
 	auto terrain = world.CreateGameObject<Mona::GameObject>();
 	auto& meshManager = Mona::MeshManager::GetInstance();
-	auto materialPtr = std::static_pointer_cast<Mona::UnlitFlatMaterial>(world.CreateMaterial(Mona::MaterialType::UnlitFlat));
-	materialPtr->SetColor(glm::vec3(0.3, 0.5f, 0.7f));
+	auto materialPtr = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseFlat));
+	materialPtr->SetDiffuseColor(glm::vec3(0.3, 0.5f, 0.7f));
 	//float planeScale = 10.0f;
 	auto transform = world.AddComponent<Mona::TransformComponent>(terrain);
 	//transform->SetScale(glm::vec3(planeScale));
@@ -35,11 +35,13 @@ Mona::GameObjectHandle<Mona::GameObject> AddTerrain(Mona::World& world) {
 	int numInnerVerticesWidth = 500;
 	int numInnerVerticesHeight = 500;
 	auto heighFunc = [](float x, float y) -> float {
-		return gaussian(x, y, 5, 10, { 2, 3 });
+		return (gaussian(x, y, 30, 5, { -10, 0 }) + gaussian(x, y, 50, 3, { 0, 0 }));
 	};
 
 	world.AddComponent<Mona::StaticMeshComponent>(terrain, meshManager.GenerateTerrain(minXY, maxXY, numInnerVerticesWidth,
 		numInnerVerticesHeight, heighFunc, true, false), materialPtr);
+	transform->SetTranslation({ 0, 0, -5 });
+	transform->SetScale({ 5,5,5 });
 	return terrain;
 }
 
@@ -73,11 +75,9 @@ public:
 		eventManager.Subscribe(m_debugGUISubcription, this, &IKRigCharacter::OnDebugGUIEvent);
 
 		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
-		
+		m_transform->SetTranslation({ 0,0, -4.5 });
+		m_transform->SetScale({ 0.005,0.005,0.005 });
 		m_targetPosition = glm::vec3(0.0f);
-		glm::fquat offsetRotation = glm::rotate(glm::fquat(1.0f, 0.0f, 0.0f, 0.0f), glm::radians(180.f), glm::vec3(0.0f, 0.0f, 1.0f)) * glm::rotate(glm::fquat(1.0f, 0.0f, 0.0f, 0.0f), glm::radians(-90.f), glm::vec3(1.0f, 0.0f, 0.0f));
-
-		world.SetAudioListenerTransform(m_transform, offsetRotation);
 
 		auto materialPtr = std::static_pointer_cast<Mona::DiffuseTexturedMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseTextured, true));
 		auto& textureManager = Mona::TextureManager::GetInstance();
@@ -99,7 +99,8 @@ public:
 		rigData.rightLeg.baseJointName = "Hips";
 		rigData.rightLeg.endEffectorName = "RighFoot";
 		rigData.hipJointName = "Hips";
-		m_ikNavHandle = world.AddComponent<Mona::IKNavigationComponent>(*this, rigData, m_walkingAnimation);
+		//m_ikNavHandle = world.AddComponent<Mona::IKNavigationComponent>(*this, rigData);
+		//world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_walkingAnimation);
 
 	}
 
@@ -143,9 +144,9 @@ public:
 		AddDirectionalLight(world, glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-45.0f), 2);
 		AddDirectionalLight(world, glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-135.0f), 2);
 		//AddDirectionalLight(world, glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(-135.0f), 15.0f);
-		auto character = world.CreateGameObject<IKRigCharacter>();
+		// auto character = world.CreateGameObject<IKRigCharacter>();
 		auto terrainObject = AddTerrain(world);
-		world.GetComponentHandle<Mona::IKNavigationComponent>(character)->AddTerrain(terrainObject);		
+		// world.GetComponentHandle<Mona::IKNavigationComponent>(character)->AddTerrain(terrainObject);		
 	}
 
 	virtual void UserShutDown(Mona::World& world) noexcept override {

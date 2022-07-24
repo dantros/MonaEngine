@@ -3,10 +3,11 @@
 #define BASICCAMERACONTROLLER_HPP
 #include "../World/World.hpp"
 #include "../Platform/KeyCodes.hpp"
+#include <numbers>
 namespace Mona {
-    class BasicPerspectiveCamera : public GameObject {
+    class BasicPerspectiveCamera_1 : public GameObject {
     public:
-        BasicPerspectiveCamera() = default;
+        BasicPerspectiveCamera_1() = default;
         virtual void UserStartUp(World& world) noexcept override
         {
 			m_transform = world.AddComponent<TransformComponent>(*this);
@@ -70,6 +71,69 @@ namespace Mona {
 		CameraHandle m_camera;
 		glm::vec2 screenPos;
   };
+
+
+	class BasicPerspectiveCamera_2 : public GameObject {
+	public:
+		BasicPerspectiveCamera_2() = default;
+		virtual void UserStartUp(World& world) noexcept override
+		{
+			m_transform = world.AddComponent<TransformComponent>(*this);
+			m_camera = world.AddComponent<CameraComponent>(*this);
+			m_transform->Translate(glm::vec3(0.0f, -5.0f, 10.0f));
+			auto& input = world.GetInput();
+			glm::vec2 res = world.GetWindow().GetWindowDimensions();
+			m_screenPos = glm::vec2(1 / res.x, 1 / res.y) * glm::vec2(input.GetMousePosition());
+		}
+		void SetActive(bool active) { m_active = active; }
+		virtual void UserUpdate(World& world, float timeStep) noexcept override
+		{
+			auto& input = world.GetInput();
+			glm::vec2 res = world.GetWindow().GetWindowDimensions();
+			glm::vec2 newScreenPos = glm::vec2(1 / res.x, 1 / res.y) * glm::vec2(input.GetMousePosition());
+			float maxVerticalRotation = 3 * std::numbers::pi / 8; // 75 grados
+			glm::fquat currVerticalRot = glm::angleAxis<float>(maxVerticalRotation * ((newScreenPos[1] - 0.5) / 0.5), m_transform->GetRightVector());
+
+
+			m_screenPos = newScreenPos;
+			if (m_active) {
+
+				if (input.IsKeyPressed(MONA_KEY_A)) {
+					glm::vec3 right = m_transform->GetRightVector();
+					m_transform->Translate(-m_cameraSpeed * timeStep * right);
+				}
+				else if (input.IsKeyPressed(MONA_KEY_D)) {
+					glm::vec3 right = m_transform->GetRightVector();
+					m_transform->Translate(m_cameraSpeed * timeStep * right);
+				}
+
+				if (input.IsKeyPressed(MONA_KEY_W)) {
+					glm::vec3 front = m_transform->GetFrontVector();
+					m_transform->Translate(m_cameraSpeed * timeStep * front);
+				}
+				else if (input.IsKeyPressed(MONA_KEY_S)) {
+					glm::vec3 front = m_transform->GetFrontVector();
+					m_transform->Translate(-m_cameraSpeed * timeStep * front);
+				}
+
+				if (input.IsKeyPressed(MONA_KEY_E)) {
+					m_transform->Translate(-m_cameraSpeed * timeStep* glm::vec3({ 0,0,1 }));
+				}
+				else if (input.IsKeyPressed(MONA_KEY_Q)) {
+					m_transform->Translate(m_cameraSpeed * timeStep * glm::vec3({ 0,0,1 }));
+				}
+			}
+
+		}
+	private:
+		bool m_active = true;
+		float m_cameraSpeed = 2.0f;
+		float m_rollSpeed = 1.5f;
+		float m_rotationSpeed = 1.5f;
+		TransformHandle m_transform;
+		CameraHandle m_camera;
+		glm::vec2 m_screenPos;
+	};
 }
 
 

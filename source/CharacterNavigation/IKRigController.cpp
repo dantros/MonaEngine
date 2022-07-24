@@ -417,8 +417,10 @@ namespace Mona {
 			updateIKRigConfigTime(m_time, i);
 		}
 		updateFrontVector(timeStep);
-		updateTrajectories(m_ikRig.m_currentAnim, transformManager, staticMeshManager);
-		updateAnimation(m_ikRig.m_currentAnim);
+		if (m_ikRig.m_currentAnim != -1) {
+			updateTrajectories(m_ikRig.m_currentAnim, transformManager, staticMeshManager);
+			updateAnimation(m_ikRig.m_currentAnim);
+		}
 
 		for (AnimationIndex i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {
 			IKRigConfig& config = m_ikRig.m_animationConfigs[i];

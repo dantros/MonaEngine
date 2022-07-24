@@ -20,10 +20,7 @@ namespace Mona {
 			InnerComponentHandle transformHandle = m_ikNavigationManagerPtr->GetOwner(handle)->GetInnerComponentHandle<TransformComponent>();
 			m_transformManagerPtr->GetComponentPointer(transformHandle)->SetScale(glm::vec3(ikNav.m_rigData.scale));
 
-			ikNav.m_ikRigController = IKRigController(skeletalMeshHandle, 
-				IKRig(skeletonPtr, ikNav.m_rigData, transformHandle));
-			// setear la animacion base
-			ikNav.AddAnimation(ikNav.m_baseAnimationClip);
+			ikNav.m_ikRigController = IKRigController(skeletalMeshHandle, IKRig(skeletonPtr, ikNav.m_rigData, transformHandle));			
 		}
 		void OnRemoveComponent(GameObject* gameObjectPtr, IKNavigationComponent& ikNav, const InnerComponentHandle& handle) noexcept {
 		}

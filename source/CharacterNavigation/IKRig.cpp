@@ -6,7 +6,8 @@
 
 namespace Mona {
 
-	IKRig::IKRig(std::shared_ptr<Skeleton> skeleton, RigData rigData, InnerComponentHandle transformHandle)
+	IKRig::IKRig(std::shared_ptr<Skeleton> skeleton,
+		RigData rigData, InnerComponentHandle transformHandle)
 	{
 		m_skeleton = skeleton;
 		m_forwardKinematics = ForwardKinematics(this);
@@ -18,13 +19,14 @@ namespace Mona {
 		}
 		m_trajectoryGenerator = TrajectoryGenerator(this, ikChains);
 
-		auto topology = getTopology();
-		auto jointNames = getJointNames();
+		std::vector<int> const& topology = getTopology();
+		std::vector<std::string>const& jointNames = getJointNames();
+		int jointNum = topology.size();
 
 		// construimos el ikRig
-		m_nodes = std::vector<IKNode>(jointNames.size());
+		m_nodes = std::vector<IKNode>(jointNum);
 		m_nodes[0] = IKNode(jointNames[0], 0);
-		for (int i = 1; i < jointNames.size(); i++) {
+		for (int i = 1; i < jointNum; i++) {
 			m_nodes[i] = IKNode(jointNames[i], i, &m_nodes[topology[i]]);
 		}
 
@@ -34,11 +36,11 @@ namespace Mona {
 		m_hipJoint = hipInd;	
 		
 		// construccion de las cadenas principales
-		m_ikChains = { buildIKChain(rigData.leftLeg, "leftLeg"), buildIKChain(rigData.rightLeg, "rightLeg"),
-		buildIKChain(rigData.leftFoot, "leftFoot"), buildIKChain(rigData.rightFoot, "rightFoot") };
+		m_ikChains = { buildIKChain(rigData.leftLeg, "leftLeg"), buildIKChain(rigData.rightLeg, "rightLeg") };
+		//buildIKChain(rigData.leftFoot, "leftFoot"), buildIKChain(rigData.rightFoot, "rightFoot") };
 
 		// setear constraints
-		for (int i = 0; i < m_nodes.size(); i++) {
+		for (JointIndex i = 0; i < jointNum; i++) {
 			JointData currData = rigData.jointData[m_nodes[i].m_jointName];
 			if (currData.enableIKRotation) {
 				m_nodes[i].m_minAngle = currData.minAngle;
@@ -52,7 +54,10 @@ namespace Mona {
 
 		// setear el la altura del rig
 		IKChain& leftLegChain = m_ikChains[0];
-		auto positions = m_animationConfigs[0].getModelSpacePositions(m_animationConfigs[0].getCurrentFrameIndex(), false);
+		std::vector<glm::vec3> positions(jointNum);
+		for (JointIndex i = 0; i < jointNum; i++) {
+			positions[i] = glm::inverse(skeleton->GetInverseBindPoseMatrix(i)) * glm::vec4(0, 0, 0, 1);
+		}
 		float legLenght = 0;
 		for (int i = leftLegChain.m_joints.size() - 1; 0 < i ; i--) {
 			JointIndex currentJ = leftLegChain.m_joints[i];
@@ -70,7 +75,7 @@ namespace Mona {
 	};
 
 	IKChain IKRig::buildIKChain(ChainEnds chainEnds, std::string chainName) {
-		MONA_ASSERT(chainEnds.baseJointName.empty() || chainEnds.endEffectorName.empty(), "IKRig: Joint names cannot be empty!");
+		MONA_ASSERT(!(chainEnds.baseJointName.empty() || chainEnds.endEffectorName.empty()), "IKRig: Joint names cannot be empty!");
 		MONA_ASSERT(chainEnds.baseJointName != chainEnds.endEffectorName, "IKRig: Base joint and end effector must be different!");
 		auto jointNames = getJointNames();
 		IKChain ikChain;

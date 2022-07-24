@@ -33,7 +33,7 @@ namespace Mona{
             std::vector<IKRigConfig> m_animationConfigs;
             std::shared_ptr<Skeleton> m_skeleton;
 
-            AnimationIndex m_currentAnim = 0;
+            AnimationIndex m_currentAnim = -1;
             AnimationIndex m_targetAnim = -1;
             // Direccion global de movimiento
             glm::vec2 m_frontVector;

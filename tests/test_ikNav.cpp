@@ -133,9 +133,9 @@ class IKNav : public Mona::Application
 public:
 	IKNav() = default;
 	~IKNav() = default;
-	Mona::GameObjectHandle<Mona::BasicPerspectiveCamera> m_camera;
+	Mona::GameObjectHandle<Mona::BasicPerspectiveCamera_2> m_camera;
 	virtual void UserStartUp(Mona::World &world) noexcept override{
-		m_camera = world.CreateGameObject<Mona::BasicPerspectiveCamera>();
+		m_camera = world.CreateGameObject<Mona::BasicPerspectiveCamera_2>();
 		world.SetAmbientLight(glm::vec3(0.2f));
 		//world.AddComponent<Mona::SpotLightComponent>(m_camera, glm::vec3(100.0f), 5.0f, glm::radians(25.0f), glm::radians(37.0f));
 		world.SetMainCamera(world.GetComponentHandle<Mona::CameraComponent>(m_camera));

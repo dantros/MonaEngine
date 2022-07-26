@@ -180,7 +180,7 @@ public:
 		eventManager.Subscribe(m_debugGUISubcription, this, &Sandbox::OnDebugGUIEvent);
 		m_sphere = world.CreateGameObject<Sphere>(0.0f, 0.0f);
 		m_rotatingBox = world.CreateGameObject<Box>(0.0f, 0.0f);
-		m_camera = world.CreateGameObject<Mona::BasicPerspectiveCamera>();
+		m_camera = world.CreateGameObject<Mona::BasicPerspectiveCamera_2>();
 		world.AddComponent<Mona::SpotLightComponent>(m_camera, glm::vec3(100.0f), 15.0f, glm::radians(25.0f), glm::radians(37.0f));
 		world.CreateGameObject<AnimatedMesh>();
 		world.SetMainCamera(world.GetComponentHandle<Mona::CameraComponent>(m_camera));
@@ -255,7 +255,7 @@ private:
 	Mona::SubscriptionHandle m_debugGUISubcription;
 	Mona::GameObjectHandle<Box> m_rotatingBox;
 	Mona::GameObjectHandle<Sphere> m_sphere;
-	Mona::GameObjectHandle<Mona::BasicPerspectiveCamera> m_camera;
+	Mona::GameObjectHandle<Mona::BasicPerspectiveCamera_2> m_camera;
 	float somefloat = 0.0f;
 	int m_currentMaterialIndex;
 	

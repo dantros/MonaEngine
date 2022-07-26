@@ -6,6 +6,7 @@
 #include "Rendering/PBRTexturedMaterial.hpp"
 #include <numbers>
 #include <imgui.h>
+#include <random>
 
 
 float gaussian(float x, float y, float s, float sigma, glm::vec2 mu) {
@@ -30,18 +31,32 @@ Mona::GameObjectHandle<Mona::GameObject> AddTerrain(Mona::World& world) {
 	//float planeScale = 10.0f;
 	auto transform = world.AddComponent<Mona::TransformComponent>(terrain);
 	//transform->SetScale(glm::vec3(planeScale));
-	glm::vec2 minXY(-10, -10);
-	glm::vec2 maxXY(10, 10);
+	glm::vec2 minXY(-100, -100);
+	glm::vec2 maxXY(100, 100);
 	int numInnerVerticesWidth = 500;
 	int numInnerVerticesHeight = 500;
 	auto heighFunc = [](float x, float y) -> float {
-		return (gaussian(x, y, 30, 5, { -10, 0 }) + gaussian(x, y, 50, 3, { 0, 0 }));
+		float result = 0;
+		int funcNum = 100;
+		glm::vec2 minXY(-100, -100);
+		glm::vec2 maxXY(100, 100);
+		float minHeight = -15;
+		float maxHeight = 70;
+		float minSigma = 3;
+		float maxSigma = 20;
+		std::srand(5);
+		for (int i = 0; i < funcNum; i++) {
+			float randMax = RAND_MAX;
+			result += gaussian(x, y, Mona::funcUtils::lerp(minHeight, maxHeight, std::rand() / randMax),
+				Mona::funcUtils::lerp(minSigma, maxSigma, std::rand() / randMax),
+				{ Mona::funcUtils::lerp(minXY[0], maxXY[0], std::rand()/ randMax),
+				Mona::funcUtils::lerp(minXY[1], maxXY[1], std::rand() / randMax) });
+		}
+		return result;
 	};
 
 	world.AddComponent<Mona::StaticMeshComponent>(terrain, meshManager.GenerateTerrain(minXY, maxXY, numInnerVerticesWidth,
 		numInnerVerticesHeight, heighFunc, true, false), materialPtr);
-	transform->SetTranslation({ 0, 0, -5 });
-	transform->SetScale({ 5,5,5 });
 	return terrain;
 }
 
@@ -136,17 +151,12 @@ public:
 	Mona::GameObjectHandle<Mona::BasicPerspectiveCamera_2> m_camera;
 	virtual void UserStartUp(Mona::World &world) noexcept override{
 		m_camera = world.CreateGameObject<Mona::BasicPerspectiveCamera_2>();
-		world.SetAmbientLight(glm::vec3(0.2f));
-		//world.AddComponent<Mona::SpotLightComponent>(m_camera, glm::vec3(100.0f), 5.0f, glm::radians(25.0f), glm::radians(37.0f));
+		world.SetAmbientLight(glm::vec3(0.7f));
 		world.SetMainCamera(world.GetComponentHandle<Mona::CameraComponent>(m_camera));
-		//AddDirectionalLight(world, glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-180.0f), glm::vec3(0.0f, 0.0f, 1000.0f),5.0f);
-		//AddDirectionalLight(world, glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1000.0f),5.0f);
-		AddDirectionalLight(world, glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-45.0f), 2);
-		AddDirectionalLight(world, glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-135.0f), 2);
-		//AddDirectionalLight(world, glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(-135.0f), 15.0f);
+		AddDirectionalLight(world, glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-30.0f), 0.7);
 		// auto character = world.CreateGameObject<IKRigCharacter>();
 		auto terrainObject = AddTerrain(world);
-		// world.GetComponentHandle<Mona::IKNavigationComponent>(character)->AddTerrain(terrainObject);		
+		// world.GetComponentHandle<Mona::IKNavigationComponent>(character)->AddTerrain(terrainObject);
 	}
 
 	virtual void UserShutDown(Mona::World& world) noexcept override {

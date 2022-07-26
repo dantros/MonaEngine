@@ -84,7 +84,7 @@ namespace Mona {
 			m_transform = world.AddComponent<TransformComponent>(*this);
 			m_camera = world.AddComponent<CameraComponent>(*this);
 			m_camera->SetZFarPlane(1000);
-			m_transform->SetTranslation(glm::vec3(0.0f, -80.0f, 0.0f));
+			m_transform->SetTranslation(glm::vec3(0.0f, -80.0f, 10.0f));
 			auto& input = world.GetInput();
 			glm::vec2 res = world.GetWindow().GetWindowDimensions();
 		}

@@ -98,43 +98,43 @@ namespace Mona {
 				float maxVerticalRotationAngle = 3 * std::numbers::pi / 8;
 				float maxLateralRotationAngle = 3 * std::numbers::pi / 8;
 
-				m_transform->SetRotation(glm::identity<glm::fquat>());
-
-				float verticalRotFactor = (1 - screenPos[1] - 0.5) / 0.5;
-				float verticalRotSign = verticalRotFactor == 0 ? 1 : verticalRotFactor / std::abs(verticalRotFactor);
-				float currVerticalRotAngle = maxVerticalRotationAngle * verticalRotFactor;
-				m_transform->Rotate({1,0,0}, currVerticalRotAngle);
-
 				float lateralRotFactor = -(screenPos[0] - 0.5) / 0.5;
 				float currLateralRotAngle = m_lateralRotationCenter + maxLateralRotationAngle * lateralRotFactor;
-				m_transform->Rotate({ 0,0,1 }, currLateralRotAngle);
+				glm::fquat currLateralRot = glm::angleAxis(currLateralRotAngle, glm::vec3(0,0,1));
 				if (0.95 < abs(lateralRotFactor)) {
 					// rotacion adicional
 					float lateralRotSign = lateralRotFactor / std::abs(lateralRotFactor);
 					float additionalRotAngle = lateralRotSign * m_rotationSpeed * timeStep;
-					m_transform->Rotate({ 0,0,1 }, additionalRotAngle);
+					glm::fquat additionalLatRot = glm::angleAxis(additionalRotAngle, glm::vec3(0, 0, 1));
+					currLateralRot = additionalLatRot * currLateralRot;
 					m_lateralRotationCenter += additionalRotAngle;
 				}
+
+				float verticalRotFactor = (1 - screenPos[1] - 0.5) / 0.5;
+				float currVerticalRotAngle = maxVerticalRotationAngle * verticalRotFactor;
+				glm::fquat currVerticalRot = glm::angleAxis(currVerticalRotAngle, glm::vec3(1, 0, 0));
+				glm::fquat finalRot = currLateralRot * currVerticalRot;
+				m_transform->SetRotation(finalRot);
 
 				float currScrollOffset = input.GetMouseWheelOffset()[1];
 				m_cameraSpeed += currScrollOffset;
 				m_cameraSpeed = 0 <= m_cameraSpeed ? m_cameraSpeed : 0;
 
 				if (input.IsKeyPressed(MONA_KEY_A)) {
-					glm::vec3 right = glm::rotateZ(glm::vec3(1, 0 ,0), m_lateralRotationCenter);
+					glm::vec3 right = glm::rotateZ(glm::vec3(1, 0 ,0), currLateralRotAngle);
 					m_transform->Translate(-m_cameraSpeed * timeStep * right);
 				}
 				else if (input.IsKeyPressed(MONA_KEY_D)) {
-					glm::vec3 right = glm::rotateZ(glm::vec3(1, 0, 0), m_lateralRotationCenter);
+					glm::vec3 right = glm::rotateZ(glm::vec3(1, 0, 0), currLateralRotAngle);
 					m_transform->Translate(m_cameraSpeed * timeStep * right);
 				}
 
 				if (input.IsKeyPressed(MONA_KEY_W)) {
-					glm::vec3 front = glm::rotateZ(glm::vec3(0, 1, 0), m_lateralRotationCenter);
+					glm::vec3 front = glm::rotateZ(glm::vec3(0, 1, 0), currLateralRotAngle);
 					m_transform->Translate(m_cameraSpeed * timeStep * front);
 				}
 				else if (input.IsKeyPressed(MONA_KEY_S)) {
-					glm::vec3 front = glm::rotateZ(glm::vec3(0, 1, 0), m_lateralRotationCenter);
+					glm::vec3 front = glm::rotateZ(glm::vec3(0, 1, 0), currLateralRotAngle);
 					m_transform->Translate(-m_cameraSpeed * timeStep * front);
 				}
 

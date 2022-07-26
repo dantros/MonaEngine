@@ -33,8 +33,8 @@ Mona::GameObjectHandle<Mona::GameObject> AddTerrain(Mona::World& world) {
 	//transform->SetScale(glm::vec3(planeScale));
 	glm::vec2 minXY(-100, -100);
 	glm::vec2 maxXY(100, 100);
-	int numInnerVerticesWidth = 500;
-	int numInnerVerticesHeight = 500;
+	int numInnerVerticesWidth = 100;
+	int numInnerVerticesHeight = 100;
 	auto heighFunc = [](float x, float y) -> float {
 		float result = 0;
 		int funcNum = 100;

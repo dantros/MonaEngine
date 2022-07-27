@@ -149,7 +149,7 @@ namespace Mona {
 		}
 	private:
 		bool m_active = true;
-		float m_cameraSpeed = 2.0f;
+		float m_cameraSpeed = 10.0f;
 		float m_rotationSpeed = 1.5f;
 		float m_lateralRotationCenter = 0;
 		TransformHandle m_transform;

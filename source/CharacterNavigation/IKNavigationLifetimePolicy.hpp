@@ -18,9 +18,9 @@ namespace Mona {
 			std::shared_ptr<Skeleton> skeletonPtr = m_skeletalMeshManagerPtr->GetComponentPointer(skeletalMeshHandle)->GetSkeleton();
 
 			InnerComponentHandle transformHandle = m_ikNavigationManagerPtr->GetOwner(handle)->GetInnerComponentHandle<TransformComponent>();
-			m_transformManagerPtr->GetComponentPointer(transformHandle)->SetScale(glm::vec3(ikNav.m_rigData.scale));
+			glm::mat4 baseGlobalTransform = m_transformManagerPtr->GetComponentPointer(transformHandle)->GetModelMatrix();
 
-			ikNav.m_ikRigController = IKRigController(skeletalMeshHandle, IKRig(skeletonPtr, ikNav.m_rigData, transformHandle));			
+			ikNav.m_ikRigController = IKRigController(skeletalMeshHandle, IKRig(skeletonPtr, ikNav.m_rigData, transformHandle), baseGlobalTransform);
 		}
 		void OnRemoveComponent(GameObject* gameObjectPtr, IKNavigationComponent& ikNav, const InnerComponentHandle& handle) noexcept {
 		}

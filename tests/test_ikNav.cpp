@@ -27,7 +27,7 @@ Mona::GameObjectHandle<Mona::GameObject> AddTerrain(Mona::World& world) {
 	auto terrain = world.CreateGameObject<Mona::GameObject>();
 	auto& meshManager = Mona::MeshManager::GetInstance();
 	auto materialPtr = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseFlat));
-	materialPtr->SetDiffuseColor(glm::vec3(0.3, 0.5f, 0.7f));
+	materialPtr->SetDiffuseColor(glm::vec3(0.03, 0.1f, 0.17f));
 	//float planeScale = 10.0f;
 	auto transform = world.AddComponent<Mona::TransformComponent>(terrain);
 	//transform->SetScale(glm::vec3(planeScale));
@@ -90,8 +90,10 @@ public:
 		eventManager.Subscribe(m_debugGUISubcription, this, &IKRigCharacter::OnDebugGUIEvent);
 
 		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
-		m_transform->SetTranslation({ 0,0, -4.5 });
-		m_transform->SetScale({ 0.005,0.005,0.005 });
+		m_transform->SetTranslation({ 0,0, 4.5 });
+		m_transform->SetScale({ 0.05,0.05,0.05 });
+		m_transform->Rotate(glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(180.f));
+		m_transform->Rotate(glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(90.f));
 		m_targetPosition = glm::vec3(0.0f);
 
 		auto materialPtr = std::static_pointer_cast<Mona::DiffuseTexturedMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseTextured, true));
@@ -107,8 +109,8 @@ public:
 		auto skinnedMesh = meshManager.LoadSkinnedMesh(skeleton, Mona::SourcePath("Assets/Models/akai_e_espiritu.fbx"), true);
 		m_walkingAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/female/walking.fbx"), skeleton);
 		m_skeletalMesh = world.AddComponent<Mona::SkeletalMeshComponent>(*this, skinnedMesh, m_walkingAnimation, materialPtr);
+
 		Mona::RigData rigData;
-		rigData.scale = 3.0f;
 		rigData.leftLeg.baseJointName = "Hips";
 		rigData.leftLeg.endEffectorName = "LeftFoot";
 		rigData.rightLeg.baseJointName = "Hips";
@@ -151,10 +153,12 @@ public:
 	Mona::GameObjectHandle<Mona::BasicPerspectiveCamera_2> m_camera;
 	virtual void UserStartUp(Mona::World &world) noexcept override{
 		m_camera = world.CreateGameObject<Mona::BasicPerspectiveCamera_2>();
-		world.SetAmbientLight(glm::vec3(0.7f));
+		world.SetBackgroundColor(0.5, 0.2, 0.8);
+		world.SetAmbientLight(glm::vec3(3.8f));
 		world.SetMainCamera(world.GetComponentHandle<Mona::CameraComponent>(m_camera));
-		AddDirectionalLight(world, glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-30.0f), 0.7);
-		// auto character = world.CreateGameObject<IKRigCharacter>();
+		AddDirectionalLight(world, glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-130.0f), 2);
+		AddDirectionalLight(world, glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(-30.0f), 6);
+		auto character = world.CreateGameObject<IKRigCharacter>();
 		auto terrainObject = AddTerrain(world);
 		// world.GetComponentHandle<Mona::IKNavigationComponent>(character)->AddTerrain(terrainObject);
 	}

@@ -276,6 +276,9 @@ namespace Mona {
 		return worldPose * animController.GetJointModelPose(jointIndex);
 	}
 
+	void World::SetBackgroundColor(float r, float g, float b, float alpha) {
+		m_renderer.SetBackgroundColor(r, g, b, alpha);
+	}
 
 }
 

@@ -80,6 +80,7 @@ namespace Mona{
 		ComponentManager<SpotLightComponent>& spotLightDataManager,
 		ComponentManager<PointLightComponent>& pointLightDataManager) noexcept
 	{
+		glClearColor(m_backgroundColor[0], m_backgroundColor[1], m_backgroundColor[2], m_backgroundColor[3]);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glm::mat4 viewMatrix;
 		glm::mat4 projectionMatrix;
@@ -220,5 +221,9 @@ namespace Mona{
 			return nullptr;
 			break;
 		}
+	}
+
+	void Renderer::SetBackgroundColor(float r, float g, float b, float alpha) {
+		m_backgroundColor = glm::vec4(r, g, b, alpha);
 	}
 }

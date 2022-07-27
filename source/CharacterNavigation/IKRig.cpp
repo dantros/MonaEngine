@@ -47,8 +47,6 @@ namespace Mona {
 				m_nodes[i].m_maxAngle = currData.maxAngle;
 			}
 		}
-		// setear la escala
-		m_scale = rigData.scale;
 		// setear cinematica inversa
 		m_inverseKinematics = InverseKinematics(this, ikChains);
 

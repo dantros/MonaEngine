@@ -13,10 +13,13 @@ namespace Mona {
 		friend class IKNavigationComponent;
 		IKRig m_ikRig;
 		InnerComponentHandle m_skeletalMeshHandle;
+		glm::mat4 m_baseGlobalTransform;
+		// Escala global
+		float m_rigScale;
 		float m_time = 0;
 	public:
 		IKRigController() = default;
-		IKRigController(InnerComponentHandle skeletalMeshHandle, IKRig ikRig);
+		IKRigController(InnerComponentHandle skeletalMeshHandle, IKRig ikRig, glm::mat4 baseGlobalTransform);
 		void validateTerrains(ComponentManager<StaticMeshComponent>& staticMeshManager);
 		void addAnimation(std::shared_ptr<AnimationClip> animationClip);
 		AnimationIndex removeAnimation(std::shared_ptr<AnimationClip> animationClip);

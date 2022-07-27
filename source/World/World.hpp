@@ -110,6 +110,8 @@ namespace Mona {
 
 		JointPose GetJointWorldPose(const ComponentHandle<SkeletalMeshComponent>& skeletalMeshHandel, uint32_t jointIndex) noexcept;
 
+		void SetBackgroundColor(float r, float g, float b, float alpha = 0.0f);
+
 	private:
 		World(Application& app);
 		~World();

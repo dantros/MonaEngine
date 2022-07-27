@@ -35,6 +35,9 @@ namespace Mona {
 			int RemoveTerrain(const GameObjectHandle<GameObject>& staticMeshObject) {
 				return m_ikRigController.m_ikRig.m_trajectoryGenerator.m_environmentData.removeTerrain(staticMeshObject);
 			}
+			void SetAngularSpeed(float angularSpeed) {
+				m_ikRigController.setAngularSpeed(angularSpeed);
+			}
 			IKRigController& GetIKRigController() { return m_ikRigController; }
 		private:
 			RigData m_rigData;

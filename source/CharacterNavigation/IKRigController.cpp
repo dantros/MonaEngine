@@ -5,12 +5,13 @@
 
 namespace Mona {
 
+	
 
 	IKRigController::IKRigController(InnerComponentHandle skeletalMeshHandle, IKRig ikRig, glm::mat4 baseGlobalTransform): 
 		m_skeletalMeshHandle(skeletalMeshHandle), m_ikRig(ikRig) {
 		glm::vec3 glblScale; glm::quat glblRotation; glm::vec3 glblTranslation;	glm::vec3 glblSkew;	glm::vec4 glblPerspective;
 		glm::decompose(baseGlobalTransform, glblScale, glblRotation, glblTranslation, glblSkew, glblPerspective);
-		MONA_ASSERT(glblScale == glm::vec3(glblScale[0]), "Global scale must be uniform");
+		MONA_ASSERT(glmUtils::isApproxUniform(glblScale), "Global scale must be uniform");
 		m_baseGlobalTransform = baseGlobalTransform;
 		m_rigScale = glblScale[0];
 	}
@@ -39,13 +40,13 @@ namespace Mona {
 			glm::vec3 basePosition = track.positions[0];
 			glm::vec3 baseScale = track.scales[0];
 			for (int j = 1; j < track.positions.size(); j++) {
-				if (track.positions[j] != basePosition && i!=m_ikRig.m_hipJoint) {
+				if (!glmUtils::areApproxEqual(track.positions[j], basePosition) && i!=m_ikRig.m_hipJoint) {
 					MONA_LOG_ERROR("IKRigController: Animation must have fixed translations per joint.");
 					return;
 				}
 			}
 			for (int j = 1; j < track.scales.size(); j++) {
-				if (track.scales[j] != baseScale) {
+				if (!glmUtils::areApproxEqual(track.scales[j], baseScale)) {
 					MONA_LOG_ERROR("IKRigController: Animation must have fixed scales per joint.");
 					return;
 				}
@@ -117,7 +118,9 @@ namespace Mona {
 		AnimationIndex newIndex = m_ikRig.m_animationConfigs.size();
 		m_ikRig.m_animationConfigs.push_back(IKRigConfig(animationClip, newIndex, &m_ikRig.m_forwardKinematics));
 		IKRigConfig* currentConfig = m_ikRig.getAnimationConfig(newIndex);
+		currentConfig->m_ikChainTrajectoryData = std::vector<EEGlobalTrajectoryData>(m_ikRig.m_ikChains.size());
 
+		int chainNum = m_ikRig.m_ikChains.size();
 
 		// numero de rotaciones por joint con la animaciond descomprimida
 		int frameNum = animationClip->m_animationTracks[0].rotationTimeStamps.size();
@@ -182,9 +185,10 @@ namespace Mona {
 		std::vector<glm::mat4> transforms(m_ikRig.getTopology().size());
 		std::vector<glm::vec3> previousPositions(m_ikRig.getTopology().size());
 		std::fill(previousPositions.begin(), previousPositions.end(), glm::vec3(std::numeric_limits<float>::min()));
-		for (int i = 0; i < m_ikRig.m_ikChains.size(); i++) {
+		for (int i = 0; i < chainNum; i++) {
 			supportFramesPerChain[i] = std::vector<bool>(frameNum);
 			glblPositionsPerChain[i] = std::vector<glm::vec3>(frameNum);
+			currentConfig->m_ikChainTrajectoryData[i].m_supportHeights = std::vector<float>(frameNum);
 		}
 		for (int i = 0; i < frameNum; i++) {
 			// calculo de las transformaciones
@@ -201,7 +205,7 @@ namespace Mona {
 			for (int j = 0; j < positions.size(); j++) {
 				positions[j] = transforms[j] * glm::vec4(0, 0, 0, 1);
 			}
-			for (int j = 0; j < m_ikRig.m_ikChains.size(); j++) {
+			for (int j = 0; j < chainNum; j++) {
 				int eeIndex = m_ikRig.m_ikChains[j].getJoints().back();
 				bool isSupportFrame = glm::distance(positions[eeIndex], previousPositions[eeIndex]) <= minDistance;
 				supportFramesPerChain[j][i] = isSupportFrame;
@@ -210,12 +214,16 @@ namespace Mona {
 			previousPositions = positions;
 		}
 		// a los valores de soporte del primer frame les asignamos el valor del ultimo asumiento circularidad
-		for (int i = 0; i < m_ikRig.m_ikChains.size(); i++) {
+		for (int i = 0; i < chainNum; i++) {
 			supportFramesPerChain[i][0] = supportFramesPerChain[i].back();
 		}
 
 		// dividimos cada trayectoria global (por ee) en sub trayectorias dinamicas y estaticas.
-		for (int i = 0; i < m_ikRig.m_ikChains.size(); i++) {
+		std::vector<bool> brokenTrajectories(chainNum);
+		for (int i = 0; i < chainNum; i++) {
+			brokenTrajectories[i] = false;
+		}
+		for (int i = 0; i < chainNum; i++) {
 			// encontrar primer punto de soporte
 			FrameIndex firstSF = -1;
 			for (int j = 0; j < frameNum; j++) {
@@ -250,7 +258,6 @@ namespace Mona {
 				}
 				else {
 					FrameIndex initialFrame = 0 < j ? (j - 1) : (frameNum - 1);
-					bool incompleteTr = false;
 					std::vector<glm::vec3> curvePoints_1 = { glblPositionsPerChain[i][initialFrame]};
 					std::vector<float> tValues_1 = {currentConfig->getAnimationTime(initialFrame)};
 					while (!supportFramesPerChain[i][j]) {
@@ -259,11 +266,11 @@ namespace Mona {
 						tValues_1.push_back(currentConfig->getAnimationTime(j));
 						j += 1;
 						if (j == frameNum) {
-							incompleteTr = true;
+							brokenTrajectories[i] = true;
 							break; 
 						}
 					}
-					if (!incompleteTr) { // si llegamos a un frame de soporte sin salirnos del arreglo
+					if (!brokenTrajectories[i]) { // si llegamos a un frame de soporte sin salirnos del arreglo
 						supportHeight = glblPositionsPerChain[i][j][2];
 						currentConfig->m_ikChainTrajectoryData[i].m_supportHeights[j] = supportHeight;
 						subTrajectories.push_back(EETrajectory(LIC<3>(curvePoints_1, tValues_1), TrajectoryType::DYNAMIC));
@@ -304,6 +311,18 @@ namespace Mona {
 				LIC<3>& currentCurve = trData.m_originalSubTrajectories[j].getEECurve();
 				for (int k = 0; k < currentCurve.getNumberOfPoints(); k++) {
 					float tValue = currentCurve.getTValue(k);
+					if (brokenTrajectories[i]) {
+						if (j == 0) {
+							if (!hipTr.inTRange(tValue)) {
+								tValue += currentConfig->getAnimationDuration();
+							}
+						}
+						else if (j == trData.m_originalSubTrajectories.size() - 1) {
+							if (!hipTr.inTRange(tValue)) {
+								tValue -= currentConfig->getAnimationDuration();
+							}
+						}
+					}
 					float hipZ = hipTr.evalCurve(tValue)[2];
 					if (maxZ < hipZ) { 
 						maxZ = hipZ;

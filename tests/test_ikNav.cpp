@@ -84,6 +84,22 @@ private:
 public:
 	virtual void UserUpdate(Mona::World& world, float timeStep) noexcept {
 		UpdateAnimationState();
+		auto& input = world.GetInput();
+		auto& window = world.GetWindow();
+		if (input.IsKeyPressed(MONA_KEY_UP))
+		{
+		}
+		else if (input.IsKeyPressed(MONA_KEY_RIGHT))
+		{
+			m_ikNavHandle->SetAngularSpeed(-m_angularSpeed);
+		}
+		else if (input.IsKeyPressed(MONA_KEY_LEFT))
+		{
+			m_ikNavHandle->SetAngularSpeed(m_angularSpeed);
+		}
+		else {
+			m_ikNavHandle->SetAngularSpeed(0);
+		}
 	};
 	virtual void UserStartUp(Mona::World& world) noexcept {
 		auto& eventManager = world.GetEventManager();
@@ -94,7 +110,6 @@ public:
 		m_transform->SetScale({ 0.05,0.05,0.05 });
 		m_transform->Rotate(glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(180.f));
 		m_transform->Rotate(glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(90.f));
-		m_targetPosition = glm::vec3(0.0f);
 
 		auto materialPtr = std::static_pointer_cast<Mona::DiffuseTexturedMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseTextured, true));
 		auto& textureManager = Mona::TextureManager::GetInstance();
@@ -107,36 +122,27 @@ public:
 		auto& animationManager = Mona::AnimationClipManager::GetInstance();
 		auto skeleton = skeletonManager.LoadSkeleton(Mona::SourcePath("Assets/Models/akai_e_espiritu.fbx"));
 		auto skinnedMesh = meshManager.LoadSkinnedMesh(skeleton, Mona::SourcePath("Assets/Models/akai_e_espiritu.fbx"), true);
-		m_walkingAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/female/walking.fbx"), skeleton);
+		m_walkingAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/female/walking.fbx"), skeleton, false);
 		m_skeletalMesh = world.AddComponent<Mona::SkeletalMeshComponent>(*this, skinnedMesh, m_walkingAnimation, materialPtr);
 
 		Mona::RigData rigData;
 		rigData.leftLeg.baseJointName = "Hips";
 		rigData.leftLeg.endEffectorName = "LeftFoot";
 		rigData.rightLeg.baseJointName = "Hips";
-		rigData.rightLeg.endEffectorName = "RighFoot";
+		rigData.rightLeg.endEffectorName = "RightFoot";
 		rigData.hipJointName = "Hips";
-		//m_ikNavHandle = world.AddComponent<Mona::IKNavigationComponent>(*this, rigData);
-		//world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_walkingAnimation);
+		m_ikNavHandle = world.AddComponent<Mona::IKNavigationComponent>(*this, rigData);
+		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_walkingAnimation);
 
 	}
 
 	void OnDebugGUIEvent(const Mona::DebugGUIEvent& event) {
 		ImGui::Begin("Character Options:");
-		ImGui::SliderFloat("DeacelerationFactor", &(m_deacelerationFactor), 0.0f, 10.0f);
-		ImGui::SliderFloat("DistanceThreshold", &(m_distanceThreshold), 0.0f, 10.0f);
-		ImGui::SliderFloat("AngularVelocityFactor", &(m_angularVelocityFactor), 0.0f, 10.0f);
-		ImGui::SliderFloat("FadeTime", &(m_fadeTime), 0.0f, 1.0f);
 		ImGui::End();
 	}
 private:
-	float m_deacelerationFactor = 1.1f;
-	float m_angularVelocityFactor = 3.0f;
-	float m_distanceThreshold = 0.65f;
-	float m_fadeTime = 0.5f;
+	float m_angularSpeed = 0.8f;
 	bool m_prevIsPress = false;
-	glm::vec3 m_targetPosition = glm::vec3(0.0f);
-	glm::vec3 m_targetFrontVector = glm::vec3(0.0f, -1.0f, 0.0f);
 	Mona::TransformHandle m_transform;
 	Mona::SkeletalMeshHandle m_skeletalMesh;
 	Mona::IKNavigationHandle m_ikNavHandle;
@@ -160,7 +166,7 @@ public:
 		AddDirectionalLight(world, glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(-30.0f), 6);
 		auto character = world.CreateGameObject<IKRigCharacter>();
 		auto terrainObject = AddTerrain(world);
-		// world.GetComponentHandle<Mona::IKNavigationComponent>(character)->AddTerrain(terrainObject);
+		world.GetComponentHandle<Mona::IKNavigationComponent>(character)->AddTerrain(terrainObject);
 	}
 
 	virtual void UserShutDown(Mona::World& world) noexcept override {
@@ -168,7 +174,10 @@ public:
 	virtual void UserUpdate(Mona::World& world, float timeStep) noexcept override {
 		auto& input = world.GetInput();
 		auto& window = world.GetWindow();
-		if (input.IsKeyPressed(MONA_KEY_G))
+		if (input.IsKeyPressed(MONA_KEY_ESCAPE)) {
+			exit(EXIT_SUCCESS);
+		}
+		else if (input.IsKeyPressed(MONA_KEY_G))
 		{
 			window.SetFullScreen(true);
 		}

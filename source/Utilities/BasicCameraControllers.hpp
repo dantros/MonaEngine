@@ -69,7 +69,7 @@ namespace Mona {
 		bool m_active = true;
 		float m_cameraSpeed = 2.0f;
 		float m_rollSpeed = 1.5f;
-		float m_rotationSpeed = 1.5f;
+		float m_rotationSpeed = 1.3f;
 		TransformHandle m_transform;
 		CameraHandle m_camera;
 		glm::vec2 screenPos;

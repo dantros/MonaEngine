@@ -161,43 +161,25 @@ namespace Mona {
 
 	void AnimationClip::RemoveJointTranslation(int jointIndex) {
 		//Remueve las translaciones del track de animacion asociado a una articulacion del esqueleto
-		for (uint32_t i = 0; i < m_animationTracks.size(); i++)
-		{
-			AnimationTrack& animationTrack = m_animationTracks[i];
-			uint32_t jointIndex = m_trackJointIndices[i];
-			if (jointIndex != jointIndex) continue;
-			for (uint32_t j = 0; j < animationTrack.positions.size(); j++)
-			{
-				animationTrack.positions[j] = glm::vec3(0.0f);
-			}
+		auto& track = m_animationTracks[m_jointTrackIndices[jointIndex]];
+		for (int i = 0; i < track.positions.size(); i++) {
+			track.positions[i] = glm::vec3(0);
 		}
 	}
 
 	void AnimationClip::RemoveJointScaling(int jointIndex) {
 		//Remueve los escalamientos del track de animacion asociado a una articulacion del esqueleto
-		for (uint32_t i = 0; i < m_animationTracks.size(); i++)
-		{
-			AnimationTrack& animationTrack = m_animationTracks[i];
-			uint32_t jointIndex = m_trackJointIndices[i];
-			if (jointIndex != jointIndex) continue;
-			for (uint32_t j = 0; j < animationTrack.scales.size(); j++)
-			{
-				animationTrack.scales[j] = glm::vec3(1.0f);
-			}
+		auto& track = m_animationTracks[m_jointTrackIndices[jointIndex]];
+		for (int i = 0; i < track.positions.size(); i++) {
+			track.scales[i] = glm::vec3(1);
 		}
 	}
 
 	void AnimationClip::RemoveJointRotation(int jointIndex) {
 		//Remueve las translaciones del track de animacion asociado a una articulacion del esqueleto
-		for (uint32_t i = 0; i < m_animationTracks.size(); i++)
-		{
-			AnimationTrack& animationTrack = m_animationTracks[i];
-			uint32_t jointIndex = m_trackJointIndices[i];
-			if (jointIndex != jointIndex) continue;
-			for (uint32_t j = 0; j < animationTrack.rotations.size(); j++)
-			{
-				animationTrack.rotations[j] = glm::identity<glm::fquat>();
-			}
+		auto& track = m_animationTracks[m_jointTrackIndices[jointIndex]];
+		for (int i = 0; i < track.positions.size(); i++) {
+			track.rotations[i] = glm::identity<glm::fquat>();
 		}
 	}
 

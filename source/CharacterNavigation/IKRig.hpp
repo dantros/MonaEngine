@@ -28,6 +28,7 @@ namespace Mona{
             void setAngularSpeed(float angularSpeed) { m_angularSpeed = angularSpeed; }
             float getAngularSpeed() { return m_angularSpeed; }
             InnerComponentHandle getTransformHandle() { return m_transformHandle; }
+            void init();
         private:
             // Informacion de configuracion del IKRig por cada animacion
             std::vector<IKRigConfig> m_animationConfigs;
@@ -36,11 +37,11 @@ namespace Mona{
             AnimationIndex m_currentAnim = -1;
             AnimationIndex m_targetAnim = -1;
             // Direccion global de movimiento
-            glm::vec2 m_frontVector;
+            glm::vec2 m_frontVector = glm::vec2(0.0f, 1.0f);
             //glm::vec3 m_upVector; (0,0,1)
             //glm::vec2 m_rightVector; (1,0)
             // rapidez de giro
-            float m_angularSpeed;
+            float m_angularSpeed = 0;
             float m_rotationAngle = 0;
             TrajectoryGenerator m_trajectoryGenerator;
             InnerComponentHandle m_transformHandle;

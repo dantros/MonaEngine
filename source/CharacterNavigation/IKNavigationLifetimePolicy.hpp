@@ -20,7 +20,8 @@ namespace Mona {
 			InnerComponentHandle transformHandle = m_ikNavigationManagerPtr->GetOwner(handle)->GetInnerComponentHandle<TransformComponent>();
 			glm::mat4 baseGlobalTransform = m_transformManagerPtr->GetComponentPointer(transformHandle)->GetModelMatrix();
 
-			ikNav.m_ikRigController = IKRigController(skeletalMeshHandle, IKRig(skeletonPtr, ikNav.m_rigData, transformHandle), baseGlobalTransform);
+			ikNav.m_ikRigController = IKRigController(skeletonPtr, ikNav.m_rigData, transformHandle, skeletalMeshHandle, baseGlobalTransform);
+			ikNav.m_ikRigController.init();
 		}
 		void OnRemoveComponent(GameObject* gameObjectPtr, IKNavigationComponent& ikNav, const InnerComponentHandle& handle) noexcept {
 		}

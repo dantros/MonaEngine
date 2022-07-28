@@ -10,14 +10,7 @@ namespace Mona {
 		RigData rigData, InnerComponentHandle transformHandle)
 	{
 		m_skeleton = skeleton;
-		m_forwardKinematics = ForwardKinematics(this);
 		m_transformHandle = transformHandle;
-
-		std::vector<ChainIndex> ikChains;
-		for (ChainIndex i = 0; i < m_ikChains.size(); i++) {
-			ikChains.push_back(i);
-		}
-		m_trajectoryGenerator = TrajectoryGenerator(this, ikChains);
 
 		std::vector<int> const& topology = getTopology();
 		std::vector<std::string>const& jointNames = getJointNames();
@@ -47,8 +40,6 @@ namespace Mona {
 				m_nodes[i].m_maxAngle = currData.maxAngle;
 			}
 		}
-		// setear cinematica inversa
-		m_inverseKinematics = InverseKinematics(this, ikChains);
 
 		// setear el la altura del rig
 		IKChain& leftLegChain = m_ikChains[0];
@@ -63,6 +54,16 @@ namespace Mona {
 			legLenght += glm::distance(positions[currentJ], positions[parentJ]);
 		}
 		m_rigHeight = legLenght * 2;
+	}
+
+	void IKRig::init() {
+		std::vector<ChainIndex> ikChains;
+		for (ChainIndex i = 0; i < m_ikChains.size(); i++) {
+			ikChains.push_back(i);
+		}
+		m_inverseKinematics = InverseKinematics(this, ikChains);
+		m_forwardKinematics = ForwardKinematics(this);
+		m_trajectoryGenerator = TrajectoryGenerator(this, ikChains);
 	}
 
 	const std::vector<int>& IKRig::getTopology() const { 

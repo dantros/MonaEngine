@@ -5,6 +5,7 @@
 #include <vector>
 #include <sstream>
 #include "Log.hpp"
+#include <iostream>
 
 namespace Mona {
 

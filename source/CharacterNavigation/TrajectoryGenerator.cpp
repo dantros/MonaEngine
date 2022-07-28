@@ -73,10 +73,14 @@ namespace Mona{
     TrajectoryGenerator::TrajectoryGenerator(IKRig* ikRig, std::vector<ChainIndex> ikChains) {
         m_ikRig = ikRig;
         m_ikChains = ikChains;
+    }
 
+    void TrajectoryGenerator::init() {
         // descenso para posiciones (dim 3)
         FunctionTerm<TGData> term(term1Function, term1PartialDerivativeFunction);
         m_gradientDescent = GradientDescent<TGData>({ term }, 0, &m_tgData, postDescentStepCustomBehaviour);
+        m_tgData.descentRate = m_ikRig->getRigHeight() * m_ikRig->getRigScale() / 1000;
+        m_tgData.maxIterations = 200;
     }
 
     glm::vec3 TrajectoryGenerator::calcStrideStartingPoint(float supportHeight,
@@ -266,10 +270,9 @@ namespace Mona{
             m_tgData.baseVelocities.push_back(baseCurve.getVelocity(baseCurve.getTValue(pIndex)));
         }
 
-        // seteo de otros parametros (TODO)
-        m_tgData.descentRate;
-        m_tgData.maxIterations = 100;
+        // seteo de otros parametros
         m_tgData.varCurve = &baseCurve;
+        m_gradientDescent.setArgNum(initialArgs.size());
         m_gradientDescent.computeArgsMin(m_tgData.descentRate, m_tgData.maxIterations, initialArgs);
 
         float transitionTime = config->getCurrentReproductionTime();
@@ -407,9 +410,10 @@ namespace Mona{
             LIC<3>& baseEEOriginalCurve = baseEEOriginalTr.getEECurve();
             LIC<3>& baseEETargetCurve = baseEETargetTr.getEECurve();
 
-            LIC<3> hipTrCurve = hipTrData->getOriginalTranslations().sample(tInfLimitAnim, tSupLimitAnim);
-            LIC<1> hipRotAnglCurve = hipTrData->getOriginalRotationAngles().sample(tInfLimitAnim, tSupLimitAnim);
-            LIC<3> hipRotAxCurve = hipTrData->getOriginalRotationAxes().sample(tInfLimitAnim, tSupLimitAnim);
+            LIC<3> hipTrCurve = hipTrData->sampleOriginalTranslations(tInfLimitAnim, tSupLimitAnim);
+            LIC<1> hipRotAnglCurve = hipTrData->sampleOriginalRotationAngles(tInfLimitAnim, tSupLimitAnim);
+            LIC<3> hipRotAxCurve = hipTrData->sampleOriginalRotationAxes(tInfLimitAnim, tSupLimitAnim);
+            
 
             // ajuste a tiempo de reproduccion
             hipTrCurve.offsetTValues(-tInfLimitAnim + tInfLimitRep);
@@ -559,9 +563,8 @@ namespace Mona{
             }
 
             // seteo de otros parametros (TODO)
-            m_tgData.descentRate;
-            m_tgData.maxIterations = 100;
             m_tgData.varCurve = &hipTrFinalCurve;
+            m_gradientDescent.setArgNum(initialArgs.size());
             m_gradientDescent.computeArgsMin(m_tgData.descentRate, m_tgData.maxIterations, initialArgs);
 
             float transitionTime = config->getCurrentReproductionTime();
@@ -601,10 +604,42 @@ namespace Mona{
     }
 
 
-    void HipGlobalTrajectoryData::init(int frameNum) {
+    void HipGlobalTrajectoryData::init(int frameNum, float animDuration) {
         m_savedRotationAngles = std::vector<float>(frameNum);
         m_savedRotationAxes = std::vector<glm::vec3>(frameNum);
         m_savedTranslations = std::vector<glm::vec3>(frameNum);
+        m_animationDuration = animDuration;
+    }
+
+    LIC<1> HipGlobalTrajectoryData::sampleOriginalRotationAngles(float initialAnimTime, float finalAnimTime) {
+        if (initialAnimTime <= finalAnimTime) {
+            return m_originalRotationAngles.sample(initialAnimTime, finalAnimTime);
+        }
+        else {
+            LIC<1> part1 = m_originalRotationAngles.sample(initialAnimTime, m_originalRotationAngles.getTRange()[1]);
+            LIC<1> part2 = m_originalRotationAngles.sample(m_originalRotationAngles.getTRange()[0], finalAnimTime);
+            return LIC<1>::connect(part1, part2, m_animationDuration);
+        }
+    }
+    LIC<3> HipGlobalTrajectoryData::sampleOriginalRotationAxes(float initialAnimTime, float finalAnimTime) {
+        if (initialAnimTime <= finalAnimTime) {
+            return m_originalRotationAxes.sample(initialAnimTime, finalAnimTime);
+        }
+        else {
+            LIC<3> part1 = m_originalRotationAxes.sample(initialAnimTime, m_originalRotationAxes.getTRange()[1]);
+            LIC<3> part2 = m_originalRotationAxes.sample(m_originalRotationAxes.getTRange()[0], finalAnimTime);
+            return LIC<3>::connect(part1, part2, m_animationDuration);
+        }
+    }
+    LIC<3> HipGlobalTrajectoryData::sampleOriginalTranslations(float initialAnimTime, float finalAnimTime) {
+        if (initialAnimTime <= finalAnimTime) {
+            return m_originalTranslations.sample(initialAnimTime, finalAnimTime);
+        }
+        else {
+            LIC<3> part1 = m_originalTranslations.sample(initialAnimTime, m_originalTranslations.getTRange()[1]);
+            LIC<3> part2 = m_originalTranslations.sample(m_originalTranslations.getTRange()[0], finalAnimTime);
+            return LIC<3>::connect(part1, part2, m_animationDuration);
+        }
     }
 
     void  EEGlobalTrajectoryData::init(int frameNum) {

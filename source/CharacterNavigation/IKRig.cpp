@@ -62,8 +62,10 @@ namespace Mona {
 			ikChains.push_back(i);
 		}
 		m_inverseKinematics = InverseKinematics(this, ikChains);
+		m_inverseKinematics.init();
 		m_forwardKinematics = ForwardKinematics(this);
 		m_trajectoryGenerator = TrajectoryGenerator(this, ikChains);
+		m_trajectoryGenerator.init();
 	}
 
 	const std::vector<int>& IKRig::getTopology() const { 

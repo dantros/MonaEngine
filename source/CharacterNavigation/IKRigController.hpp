@@ -14,8 +14,6 @@ namespace Mona {
 		IKRig m_ikRig;
 		InnerComponentHandle m_skeletalMeshHandle;
 		glm::mat4 m_baseGlobalTransform;
-		// Escala global
-		float m_rigScale;
 		float m_time = 0;
 	public:
 		IKRigController() = default;

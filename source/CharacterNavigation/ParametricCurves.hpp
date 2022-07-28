@@ -250,6 +250,14 @@ namespace Mona{
             }
             return m_tValues.size() - 1;
         }
+
+        static LIC<D> connect(LIC<D> curve1, LIC<D> curve2, float curve2Offset) {
+            // desplazamos las posiciones de la parte 2 para que quede pegada a la parte 1
+            curve2.translate(curve1.getEnd() - curve2.getStart());
+            // luego hacemos el desplazamiento temporal
+            curve2.offsetTValues(curve2Offset);
+            return LIC<D>::join(curve1, curve2);
+        }
     };
     
 }

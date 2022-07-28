@@ -14,7 +14,7 @@ namespace Mona {
 		glm::decompose(baseGlobalTransform, glblScale, glblRotation, glblTranslation, glblSkew, glblPerspective);
 		MONA_ASSERT(glmUtils::isApproxUniform(glblScale), "Global scale must be uniform");
 		m_baseGlobalTransform = baseGlobalTransform;
-		m_rigScale = glblScale[0];
+		m_ikRig.m_rigScale = glblScale[0];
 	}
 	void IKRigController::init() {
 		m_ikRig.init();
@@ -179,7 +179,7 @@ namespace Mona {
 			previousHipPosition = hipPosition;
 		}
 
-		currentConfig->m_hipTrajectoryData.init(frameNum);
+		currentConfig->m_hipTrajectoryData.init(frameNum, currentConfig->getAnimationDuration());
 		currentConfig->m_hipTrajectoryData.m_originalRotationAngles = LIC<1>(hipRotAngles, hipTimeStamps);
 		currentConfig->m_hipTrajectoryData.m_originalRotationAxes = LIC<3>(hipRotAxes, hipTimeStamps);
 		currentConfig->m_hipTrajectoryData.m_originalTranslations = LIC<3>(hipTranslations, hipTimeStamps);
@@ -296,11 +296,7 @@ namespace Mona {
 						}
 						LIC<3> part1(curvePoints_1, tValues_1);
 						LIC<3> part2(curvePoints_2, tValues_2);
-						// desplazamos las posiciones de la parte 2 para que quede pegada a la parte 1
-						part2.translate(part1.getEnd() - part2.getStart());
-						// luego hacemos el desplazamiento temporal
-						part2.offsetTValues(currentConfig->getAnimationDuration());
-						LIC<3> dynamicCurve = LIC<3>::join(part1, part2);
+						LIC<3> dynamicCurve = LIC<3>::connect(part1, part2, currentConfig->getAnimationDuration());
 						subTrajectories.push_back(EETrajectory(dynamicCurve, TrajectoryType::DYNAMIC));
 						// falta agregar la misma curva pero al comienzo del arreglo (con otro desplazamiento temporal)
 						dynamicCurve.offsetTValues(-currentConfig->getAnimationDuration());
@@ -403,7 +399,7 @@ namespace Mona {
 			std::vector<ChainIndex> tgChainIndices = m_ikRig.m_trajectoryGenerator.getIKChains();
 			glm::mat4 toModelSpace = glm::inverse(glmUtils::translationToMat4(hipTrData->getTargetTranslation(targetTime)) *
 				glmUtils::rotationToMat4(hipTrData->getTargetRotation(targetTime)) *
-				glmUtils::scaleToMat4(glm::vec3(m_rigScale)));
+				glmUtils::scaleToMat4(glm::vec3(m_ikRig.m_rigScale)));
 			for (int i = 0; i < tgChainIndices.size();i++) {
 				ChainIndex cIndex = tgChainIndices[i];
 				IKChain* ikChain = m_ikRig.getIKChain(cIndex);

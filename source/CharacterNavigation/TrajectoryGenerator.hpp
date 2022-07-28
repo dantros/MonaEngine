@@ -33,10 +33,12 @@ namespace Mona{
         std::vector<glm::vec3> m_savedTranslations;
         std::vector<float> m_savedRotationAngles;
         std::vector<glm::vec3> m_savedRotationAxes;
+        float m_animationDuration;
     public:
-        LIC<1> getOriginalRotationAngles() { return m_originalRotationAngles; }
-        LIC<3> getOriginalRotationAxes() { return m_originalRotationAxes; }
         LIC<3> getOriginalTranslations() { return m_originalTranslations; }
+        LIC<1> sampleOriginalRotationAngles(float initialAnimTime, float finalAnimTime);
+        LIC<3> sampleOriginalRotationAxes(float initialAnimTime, float finalAnimTime);
+        LIC<3> sampleOriginalTranslations(float initialAnimTime, float finalAnimTime);
         glm::vec2 getOriginalFrontVector() { return m_originalFrontVector; }
         glm::vec3 getSavedTranslation(FrameIndex frame) { return m_savedTranslations[frame]; }
         float getSavedRotationAngle(FrameIndex frame) { return m_savedRotationAngles[frame]; }
@@ -49,7 +51,7 @@ namespace Mona{
         void setTargetRotationAngles(LIC<1> targetRotationAngles) { m_targetRotationAngles = targetRotationAngles; }
         void setTargetRotationAxes(LIC<3> targetRotationAxes) { m_targetRotationAxes = targetRotationAxes; }
         void setTargetTranslations(LIC<3> targetTranslations) { m_targetTranslations = targetTranslations; }
-        void init(int frameNum);
+        void init(int frameNum, float animDuration);
     };
     class EETrajectory {
         friend class IKRigController;
@@ -93,7 +95,6 @@ namespace Mona{
         LIC<3>* varCurve;
         std::vector<int> pointIndexes;
         std::vector<float> minValues; // tamaño D*pointIndexes.size()
-
         float descentRate;
         int maxIterations;
     };
@@ -138,6 +139,7 @@ namespace Mona{
     public:
         TrajectoryGenerator(IKRig* ikRig, std::vector<ChainIndex> ikChains);
         TrajectoryGenerator() = default;
+        void init();
         void generateNewTrajectories(AnimationIndex animIndex, ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
         std::vector<ChainIndex> getIKChains() { return m_ikChains; }

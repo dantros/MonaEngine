@@ -149,28 +149,34 @@ namespace Mona {
 
 	InverseKinematics::InverseKinematics(IKRig* ikRig, std::vector<ChainIndex> ikChains) {
 		m_ikRig = ikRig;
-		FunctionTerm<IKData> term1(term1Function, term1PartialDerivativeFunction);		
+	}
+
+	void InverseKinematics::init() {
+		FunctionTerm<IKData> term1(term1Function, term1PartialDerivativeFunction);
 		FunctionTerm<IKData> term2(term2Function, term2PartialDerivativeFunction);
 		FunctionTerm<IKData> term3(term3Function, term3PartialDerivativeFunction);
 		auto terms = std::vector<FunctionTerm<IKData>>({ term1, term2, term3 });
-		m_gradientDescent = GradientDescent<IKData>(terms,0,&m_ikData, postDescentStepCustomBehaviour);
-		setIKChains(ikChains);
+		m_gradientDescent = GradientDescent<IKData>(terms, 0, &m_ikData, postDescentStepCustomBehaviour);
+		m_ikData.descentRate = 0.01;
+		m_ikData.maxIterations = 500;
+		setIKChains(m_ikChains);
 	}
 
 	void InverseKinematics::setIKChains(std::vector<ChainIndex> ikChains) {
+		m_ikChains = ikChains;
 		std::vector<IKChain*> chainPtrs(ikChains.size());
 		for (int i = 0; i < ikChains.size(); i++) {
 			chainPtrs[i] = m_ikRig->getIKChain(ikChains[i]);
 		}
 		m_ikData.ikChains = chainPtrs;
-		m_ikChainNames = std::vector<std::string>(chainPtrs.size());
+		std::vector<std::string> ikChainNames(chainPtrs.size());
 		m_ikData.jointIndexes = {};
 		std::vector<JointIndex> jointIndexes;
 		for (int c = 0; c < chainPtrs.size(); c++) {
 			jointIndexes.insert(jointIndexes.end(), chainPtrs[c]->getJoints().begin(), chainPtrs[c]->getJoints().end());
-			m_ikChainNames[c] = chainPtrs[c]->getName();
+			ikChainNames[c] = chainPtrs[c]->getName();
 			for (int i = 0; i < c; i++) {
-				if (m_ikChainNames[i] == m_ikChainNames[c]) {
+				if (ikChainNames[i] == ikChainNames[c]) {
 					MONA_LOG_ERROR("InverseKinematics: chain names must all be different.");
 					return;
 				}

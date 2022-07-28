@@ -55,12 +55,13 @@ namespace Mona {
 
 	class InverseKinematics {
 		IKRig* m_ikRig;
+		std::vector<ChainIndex> m_ikChains;
 		GradientDescent<IKData> m_gradientDescent;
 		IKData m_ikData;
-		std::vector<std::string> m_ikChainNames;
 	public:
 		InverseKinematics() = default;
 		InverseKinematics(IKRig* ikRig, std::vector<ChainIndex> ikChains);
+		void init();
 		void setIKChains(std::vector<ChainIndex> ikChains);
 		std::vector<std::pair<JointIndex, glm::fquat>> solveIKChains(AnimationIndex animationIndex);
 	};

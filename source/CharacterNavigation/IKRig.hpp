@@ -25,6 +25,7 @@ namespace Mona{
             JointIndex getHipJoint() { return m_hipJoint; }
             glm::vec2 getFrontVector() { return m_frontVector; }
             float getRigHeight() { return m_rigHeight; }
+            float getRigScale() { return m_rigScale; }
             void setAngularSpeed(float angularSpeed) { m_angularSpeed = angularSpeed; }
             float getAngularSpeed() { return m_angularSpeed; }
             InnerComponentHandle getTransformHandle() { return m_transformHandle; }
@@ -47,8 +48,10 @@ namespace Mona{
             InnerComponentHandle m_transformHandle;
             ForwardKinematics m_forwardKinematics;
             InverseKinematics m_inverseKinematics;
-            // Altura aproximada del rig, para calculos con distancias relativas
+            // Altura aproximada del rig (model space), para calculos con distancias relativas
             float m_rigHeight;
+            // Escala global
+            float m_rigScale;
             // Arreglo de nodos (hay uno por cada articulacion)
             std::vector<IKNode> m_nodes;
             // Arreglo de cadenas IK

@@ -14,7 +14,8 @@ namespace Mona {
 		friend class AnimationClipManager;
 		friend class IKRigConfig;
 		friend class IKRigController;
-		using jointIndex = uint32_t;
+		typedef int JointIndex;
+		typedef int FrameIndex;
 		struct AnimationTrack {
 			std::vector<glm::vec3> positions;
 			std::vector<glm::fquat> rotations;
@@ -49,11 +50,11 @@ namespace Mona {
 		glm::fquat GetRotation(float time, int joint, bool isLooping);
 		glm::vec3 GetScale(float time, int joint, bool isLooping);
 		void SetRotation(glm::fquat newRotation, int frameIndex, int joint);
+		int GetTrackIndex(int jointIndex);
 
 		std::vector<AnimationTrack> m_animationTracks;
 		std::vector<std::string> m_trackJointNames;
-		std::vector<jointIndex> m_trackJointIndices;
-		std::vector<int> m_jointTrackIndices;
+		std::vector<JointIndex> m_trackJointIndices;
 		std::shared_ptr<Skeleton> m_skeletonPtr;
 		float m_duration = 1.0f;
 		std::string m_animationName;

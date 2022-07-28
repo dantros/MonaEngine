@@ -47,6 +47,8 @@ namespace Mona {
     private:
         // Clip de animacion asociado a esta configuracion
         std::shared_ptr<AnimationClip> m_animationClip;
+        // Indices de las articulaciones presentes en la animacion. Ordenados de acuerdo a la toplogia.
+        std::vector<JointIndex> m_jointIndices;
         // Rotaciones para cada joint de la animacion base para cada frame 
         std::vector<std::vector<JointRotation>> m_baseJointRotations;
         // Rotaciones modificables para cada joint
@@ -104,6 +106,8 @@ namespace Mona {
         AnimationType getAnimationType() { return m_animationType; }
         // ajustar animationTime input al rango correspondiente (del arreglo de timeStamps)
         float adjustAnimationTime(float animationTime);
+        std::vector<JointIndex>const& getJointIndices() { return m_jointIndices; }
+        bool hasJoint(JointIndex joint);
     };
 
     struct JointData {

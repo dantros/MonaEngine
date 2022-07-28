@@ -1,25 +1,34 @@
 #include "IKRigBase.hpp"
 #include "Kinematics.hpp"
 #include "../Animation/AnimationClip.hpp"
+#include "../Animation/Skeleton.hpp"
 
 namespace Mona{
 
 	IKRigConfig::IKRigConfig(std::shared_ptr<AnimationClip> animation, AnimationIndex animationIndex, ForwardKinematics* forwardKinematics) {
 		m_animationClip = animation;
+		std::vector<JointIndex>const& topology = m_animationClip->GetSkeleton()->m_parentIndices;
+		std::vector<JointIndex> trackJointIndices = m_animationClip->m_trackJointIndices;
+		std::sort(trackJointIndices.begin(), trackJointIndices.end());
+		m_jointIndices = trackJointIndices;
+
 		int frameNum = animation->m_animationTracks[0].rotationTimeStamps.size();
 		int jointNum = animation->m_animationTracks.size();
 		m_jointPositions.resize(jointNum);
 		m_jointScales.resize(jointNum);
 		m_timeStamps = animation->m_animationTracks[0].rotationTimeStamps;
-		m_baseJointRotations.resize(frameNum);
 		for (int i = 0; i < jointNum;i++) {
-			m_jointPositions[i] = animation->m_animationTracks[i].positions[0];
-			m_jointScales[i] = animation->m_animationTracks[i].scales[0];
+			JointIndex jIndex = getJointIndices()[i];
+			int trackIndex = animation->GetTrackIndex(jIndex);
+			m_jointPositions[i] = animation->m_animationTracks[trackIndex].positions[0];
+			m_jointScales[i] = animation->m_animationTracks[trackIndex].scales[0];
 		}
+		m_baseJointRotations.resize(frameNum);
 		for (FrameIndex i = 0; i < frameNum; i++) {
 			m_baseJointRotations[i]  = std::vector<JointRotation>(jointNum);
-			for (JointIndex j = 0; j < jointNum; j++) {
-				int trackIndex = animation->m_jointTrackIndices[j];
+			for (int j = 0; j < jointNum; j++) {
+				JointIndex jIndex = getJointIndices()[i];
+				int trackIndex = animation->GetTrackIndex(jIndex);
 				m_baseJointRotations[i][j] = JointRotation(animation->m_animationTracks[trackIndex].rotations[i]);
 			}
 		}
@@ -97,6 +106,15 @@ namespace Mona{
 			}
 		}
 		return -1;
+	}
+
+	bool IKRigConfig::hasJoint(JointIndex joint) {
+		for (int i = 0; i < getJointIndices().size(); i++) {
+			if (getJointIndices()[i] == joint) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	IKNode::IKNode(std::string jointName, JointIndex jointIndex, IKNode* parent, float weight) {

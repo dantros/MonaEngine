@@ -49,6 +49,7 @@ namespace Mona{
         void setTargetRotationAngles(LIC<1> targetRotationAngles) { m_targetRotationAngles = targetRotationAngles; }
         void setTargetRotationAxes(LIC<3> targetRotationAxes) { m_targetRotationAxes = targetRotationAxes; }
         void setTargetTranslations(LIC<3> targetTranslations) { m_targetTranslations = targetTranslations; }
+        void init(int frameNum);
     };
     class EETrajectory {
         friend class IKRigController;
@@ -84,7 +85,7 @@ namespace Mona{
         float getSupportHeight(FrameIndex frame) { return m_supportHeights[frame]; }
         EETrajectory& getTargetTrajectory() { return m_targetTrajectory; }
         void setTargetTrajectory(LIC<3> trajectory, TrajectoryType trajectoryType) { m_targetTrajectory = EETrajectory(trajectory, trajectoryType); }
-
+        void init(int frameNum);
     };
 
     struct TGData {

@@ -601,6 +601,17 @@ namespace Mona{
     }
 
 
+    void HipGlobalTrajectoryData::init(int frameNum) {
+        m_savedRotationAngles = std::vector<float>(frameNum);
+        m_savedRotationAxes = std::vector<glm::vec3>(frameNum);
+        m_savedTranslations = std::vector<glm::vec3>(frameNum);
+    }
+
+    void  EEGlobalTrajectoryData::init(int frameNum) {
+        m_savedPositions = std::vector<glm::vec3>(frameNum);
+        m_supportHeights = std::vector<float>(frameNum);
+    }
+
 
     
 }

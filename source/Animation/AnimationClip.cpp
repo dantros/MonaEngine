@@ -138,10 +138,6 @@ namespace Mona {
 			uint32_t jointIndex = static_cast<uint32_t>(signIndex);
 			m_trackJointIndices[i] = jointIndex;
 		}
-		m_jointTrackIndices = std::vector<int>(skeletonPtr->m_jointNames.size());
-		for (uint32_t i = 0; i < m_trackJointIndices.size(); i++) {
-			m_jointTrackIndices[m_trackJointIndices[i]] = i;
-		}
 		m_skeletonPtr = skeletonPtr;
 	}
 
@@ -161,7 +157,9 @@ namespace Mona {
 
 	void AnimationClip::RemoveJointTranslation(int jointIndex) {
 		//Remueve las translaciones del track de animacion asociado a una articulacion del esqueleto
-		auto& track = m_animationTracks[m_jointTrackIndices[jointIndex]];
+		int trackIndex = GetTrackIndex(jointIndex);
+		MONA_ASSERT(trackIndex != -1, "AnimationClip: Joint not present in animation.");
+		auto& track = m_animationTracks[trackIndex];
 		for (int i = 0; i < track.positions.size(); i++) {
 			track.positions[i] = glm::vec3(0);
 		}
@@ -169,7 +167,9 @@ namespace Mona {
 
 	void AnimationClip::RemoveJointScaling(int jointIndex) {
 		//Remueve los escalamientos del track de animacion asociado a una articulacion del esqueleto
-		auto& track = m_animationTracks[m_jointTrackIndices[jointIndex]];
+		int trackIndex = GetTrackIndex(jointIndex);
+		MONA_ASSERT(trackIndex != -1, "AnimationClip: Joint not present in animation.");
+		auto& track = m_animationTracks[trackIndex];
 		for (int i = 0; i < track.positions.size(); i++) {
 			track.scales[i] = glm::vec3(1);
 		}
@@ -177,7 +177,9 @@ namespace Mona {
 
 	void AnimationClip::RemoveJointRotation(int jointIndex) {
 		//Remueve las translaciones del track de animacion asociado a una articulacion del esqueleto
-		auto& track = m_animationTracks[m_jointTrackIndices[jointIndex]];
+		int trackIndex = GetTrackIndex(jointIndex);
+		MONA_ASSERT(trackIndex != -1, "AnimationClip: Joint not present in animation.");
+		auto& track = m_animationTracks[trackIndex];
 		for (int i = 0; i < track.positions.size(); i++) {
 			track.rotations[i] = glm::identity<glm::fquat>();
 		}
@@ -208,7 +210,9 @@ namespace Mona {
 	glm::vec3 AnimationClip::GetPosition(float time, int joint, bool isLooping) {
 		//Primero se obtiene el tiempo de muestreo correcto
 		float newTime = GetSamplingTime(time, isLooping);
-		const AnimationTrack& animationTrack = m_animationTracks[m_jointTrackIndices[joint]];
+		int trackIndex = GetTrackIndex(joint);
+		MONA_ASSERT(trackIndex != -1, "AnimationClip: Joint not present in animation.");
+		const AnimationTrack& animationTrack = m_animationTracks[trackIndex];
 		glm::vec3 localPosition;
 		if (animationTrack.positions.size() > 1)
 		{
@@ -226,7 +230,9 @@ namespace Mona {
 	glm::fquat AnimationClip::GetRotation(float time, int joint, bool isLooping) {
 		//Primero se obtiene el tiempo de muestreo correcto
 		float newTime = GetSamplingTime(time, isLooping);
-		const AnimationTrack& animationTrack = m_animationTracks[m_jointTrackIndices[joint]];
+		int trackIndex = GetTrackIndex(joint);
+		MONA_ASSERT(trackIndex != -1, "AnimationClip: Joint not present in animation.");
+		const AnimationTrack& animationTrack = m_animationTracks[trackIndex];
 		glm::fquat localRotation;
 		if (animationTrack.rotations.size() > 1)
 		{
@@ -244,7 +250,9 @@ namespace Mona {
 	glm::vec3 AnimationClip::GetScale(float time, int joint, bool isLooping) {
 		//Primero se obtiene el tiempo de muestreo correcto
 		float newTime = GetSamplingTime(time, isLooping);
-		const AnimationTrack& animationTrack = m_animationTracks[m_jointTrackIndices[joint]];
+		int trackIndex = GetTrackIndex(joint);
+		MONA_ASSERT(trackIndex != -1, "AnimationClip: Joint not present in animation.");
+		const AnimationTrack& animationTrack = m_animationTracks[trackIndex];
 		glm::vec3 localScale;
 		if (animationTrack.scales.size() > 1)
 		{
@@ -261,9 +269,20 @@ namespace Mona {
 	}
 
 	void AnimationClip::SetRotation(glm::fquat newRotation, int frameIndex, int joint) {
-		AnimationTrack& animationTrack = m_animationTracks[m_jointTrackIndices[joint]];
+		int trackIndex = GetTrackIndex(joint);
+		MONA_ASSERT(trackIndex != -1, "AnimationClip: Joint not present in animation.");
+		AnimationTrack& animationTrack = m_animationTracks[trackIndex];
 		MONA_ASSERT(0 <= frameIndex && frameIndex < animationTrack.rotations.size(), "AnimationClip: frame index out of range.");
 		animationTrack.rotations[frameIndex] = newRotation;
+	}
+
+	int AnimationClip::GetTrackIndex(int jointIndex) {
+		for (int i = 0; i < m_trackJointIndices.size(); i++) {
+			if (m_trackJointIndices[i] == jointIndex) {
+				return i;
+			}
+		}
+		return -1;
 	}
 
 }

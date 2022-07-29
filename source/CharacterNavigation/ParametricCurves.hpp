@@ -21,6 +21,7 @@ namespace Mona{
         std::vector<float> m_tValues = { 1,0 };
         // dimension de los puntos
         int m_dimension = 0;
+        float m_tEpsilon = 0.000001;
     public:
         glm::vec2 getTRange() { return glm::vec2({ m_tValues[0], m_tValues.back() }); }
         bool inTRange(float t) { return m_tValues[0] <= t && t <= m_tValues.back(); }
@@ -32,19 +33,21 @@ namespace Mona{
         glm::vec<D, float> getStart() { return m_curvePoints[0]; }
         glm::vec<D, float> getEnd() { return m_curvePoints.back(); }
         LIC() = default;
-        LIC(std::vector<glm::vec<D, float>> curvePoints, std::vector<float> tValues) {
+        LIC(std::vector<glm::vec<D, float>> curvePoints, std::vector<float> tValues, float tEpsilon = 0.000001) {
             MONA_ASSERT(1 < curvePoints.size(), "LIC: must provide at least two points.");
             MONA_ASSERT(curvePoints.size() == tValues.size(), "LIC: there must be exactly one tValue per spline point.");
             // chequeamos que los tValues vengan correctamente ordenados
             for (int i = 1; i < tValues.size(); i++) {
-                if (!(tValues[i - 1] < tValues[i])) {
-                    MONA_LOG_ERROR("LIC: tValues must come in a strictly ascending order");
-                    return;
-                }
+                MONA_ASSERT(tValues[i - 1] < tValues[i], "LIC: tValues must come in a strictly ascending order");
             }
             m_curvePoints = curvePoints;
             m_tValues = tValues;
             m_dimension = D;
+            m_tEpsilon = tEpsilon;
+
+            // se ajustan los extremos con un epsilon
+            m_tValues.back() += m_tEpsilon;
+            m_tValues[0] -= m_tEpsilon;
         }
 
         glm::vec<D, float> getVelocity(float t) {
@@ -79,18 +82,17 @@ namespace Mona{
 
         void displacePointT(int pointIndex, float newT, bool scalePoints = true, float pointScalingRatio = 1) {
             MONA_ASSERT(inTRange(newT), "LIC: newT must be a value between {0} and {1}.", m_tValues[0], m_tValues.back());
-            glm::vec2 tRange = getTRange();
             float oldT = m_tValues[pointIndex];
-            float fractionBelow = funcUtils::getFraction(tRange[0], oldT, newT);
-            float fractionAbove = funcUtils::getFraction(tRange[1], oldT, newT);
+            float fractionBelow = funcUtils::getFraction(getTRange()[0], oldT, newT);
+            float fractionAbove = funcUtils::getFraction(getTRange()[1], oldT, newT);
             for (int i = 0; i < pointIndex; i++) {
-                tRange[i] = funcUtils::lerp(tRange[0], tRange[i], fractionBelow);
+                m_tValues[i] = funcUtils::lerp(m_tValues[0], m_tValues[i], fractionBelow);
                 if (scalePoints) {
                     m_curvePoints[i] = funcUtils::lerp(m_curvePoints[0], m_curvePoints[i], fractionBelow * pointScalingRatio);
                 }
             }
             for (int i = pointIndex; i < m_curvePoints.size(); i++) {
-                tRange[i] = funcUtils::lerp(tRange[1], tRange[i], fractionAbove);
+                m_tValues[i] = funcUtils::lerp(m_tValues.back(), m_tValues[i], fractionAbove);
                 if (scalePoints) {
                     m_curvePoints[i] = funcUtils::lerp(m_curvePoints.back(), m_curvePoints[i], fractionAbove * pointScalingRatio);
                 }
@@ -104,8 +106,8 @@ namespace Mona{
 
         LIC<D> sample(float minT, float maxT) {
             MONA_ASSERT(minT < maxT, "LIC: maxT must be greater than minT.");
-            MONA_ASSERT(inTRange(minT) && inTRange(maxT), "LIC: Both minT and maxT must be in t range.")
-                std::vector<float> sampleTValues;
+            MONA_ASSERT(inTRange(minT) && inTRange(maxT), "LIC: Both minT and maxT must be in t range.");
+            std::vector<float> sampleTValues;
             sampleTValues.reserve(m_tValues.size());
             std::vector<glm::vec<D, float>> samplePoints;
             samplePoints.reserve(m_tValues.size());
@@ -232,9 +234,7 @@ namespace Mona{
 
         int getPointIndex(float tValue, bool getNext=false) const {
             if (tValue < m_tValues[0]) {
-                if (!getNext) {
-                    MONA_LOG_ERROR("LIC: There is no point at t={0} or before", tValue);
-                }
+                MONA_ASSERT(getNext, "LIC: There is no point at t={0} or before", tValue);
                 return 0;
             }
             for (int i = 1; i < m_tValues.size() - 1; i++) {
@@ -245,19 +245,34 @@ namespace Mona{
                     return i;
                 }
             }
-            if (getNext) {
-                MONA_LOG_ERROR("LIC: There is no point at t={0} or after", tValue);
-            }
+            MONA_ASSERT(!getNext, "LIC: There is no point at t={0} or after", tValue);
             return m_tValues.size() - 1;
         }
 
-        static LIC<D> connect(LIC<D> curve1, LIC<D> curve2, float curve2Offset) {
-            // desplazamos las posiciones de la parte 2 para que quede pegada a la parte 1
-            curve2.translate(curve1.getEnd() - curve2.getStart());
+        static LIC<D> connect(LIC<D> curve1, LIC<D> curve2, float curve2TOffset) {
+            glm::vec<D, float> velEndC1 = curve1.getVelocity(curve1.getTRange()[1]);
+            glm::vec<D, float> velStartC2 = curve2.getVelocity(curve2.getTRange()[0]);
+            glm::vec<D, float> transitionVel = (velEndC1 + velStartC2) / 2.0f;
+            float tDiff = (curve2.getTRange()[0] + curve2TOffset) - curve1.getTRange()[1];
+            glm::vec<D, float> transitionPoint = curve1.m_curvePoints.back() + transitionVel * tDiff;
+            // desplazamos las posiciones de la parte 2 al punto de transicion
+            curve2.translate(- curve2.getStart() + transitionPoint);
             // luego hacemos el desplazamiento temporal
-            curve2.offsetTValues(curve2Offset);
+            curve2.offsetTValues(curve2TOffset);
             return LIC<D>::join(curve1, curve2);
         }
+
+		static LIC<D> connectPoint(LIC<D> curve1, glm::vec<D,float> extraPoint, float extraPointTValue, float extraPointTOffset) {
+            glm::vec<D, float> transitionVel = curve1.getVelocity(curve1.getTRange()[1]);
+            float extraPointFinalTValue = extraPointTValue + extraPointTOffset + curve1.m_tEpsilon;
+            if (curve1.getTRange()[1] < extraPointFinalTValue) {
+				float tDiff = extraPointFinalTValue - curve1.getTRange()[1];
+                glm::vec<D, float> modifiedPoint = curve1.m_curvePoints.back() + transitionVel * tDiff;
+                curve1.m_curvePoints.push_back(modifiedPoint);
+                curve1.m_tValues.push_back(extraPointFinalTValue);
+            }
+            return curve1;	
+		}
     };
     
 }

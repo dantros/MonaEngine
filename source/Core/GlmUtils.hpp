@@ -57,6 +57,22 @@ namespace Mona {
             }
             return true;
         }
+
+        template <int D>
+        inline std::string stdVectorToString(std::vector<glm::vec<D, float>> vec) {
+			std::string result = "[ ";
+			for (int i = 0; i < vec.size(); i++) {
+                result += "[";
+                for (int j = 0; j < D; j++) {
+                    result += std::to_string(vec[i][j]);
+                    if (j != D - 1) { result += ", "; }
+                }
+                result += "]";
+                if (i != vec.size() - 1) { result += ", "; }
+			}
+			result += " ]";
+			return result;
+        }
     
 
     

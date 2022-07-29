@@ -168,7 +168,7 @@ namespace Mona {
 				parent = m_ikRig.getTopology()[parent];
 			}
 			glm::vec3 hipPosition = hipTransform * glm::vec4(0,0,0,1);
-			if (minDistance <= glm::distance(hipPosition, previousHipPosition) || i==(frameNum-1)) {
+			if (minDistance <= glm::distance(hipPosition, previousHipPosition) || i==(frameNum-1)) { // el valor del ultimo frame se guarda si o si
 				hipTransform = m_baseGlobalTransform * hipTransform; // queremos guardar valores globales
 				glm::decompose(hipTransform, hipScale, hipRotation, hipTranslation, hipSkew, hipPerspective);
 				hipRotAngles.push_back(glm::vec1(glm::angle(hipRotation)));
@@ -218,92 +218,133 @@ namespace Mona {
 			}
 			for (int j = 0; j < chainNum; j++) {
 				int eeIndex = m_ikRig.m_ikChains[j].getJoints().back();
-				bool isSupportFrame = glm::distance(positions[eeIndex], previousPositions[eeIndex]) <= minDistance;
+				bool isSupportFrame = glm::distance(positions[eeIndex], previousPositions[eeIndex]) <= minDistance*3;
 				supportFramesPerChain[j][i] = isSupportFrame;
 				glblPositionsPerChain[j][i] = m_baseGlobalTransform * glm::vec4(positions[eeIndex], 1);
 			}
 			previousPositions = positions;
 		}
+
+		// si hay un frame que no es de soporte entre dos frames que si lo son, se setea como de soporte
+		// si el penultimo es de soporte, tambien se setea el ultimo como de soporte
 		// a los valores de soporte del primer frame les asignamos el valor del ultimo asumiento circularidad
+		for (int i = 0; i < chainNum; i++) {
+			if (supportFramesPerChain[i][frameNum - 2]) {
+				supportFramesPerChain[i].back() = true;
+			}
+			supportFramesPerChain[i][0] = supportFramesPerChain[i].back();
+			for (int j = 1; j < frameNum - 1; j++) {
+				if (supportFramesPerChain[i][j - 1] && supportFramesPerChain[i][j + 1]) {
+					supportFramesPerChain[i][j] = true;
+				}
+			}			
+		}
+		
 		for (int i = 0; i < chainNum; i++) {
 			supportFramesPerChain[i][0] = supportFramesPerChain[i].back();
 		}
 
 		// dividimos cada trayectoria global (por ee) en sub trayectorias dinamicas y estaticas.
 		std::vector<bool> brokenTrajectories(chainNum);
+		std::vector<bool> continueTrajectory(chainNum);
 		for (int i = 0; i < chainNum; i++) {
 			brokenTrajectories[i] = false;
+			continueTrajectory[i] = false;
 		}
 		for (int i = 0; i < chainNum; i++) {
-			// encontrar primer punto de soporte
-			FrameIndex firstSF = -1;
-			for (int j = 0; j < frameNum; j++) {
-				if (supportFramesPerChain[i][j]) {
-					firstSF = j;
-					break;
-				}
-			}
-			MONA_ASSERT(firstSF != -1, "IKRigController: There must be at least one support frame per ee trajectory.");
 			std::vector<EETrajectory> subTrajectories;
-			float supportHeight;
-			for (FrameIndex j = firstSF; j < frameNum; j++) {
-				if (supportFramesPerChain[i][j]) {
-					FrameIndex initialFrame = 0 < j ? (j - 1) : (frameNum - 1);
-					FrameIndex finalFrame;
-					while (supportFramesPerChain[i][j]) {
-						supportHeight = glblPositionsPerChain[i][j][2];
-						currentConfig->m_ikChainTrajectoryData[i].m_supportHeights[j] = supportHeight;
-						finalFrame = j;
-						j += 1;
-						if (j == frameNum) {
-							j = 0; // volvemos al principio para completar las curvas (dinamicas) faltantes
-							break; 
-						}
+			bool allStatic = funcUtils::conditionArray_AND(supportFramesPerChain[i]);
+			if (allStatic) {
+				glm::vec3 staticPos = glblPositionsPerChain[i][0];
+				LIC<3> staticTr({ staticPos, staticPos }, { currentConfig->getAnimationTime(0), currentConfig->getAnimationTime(frameNum-1) });
+				subTrajectories.push_back(EETrajectory(staticTr, TrajectoryType::STATIC));
+				for (int j = 0; j < frameNum; j++) { currentConfig->m_ikChainTrajectoryData[i].m_supportHeights[j] = glblPositionsPerChain[i][j][2]; }
+			}
+			else {
+				// encontrar primer punto de interes (dinamica luego de uno estatico)
+				FrameIndex curveStartFrame = -1;
+				for (int j = 1; j < frameNum; j++) {
+					if (supportFramesPerChain[i][j - 1] && !supportFramesPerChain[i][j]) {
+						curveStartFrame = j;
+						break;
 					}
-					// armar trayectoria estatica
-					glm::vec3 staticPos = glblPositionsPerChain[i][j];
-					float finalTime = finalFrame == frameNum - 1 ? currentConfig->getAnimationDuration() : currentConfig->getAnimationTime(finalFrame);
-					LIC<3> staticTr({ staticPos, staticPos }, { currentConfig->getAnimationTime(initialFrame), finalTime });
-					subTrajectories.push_back(EETrajectory(staticTr, TrajectoryType::STATIC));
-
 				}
-				else {
-					FrameIndex initialFrame = 0 < j ? (j - 1) : (frameNum - 1);
-					std::vector<glm::vec3> curvePoints_1 = { glblPositionsPerChain[i][initialFrame]};
-					std::vector<float> tValues_1 = {currentConfig->getAnimationTime(initialFrame)};
-					while (!supportFramesPerChain[i][j]) {
-						currentConfig->m_ikChainTrajectoryData[i].m_supportHeights[j] = supportHeight;
-						curvePoints_1.push_back(glblPositionsPerChain[i][j]);
-						tValues_1.push_back(currentConfig->getAnimationTime(j));
-						j += 1;
+				MONA_ASSERT(curveStartFrame != -1, "IKRigController: There must be at least one support frame per ee trajectory.");
+				float supportHeight;
+				int connectedIndex = -1;
+				int j = curveStartFrame;
+				FrameIndex currFrame;
+				while (j < frameNum + curveStartFrame) {
+					currFrame = j % frameNum;
+					FrameIndex initialFrame = currFrame - 1;
+					bool baseFrameType = supportFramesPerChain[i][currFrame];
+					TrajectoryType trType = baseFrameType ? TrajectoryType::STATIC : TrajectoryType::DYNAMIC;
+					supportHeight = glblPositionsPerChain[i][currFrame][2];
+					std::vector<glm::vec3> curvePoints_1 = { glblPositionsPerChain[i][initialFrame] };
+					std::vector<float> tValues_1 = { currentConfig->getAnimationTime(initialFrame) };
+					std::vector<glm::vec3> curvePoints_2;
+					std::vector<float> tValues_2;
+					std::vector<glm::vec3>* selectedCPArr = &curvePoints_1;
+					std::vector<float>* selectedTVArr = &tValues_1;
+					GATHER_POINTS:
+					while (baseFrameType == supportFramesPerChain[i][currFrame]) {
+						currentConfig->m_ikChainTrajectoryData[i].m_supportHeights[currFrame] = baseFrameType ? 
+							glblPositionsPerChain[i][currFrame][2] : supportHeight;
+						(*selectedCPArr).push_back(glblPositionsPerChain[i][currFrame]);
+						(*selectedTVArr).push_back(currentConfig->getAnimationTime(currFrame));
+						j++;
+						currFrame = j % frameNum;
 						if (j == frameNum) {
 							brokenTrajectories[i] = true;
-							break; 
+							continueTrajectory[i] = true;
+							break;
+						}
+						if (currFrame == curveStartFrame) { break; }
+						
+					}
+					if (continueTrajectory[i]) {
+						selectedCPArr = &curvePoints_2;
+						selectedTVArr = &tValues_2;
+						continueTrajectory[i] = false;
+						goto GATHER_POINTS;
+					}
+					// si es estatica la reducimos
+					if (trType == TrajectoryType::STATIC) {
+						if (2 <= curvePoints_1.size()) {
+							curvePoints_1 = { curvePoints_1[0], curvePoints_1.back() };
+							tValues_1 = { tValues_1[0], tValues_1.back() };
+						}
+						if (2 <= curvePoints_2.size()) {
+							curvePoints_2 = { curvePoints_2[0], curvePoints_2.back() };
+							tValues_2 = { tValues_2[0], tValues_2.back() };
 						}
 					}
-					if (!brokenTrajectories[i]) { // si llegamos a un frame de soporte sin salirnos del arreglo
-						supportHeight = glblPositionsPerChain[i][j][2];
-						currentConfig->m_ikChainTrajectoryData[i].m_supportHeights[j] = supportHeight;
-						subTrajectories.push_back(EETrajectory(LIC<3>(curvePoints_1, tValues_1), TrajectoryType::DYNAMIC));
+					LIC<3> fullCurve;
+					if (curvePoints_2.size() == 0) {
+						fullCurve = LIC<3>(curvePoints_1, tValues_1);
 					}
-					else {
-						std::vector<glm::vec3> curvePoints_2;
-						std::vector<float> tValues_2;
-						for (FrameIndex k = 0; k < firstSF; k++) {
-							currentConfig->m_ikChainTrajectoryData[i].m_supportHeights[k] = supportHeight;
-							curvePoints_2.push_back(glblPositionsPerChain[i][k]);
-							tValues_2.push_back(currentConfig->getAnimationTime(k));
-						}
+					else if (curvePoints_2.size() == 1) {
+						connectedIndex = subTrajectories.size();
+						LIC<3> part1(curvePoints_1, tValues_1);
+						fullCurve = LIC<3>::connectPoint(part1, curvePoints_2[0], tValues_2[0], currentConfig->getAnimationDuration());
+					}
+					else if(1 < curvePoints_2.size()) {
+						connectedIndex = subTrajectories.size();
 						LIC<3> part1(curvePoints_1, tValues_1);
 						LIC<3> part2(curvePoints_2, tValues_2);
-						LIC<3> dynamicCurve = LIC<3>::connect(part1, part2, currentConfig->getAnimationDuration());
-						subTrajectories.push_back(EETrajectory(dynamicCurve, TrajectoryType::DYNAMIC));
-						// falta agregar la misma curva pero al comienzo del arreglo (con otro desplazamiento temporal)
-						dynamicCurve.offsetTValues(-currentConfig->getAnimationDuration());
-						subTrajectories.insert(subTrajectories.begin() ,EETrajectory(dynamicCurve, TrajectoryType::DYNAMIC));
+						fullCurve = LIC<3>::connect(part1, part2, currentConfig->getAnimationDuration());
 					}
-				}				
-			}
+					subTrajectories.push_back(EETrajectory(fullCurve, trType));
+									
+				}
+				if (connectedIndex != -1) {
+					// falta agregar la misma curva pero al comienzo del arreglo (con otro desplazamiento temporal)
+					LIC<3> connectedCurve = subTrajectories[connectedIndex].getEECurve();
+					TrajectoryType connectedTrType = subTrajectories[connectedIndex].isDynamic() ? TrajectoryType::DYNAMIC : TrajectoryType::STATIC;
+					connectedCurve.offsetTValues(-currentConfig->getAnimationDuration());
+					subTrajectories.insert(subTrajectories.begin(), EETrajectory(connectedCurve, connectedTrType));
+				}
+			}			
 			// asignamos las sub trayectorias a la cadena correspondiente
 			currentConfig->m_ikChainTrajectoryData[i].m_originalSubTrajectories = subTrajectories;
 		}
@@ -339,7 +380,7 @@ namespace Mona {
 				currentConfig->m_ikChainTrajectoryData[i].m_originalSubTrajectories[j].m_hipMaxAltitudeIndex = savedIndex;
 			}	
 		}
-
+		std::cout << glmUtils::stdVectorToString(hipTranslations);
 
 		// Se remueve el movimiento de las caderas
 		animationClip->RemoveJointRotation(m_ikRig.m_hipJoint);

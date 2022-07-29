@@ -82,26 +82,20 @@ namespace Mona {
 		IKChain ikChain;
 		ikChain.m_name = chainName;
 		JointIndex eeIndex = funcUtils::findIndex(jointNames, chainEnds.endEffectorName);
-		if (eeIndex != -1) {
-			int chainBaseIndex = -1;
-			IKNode* currentNode = &m_nodes[eeIndex];
-			while (currentNode != nullptr) {
-				if (currentNode->m_jointName == chainEnds.baseJointName) {
-					chainBaseIndex = currentNode->m_jointIndex;
-					break;
-				}
-				// la joint correspondiente a la base de la cadena no se guarda para ser modificada mediante IK
-				// , ya que esta es una articulacion que se considera fija
-				ikChain.m_joints.insert(ikChain.m_joints.begin(), currentNode->m_jointIndex);
-				currentNode = currentNode->m_parent;
+		MONA_ASSERT(eeIndex != -1, "IKRig: Did not find an end effector named {0}", chainEnds.endEffectorName);
+		int chainBaseIndex = -1;
+		IKNode* currentNode = &m_nodes[eeIndex];
+		while (currentNode != nullptr) {
+			if (currentNode->m_jointName == chainEnds.baseJointName) {
+				chainBaseIndex = currentNode->m_jointIndex;
+				break;
 			}
-			if (chainBaseIndex == -1) {
-				MONA_LOG_ERROR("IKRig: base joint and end effector were not on the same chain!");
-			}
+			// la joint correspondiente a la base de la cadena no se guarda para ser modificada mediante IK
+			// , ya que esta es una articulacion que se considera fija
+			ikChain.m_joints.insert(ikChain.m_joints.begin(), currentNode->m_jointIndex);
+			currentNode = currentNode->m_parent;
 		}
-		else {
-			MONA_LOG_ERROR("IKRig: Did not find an end effector named {0}", chainEnds.endEffectorName);
-		}
+		MONA_ASSERT(chainBaseIndex != -1, "IKRig: base joint and end effector were not on the same chain!");
 		return ikChain;
 	}
 

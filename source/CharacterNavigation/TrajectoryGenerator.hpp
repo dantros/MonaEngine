@@ -53,6 +53,7 @@ namespace Mona{
         void setTargetTranslations(LIC<3> targetTranslations) { m_targetTranslations = targetTranslations; }
         void init(int frameNum, float animDuration);
     };
+
     class EETrajectory {
         friend class IKRigController;
         friend class EETrajectoryData;

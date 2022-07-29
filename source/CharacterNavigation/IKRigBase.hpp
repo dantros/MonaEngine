@@ -63,7 +63,7 @@ namespace Mona {
         AnimationIndex m_animIndex = -1;
         ForwardKinematics* m_forwardKinematics;
         // Data de trayectoria para cada ikChain (mantiene orden del arreglo original de cadenas)
-        std::vector<EEGlobalTrajectoryData> m_ikChainTrajectoryData;
+        std::vector<EEGlobalTrajectoryData> m_eeTrajectoryData;
         // Data de trayectoria para la cadera
         HipGlobalTrajectoryData m_hipTrajectoryData;
         // Tiempo actual de la animacion
@@ -101,7 +101,7 @@ namespace Mona {
         std::vector<glm::vec3> getModelSpacePositions(FrameIndex frame, bool useDynamicRotations);
         std::vector<glm::mat4> getCustomSpaceTransforms(glm::mat4 baseTransform, FrameIndex frame, bool useDynamicRotations);
         std::vector<glm::mat4> getJointSpaceTransforms(FrameIndex frame, bool useDynamicRotations);
-        EEGlobalTrajectoryData* getEETrajectoryData(ChainIndex chainIndex) { return &(m_ikChainTrajectoryData[chainIndex]); }
+        EEGlobalTrajectoryData* getEETrajectoryData(ChainIndex chainIndex) { return &(m_eeTrajectoryData[chainIndex]); }
         HipGlobalTrajectoryData* getHipTrajectoryData() { return &m_hipTrajectoryData; }
         AnimationType getAnimationType() { return m_animationType; }
         // ajustar animationTime input al rango correspondiente (del arreglo de timeStamps)

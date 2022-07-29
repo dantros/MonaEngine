@@ -134,7 +134,7 @@ namespace Mona {
 		AnimationIndex newIndex = m_ikRig.m_animationConfigs.size();
 		m_ikRig.m_animationConfigs.push_back(IKRigConfig(animationClip, newIndex, &m_ikRig.m_forwardKinematics));
 		IKRigConfig* currentConfig = m_ikRig.getAnimationConfig(newIndex);
-		currentConfig->m_ikChainTrajectoryData = std::vector<EEGlobalTrajectoryData>(m_ikRig.m_ikChains.size());
+		currentConfig->m_eeTrajectoryData = std::vector<EEGlobalTrajectoryData>(m_ikRig.m_ikChains.size());
 
 		int chainNum = m_ikRig.m_ikChains.size();
 
@@ -198,7 +198,7 @@ namespace Mona {
 		for (int i = 0; i < chainNum; i++) {
 			supportFramesPerChain[i] = std::vector<bool>(frameNum);
 			glblPositionsPerChain[i] = std::vector<glm::vec3>(frameNum);
-			currentConfig->m_ikChainTrajectoryData[i].init(frameNum);
+			currentConfig->m_eeTrajectoryData[i].init(frameNum);
 		}
 		for (int i = 0; i < frameNum; i++) {
 			// calculo de las transformaciones en model space
@@ -258,7 +258,7 @@ namespace Mona {
 				glm::vec3 staticPos = glblPositionsPerChain[i][0];
 				LIC<3> staticTr({ staticPos, staticPos }, { currentConfig->getAnimationTime(0), currentConfig->getAnimationTime(frameNum-1) });
 				subTrajectories.push_back(EETrajectory(staticTr, TrajectoryType::STATIC));
-				for (int j = 0; j < frameNum; j++) { currentConfig->m_ikChainTrajectoryData[i].m_supportHeights[j] = glblPositionsPerChain[i][j][2]; }
+				for (int j = 0; j < frameNum; j++) { currentConfig->m_eeTrajectoryData[i].m_supportHeights[j] = glblPositionsPerChain[i][j][2]; }
 			}
 			else {
 				// encontrar primer punto de interes (dinamica luego de uno estatico)
@@ -288,7 +288,7 @@ namespace Mona {
 					std::vector<float>* selectedTVArr = &tValues_1;
 					GATHER_POINTS:
 					while (baseFrameType == supportFramesPerChain[i][currFrame]) {
-						currentConfig->m_ikChainTrajectoryData[i].m_supportHeights[currFrame] = baseFrameType ? 
+						currentConfig->m_eeTrajectoryData[i].m_supportHeights[currFrame] = baseFrameType ? 
 							glblPositionsPerChain[i][currFrame][2] : supportHeight;
 						(*selectedCPArr).push_back(glblPositionsPerChain[i][currFrame]);
 						(*selectedTVArr).push_back(currentConfig->getAnimationTime(currFrame));
@@ -342,17 +342,33 @@ namespace Mona {
 					LIC<3> connectedCurve = subTrajectories[connectedIndex].getEECurve();
 					TrajectoryType connectedTrType = subTrajectories[connectedIndex].isDynamic() ? TrajectoryType::DYNAMIC : TrajectoryType::STATIC;
 					connectedCurve.offsetTValues(-currentConfig->getAnimationDuration());
-					subTrajectories.insert(subTrajectories.begin(), EETrajectory(connectedCurve, connectedTrType));
+					subTrajectories.push_back(EETrajectory(connectedCurve, connectedTrType));
+				}
+				// nos aseguramos de que las curvas esten bien ordenadas
+				std::vector<EETrajectory> tempTr = subTrajectories;
+				subTrajectories = {};
+				while (0 < tempTr.size()) {
+					float minT = std::numeric_limits<float>::max();
+					int minIndex = -1;
+					for (int t = 0; t < tempTr.size(); t++) {
+						float currT = tempTr[t].getEECurve().getTRange()[0];
+						if (currT < minT) {
+							minT = currT;
+							minIndex = t;
+						}
+					}
+					subTrajectories.push_back(tempTr[minIndex]);
+					tempTr.erase(tempTr.begin() + minIndex);
 				}
 			}			
 			// asignamos las sub trayectorias a la cadena correspondiente
-			currentConfig->m_ikChainTrajectoryData[i].m_originalSubTrajectories = subTrajectories;
+			currentConfig->m_eeTrajectoryData[i].m_originalSubTrajectories = subTrajectories;
 		}
 
 		// guardamos los tiempos de maxima altitud de la cadera
 		LIC<3>& hipTr = currentConfig->getHipTrajectoryData()->m_originalTranslations;
 		for (int i = 0; i < m_ikRig.m_ikChains.size(); i++) {
-			EEGlobalTrajectoryData& trData = currentConfig->m_ikChainTrajectoryData[i];
+			EEGlobalTrajectoryData& trData = currentConfig->m_eeTrajectoryData[i];
 			for (int j = 0; j < trData.m_originalSubTrajectories.size(); j++) {
 				float maxZ = std::numeric_limits<float>::min();
 				int savedIndex = -1;
@@ -377,7 +393,7 @@ namespace Mona {
 						savedIndex = k;
 					}
 				}
-				currentConfig->m_ikChainTrajectoryData[i].m_originalSubTrajectories[j].m_hipMaxAltitudeIndex = savedIndex;
+				currentConfig->m_eeTrajectoryData[i].m_originalSubTrajectories[j].m_hipMaxAltitudeIndex = savedIndex;
 			}	
 		}
 		std::cout << glmUtils::stdVectorToString(hipTranslations);

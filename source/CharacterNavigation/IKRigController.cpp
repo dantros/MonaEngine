@@ -218,7 +218,7 @@ namespace Mona {
 			}
 			for (int j = 0; j < chainNum; j++) {
 				int eeIndex = m_ikRig.m_ikChains[j].getJoints().back();
-				bool isSupportFrame = glm::distance(positions[eeIndex], previousPositions[eeIndex]) <= minDistance*3;
+				bool isSupportFrame = glm::distance(positions[eeIndex], previousPositions[eeIndex]) <= minDistance*5;
 				supportFramesPerChain[j][i] = isSupportFrame;
 				glblPositionsPerChain[j][i] = m_baseGlobalTransform * glm::vec4(positions[eeIndex], 1);
 			}
@@ -396,7 +396,7 @@ namespace Mona {
 				currentConfig->m_eeTrajectoryData[i].m_originalSubTrajectories[j].m_hipMaxAltitudeIndex = savedIndex;
 			}	
 		}
-		std::cout << glmUtils::stdVectorToString(hipTranslations);
+		std::cout << glmUtils::stdVectorToString(hipTranslations) <<std::endl;
 
 		// Se remueve el movimiento de las caderas
 		animationClip->RemoveJointRotation(m_ikRig.m_hipJoint);

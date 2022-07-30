@@ -171,7 +171,7 @@ namespace Mona{
 
         float targetDistance = glm::distance(baseCurve.getStart(), baseCurve.getEnd());
         glm::vec3 originalDirection = glm::normalize(baseCurve.getEnd() - baseCurve.getStart());
-        glm::vec2 targetXYDirection = glm::rotate(glm::vec2(originalDirection), xyMovementRotAngle);
+        glm::vec2 targetXYDirection = glm::normalize(glm::rotate(glm::vec2(originalDirection), xyMovementRotAngle));
         float supportHeight = trData->getSupportHeight(initialFrame);
         std::vector<glm::vec3> strideData = calcStrideData(supportHeight, initialPos, targetDistance, targetXYDirection, 8, transformManager, staticMeshManager);
         if (strideData.size() == 0) { // si no es posible avanzar por la elevacion del terreno
@@ -207,23 +207,30 @@ namespace Mona{
         m_tgData.baseVelocities.reserve(baseCurve.getNumberOfPoints());
         m_tgData.minValues.clear();
         m_tgData.minValues.reserve(baseCurve.getNumberOfPoints() * 3);
-        int stridePointInd = 0;
-        float stridePointPreviousDist = glm::distance2(glm::vec2(baseCurve.getCurvePoint(0)), glm::vec2(strideData[stridePointInd]));
         std::vector<std::pair<int, int>> curvePointIndex_stridePointIndex;
-        for (int i = 1; i < baseCurve.getNumberOfPoints(); i++) {
-            // Los extremos de la curva se mantendran fijos.
-            m_tgData.pointIndexes.push_back(i);
-            float currDist = glm::distance2(glm::vec2(baseCurve.getCurvePoint(i)), glm::vec2(strideData[stridePointInd]));
-            if (stridePointPreviousDist < currDist) {
-                // si la distancia del punto actual es mayor, entonces el anterior se escoge como el mas cercano
-                curvePointIndex_stridePointIndex.push_back({i-1, stridePointInd});
-                stridePointInd += 1;
-                if (stridePointInd == strideData.size()) { break; }
+        std::vector<int> baseCurveIndices;
+        std::vector<int> strideDataIndices;
+        for (int i = 1; i < baseCurve.getNumberOfPoints() - 1; i++) { baseCurveIndices.push_back(i); }
+        for (int i = 0; i < strideDataIndices.size(); i++) { strideDataIndices.push_back(i); }
+        while (0 < strideDataIndices.size() && 0 < baseCurveIndices.size()) {
+            float minDistance = std::numeric_limits<float>::max();
+            int minBaseCurveIndex = -1;
+            int savedI = -1;
+            int strideDataIndex = strideDataIndices[0];
+            for (int i = 0; i < baseCurveIndices.size(); i++) {
+                float baseCurveIndex = baseCurveIndices[i];
+                float currDistance = glm::distance2(glm::vec2(strideData[strideDataIndex]), glm::vec2(baseCurve.getCurvePoint(baseCurveIndex)));
+                if (currDistance < minDistance) {
+                    minDistance = currDistance;
+                    minBaseCurveIndex = baseCurveIndex;
+                    savedI = i;
+                }
             }
-            else if (i == baseCurve.getNumberOfPoints() - 1) {
-                curvePointIndex_stridePointIndex.push_back({ i, stridePointInd });
-            }
+            curvePointIndex_stridePointIndex.push_back({ minBaseCurveIndex, strideDataIndex });
+            baseCurveIndices.erase(baseCurveIndices.begin() + savedI);
+            strideDataIndices.erase(strideDataIndices.begin());
         }
+
         for (int i = 0; i < m_tgData.pointIndexes.size()*3;i++) {
             m_tgData.minValues.push_back(std::numeric_limits<float>::min());
         }

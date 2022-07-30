@@ -257,7 +257,7 @@ namespace Mona {
 			if (allStatic) {
 				glm::vec3 staticPos = glblPositionsPerChain[i][0];
 				LIC<3> staticTr({ staticPos, staticPos }, { currentConfig->getAnimationTime(0), currentConfig->getAnimationTime(frameNum-1) });
-				subTrajectories.push_back(EETrajectory(staticTr, TrajectoryType::STATIC));
+				subTrajectories.push_back(EETrajectory(staticTr, TrajectoryType::STATIC, 0));
 				for (int j = 0; j < frameNum; j++) { currentConfig->m_eeTrajectoryData[i].m_supportHeights[j] = glblPositionsPerChain[i][j][2]; }
 			}
 			else {
@@ -363,6 +363,9 @@ namespace Mona {
 			}			
 			// asignamos las sub trayectorias a la cadena correspondiente
 			currentConfig->m_eeTrajectoryData[i].m_originalSubTrajectories = subTrajectories;
+			for (int j = 0; j < subTrajectories.size(); j++) {
+				currentConfig->m_eeTrajectoryData[i].m_originalSubTrajectories[j].m_subTrajectoryID = j;
+			}
 		}
 
 		// guardamos los tiempos de maxima altitud de la cadera

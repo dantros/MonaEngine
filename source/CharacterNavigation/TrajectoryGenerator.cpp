@@ -133,7 +133,7 @@ namespace Mona{
         baseCurve.translate(initialPos);
         baseCurve.offsetTValues(-baseCurve.getTValue(0));
         baseCurve.offsetTValues(initialTime);
-        trData->setTargetTrajectory(baseCurve, TrajectoryType::STATIC);
+        trData->setTargetTrajectory(baseCurve, TrajectoryType::STATIC, baseTrajectory.getSubTrajectoryID());
     }
 
     void TrajectoryGenerator::generateDynamicTrajectory(EETrajectory baseTrajectory, 
@@ -264,10 +264,10 @@ namespace Mona{
         float transitionTime = config->getCurrentReproductionTime();
         if (trData->getTargetTrajectory().getEECurve().inTRange(transitionTime)) {
             trData->setTargetTrajectory(LIC<3>::transition(trData->getTargetTrajectory().getEECurve(), 
-                baseCurve, transitionTime), TrajectoryType::DYNAMIC);
+                baseCurve, transitionTime), TrajectoryType::DYNAMIC, baseTrajectory.getSubTrajectoryID());
         }
         else {
-            trData->setTargetTrajectory(baseCurve, TrajectoryType::DYNAMIC);
+            trData->setTargetTrajectory(baseCurve, TrajectoryType::DYNAMIC, baseTrajectory.getSubTrajectoryID());
         }   
     }
 
@@ -394,7 +394,7 @@ namespace Mona{
             float tInfLimitAnim = config->getAnimationTime(tInfLimitRep);
             float tSupLimitAnim = config->getAnimationTime(tSupLimitRep);
 
-            EETrajectory baseEEOriginalTr = baseEETrData->getSubTrajectory(tInfLimitAnim);
+            EETrajectory baseEEOriginalTr = baseEETrData->getSubTrajectoryByID(baseEETargetTr.getSubTrajectoryID());
             LIC<3>& baseEEOriginalCurve = baseEEOriginalTr.getEECurve();
             LIC<3>& baseEETargetCurve = baseEETargetTr.getEECurve();
 
@@ -431,15 +431,20 @@ namespace Mona{
             float hipHighNewTimeFraction = funcUtils::getFraction(0, startHighNewTime + highEndNewTime, startHighNewTime);
             float hipHighNewTime = funcUtils::lerp(baseEETargetCurve.getTRange()[0], baseEETargetCurve.getTRange()[1], hipHighNewTimeFraction);
 
-            int hipHighPointIndex_hip = hipTrCurve.getClosestPointIndex(hipHighOriginalTime_anim);
+            float adjustedHipHighOriginalTime_anim = hipHighOriginalTime_anim;
+            float epsilon = 0.00001;
+            if (baseEEOriginalCurve.getTRange()[0] - epsilon < hipTrCurve.getTRange()[0]) {
+                adjustedHipHighOriginalTime_anim += config->getAnimationDuration();
+            }
+            int hipHighPointIndex_hip = hipTrCurve.getClosestPointIndex(adjustedHipHighOriginalTime_anim);
 			// ajuste a tiempo de reproduccion
 			hipTrCurve.offsetTValues(-tInfLimitAnim + tInfLimitRep);
 			hipRotAnglCurve.offsetTValues(-tInfLimitAnim + tInfLimitRep);
 			hipRotAxCurve.offsetTValues(-tInfLimitAnim + tInfLimitRep);
             
-            hipTrCurve.displacePointT(hipHighPointIndex_hip, hipHighNewTime, true);
+            /*hipTrCurve.displacePointT(hipHighPointIndex_hip, hipHighNewTime, true);
             hipRotAnglCurve.displacePointT(hipHighPointIndex_hip, hipHighNewTime, true);
-            hipRotAxCurve.displacePointT(hipHighPointIndex_hip, hipHighNewTime, false);
+            hipRotAxCurve.displacePointT(hipHighPointIndex_hip, hipHighNewTime, false);*/
 
             // tercer paso: encontrar el punto final
             // creamos una curva que represente la trayectoria de caida
@@ -593,31 +598,10 @@ namespace Mona{
     }
 
 
-    EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType) {
+    EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int subTrajectoryID) {
         m_curve = trajectory;
         m_trajectoryType = trajectoryType;
-    }
-
-    EETrajectory EEGlobalTrajectoryData::getSubTrajectory(float animationTime) {
-        for (int i = 0; i < m_originalSubTrajectories.size(); i++) {
-            if (i == m_originalSubTrajectories.size() - 1) {
-                if (m_originalSubTrajectories[i].getEECurve().inTRange(animationTime)) {
-                    return m_originalSubTrajectories[i];
-                }
-            }
-            else {
-				if (m_originalSubTrajectories[i].getEECurve().inTRange(animationTime) &&
-                    m_originalSubTrajectories[i+1].getEECurve().inTRange(animationTime)) {
-                    return m_originalSubTrajectories[i+1];
-                }
-                else if (m_originalSubTrajectories[i].getEECurve().inTRange(animationTime)) {
-                    return m_originalSubTrajectories[i];
-                }
-            }
-            
-        }
-        MONA_LOG_ERROR("EETrajectoryData: AnimationTime was not valid.");
-        return EETrajectory();
+        m_subTrajectoryID = subTrajectoryID;
     }
 
     glm::fquat HipGlobalTrajectoryData::getTargetRotation(float reproductionTime) {
@@ -667,9 +651,41 @@ namespace Mona{
         }
     }
 
+	EETrajectory EEGlobalTrajectoryData::getSubTrajectory(float animationTime) {
+		for (int i = 0; i < m_originalSubTrajectories.size(); i++) {
+			if (i == m_originalSubTrajectories.size() - 1) {
+				if (m_originalSubTrajectories[i].getEECurve().inTRange(animationTime)) {
+					return m_originalSubTrajectories[i];
+				}
+			}
+			else {
+				if (m_originalSubTrajectories[i].getEECurve().inTRange(animationTime) &&
+					m_originalSubTrajectories[i + 1].getEECurve().inTRange(animationTime)) {
+					return m_originalSubTrajectories[i + 1];
+				}
+				else if (m_originalSubTrajectories[i].getEECurve().inTRange(animationTime)) {
+					return m_originalSubTrajectories[i];
+				}
+			}
+
+		}
+		MONA_LOG_ERROR("EETrajectoryData: AnimationTime was not valid.");
+		return EETrajectory();
+	}
+
     void  EEGlobalTrajectoryData::init(int frameNum) {
         m_savedPositions = std::vector<glm::vec3>(frameNum);
         m_supportHeights = std::vector<float>(frameNum);
+    }
+
+    EETrajectory EEGlobalTrajectoryData::getSubTrajectoryByID(int subTrajectoryID) {
+        for (int i = 0; i < m_originalSubTrajectories.size(); i++) {
+            if (m_originalSubTrajectories[i].getSubTrajectoryID() == subTrajectoryID) {
+                return m_originalSubTrajectories[i];
+            }
+        }
+        MONA_LOG_ERROR("EEGlobalTrajectoryData: A sub trajectory with id {0} was not found.", subTrajectoryID);
+        return EETrajectory();
     }
 
 

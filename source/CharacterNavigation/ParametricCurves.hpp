@@ -43,6 +43,7 @@ namespace Mona{
             m_curvePoints = curvePoints;
             m_tValues = tValues;
             m_dimension = D;
+            MONA_ASSERT(0 < tEpsilon, "LIC: tEpsilon must be greater than 0.");
             m_tEpsilon = tEpsilon;
 
             // se ajustan los extremos con un epsilon
@@ -128,6 +129,10 @@ namespace Mona{
                     samplePoints.push_back(evalCurve(maxT));
                     break;
                 }
+            }
+            if (samplePoints.size() == 0 || samplePoints.size() == 1) {
+                samplePoints = { evalCurve(minT), evalCurve(maxT) };
+                sampleTValues = { minT, maxT };
             }
             return LIC(samplePoints, sampleTValues);
         }

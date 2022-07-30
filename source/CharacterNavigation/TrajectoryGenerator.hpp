@@ -62,14 +62,19 @@ namespace Mona{
         // Indice del punto de la curva que tiene el tiempo en el que ocurre la
         // de maxima altura de la cadera
         int m_hipMaxAltitudeIndex = -1;
+        int m_subTrajectoryID = -1;
     public:
         EETrajectory() = default;
-        EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType);
+        EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int subTrajectoryID = -1);
         bool isDynamic() { return m_trajectoryType == TrajectoryType::DYNAMIC; }
         LIC<3>& getEECurve() { return m_curve; }
         int getHipMaxAltitudeIndex() {
             MONA_ASSERT(m_hipMaxAltitudeIndex != -1, "EETrajectory: Accessing unitialized value.");
             return m_hipMaxAltitudeIndex;
+        }
+        int getSubTrajectoryID() {
+			MONA_ASSERT(m_subTrajectoryID != -1, "EETrajectory: Accessing unitialized value.");
+			return m_subTrajectoryID;
         }
     };
     class EEGlobalTrajectoryData {
@@ -84,10 +89,13 @@ namespace Mona{
         std::vector<glm::vec3> m_savedPositions;
     public:
         EETrajectory getSubTrajectory(float animationTime);
+        EETrajectory getSubTrajectoryByID(int subTrajectoryID);
+        int getSubTrajectoryNum() { return m_originalSubTrajectories.size(); }
         glm::vec3 getSavedPosition(FrameIndex frame) { return m_savedPositions[frame]; }
         float getSupportHeight(FrameIndex frame) { return m_supportHeights[frame]; }
         EETrajectory& getTargetTrajectory() { return m_targetTrajectory; }
-        void setTargetTrajectory(LIC<3> trajectory, TrajectoryType trajectoryType) { m_targetTrajectory = EETrajectory(trajectory, trajectoryType); }
+        void setTargetTrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int subTrajectoryID) { 
+            m_targetTrajectory = EETrajectory(trajectory, trajectoryType, subTrajectoryID); }
         void init(int frameNum);
     };
 

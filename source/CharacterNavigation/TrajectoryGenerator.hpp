@@ -17,6 +17,7 @@ namespace Mona{
         DYNAMIC
     };
 
+    class IKRigConfig;
     class HipGlobalTrajectoryData {
         friend class IKRigController;
         // Angulos de rotacion originales
@@ -33,9 +34,8 @@ namespace Mona{
         std::vector<glm::vec3> m_savedTranslations;
         std::vector<float> m_savedRotationAngles;
         std::vector<glm::vec3> m_savedRotationAxes;
-        float m_animationDuration;
+        IKRigConfig* m_config;
     public:
-        LIC<3> getOriginalTranslations() { return m_originalTranslations; }
         LIC<1> sampleOriginalRotationAngles(float initialAnimTime, float finalAnimTime);
         LIC<3> sampleOriginalRotationAxes(float initialAnimTime, float finalAnimTime);
         LIC<3> sampleOriginalTranslations(float initialAnimTime, float finalAnimTime);
@@ -51,7 +51,7 @@ namespace Mona{
         void setTargetRotationAngles(LIC<1> targetRotationAngles) { m_targetRotationAngles = targetRotationAngles; }
         void setTargetRotationAxes(LIC<3> targetRotationAxes) { m_targetRotationAxes = targetRotationAxes; }
         void setTargetTranslations(LIC<3> targetTranslations) { m_targetTranslations = targetTranslations; }
-        void init(int frameNum, float animDuration);
+        void init(int frameNum, IKRigConfig* config);
     };
 
     class EETrajectory {
@@ -136,7 +136,7 @@ namespace Mona{
             ComponentManager<StaticMeshComponent>& staticMeshManager);
 
         float calcHipAdjustedHeight(IKRigConfig* config, glm::vec2 basePoint, float targetCurvesTime_rep,
-            float originalCurvesTime_anim);
+            float originalCurvesTime_extendedAnim);
         glm::vec3 calcStrideStartingPoint(float supportHeight, glm::vec3 referencePoint, float targetDistance, 
             glm::vec2 targetDirection, int stepNum,
             ComponentManager<TransformComponent>& transformManager,

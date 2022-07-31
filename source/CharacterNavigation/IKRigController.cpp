@@ -142,7 +142,7 @@ namespace Mona {
 		int frameNum = animationClip->m_animationTracks[0].rotationTimeStamps.size();
 
 		// minima distancia entre posiciones de un frame a otro para considerarlo un movimiento
-		float minDistance = m_ikRig.m_rigHeight / 1000;
+		float minDistance = m_ikRig.m_rigScale * m_ikRig.m_rigHeight / 1000;
 
 		// Guardamos la informacion de traslacion y rotacion de la cadera, antes de eliminarla
 		auto hipTrack = animationClip->m_animationTracks[animationClip->GetTrackIndex(m_ikRig.m_hipJoint)];
@@ -160,7 +160,7 @@ namespace Mona {
 		for (int i = 0; i < frameNum; i++) {
 			float timeStamp = hipTrack.rotationTimeStamps[i];
 			JointIndex parent = hipIndex;
-			glm::mat4 hipTransform = glm::identity<glm::mat4>();
+			glm::mat4 hipTransform = m_baseGlobalTransform;
 			while (parent != -1) {
 				hipTransform *= glmUtils::translationToMat4(animationClip->GetPosition(timeStamp, parent, true)) *
 					glmUtils::rotationToMat4(animationClip->GetRotation(timeStamp, parent, true)) *
@@ -169,7 +169,6 @@ namespace Mona {
 			}
 			glm::vec3 hipPosition = hipTransform * glm::vec4(0,0,0,1);
 			if (minDistance <= glm::distance(hipPosition, previousHipPosition) || i==(frameNum-1)) { // el valor del ultimo frame se guarda si o si
-				hipTransform = m_baseGlobalTransform * hipTransform; // queremos guardar valores globales
 				glm::decompose(hipTransform, hipScale, hipRotation, hipTranslation, hipSkew, hipPerspective);
 				hipRotAngles.push_back(glm::vec1(glm::angle(hipRotation)));
 				hipRotAxes.push_back(glm::axis(hipRotation));
@@ -179,7 +178,7 @@ namespace Mona {
 			previousHipPosition = hipPosition;
 		}
 
-		currentConfig->m_hipTrajectoryData.init(frameNum, currentConfig->getAnimationDuration());
+		currentConfig->m_hipTrajectoryData.init(frameNum, currentConfig);
 		currentConfig->m_hipTrajectoryData.m_originalRotationAngles = LIC<1>(hipRotAngles, hipTimeStamps);
 		currentConfig->m_hipTrajectoryData.m_originalRotationAxes = LIC<3>(hipRotAxes, hipTimeStamps);
 		currentConfig->m_hipTrajectoryData.m_originalTranslations = LIC<3>(hipTranslations, hipTimeStamps);
@@ -190,9 +189,10 @@ namespace Mona {
 		std::vector<float> rotTimeStamps = animationClip->m_animationTracks[0].rotationTimeStamps;
 		std::vector<std::vector<bool>> supportFramesPerChain(m_ikRig.m_ikChains.size());
 		std::vector<std::vector<glm::vec3>> glblPositionsPerChain(m_ikRig.m_ikChains.size());
-		std::vector<glm::vec3> positions(m_ikRig.getTopology().size());
-		std::vector<glm::mat4> transforms(m_ikRig.getTopology().size());
-		for (int i = 0; i < m_ikRig.getTopology().size(); i++) { transforms[i] = glm::identity<glm::mat4>(); }
+		std::vector<glm::vec3> glblPositions(m_ikRig.getTopology().size());
+		std::vector<glm::mat4> glblTransforms(m_ikRig.getTopology().size());
+		float floorZ = std::numeric_limits<float>::max(); // altura del piso para la animacion
+		for (int i = 0; i < m_ikRig.getTopology().size(); i++) { glblTransforms[i] = glm::identity<glm::mat4>(); }
 		std::vector<glm::vec3> previousPositions(m_ikRig.getTopology().size());
 		std::fill(previousPositions.begin(), previousPositions.end(), glm::vec3(std::numeric_limits<float>::min()));
 		for (int i = 0; i < chainNum; i++) {
@@ -205,24 +205,29 @@ namespace Mona {
 			float timeStamp = rotTimeStamps[i];
 			for (int j = 0; j < currentConfig->getJointIndices().size(); j++) {
 				JointIndex jIndex = currentConfig->getJointIndices()[j];
-				glm::mat4 baseTransform = j == 0 ? glm::identity<glm::mat4>() : transforms[m_ikRig.getTopology()[jIndex]];
-				transforms[jIndex] = baseTransform *
+				glm::mat4 baseTransform = j == 0 ? m_baseGlobalTransform : glblTransforms[m_ikRig.getTopology()[jIndex]];
+				glblTransforms[jIndex] = baseTransform *
 					glmUtils::translationToMat4(animationClip->GetPosition(timeStamp, jIndex, true)) *
 					glmUtils::rotationToMat4(animationClip->GetRotation(timeStamp, jIndex, true)) *
 					glmUtils::scaleToMat4(animationClip->GetScale(timeStamp, jIndex, true));
 			}
 
 			// calculo de las posiciones
-			for (int j = 0; j < positions.size(); j++) {
-				positions[j] = transforms[j] * glm::vec4(0, 0, 0, 1);
+			for (int j = 0; j < glblPositions.size(); j++) {
+				glblPositions[j] = glblTransforms[j] * glm::vec4(0, 0, 0, 1);
 			}
 			for (int j = 0; j < chainNum; j++) {
 				int eeIndex = m_ikRig.m_ikChains[j].getJoints().back();
-				bool isSupportFrame = glm::distance(positions[eeIndex], previousPositions[eeIndex]) <= minDistance*5;
+				bool isSupportFrame = glm::distance(glblPositions[eeIndex], previousPositions[eeIndex]) <= minDistance*5;
 				supportFramesPerChain[j][i] = isSupportFrame;
-				glblPositionsPerChain[j][i] = m_baseGlobalTransform * glm::vec4(positions[eeIndex], 1);
+				glblPositionsPerChain[j][i] = glm::vec4(glblPositions[eeIndex], 1);
 			}
-			previousPositions = positions;
+			for (int j = 0; j < glblPositions.size(); j++) {
+				if (glblPositions[j][2] < floorZ) {
+					floorZ = glblPositions[j][2];
+				}
+			}
+			previousPositions = glblPositions;
 		}
 
 		// si hay un frame que no es de soporte entre dos frames que si lo son, se setea como de soporte
@@ -290,6 +295,7 @@ namespace Mona {
 					while (baseFrameType == supportFramesPerChain[i][currFrame]) {
 						currentConfig->m_eeTrajectoryData[i].m_supportHeights[currFrame] = baseFrameType ? 
 							glblPositionsPerChain[i][currFrame][2] : supportHeight;
+						currentConfig->m_eeTrajectoryData[i].m_supportHeights[currFrame] -= floorZ;
 						(*selectedCPArr).push_back(glblPositionsPerChain[i][currFrame]);
 						(*selectedTVArr).push_back(currentConfig->getAnimationTime(currFrame));
 						j++;
@@ -367,7 +373,6 @@ namespace Mona {
 				currentConfig->m_eeTrajectoryData[i].m_originalSubTrajectories[j].m_subTrajectoryID = j;
 			}
 		}
-
 		// guardamos los tiempos de maxima altitud de la cadera
 		LIC<3>& hipTr = currentConfig->getHipTrajectoryData()->m_originalTranslations;
 		for (int i = 0; i < m_ikRig.m_ikChains.size(); i++) {

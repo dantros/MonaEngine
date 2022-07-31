@@ -105,7 +105,7 @@ namespace Mona {
         HipGlobalTrajectoryData* getHipTrajectoryData() { return &m_hipTrajectoryData; }
         AnimationType getAnimationType() { return m_animationType; }
         // ajustar animationTime input al rango correspondiente (del arreglo de timeStamps)
-        float adjustAnimationTime(float animationTime);
+        float adjustAnimationTime(float extendedAnimationTime);
         std::vector<JointIndex>const& getJointIndices() { return m_jointIndices; }
         bool hasJoint(JointIndex joint);
     };

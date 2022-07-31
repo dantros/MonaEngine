@@ -60,18 +60,18 @@ namespace Mona{
 		return m_animationClip->GetDuration(); 
 	}
 
-	float IKRigConfig::adjustAnimationTime(float animationTime) {
-		if (animationTime < m_timeStamps[0]) {
-			while (animationTime < m_timeStamps[0]) {
-				animationTime += getAnimationDuration();
+	float IKRigConfig::adjustAnimationTime(float extendedAnimationTime) {
+		if (extendedAnimationTime < m_timeStamps[0]) {
+			while (extendedAnimationTime < m_timeStamps[0]) {
+				extendedAnimationTime += getAnimationDuration();
 			}
 		}
-		else if (m_timeStamps[0] + getAnimationDuration() < animationTime) {
-			while (m_timeStamps[0] + getAnimationDuration() < animationTime) {
-				animationTime -= getAnimationDuration();
+		else if (m_timeStamps[0] + getAnimationDuration() < extendedAnimationTime) {
+			while (m_timeStamps[0] + getAnimationDuration() < extendedAnimationTime) {
+				extendedAnimationTime -= getAnimationDuration();
 			}
 		}
-		return animationTime;
+		return extendedAnimationTime;
 	}
 
 	float IKRigConfig::getReproductionTime(float animationTime, int repCountOffset) {

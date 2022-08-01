@@ -33,7 +33,7 @@ namespace Mona {
 		m_vertexArrayID = 0;
 	}
 
-	Mesh::Mesh(const std::string& filePath, bool flipUVs, bool createHeightMap) :
+	Mesh::Mesh(const std::string& filePath, bool flipUVs) :
 		m_vertexArrayID(0),
 		m_vertexBufferID(0),
 		m_indexBufferID(0),
@@ -155,22 +155,6 @@ namespace Mona {
 		glEnableVertexAttribArray(4);
 		glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), (void*)offsetof(MeshVertex, bitangent));
 
-		if (createHeightMap) {
-			std::vector<glm::vec3> vertexPositions;
-			std::vector<glm::vec3> groupedFaces;
-			vertexPositions.reserve(numVertices);
-			groupedFaces.reserve(faces.size());
-			for (int i = 0; i < numVertices; i++) {
-				vertexPositions.push_back(vertices[i].position);
-			}
-			for (int i = 0; i < faces.size(); i += 3) {
-				glm::vec3 f = { faces[i], faces[i + 1], faces[i + 2] };
-				groupedFaces.push_back(f);
-			}
-			m_heightMap = HeightMap();
-			m_heightMap.init(vertexPositions, groupedFaces);
-		}
-
 	}
 
 	Mesh::Mesh(PrimitiveType type) :
@@ -210,7 +194,7 @@ namespace Mona {
 	}
 
 
-	int orientationTest(const Vertex& v1, const Vertex& v2, const Vertex& testV, float epsilon) { //arista de v1 a v2, +1 si el punto esta a arriba, -1 abajo,0 si es colineal, error(-2) si v1 y v2 iguales
+	int orientationTest(const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& testV, float epsilon) { //arista de v1 a v2, +1 si el punto esta a arriba, -1 abajo,0 si es colineal, error(-2) si v1 y v2 iguales
 		float x1 = v1[0];
 		float y1 = v1[1];
 		float x2 = v2[0];
@@ -243,8 +227,9 @@ namespace Mona {
 		else if (testV[1] < yOnLine) { return -1 * orientationV1V2; }
 		else { return 0; }
 	}
+
 	Mesh::Mesh(const glm::vec2& minXY, const glm::vec2& maxXY, int numInnerVerticesWidth, int numInnerVerticesHeight,
-		float (*heightFunc)(float, float), bool createHeightMap, bool useHeightInterpolation) :
+		float (*heightFunc)(float, float)) :
 		m_vertexArrayID(0),
 		m_vertexBufferID(0),
 		m_indexBufferID(0),
@@ -345,11 +330,7 @@ namespace Mona {
 			vertices[i + 10] = tangent[2];
 		}
 
-		if (createHeightMap) {
-			m_heightMap = HeightMap();
-			if (useHeightInterpolation) { m_heightMap.init(vertexPositions, groupedFaces); }
-			else { m_heightMap.init({ minXY[0], minXY[1] }, { maxXY[0], maxXY[1] }, heightFunc); }
-		}
+		m_heightMap = HeightMap({ minXY[0], minXY[1] }, { maxXY[0], maxXY[1] }, heightFunc);
 
 		//Comienza el paso de los datos en CPU a GPU usando OpenGL
 		m_indexBufferCount = static_cast<uint32_t>(faces.size());

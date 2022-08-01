@@ -56,7 +56,7 @@ Mona::GameObjectHandle<Mona::GameObject> AddTerrain(Mona::World& world) {
 	};
 
 	world.AddComponent<Mona::StaticMeshComponent>(terrain, meshManager.GenerateTerrain(minXY, maxXY, numInnerVerticesWidth,
-		numInnerVerticesHeight, heighFunc, true, false), materialPtr);
+		numInnerVerticesHeight, heighFunc), materialPtr);
 	return terrain;
 }
 

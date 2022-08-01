@@ -21,14 +21,14 @@ namespace Mona {
 		uint32_t GetVertexArrayID() const noexcept { return m_vertexArrayID; }
 		uint32_t GetIndexBufferCount() const noexcept { return m_indexBufferCount; }
 		HeightMap* GetHeightMap() {
-			if (m_heightMap.isValid()) { return &m_heightMap; }
+			if (m_heightMap.isValid() ) { return &m_heightMap; }
 			else { return nullptr; }
 		}
 	private:
-		Mesh(const std::string& filePath, bool flipUVs = false, bool createHeightMap = false);
+		Mesh(const std::string& filePath, bool flipUVs = false);
 		Mesh(PrimitiveType type);
 		Mesh(const glm::vec2& minXY, const glm::vec2& maxXY, int numInnerVerticesWidth, int numInnerVerticesHeight,
-			float (*heightFunc)(float, float), bool createHeightMap = false, bool useHeightInterpolation = false);
+			float (*heightFunc)(float, float));
 
 		void ClearData() noexcept;
 		void CreateSphere() noexcept;

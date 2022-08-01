@@ -21,29 +21,14 @@ namespace Mona {
 	}
 
 	std::shared_ptr<Mesh> MeshManager::GenerateTerrain(const glm::vec2& minXY, const glm::vec2& maxXY,
-		int numInnerVerticesWidth, int numInnerVerticesHeight, float (*heightFunc)(float, float), bool createHeightMap, bool useHeightInterpolation) noexcept {
+		int numInnerVerticesWidth, int numInnerVerticesHeight, float (*heightFunc)(float, float)) noexcept {
 		std::srand(std::time(nullptr)); // use current time as seed for random generator
 		int random_variable = std::rand();
 		const std::string& id = std::to_string(random_variable);
-		Mesh* meshPtr = new Mesh(minXY, maxXY, numInnerVerticesWidth, numInnerVerticesHeight, heightFunc, createHeightMap, useHeightInterpolation);
+		Mesh* meshPtr = new Mesh(minXY, maxXY, numInnerVerticesWidth, numInnerVerticesHeight, heightFunc);
 		std::shared_ptr<Mesh> sharedPtr = std::shared_ptr<Mesh>(meshPtr);
 		//Antes de retornar la malla recien cargada, insertamos esta al mapa para que cargas futuras sean mucho mas rapidas.
 		m_meshMap.insert({ id, sharedPtr });
-		return sharedPtr;
-	}
-
-	std::shared_ptr<Mesh> MeshManager::LoadTerrainMesh(const std::filesystem::path& filePath, bool flipUVs, bool createHeightMap) noexcept {
-		const std::string& stringPath = filePath.string();
-		//En caso de que ya exista una entrada en el mapa de mallas con el mismo path, entonces se retorna inmediatamente
-		//dicha malla.
-		auto it = m_meshMap.find(stringPath);
-		if (it != m_meshMap.end()) {
-			return it->second;
-		}
-		Mesh* meshPtr = new Mesh(stringPath, flipUVs, createHeightMap);
-		std::shared_ptr<Mesh> sharedPtr = std::shared_ptr<Mesh>(meshPtr);
-		//Antes de retornar la malla recien cargada, insertamos esta al mapa para que cargas futuras sean mucho mas rapidas.
-		m_meshMap.insert({ stringPath, sharedPtr });
 		return sharedPtr;
 	}
 

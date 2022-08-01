@@ -314,17 +314,6 @@ namespace Mona {
 						continueTrajectory[i] = false;
 						goto GATHER_POINTS;
 					}
-					// si es estatica la reducimos
-					if (trType == TrajectoryType::STATIC) {
-						if (2 <= curvePoints_1.size()) {
-							curvePoints_1 = { curvePoints_1[0], curvePoints_1.back() };
-							tValues_1 = { tValues_1[0], tValues_1.back() };
-						}
-						if (2 <= curvePoints_2.size()) {
-							curvePoints_2 = { curvePoints_2[0], curvePoints_2.back() };
-							tValues_2 = { tValues_2[0], tValues_2.back() };
-						}
-					}
 					LIC<3> fullCurve;
 					if (curvePoints_2.size() == 0) {
 						fullCurve = LIC<3>(curvePoints_1, tValues_1);
@@ -404,7 +393,6 @@ namespace Mona {
 				currentConfig->m_eeTrajectoryData[i].m_originalSubTrajectories[j].m_hipMaxAltitudeIndex = savedIndex;
 			}	
 		}
-		std::cout << glmUtils::stdVectorToString(hipTranslations) <<std::endl;
 
 		// Se remueve el movimiento de las caderas
 		animationClip->RemoveJointRotation(m_ikRig.m_hipJoint);

@@ -4,6 +4,7 @@
 
 #include "glm/glm.hpp"
 #include <glm/gtx/quaternion.hpp>
+#include "glm/gtx/vector_angle.hpp"
 #include <vector>
 #include "../Core/Log.hpp"
 #include "../Core/FuncUtils.hpp"
@@ -277,6 +278,32 @@ namespace Mona{
                 curve1.m_tValues.push_back(extraPointFinalTValue);
             }
             return curve1;	
+		}
+
+		void fitStartAndDir(glm::vec3 newStart, glm::vec3 targetDirection) {
+			// rotarla para que quede en linea con las pos inicial y final
+			glm::fquat targetRotation = glm::identity<glm::fquat>();
+			glm::vec3 originalDirection = glm::normalize(getEnd() - getStart());
+			if (originalDirection != targetDirection) {
+				glm::vec3 rotAxis = glm::normalize(glm::cross(originalDirection, targetDirection));
+				float rotAngle = glm::orientedAngle(originalDirection, targetDirection, rotAxis);
+				targetRotation = glm::fquat(rotAngle, rotAxis);
+			}
+			rotate(targetRotation);
+			translate(-getStart() + newStart);
+		}
+
+		void fitEnds(glm::vec3 newStart, glm::vec3 newEnd) {
+			MONA_ASSERT(m_dimension == 3, "LIC: LIC must have a dimension equal to 3.");
+
+			glm::vec3 targetDirection = glm::normalize(newEnd - newStart);
+            fitStartAndDir(newStart, targetDirection);
+
+			// escalarla para que llegue a newEnd
+			float origLength = glm::distance(getStart(), getEnd());
+			float targetLength = glm::distance(newStart, newEnd);
+			scale(glm::vec3(targetLength / origLength));
+			translate(-getStart() + newStart);
 		}
     };
     

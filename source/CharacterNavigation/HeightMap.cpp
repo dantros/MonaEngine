@@ -7,7 +7,7 @@
 namespace Mona{
 
     HeightMap::HeightMap(const glm::vec2& bottomLeft, const glm::vec2& topRight, float (*heightFunc)(float, float)) {
-		m_minX = bottomLeft[0];
+        m_minX = bottomLeft[0];
 		m_minY = bottomLeft[1];
 		m_maxX = topRight[0];
         m_maxY = topRight[1];

@@ -88,33 +88,8 @@ namespace Mona{
         return closest;
     }
 
-    std::vector<glm::vec3> TrajectoryGenerator::calcStrideData(float supportHeight, glm::vec3 startingPoint, float targetDistance,
-        glm::vec2 targetDirection, int stepNum,
-        ComponentManager<TransformComponent>& transformManager,
-        ComponentManager<StaticMeshComponent>& staticMeshManager) {
-        std::vector<glm::vec3> collectedPoints;
-        collectedPoints.reserve(stepNum);
-        for (int i = 1; i <= stepNum; i++) {
-            glm::vec2 testPoint = glm::vec2(startingPoint) + targetDirection * targetDistance * ((float)i / stepNum);
-            float calcHeight = supportHeight + m_environmentData.getTerrainHeight(testPoint, transformManager, staticMeshManager);
-            collectedPoints.push_back(glm::vec3(testPoint, calcHeight));
-        }
-        std::vector<glm::vec3> strideDataPoints;
-        strideDataPoints.reserve(stepNum);
-        float previousDistance = 0;
-        for (int i = 0; i < collectedPoints.size(); i++) {
-            float distance = glm::distance(startingPoint, collectedPoints[i]);
-            if ( distance <= targetDistance &&  previousDistance*0.9 <= distance) {
-                strideDataPoints.push_back(collectedPoints[i]);
-                previousDistance = distance;
-            }
-            else { break; }
-        }
-        return strideDataPoints;
-    }
-
     void TrajectoryGenerator::generateStaticTrajectory(EETrajectory baseTrajectory,
-        ChainIndex ikChain, IKRigConfig* config,
+        ChainIndex ikChain, IKRigConfig* config, float xyMovementRotAngle,
         ComponentManager<TransformComponent>& transformManager,
         ComponentManager<StaticMeshComponent>& staticMeshManager) {
         EEGlobalTrajectoryData* trData = config->getEETrajectoryData(ikChain);
@@ -128,9 +103,11 @@ namespace Mona{
             float calcHeight = m_environmentData.getTerrainHeight(glm::vec2(initialPos), transformManager, staticMeshManager);
             initialPos = glm::vec3(glm::vec2(initialPos), trData->getSupportHeight(initialFrame) + calcHeight);
         }
+		glm::vec3 originalDirection = glm::normalize(baseCurve.getEnd() - baseCurve.getStart());
+		glm::vec2 targetXYDirection = glm::rotate(glm::vec2(originalDirection), xyMovementRotAngle);
+        glm::vec3 targetDirection = glm::normalize(glm::vec3(targetXYDirection, originalDirection[2]));
         // correccion de posicion y llevar a reproduction time
-        baseCurve.translate(-baseCurve.getStart());
-        baseCurve.translate(initialPos);
+        baseCurve.fitStartAndDir(initialPos, targetDirection);
         baseCurve.offsetTValues(-baseCurve.getTValue(0));
         baseCurve.offsetTValues(initialTime);
         trData->setTargetTrajectory(baseCurve, TrajectoryType::STATIC, baseTrajectory.getSubTrajectoryID());
@@ -176,29 +153,13 @@ namespace Mona{
         std::vector<glm::vec3> strideData = calcStrideData(supportHeight, initialPos, targetDistance, targetXYDirection, 8, transformManager, staticMeshManager);
         if (strideData.size() == 0) { // si no es posible avanzar por la elevacion del terreno
             LIC<3> staticBaseCurve({ currentPos, currentPos }, { currentAnimTime, currentAnimTime + config->getAnimationDuration() });
-            generateStaticTrajectory(EETrajectory(staticBaseCurve, TrajectoryType::STATIC, -2), 
-                ikChain, config, transformManager, staticMeshManager);
+            generateStaticTrajectory(EETrajectory(staticBaseCurve, TrajectoryType::STATIC, -2), ikChain, config, xyMovementRotAngle,
+                transformManager, staticMeshManager);
             return;
         }
         glm::vec3 finalPos = strideData.back();
-        
-        // mover la curva al origen
-        baseCurve.translate(-baseCurve.getStart());
-        // rotarla la subtrayectoria para que quede en linea con las pos inicial y final
-        glm::fquat targetRotation = glm::identity<glm::fquat>();
-        glm::vec3 targetDirection = glm::normalize(finalPos - initialPos);
-        if (originalDirection != targetDirection) {
-            glm::vec3 rotAxis = glm::normalize(glm::cross(originalDirection, targetDirection));
-            float rotAngle = glm::orientedAngle(originalDirection, targetDirection, rotAxis);
-            targetRotation = glm::fquat(rotAngle, rotAxis);
-        }
-        baseCurve.rotate(targetRotation);        
 
-        // escalarla y moverla para que calce con las posiciones
-        float origLength = glm::distance(baseCurve.getStart(), baseCurve.getEnd()); // actualmente parte en el origen
-        float targetLength = glm::distance(initialPos, finalPos);
-        baseCurve.scale(glm::vec3(targetLength/origLength));
-        baseCurve.translate(initialPos);
+        baseCurve.fitEnds(initialPos, finalPos);
 
         // setear los minimos de altura y aplicar el descenso de gradiente
         m_tgData.pointIndexes.clear();
@@ -281,7 +242,8 @@ namespace Mona{
         if (config->getAnimationType() == AnimationType::IDLE) {
             glm::vec3 globalEEPos = trData->getSavedPosition(currentFrame);
             LIC<3> baseCurve({ globalEEPos, globalEEPos }, { currentRepTime, currentRepTime + config->getAnimationDuration() });
-            generateStaticTrajectory(EETrajectory(baseCurve, TrajectoryType::STATIC), ikChain, config, transformManager, staticMeshManager);
+            generateStaticTrajectory(EETrajectory(baseCurve, TrajectoryType::STATIC), ikChain, config, xyMovementRotAngle,
+                transformManager, staticMeshManager);
             return;
         }
         EETrajectory originalTrajectory = trData->getSubTrajectory(currentAnimTime);
@@ -289,9 +251,34 @@ namespace Mona{
             generateDynamicTrajectory(originalTrajectory, ikChain, config, xyMovementRotAngle, transformManager, staticMeshManager);
         }
         else {
-            generateStaticTrajectory(originalTrajectory, ikChain, config, transformManager, staticMeshManager);
+            generateStaticTrajectory(originalTrajectory, ikChain, config, xyMovementRotAngle, transformManager, staticMeshManager);
         }    
     }
+
+	std::vector<glm::vec3> TrajectoryGenerator::calcStrideData(float supportHeight, glm::vec3 startingPoint, float targetDistance,
+		glm::vec2 targetDirection, int stepNum,
+		ComponentManager<TransformComponent>& transformManager,
+		ComponentManager<StaticMeshComponent>& staticMeshManager) {
+		std::vector<glm::vec3> collectedPoints;
+		collectedPoints.reserve(stepNum);
+		for (int i = 1; i <= stepNum; i++) {
+			glm::vec2 testPoint = glm::vec2(startingPoint) + targetDirection * targetDistance * ((float)i / stepNum);
+			float calcHeight = supportHeight + m_environmentData.getTerrainHeight(testPoint, transformManager, staticMeshManager);
+			collectedPoints.push_back(glm::vec3(testPoint, calcHeight));
+		}
+		std::vector<glm::vec3> strideDataPoints;
+		strideDataPoints.reserve(stepNum);
+		float previousDistance = 0;
+		for (int i = 0; i < collectedPoints.size(); i++) {
+			float distance = glm::distance(startingPoint, collectedPoints[i]);
+			if (distance <= targetDistance && previousDistance * 0.9 <= distance) {
+				strideDataPoints.push_back(collectedPoints[i]);
+				previousDistance = distance;
+			}
+			else { break; }
+		}
+		return strideDataPoints;
+	}
 
     float TrajectoryGenerator::calcHipAdjustedHeight(IKRigConfig* config, glm::vec2 basePoint, float targetCurvesTime_rep, 
         float originalCurvesTime_extendedAnim) {
@@ -594,130 +581,6 @@ namespace Mona{
 
         // queda setear la trayectoria de la cadera
         generateHipTrajectory(config, xyRotationAngle, transformManager, staticMeshManager);  
-    }
-
-
-    EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int subTrajectoryID) {
-        m_curve = trajectory;
-        m_trajectoryType = trajectoryType;
-        m_subTrajectoryID = subTrajectoryID;
-    }
-
-    glm::fquat HipGlobalTrajectoryData::getTargetRotation(float reproductionTime) {
-        return glm::angleAxis(m_targetRotationAngles.evalCurve(reproductionTime)[0], m_targetRotationAxes.evalCurve(reproductionTime));
-    }
-
-    glm::vec3 HipGlobalTrajectoryData::getTargetTranslation(float reproductionTime) {
-        return m_targetTranslations.evalCurve(reproductionTime);
-    }
-
-
-    void HipGlobalTrajectoryData::init(int frameNum, IKRigConfig* config) {
-        m_savedRotationAngles = std::vector<float>(frameNum);
-        m_savedRotationAxes = std::vector<glm::vec3>(frameNum);
-        m_savedTranslations = std::vector<glm::vec3>(frameNum);
-        m_config = config;
-    }
-
-    LIC<1> HipGlobalTrajectoryData::sampleOriginalRotationAngles(float initialExtendedAnimTime, float finalExtendedAnimTime) {
-		MONA_ASSERT((finalExtendedAnimTime - initialExtendedAnimTime) <= m_config->getAnimationDuration(),
-			"HipGlobalTrajectoryData: input extended times were invalid.");
-		MONA_ASSERT(m_originalRotationAngles.inTRange(initialExtendedAnimTime) || m_originalRotationAngles.inTRange(finalExtendedAnimTime),
-			"HipGlobalTrajectoryData: input extended times were invalid.");
-		MONA_ASSERT(initialExtendedAnimTime < finalExtendedAnimTime,
-			"HipGlobalTrajectoryData: finalExtendedTime must be greater than initialExtendedTime.");
-		float initialAnimTime = m_config->adjustAnimationTime(initialExtendedAnimTime);
-		float finalAnimTime = m_config->adjustAnimationTime(finalExtendedAnimTime);
-		if (initialAnimTime < finalAnimTime) {
-			return m_originalRotationAngles.sample(initialAnimTime, finalAnimTime);
-		}
-		else {
-			LIC<1> part1 = m_originalRotationAngles.sample(initialAnimTime, m_originalRotationAngles.getTRange()[1]);
-			LIC<1> part2 = m_originalRotationAngles.sample(m_originalRotationAngles.getTRange()[0], finalAnimTime);
-			LIC<1> result = LIC<1>::connect(part1, part2, m_config->getAnimationDuration());
-			result.offsetTValues(-result.getTRange()[0]);
-			result.offsetTValues(initialExtendedAnimTime);
-			return result;
-		}
-    }
-    LIC<3> HipGlobalTrajectoryData::sampleOriginalRotationAxes(float initialExtendedAnimTime, float finalExtendedAnimTime) {
-		MONA_ASSERT((finalExtendedAnimTime - initialExtendedAnimTime) <= m_config->getAnimationDuration(),
-			"HipGlobalTrajectoryData: input extended times were invalid.");
-		MONA_ASSERT(m_originalRotationAxes.inTRange(initialExtendedAnimTime) || m_originalRotationAxes.inTRange(finalExtendedAnimTime),
-			"HipGlobalTrajectoryData: input extended times were invalid.");
-		MONA_ASSERT(initialExtendedAnimTime < finalExtendedAnimTime,
-			"HipGlobalTrajectoryData: finalExtendedTime must be greater than initialExtendedTime.");
-		float initialAnimTime = m_config->adjustAnimationTime(initialExtendedAnimTime);
-		float finalAnimTime = m_config->adjustAnimationTime(finalExtendedAnimTime);
-		if (initialAnimTime < finalAnimTime) {
-			return m_originalRotationAxes.sample(initialAnimTime, finalAnimTime);
-		}
-		else {
-			LIC<3> part1 = m_originalRotationAxes.sample(initialAnimTime, m_originalRotationAxes.getTRange()[1]);
-			LIC<3> part2 = m_originalRotationAxes.sample(m_originalRotationAxes.getTRange()[0], finalAnimTime);
-			LIC<3> result = LIC<3>::connect(part1, part2, m_config->getAnimationDuration());
-			result.offsetTValues(-result.getTRange()[0]);
-			result.offsetTValues(initialExtendedAnimTime);
-			return result;
-		}
-    }
-    LIC<3> HipGlobalTrajectoryData::sampleOriginalTranslations(float initialExtendedAnimTime, float finalExtendedAnimTime) {
-		MONA_ASSERT((finalExtendedAnimTime - initialExtendedAnimTime) <= m_config->getAnimationDuration(),
-			"HipGlobalTrajectoryData: input extended times were invalid.");
-        MONA_ASSERT(m_originalTranslations.inTRange(initialExtendedAnimTime) || m_originalTranslations.inTRange(finalExtendedAnimTime),
-            "HipGlobalTrajectoryData: input extended times were invalid.");
-        MONA_ASSERT(initialExtendedAnimTime < finalExtendedAnimTime, 
-            "HipGlobalTrajectoryData: finalExtendedTime must be greater than initialExtendedTime.");
-        float initialAnimTime = m_config->adjustAnimationTime(initialExtendedAnimTime);
-        float finalAnimTime = m_config->adjustAnimationTime(finalExtendedAnimTime);
-		if (initialAnimTime < finalAnimTime) {
-			return m_originalTranslations.sample(initialAnimTime, finalAnimTime);
-		}
-        else {
-			LIC<3> part1 = m_originalTranslations.sample(initialAnimTime, m_originalTranslations.getTRange()[1]);
-			LIC<3> part2 = m_originalTranslations.sample(m_originalTranslations.getTRange()[0], finalAnimTime);
-			LIC<3> result = LIC<3>::connect(part1, part2, m_config->getAnimationDuration());
-			result.offsetTValues(-result.getTRange()[0]);
-            result.offsetTValues(initialExtendedAnimTime);
-            return result;
-        }
-    }
-
-	EETrajectory EEGlobalTrajectoryData::getSubTrajectory(float animationTime) {
-		for (int i = 0; i < m_originalSubTrajectories.size(); i++) {
-			if (i == m_originalSubTrajectories.size() - 1) {
-				if (m_originalSubTrajectories[i].getEECurve().inTRange(animationTime)) {
-					return m_originalSubTrajectories[i];
-				}
-			}
-			else {
-				if (m_originalSubTrajectories[i].getEECurve().inTRange(animationTime) &&
-					m_originalSubTrajectories[i + 1].getEECurve().inTRange(animationTime)) {
-					return m_originalSubTrajectories[i + 1];
-				}
-				else if (m_originalSubTrajectories[i].getEECurve().inTRange(animationTime)) {
-					return m_originalSubTrajectories[i];
-				}
-			}
-
-		}
-		MONA_LOG_ERROR("EETrajectoryData: AnimationTime was not valid.");
-		return EETrajectory();
-	}
-
-    void  EEGlobalTrajectoryData::init(int frameNum) {
-        m_savedPositions = std::vector<glm::vec3>(frameNum);
-        m_supportHeights = std::vector<float>(frameNum);
-    }
-
-    EETrajectory EEGlobalTrajectoryData::getSubTrajectoryByID(int subTrajectoryID) {
-        for (int i = 0; i < m_originalSubTrajectories.size(); i++) {
-            if (m_originalSubTrajectories[i].getSubTrajectoryID() == subTrajectoryID) {
-                return m_originalSubTrajectories[i];
-            }
-        }
-        MONA_LOG_ERROR("EEGlobalTrajectoryData: A sub trajectory with id {0} was not found.", subTrajectoryID);
-        return EETrajectory();
     }
 
 

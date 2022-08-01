@@ -21,8 +21,7 @@ namespace Mona {
 		uint32_t GetVertexArrayID() const noexcept { return m_vertexArrayID; }
 		uint32_t GetIndexBufferCount() const noexcept { return m_indexBufferCount; }
 		HeightMap* GetHeightMap() {
-			if (m_heightMap.isValid() ) { return &m_heightMap; }
-			else { return nullptr; }
+			return &m_heightMap;
 		}
 	private:
 		Mesh(const std::string& filePath, bool flipUVs = false);

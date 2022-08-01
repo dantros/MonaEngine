@@ -82,23 +82,37 @@ namespace Mona{
             return glm::vec<D, float>(0);
         }
 
-        void displacePointT(int pointIndex, float newT, bool scalePoints = true, float pointScalingRatio = 1) {
-            MONA_ASSERT(inTRange(newT), "LIC: newT must be a value between {0} and {1}.", m_tValues[0], m_tValues.back());
+        void displacePointT(int pointIndex, int lowIndex, int highIndex, float newT, bool scalePoints = true, float pointScalingRatio = 1) {
+            MONA_ASSERT(lowIndex < highIndex && 0 <= lowIndex && highIndex < m_tValues.size(), "LIC: low and high index must be within bounds.");
+            MONA_ASSERT(lowIndex <= pointIndex && pointIndex <=highIndex , "LIC: input point index must be within input bounds");
             float oldT = m_tValues[pointIndex];
-            float fractionBelow = funcUtils::getFraction(getTRange()[0], oldT, newT);
-            float fractionAbove = funcUtils::getFraction(getTRange()[1], oldT, newT);
-            for (int i = 0; i < pointIndex; i++) {
-                m_tValues[i] = funcUtils::lerp(m_tValues[0], m_tValues[i], fractionBelow);
-                if (scalePoints) {
-                    m_curvePoints[i] = funcUtils::lerp(m_curvePoints[0], m_curvePoints[i], fractionBelow * pointScalingRatio);
-                }
+            if (oldT == newT) { return; }
+            if (pointIndex != lowIndex) {
+				MONA_ASSERT(getTValue(lowIndex) < newT,
+					"LIC: If not the lower end, newT cannot subceed or match original low t bound.");
+                float fractionBelow = funcUtils::getFraction(m_tValues[lowIndex], oldT, newT);
+				for (int i = lowIndex + 1; i <= pointIndex; i++) {
+					m_tValues[i] = funcUtils::lerp(m_tValues[lowIndex], m_tValues[i], fractionBelow);
+					if (scalePoints) {
+						m_curvePoints[i] = funcUtils::lerp(m_curvePoints[lowIndex], m_curvePoints[i], fractionBelow * pointScalingRatio);
+					}
+				}
             }
-            for (int i = pointIndex; i < m_curvePoints.size(); i++) {
-                m_tValues[i] = funcUtils::lerp(m_tValues.back(), m_tValues[i], fractionAbove);
-                if (scalePoints) {
-                    m_curvePoints[i] = funcUtils::lerp(m_curvePoints.back(), m_curvePoints[i], fractionAbove * pointScalingRatio);
-                }
+            
+            if (pointIndex != highIndex) {
+				MONA_ASSERT(newT < getTValue(highIndex),
+					"LIC: If not the higher end, newT cannot exceed or match original high t bound.");
+				float fractionAbove = funcUtils::getFraction(m_tValues[highIndex], oldT, newT);
+				for (int i = pointIndex; i < highIndex; i++) {
+                    if (pointIndex < i || pointIndex == lowIndex) {
+						m_tValues[i] = funcUtils::lerp(m_tValues[highIndex], m_tValues[i], fractionAbove);
+						if (scalePoints) {
+							m_curvePoints[i] = funcUtils::lerp(m_curvePoints[highIndex], m_curvePoints[i], fractionAbove * pointScalingRatio);
+						}
+                    }					
+				}
             }
+            
         }
 
         void setCurvePoint(int pointIndex, glm::vec<D, float> newValue) {
@@ -281,6 +295,7 @@ namespace Mona{
 		}
 
 		void fitStartAndDir(glm::vec3 newStart, glm::vec3 targetDirection) {
+            translate(-getStart());
 			// rotarla para que quede en linea con las pos inicial y final
 			glm::fquat targetRotation = glm::identity<glm::fquat>();
 			glm::vec3 originalDirection = glm::normalize(getEnd() - getStart());
@@ -290,7 +305,7 @@ namespace Mona{
 				targetRotation = glm::fquat(rotAngle, rotAxis);
 			}
 			rotate(targetRotation);
-			translate(-getStart() + newStart);
+			translate(newStart);
 		}
 
 		void fitEnds(glm::vec3 newStart, glm::vec3 newEnd) {

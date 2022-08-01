@@ -125,6 +125,7 @@ namespace Mona {
 
 
         inline float getFraction(float minVal, float maxVal, float val) {
+            MONA_ASSERT(minVal != maxVal, "FuncUtils: extreme values cannot be equal.");
             return (val - minVal) / (maxVal - minVal);
         }
 	}

@@ -159,6 +159,7 @@ namespace Mona {
 		glm::vec3 hipScale; glm::quat hipRotation; glm::vec3 hipTranslation; glm::vec3 hipSkew; glm::vec4 hipPerspective;
 		for (int i = 0; i < frameNum; i++) {
 			float timeStamp = hipTrack.rotationTimeStamps[i];
+			while (currentConfig->getAnimationDuration() <= timeStamp) { timeStamp -= 0.000001; }
 			JointIndex parent = hipIndex;
 			glm::mat4 hipTransform = m_baseGlobalTransform;
 			while (parent != -1) {
@@ -203,6 +204,7 @@ namespace Mona {
 		for (int i = 0; i < frameNum; i++) {
 			// calculo de las transformaciones en model space
 			float timeStamp = rotTimeStamps[i];
+			while (currentConfig->getAnimationDuration() <= timeStamp) { timeStamp -= 0.000001; }
 			for (int j = 0; j < currentConfig->getJointIndices().size(); j++) {
 				JointIndex jIndex = currentConfig->getJointIndices()[j];
 				glm::mat4 baseTransform = j == 0 ? m_baseGlobalTransform : glblTransforms[m_ikRig.getTopology()[jIndex]];
@@ -229,7 +231,7 @@ namespace Mona {
 			}
 			previousPositions = glblPositions;
 		}
-
+		
 		// si hay un frame que no es de soporte entre dos frames que si lo son, se setea como de soporte
 		// si el penultimo es de soporte, tambien se setea el ultimo como de soporte
 		// a los valores de soporte del primer frame les asignamos el valor del ultimo asumiento circularidad

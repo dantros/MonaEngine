@@ -192,7 +192,7 @@ namespace Mona {
 		std::vector<std::vector<glm::vec3>> glblPositionsPerChain(m_ikRig.m_ikChains.size());
 		std::vector<glm::vec3> glblPositions(m_ikRig.getTopology().size());
 		std::vector<glm::mat4> glblTransforms(m_ikRig.getTopology().size());
-		float floorZ = 0;//std::numeric_limits<float>::max(); // altura del piso para la animacion
+		float floorZ = std::numeric_limits<float>::max(); // altura del piso para la animacion
 		for (int i = 0; i < m_ikRig.getTopology().size(); i++) { glblTransforms[i] = glm::identity<glm::mat4>(); }
 		std::vector<glm::vec3> previousPositions(m_ikRig.getTopology().size());
 		std::fill(previousPositions.begin(), previousPositions.end(), glm::vec3(std::numeric_limits<float>::min()));

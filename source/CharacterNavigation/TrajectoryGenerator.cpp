@@ -20,8 +20,8 @@ namespace Mona{
             glm::vec3 rVel = dataPtr->varCurve->getVelocity(tVal, true);
             glm::vec3 baseLVel = dataPtr->baseVelocitiesL[i];
             glm::vec3 baseRVel = dataPtr->baseVelocitiesR[i];
-            result += glm::distance2(lVel / glm::length2(lVel), baseLVel / glm::length2(baseLVel));
-            result += glm::distance2(rVel / glm::length2(rVel), baseRVel / glm::length2(baseRVel));
+            result += glm::distance2(lVel / glm::length(lVel), baseLVel / glm::length(baseLVel));
+            result += glm::distance2(rVel / glm::length(rVel), baseRVel / glm::length(baseRVel));
 		}
 		return dataPtr->alphaValue * result;
 	};
@@ -39,12 +39,12 @@ namespace Mona{
 		glm::vec3 baseLVel = dataPtr->baseVelocitiesL[varIndex / D];
 		glm::vec3 baseRVel = dataPtr->baseVelocitiesR[varIndex / D];
         float result = 0;
-        result += 2 * (lVel[coordIndex] / glm::length2(lVel) - baseLVel[coordIndex] / glm::length2(baseLVel))
-            * ((1 / (t_kCurr - t_kPrev)) * glm::length2(lVel) - lVel[coordIndex] * 2 * lVel[coordIndex] * (1 / (t_kCurr - t_kPrev)))/
-            glm::pow(glm::length2(lVel), 2);
-		result += 2 * (rVel[coordIndex] / glm::length2(rVel) - baseRVel[coordIndex] / glm::length2(baseRVel))
-			* ((-1 / (t_kNext - t_kCurr)) * glm::length2(rVel) - rVel[coordIndex] * 2 * rVel[coordIndex] * (-1 / (t_kNext - t_kCurr))) /
-			glm::pow(glm::length2(rVel), 2);
+        result += 2 * (lVel[coordIndex] / glm::length(lVel) - baseLVel[coordIndex] / glm::length(baseLVel))
+            * ((1 / (t_kCurr - t_kPrev)) * glm::length(lVel) - lVel[coordIndex] * (lVel[coordIndex]/glm::length(lVel)) * (1 / (t_kCurr - t_kPrev)))/
+            glm::length2(lVel);
+        result += 2 * (rVel[coordIndex] / glm::length(rVel) - baseRVel[coordIndex] / glm::length(baseRVel))
+            * ((-1 / (t_kNext - t_kCurr)) * glm::length(rVel) - rVel[coordIndex] * (rVel[coordIndex] / glm::length(rVel)) * (-1 / (t_kNext - t_kCurr))) /
+            glm::length2(rVel);
 		return dataPtr->alphaValue * result;
 	};
 

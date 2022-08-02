@@ -35,9 +35,9 @@ namespace Mona {
 	struct IKData {
 		// constants data
 		std::vector<float> baseAngles;
-		float alphaValue;
-		float betaValue;
-		float gammaValue;
+		float alphaValue = 0.2f;
+		float betaValue = 0.6f;
+		float gammaValue = 0.2f;
 		// variables data
 		std::vector<JointIndex> jointIndexes;
 		std::vector<glm::mat4> forwardModelSpaceTransforms; // multiplicacion en cadena desde la raiz hasta el joint i

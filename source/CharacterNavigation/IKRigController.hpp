@@ -23,7 +23,7 @@ namespace Mona {
 		void addAnimation(std::shared_ptr<AnimationClip> animationClip);
 		void setAngularSpeed(float angularSpeed) { m_ikRig.setAngularSpeed(angularSpeed); }
 		AnimationIndex removeAnimation(std::shared_ptr<AnimationClip> animationClip);
-		void updateIKRigConfigTime(float time, AnimationIndex animIndex);
+		void updateIKRigConfigTime(float animationTimeStep, AnimationIndex animIndex);
 		void updateTrajectories(AnimationIndex animIndex, ComponentManager<TransformComponent>& transformManager,
 			ComponentManager<StaticMeshComponent>& staticMeshManager);
 		void updateAnimation(AnimationIndex animIndex);

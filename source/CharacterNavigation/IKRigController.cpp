@@ -192,7 +192,7 @@ namespace Mona {
 		std::vector<std::vector<glm::vec3>> glblPositionsPerChain(m_ikRig.m_ikChains.size());
 		std::vector<glm::vec3> glblPositions(m_ikRig.getTopology().size());
 		std::vector<glm::mat4> glblTransforms(m_ikRig.getTopology().size());
-		float floorZ = std::numeric_limits<float>::max(); // altura del piso para la animacion
+		float floorZ = 0;//std::numeric_limits<float>::max(); // altura del piso para la animacion
 		for (int i = 0; i < m_ikRig.getTopology().size(); i++) { glblTransforms[i] = glm::identity<glm::mat4>(); }
 		std::vector<glm::vec3> previousPositions(m_ikRig.getTopology().size());
 		std::fill(previousPositions.begin(), previousPositions.end(), glm::vec3(std::numeric_limits<float>::min()));
@@ -224,9 +224,10 @@ namespace Mona {
 				supportFramesPerChain[j][i] = isSupportFrame;
 				glblPositionsPerChain[j][i] = glm::vec4(glblPositions[eeIndex], 1);
 			}
-			for (int j = 0; j < glblPositions.size(); j++) {
-				if (glblPositions[j][2] < floorZ) {
-					floorZ = glblPositions[j][2];
+			for (int j = 0; j < currentConfig->getJointIndices().size(); j++) {
+				JointIndex jIndex = currentConfig->getJointIndices()[j];
+				if (glblPositions[jIndex][2] < floorZ) {
+					floorZ = glblPositions[jIndex][2];
 				}
 			}
 			previousPositions = glblPositions;
@@ -483,10 +484,15 @@ namespace Mona {
 		}		
 	}
 
-	void IKRigController::updateIKRigConfigTime(float time, AnimationIndex animIndex) {
+	void IKRigController::updateIKRigConfigTime(float animationTimeStep, AnimationIndex animIndex) {
 		IKRigConfig& config = m_ikRig.m_animationConfigs[animIndex];
+		float avgFrameDuration = config.getAnimationDuration() / config.getFrameNum();
+		if (avgFrameDuration*2 < animationTimeStep) {
+			MONA_LOG_ERROR("IKRigController: Framerate is too low for IK system to work properly on animation with name --{0}--.",
+				config.m_animationClip->GetAnimationName());
+		}
 		auto anim = config.m_animationClip;
-		float samplingTime = anim->GetSamplingTime(time, true);
+		float samplingTime = anim->GetSamplingTime(m_time, true);
 		config.m_currentReproductionTime = config.getReproductionTime(samplingTime);
 		FrameIndex savedCurrentFrameVal = config.m_currentFrameIndex;
 		for (int i = 0; i < config.m_timeStamps.size(); i++) {
@@ -498,20 +504,16 @@ namespace Mona {
 				break;
 			}
 		}
-		if (config.m_onFrame) {			
-			// si empezamos una nueva vuelta a la animacion
-			if (savedCurrentFrameVal == (config.m_timeStamps.size()-1) && config.m_currentFrameIndex == 0) {
-				config.m_reproductionCount += 1;
-			}
-		}
+		config.m_reproductionCount = m_time / config.getAnimationDuration();
 	}
 
 	void IKRigController::updateIKRig(float timeStep, ComponentManager<TransformComponent>& transformManager,
 		ComponentManager<StaticMeshComponent>& staticMeshManager, ComponentManager<SkeletalMeshComponent>& skeletalMeshManager) {
 		validateTerrains(staticMeshManager);
-		m_time += timeStep*skeletalMeshManager.GetComponentPointer(m_skeletalMeshHandle)->GetAnimationController().GetPlayRate();
+		float animTimeStep = timeStep * skeletalMeshManager.GetComponentPointer(m_skeletalMeshHandle)->GetAnimationController().GetPlayRate();
+		m_time += animTimeStep;
 		for (AnimationIndex i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {
-			updateIKRigConfigTime(m_time, i);
+			updateIKRigConfigTime(animTimeStep, i);
 		}
 		updateFrontVector(timeStep);
 		if (m_ikRig.m_currentAnim != -1) {

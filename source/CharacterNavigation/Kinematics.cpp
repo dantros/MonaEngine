@@ -158,7 +158,7 @@ namespace Mona {
 		auto terms = std::vector<FunctionTerm<IKData>>({ term1, term2, term3 });
 		m_gradientDescent = GradientDescent<IKData>(terms, 0, &m_ikData, postDescentStepCustomBehaviour);
 		m_ikData.descentRate = 0.01;
-		m_ikData.maxIterations = 500;
+		m_ikData.maxIterations = 100;
 		setIKChains(m_ikChains);
 	}
 

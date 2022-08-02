@@ -21,7 +21,7 @@ namespace Mona{
 
     float HeightMap::getHeight(float x, float y) {
         if (!withinBoundaries(x, y)) {
-            MONA_LOG_WARNING("Point is out of bounds");
+            MONA_LOG_WARNING("HeightMap: Point is out of bounds");
             return std::numeric_limits<float>::min();
         }
 

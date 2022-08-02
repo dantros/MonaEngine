@@ -106,7 +106,7 @@ public:
 		eventManager.Subscribe(m_debugGUISubcription, this, &IKRigCharacter::OnDebugGUIEvent);
 
 		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
-		m_transform->SetTranslation({ 0,0, 0 });
+		m_transform->SetTranslation({ 0,0, 10 });
 		m_transform->SetScale({ 0.05,0.05,0.05 });
 		m_transform->Rotate(glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(180.f));
 		m_transform->Rotate(glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(90.f));
@@ -133,6 +133,7 @@ public:
 		rigData.hipJointName = "Hips";
 		m_ikNavHandle = world.AddComponent<Mona::IKNavigationComponent>(*this, rigData);
 		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_walkingAnimation);
+		m_skeletalMesh->GetAnimationController().SetPlayRate(0.2f);
 
 	}
 

@@ -52,7 +52,25 @@ namespace Mona{
             m_tValues[0] -= m_tEpsilon;
         }
 
-        glm::vec<D, float> getVelocity(float t) {
+
+		glm::vec<D, float> getRightHandVelocity(float t) {
+			MONA_ASSERT(inTRange(t), "LIC: t must be a value between {0} and {1}.", m_tValues[0], m_tValues.back());
+			if (t == m_tValues.back()) { return glm::vec<D, float>(0); }
+			for (int i = 0; i < m_tValues.size(); i++) {
+				if (m_tValues[i] == t) {
+					return (m_curvePoints[i + 1] - m_curvePoints[i]) / (m_tValues[i + 1] - m_tValues[i]);
+				}
+				else if (m_tValues[i] < t && t < m_tValues[i + 1]) {
+					return (m_curvePoints[i + 1] - m_curvePoints[i]) / (m_tValues[i + 1] - m_tValues[i]);
+				}
+			}
+			return glm::vec<D, float>(0);;
+		}
+
+        glm::vec<D, float> getVelocity(float t, bool rightHandVelocity = false) {
+            if (rightHandVelocity) {
+                return getRightHandVelocity(t);
+            }
             MONA_ASSERT(inTRange(t), "LIC: t must be a value between {0} and {1}.", m_tValues[0], m_tValues.back());
             if (t == m_tValues[0]) { return glm::vec<D, float>(0); }
             for (int i = 0; i < m_tValues.size(); i++) {
@@ -63,8 +81,10 @@ namespace Mona{
                     return (m_curvePoints[i + 1] - m_curvePoints[i]) / (m_tValues[i + 1] - m_tValues[i]);
                 }
             }
-            return glm::vec<D, float>(0);;
+            return glm::vec<D, float>(0);
         }
+
+		
 
         glm::vec<D, float> getAcceleration(int pointIndex) {
             MONA_ASSERT(0 < pointIndex && pointIndex < m_tValues.size() - 1, "LIC: pointIndex must be an inner point.");

@@ -8,29 +8,75 @@
 namespace Mona{
 
     // funciones para descenso de gradiente
-    std::function<float(const std::vector<float>&, TGData*)> term1Function =
+
+    // primer termino: acercar las direcciones de las velocidades
+	std::function<float(const std::vector<float>&, TGData*)> term1Function =
+		[](const std::vector<float>& varPCoords, TGData* dataPtr)->float {
+		float result = 0;
+		for (int i = 0; i < dataPtr->pointIndexes.size(); i++) {
+			int pIndex = dataPtr->pointIndexes[i];
+			float tVal = dataPtr->varCurve->getTValue(pIndex);
+            glm::vec3 lVel = dataPtr->varCurve->getVelocity(tVal);
+            glm::vec3 rVel = dataPtr->varCurve->getVelocity(tVal, true);
+            glm::vec3 baseLVel = dataPtr->baseVelocitiesL[i];
+            glm::vec3 baseRVel = dataPtr->baseVelocitiesR[i];
+            result += glm::distance2(lVel / glm::length2(lVel), baseLVel / glm::length2(baseLVel));
+            result += glm::distance2(rVel / glm::length2(rVel), baseRVel / glm::length2(baseRVel));
+		}
+		return dataPtr->alphaValue * result;
+	};
+
+	std::function<float(const std::vector<float>&, int, TGData*)> term1PartialDerivativeFunction =
+		[](const std::vector<float>& varPCoords, int varIndex, TGData* dataPtr)->float {
+		int D = 3;
+		int pIndex = dataPtr->pointIndexes[varIndex / D];
+		int coordIndex = varIndex % D;
+        float t_kPrev = dataPtr->varCurve->getTValue(pIndex - 1);
+        float t_kCurr = dataPtr->varCurve->getTValue(pIndex);
+        float t_kNext = dataPtr->varCurve->getTValue(pIndex + 1);
+		glm::vec3 lVel = dataPtr->varCurve->getVelocity(t_kCurr);
+		glm::vec3 rVel = dataPtr->varCurve->getVelocity(t_kCurr, true);
+		glm::vec3 baseLVel = dataPtr->baseVelocitiesL[varIndex / D];
+		glm::vec3 baseRVel = dataPtr->baseVelocitiesR[varIndex / D];
+        float result = 0;
+        result += 2 * (lVel[coordIndex] / glm::length2(lVel) - baseLVel[coordIndex] / glm::length2(baseLVel))
+            * ((1 / (t_kCurr - t_kPrev)) * glm::length2(lVel) - lVel[coordIndex] * 2 * lVel[coordIndex] * (1 / (t_kCurr - t_kPrev)))/
+            glm::pow(glm::length2(lVel), 2);
+		result += 2 * (rVel[coordIndex] / glm::length2(rVel) - baseRVel[coordIndex] / glm::length2(baseRVel))
+			* ((-1 / (t_kNext - t_kCurr)) * glm::length2(rVel) - rVel[coordIndex] * 2 * rVel[coordIndex] * (-1 / (t_kNext - t_kCurr))) /
+			glm::pow(glm::length2(rVel), 2);
+		return dataPtr->alphaValue * result;
+	};
+
+    // segundo termino: acercar los modulos de las velocidades
+    std::function<float(const std::vector<float>&, TGData*)> term2Function =
         [](const std::vector<float>& varPCoord, TGData* dataPtr)->float {
         float result = 0;
         for (int i = 0; i < dataPtr->pointIndexes.size(); i++) {
             int pIndex = dataPtr->pointIndexes[i];
             float tVal = dataPtr->varCurve->getTValue(pIndex);
-            result += glm::distance2(dataPtr->varCurve->getVelocity(tVal),
-                dataPtr->baseVelocities[i]);
+            result += glm::distance2(dataPtr->varCurve->getVelocity(tVal),  dataPtr->baseVelocitiesL[i]);
+            result += glm::distance2(dataPtr->varCurve->getVelocity(tVal, true), dataPtr->baseVelocitiesR[i]);
         }
-        return result;
+        return dataPtr->betaValue*result;
     };
 
-    std::function<float(const std::vector<float>&, int, TGData*)> term1PartialDerivativeFunction =
+    std::function<float(const std::vector<float>&, int, TGData*)> term2PartialDerivativeFunction =
         [](const std::vector<float>& varPCoord, int varIndex, TGData* dataPtr)->float {
         int D = 3;
         int pIndex = dataPtr->pointIndexes[varIndex / D];
         int coordIndex = varIndex % D;
-        float tVal = dataPtr->varCurve->getTValue(pIndex);
-        float result = pIndex != 0 ?
-            2 * (dataPtr->varCurve->getVelocity(tVal)[coordIndex] - dataPtr->baseVelocities[varIndex / D][coordIndex])
-            / (dataPtr->varCurve->getTValue(pIndex) - dataPtr->varCurve->getTValue(pIndex - 1)) : 0;
-
-        return result;
+		float t_kPrev = dataPtr->varCurve->getTValue(pIndex - 1);
+		float t_kCurr = dataPtr->varCurve->getTValue(pIndex);
+		float t_kNext = dataPtr->varCurve->getTValue(pIndex + 1);
+		glm::vec3 lVel = dataPtr->varCurve->getVelocity(t_kCurr);
+		glm::vec3 rVel = dataPtr->varCurve->getVelocity(t_kCurr, true);
+		glm::vec3 baseLVel = dataPtr->baseVelocitiesL[varIndex / D];
+		glm::vec3 baseRVel = dataPtr->baseVelocitiesR[varIndex / D];
+        float result = 0;
+        result += 2 * (lVel[coordIndex] - baseLVel[coordIndex]) * (1 / (t_kCurr - t_kPrev));
+        result += 2 * (rVel[coordIndex] - baseRVel[coordIndex]) * (-1 / (t_kNext - t_kCurr));
+        return dataPtr->betaValue*result;
     };
 
     std::function<void(std::vector<float>&, TGData*)>  postDescentStepCustomBehaviour = 
@@ -53,10 +99,10 @@ namespace Mona{
     }
 
     void TrajectoryGenerator::init() {
-        // descenso para posiciones (dim 3)
-        FunctionTerm<TGData> term(term1Function, term1PartialDerivativeFunction);
-        m_gradientDescent = GradientDescent<TGData>({ term }, 0, &m_tgData, postDescentStepCustomBehaviour);
-        m_tgData.descentRate = m_ikRig->getRigHeight() * m_ikRig->getRigScale() / 1000;
+        FunctionTerm<TGData> term1(term1Function, term1PartialDerivativeFunction);
+        FunctionTerm<TGData> term2(term2Function, term2PartialDerivativeFunction);
+        m_gradientDescent = GradientDescent<TGData>({ term1, term2 }, 0, &m_tgData, postDescentStepCustomBehaviour);
+        m_tgData.descentRate = m_ikRig->getRigHeight() * m_ikRig->getRigScale() / 500;
         m_tgData.maxIterations = 200;
     }
 
@@ -180,8 +226,10 @@ namespace Mona{
         // setear los minimos de altura y aplicar el descenso de gradiente
         m_tgData.pointIndexes.clear();
         m_tgData.pointIndexes.reserve(baseCurve.getNumberOfPoints());
-        m_tgData.baseVelocities.clear();
-        m_tgData.baseVelocities.reserve(baseCurve.getNumberOfPoints());
+        m_tgData.baseVelocitiesR.clear();
+        m_tgData.baseVelocitiesR.reserve(baseCurve.getNumberOfPoints());
+		m_tgData.baseVelocitiesL.clear();
+		m_tgData.baseVelocitiesL.reserve(baseCurve.getNumberOfPoints());
         m_tgData.minValues.clear();
         m_tgData.minValues.reserve(baseCurve.getNumberOfPoints() * 3);
         std::vector<std::pair<int, int>> curvePointIndex_stridePointIndex;
@@ -208,6 +256,10 @@ namespace Mona{
             strideDataIndices.erase(strideDataIndices.begin());
         }
 
+        for (int i = 1; i < baseCurve.getNumberOfPoints() - 1; i++) {
+            m_tgData.pointIndexes.push_back(i);
+        }
+
         for (int i = 0; i < m_tgData.pointIndexes.size()*3;i++) {
             m_tgData.minValues.push_back(std::numeric_limits<float>::min());
         }
@@ -230,7 +282,8 @@ namespace Mona{
             for (int j = 0; j < 2; j++) {
                 initialArgs[i * 3 + j] = baseCurve.getCurvePoint(pIndex)[j];
             }
-            m_tgData.baseVelocities.push_back(baseCurve.getVelocity(baseCurve.getTValue(pIndex)));
+            m_tgData.baseVelocitiesL.push_back(baseCurve.getVelocity(baseCurve.getTValue(pIndex)));
+            m_tgData.baseVelocitiesR.push_back(baseCurve.getVelocity(baseCurve.getTValue(pIndex), true));
         }
 
         // seteo de otros parametros
@@ -335,7 +388,9 @@ namespace Mona{
             float startHipHighOriginalSpeed = startHipHighOriginalDist / (hipHighOriginalTime_extendedAnim - baseEEOriginalCurve.getTRange()[0]);
             float hipHighEndOriginalSpeed = hipHighEndOriginalDist / (baseEEOriginalCurve.getTRange()[1] - hipHighOriginalTime_extendedAnim);
 
-            glm::vec3 hipHighNewPoint_origTime = baseEETargetCurve.getCurvePoint(baseEEOriginalTr.getHipMaxAltitudeIndex());
+            float hipHighOriginalTime_rep = baseEETargetCurve.getTRange()[0] + 
+                (hipHighOriginalTime_extendedAnim - baseEEOriginalCurve.getTRange()[0]);
+            glm::vec3 hipHighNewPoint_origTime = baseEETargetCurve.evalCurve(hipHighOriginalTime_rep);
             float startHighNewDist = glm::distance(baseEETargetCurve.getStart(), hipHighNewPoint_origTime);
             float highEndNewDist = glm::distance(hipHighNewPoint_origTime, baseEETargetCurve.getEnd());
             float startHighNewTime = startHighNewDist / startHipHighOriginalSpeed;
@@ -448,15 +503,17 @@ namespace Mona{
 
             m_tgData.pointIndexes.clear();
             m_tgData.pointIndexes.reserve(hipTrCurveAdjustedFall.getNumberOfPoints());
-            m_tgData.baseVelocities.clear();
-            m_tgData.baseVelocities.reserve(hipTrCurveAdjustedFall.getNumberOfPoints());
+            m_tgData.baseVelocitiesL.clear();
+            m_tgData.baseVelocitiesL.reserve(hipTrCurveAdjustedFall.getNumberOfPoints());
+			m_tgData.baseVelocitiesR.clear();
+			m_tgData.baseVelocitiesR.reserve(hipTrCurveAdjustedFall.getNumberOfPoints());
             m_tgData.minValues.clear();
             m_tgData.minValues.reserve(hipTrCurveAdjustedFall.getNumberOfPoints() * 3);
-            for (int i = 1; i < hipTrCurveAdjustedFall.getNumberOfPoints(); i++) {
-                // Los extremos de la curva se mantendran fijos.
+            for (int i = 1; i < hipTrCurveAdjustedFall.getNumberOfPoints() - 1; i++) {
+                // Los extremos de la curva y el punto de max altura de la cadera se mantendran fijos.
                 if (i != hipHighPointIndex_hip) {
                     m_tgData.pointIndexes.push_back(i);
-                    for (int i = 0; i < 3; i++) {
+                    for (int j = 0; j < 3; j++) {
                         m_tgData.minValues.push_back(std::numeric_limits<float>::min());
                     }
                 }
@@ -471,7 +528,8 @@ namespace Mona{
                 for (int j = 0; j < 2; j++) {
                     initialArgs[i * 3 + j] = hipTrCurveAdjustedFall.getCurvePoint(pIndex)[j];
                 }
-                m_tgData.baseVelocities.push_back(hipTrCurveAdjustedFall.getVelocity(hipTrCurveAdjustedFall.getTValue(pIndex)));
+                m_tgData.baseVelocitiesL.push_back(hipTrCurveAdjustedFall.getVelocity(hipTrCurveAdjustedFall.getTValue(pIndex)));
+                m_tgData.baseVelocitiesR.push_back(hipTrCurveAdjustedFall.getVelocity(hipTrCurveAdjustedFall.getTValue(pIndex), true));
             }
 
             // seteo de otros parametros (TODO)

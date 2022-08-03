@@ -101,7 +101,7 @@ namespace Mona{
     void TrajectoryGenerator::init() {
         FunctionTerm<TGData> term1(term1Function, term1PartialDerivativeFunction);
         FunctionTerm<TGData> term2(term2Function, term2PartialDerivativeFunction);
-        m_gradientDescent = GradientDescent<TGData>({ term1, term2 }, 0, &m_tgData, postDescentStepCustomBehaviour);
+        m_gradientDescent = GradientDescent<TGData>({ term1 }, 0, &m_tgData, postDescentStepCustomBehaviour);
         m_tgData.descentRate = m_ikRig->getRigHeight() * m_ikRig->getRigScale() / 500;
         m_tgData.maxIterations = 200;
     }
@@ -115,8 +115,6 @@ namespace Mona{
 		float xyRotationAngle = glm::orientedAngle(glm::vec3(config->getHipTrajectoryData()->getOriginalFrontVector(), 0),
 			glm::vec3(m_ikRig->getFrontVector(), 0), glm::vec3(0, 0, 1));
 
-
-		bool allStatic = true;
 		for (int i = 0; i < m_ikChains.size(); i++) {
 			ChainIndex ikChain = m_ikChains[i];
 			JointIndex eeIndex = m_ikRig->getIKChain(ikChain)->getJoints().back();
@@ -154,11 +152,20 @@ namespace Mona{
         ChainIndex ikChain, IKRigConfig* config, float xyMovementRotAngle,
         ComponentManager<TransformComponent>& transformManager,
         ComponentManager<StaticMeshComponent>& staticMeshManager) {
-        EEGlobalTrajectoryData* trData = config->getEETrajectoryData(ikChain);
 
+        EEGlobalTrajectoryData* trData = config->getEETrajectoryData(ikChain);
         LIC<3>& baseCurve = baseTrajectory.getEECurve();
-        FrameIndex initialFrame = config->getCurrentFrameIndex();
-        float initialTime = config->getReproductionTime(initialFrame);
+
+		FrameIndex currentFrame = config->getCurrentFrameIndex();
+		FrameIndex initialFrame = config->getFrame(baseCurve.getTValue(0));
+		// llevar a reproduction time
+		float currentAnimTime = config->getAnimationTime(currentFrame);
+		float currentRepTime = config->getReproductionTime(currentFrame);
+		baseCurve.offsetTValues(-currentAnimTime);
+		baseCurve.offsetTValues(currentRepTime);
+        
+        int repCountOffset = initialFrame <= currentFrame ? 0 : -1;
+        float initialTime = config->getReproductionTime(initialFrame, repCountOffset);
         glm::vec3 initialPos = trData->getSavedPosition(initialFrame);
         // chequear si hay una curva previa generada
         if (!trData->getTargetTrajectory().getEECurve().inTRange(initialTime)) {
@@ -168,11 +175,20 @@ namespace Mona{
 		glm::vec3 originalDirection = glm::normalize(baseCurve.getEnd() - baseCurve.getStart());
 		glm::vec2 targetXYDirection = glm::rotate(glm::vec2(originalDirection), xyMovementRotAngle);
         glm::vec3 targetDirection = glm::normalize(glm::vec3(targetXYDirection, originalDirection[2]));
-        // correccion de posicion y llevar a reproduction time
+        // correccion de posicion
         baseCurve.fitStartAndDir(initialPos, targetDirection);
-        baseCurve.offsetTValues(-baseCurve.getTValue(0));
-        baseCurve.offsetTValues(initialTime);
-        trData->setTargetTrajectory(baseCurve, TrajectoryType::STATIC, baseTrajectory.getSubTrajectoryID());
+
+		repCountOffset = config->getNextFrameIndex() == 0 ? 1 : 0;
+		float transitionTime = config->getReproductionTime(config->getNextFrameIndex(), repCountOffset);
+		int currSubTrID = trData->getTargetTrajectory().getSubTrajectoryID();
+		int newSubTrID = baseTrajectory.getSubTrajectoryID();
+		if (currSubTrID == newSubTrID) {
+			trData->setTargetTrajectory(LIC<3>::transition(trData->getTargetTrajectory().getEECurve(),
+				baseCurve, transitionTime), TrajectoryType::STATIC, baseTrajectory.getSubTrajectoryID());
+        }
+        else {
+            trData->setTargetTrajectory(baseCurve, TrajectoryType::STATIC, baseTrajectory.getSubTrajectoryID());
+        }        
     }
 
     void TrajectoryGenerator::generateDynamicTrajectory(EETrajectory baseTrajectory, 
@@ -291,10 +307,13 @@ namespace Mona{
         m_gradientDescent.setArgNum(initialArgs.size());
         m_gradientDescent.computeArgsMin(m_tgData.descentRate, m_tgData.maxIterations, initialArgs);
 
-        float transitionTime = config->getCurrentReproductionTime();
-        if (trData->getTargetTrajectory().getEECurve().inTRange(transitionTime)) {
-            trData->setTargetTrajectory(LIC<3>::transition(trData->getTargetTrajectory().getEECurve(), 
-                baseCurve, transitionTime), TrajectoryType::DYNAMIC, baseTrajectory.getSubTrajectoryID());
+        float repCountOffset = config->getNextFrameIndex() == 0 ? 1 : 0;
+        float transitionTime = config->getReproductionTime(config->getNextFrameIndex(), repCountOffset);
+        int currSubTrID = trData->getTargetTrajectory().getSubTrajectoryID();
+        int newSubTrID = baseTrajectory.getSubTrajectoryID();
+        if (currSubTrID == newSubTrID) {
+			trData->setTargetTrajectory(LIC<3>::transition(trData->getTargetTrajectory().getEECurve(),
+				baseCurve, transitionTime), TrajectoryType::DYNAMIC, baseTrajectory.getSubTrajectoryID());
         }
         else {
             trData->setTargetTrajectory(baseCurve, TrajectoryType::DYNAMIC, baseTrajectory.getSubTrajectoryID());
@@ -381,7 +400,7 @@ namespace Mona{
             }
             
             // segundo paso: ajustar punto de maxima altura
-            float hipHighOriginalTime_extendedAnim = baseEEOriginalCurve.getTValue(baseEEOriginalTr.getHipMaxAltitudeIndex());
+            float hipHighOriginalTime_extendedAnim = baseEEOriginalTr.getHipMaxAltitudeTime();
             glm::vec3 hipHighOriginalPoint = baseEEOriginalCurve.evalCurve(hipHighOriginalTime_extendedAnim);
             float startHipHighOriginalDist = glm::distance(baseEEOriginalCurve.getStart(), hipHighOriginalPoint);
             float hipHighEndOriginalDist = glm::distance(hipHighOriginalPoint, baseEEOriginalCurve.getEnd());
@@ -405,9 +424,9 @@ namespace Mona{
 			hipRotAnglCurve.offsetTValues(-hipRotAnglCurve.getTRange()[0] + tInfLimitRep);
 			hipRotAxCurve.offsetTValues(-hipRotAxCurve.getTRange()[0] + tInfLimitRep);
             
-			/*hipTrCurve.displacePointT(hipHighPointIndex_hip, 0, hipTrCurve.getNumberOfPoints() - 1, hipHighNewTime, true);
+			hipTrCurve.displacePointT(hipHighPointIndex_hip, 0, hipTrCurve.getNumberOfPoints() - 1, hipHighNewTime, true);
 			hipRotAnglCurve.displacePointT(hipHighPointIndex_hip, 0, hipTrCurve.getNumberOfPoints() - 1, hipHighNewTime, true);
-			hipRotAxCurve.displacePointT(hipHighPointIndex_hip, 0, hipTrCurve.getNumberOfPoints() - 1, hipHighNewTime, false);*/
+			hipRotAxCurve.displacePointT(hipHighPointIndex_hip, 0, hipTrCurve.getNumberOfPoints() - 1, hipHighNewTime, false);
 
             // tercer paso: encontrar el punto final
             // creamos una curva que represente la trayectoria de caida
@@ -532,12 +551,13 @@ namespace Mona{
                 m_tgData.baseVelocitiesR.push_back(hipTrCurveAdjustedFall.getVelocity(hipTrCurveAdjustedFall.getTValue(pIndex), true));
             }
 
-            // seteo de otros parametros (TODO)
+            // seteo de otros parametros
             m_tgData.varCurve = &hipTrFinalCurve;
             m_gradientDescent.setArgNum(initialArgs.size());
             m_gradientDescent.computeArgsMin(m_tgData.descentRate, m_tgData.maxIterations, initialArgs);
 
-            float transitionTime = config->getCurrentReproductionTime();
+			float repCountOffset = config->getNextFrameIndex() == 0 ? 1 : 0;
+			float transitionTime = config->getReproductionTime(config->getNextFrameIndex(), repCountOffset);
             if (hipTrData->getTargetTranslations().inTRange(transitionTime)) {
                 hipTrData->setTargetTranslations(LIC<3>::transition(hipTrData->getTargetTranslations(), hipTrFinalCurve, transitionTime));
                 hipTrData->setTargetRotationAngles(LIC<1>::transition(hipTrData->getTargetRotationAngles(), hipRotAnglCurve, transitionTime));

@@ -124,14 +124,22 @@ namespace Mona {
 
 	void World::StartMainLoop() noexcept {
 		std::chrono::time_point<std::chrono::steady_clock> startTime = std::chrono::steady_clock::now();
-		
+		float averageTimeStep = 1.0f/20.0f;
 		while (!m_window.ShouldClose() && !m_shouldClose)
 		{
 			std::chrono::time_point<std::chrono::steady_clock> newTime = std::chrono::steady_clock::now();
 			const auto frameTime = newTime - startTime;
 			startTime = newTime;
 			float timeStep = std::chrono::duration_cast<std::chrono::duration<float>>(frameTime).count();
-			Update(timeStep);
+			float correctedTimeStep = timeStep;
+			if (averageTimeStep * 3 < timeStep) {
+				correctedTimeStep = averageTimeStep;
+			}
+			Update(correctedTimeStep);
+			if (averageTimeStep*15 < timeStep) {
+				timeStep = averageTimeStep;
+			}
+			averageTimeStep = averageTimeStep * 0.9 + timeStep * 0.1;
 		}
 		m_eventManager.Publish(ApplicationEndEvent());
 		

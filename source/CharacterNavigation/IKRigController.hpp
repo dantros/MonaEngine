@@ -14,7 +14,7 @@ namespace Mona {
 		IKRig m_ikRig;
 		InnerComponentHandle m_skeletalMeshHandle;
 		glm::mat4 m_baseGlobalTransform;
-		float m_time = 0;
+		float m_reproductionTime = 0;
 	public:
 		IKRigController() = default;
 		IKRigController(std::shared_ptr<Skeleton> skeleton, RigData rigData, InnerComponentHandle transformHandle,

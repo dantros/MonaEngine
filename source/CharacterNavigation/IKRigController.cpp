@@ -393,7 +393,8 @@ namespace Mona {
 						savedIndex = k;
 					}
 				}
-				currentConfig->m_eeTrajectoryData[i].m_originalSubTrajectories[j].m_hipMaxAltitudeIndex = savedIndex;
+				currentConfig->m_eeTrajectoryData[i].m_originalSubTrajectories[j].m_hipMaxAltitudeTime = 
+					currentCurve.getTValue(savedIndex);
 			}	
 		}
 
@@ -423,10 +424,12 @@ namespace Mona {
 		m_ikRig.m_frontVector = glm::rotate(m_ikRig.m_frontVector, m_ikRig.m_rotationAngle);
 	}
 
+	float lastTrajectoryUpdateTime = 0;
 	void IKRigController::updateTrajectories(AnimationIndex animIndex, ComponentManager<TransformComponent>& transformManager,
 		ComponentManager<StaticMeshComponent>& staticMeshManager) {
 		IKRigConfig& config = m_ikRig.m_animationConfigs[animIndex];
 		HipGlobalTrajectoryData* hipTrData = config.getHipTrajectoryData();
+
 		if (config.m_onFrame) { // se realiza al llegar a un frame de la animacion
 			// guardado de posiciones globales ee y cadera
 			glm::mat4 baseTransform = transformManager.GetComponentPointer(m_ikRig.getTransformHandle())->GetModelMatrix();
@@ -448,7 +451,20 @@ namespace Mona {
 			hipTrData->m_savedRotationAxes[currentFrame] = glm::axis(hipRot);
 
 			// recalcular trayectorias de ee y caderas
-			m_ikRig.calculateTrajectories(animIndex, transformManager, staticMeshManager);
+			bool updateNeeded = m_reproductionTime - lastTrajectoryUpdateTime > 0.2f;
+			if (!updateNeeded) {
+				for (int i = 0; i < config.m_eeTrajectoryData.size(); i++) {
+					float nextFrameRepTime = config.getReproductionTime(config.getNextFrameIndex());
+					if (!config.getEETrajectoryData(i)->getTargetTrajectory().getEECurve().inTRange(nextFrameRepTime)) {
+						updateNeeded = true;
+						break;
+					}
+				}
+			}
+			if (updateNeeded) {
+				lastTrajectoryUpdateTime = m_reproductionTime;
+				m_ikRig.calculateTrajectories(animIndex, transformManager, staticMeshManager);
+			}			
 
 			// asignar objetivos a ee's
 			float targetTime = config.getReproductionTime(config.getNextFrameIndex());
@@ -492,8 +508,8 @@ namespace Mona {
 				config.m_animationClip->GetAnimationName());
 		}
 		auto anim = config.m_animationClip;
-		float samplingTime = anim->GetSamplingTime(m_time, true);
-		config.m_currentReproductionTime = config.getReproductionTime(samplingTime);
+		float samplingTime = anim->GetSamplingTime(m_reproductionTime, true);
+		config.m_currentReproductionTime = m_reproductionTime;
 		FrameIndex savedCurrentFrameVal = config.m_currentFrameIndex;
 		for (int i = 0; i < config.m_timeStamps.size(); i++) {
 			float nextTimeStamp = i < config.m_timeStamps.size() ? config.m_timeStamps[i + 1] : config.getAnimationDuration();
@@ -504,14 +520,14 @@ namespace Mona {
 				break;
 			}
 		}
-		config.m_reproductionCount = m_time / config.getAnimationDuration();
+		config.m_reproductionCount = m_reproductionTime / config.getAnimationDuration();
 	}
 
 	void IKRigController::updateIKRig(float timeStep, ComponentManager<TransformComponent>& transformManager,
 		ComponentManager<StaticMeshComponent>& staticMeshManager, ComponentManager<SkeletalMeshComponent>& skeletalMeshManager) {
 		validateTerrains(staticMeshManager);
 		float animTimeStep = timeStep * skeletalMeshManager.GetComponentPointer(m_skeletalMeshHandle)->GetAnimationController().GetPlayRate();
-		m_time += animTimeStep;
+		m_reproductionTime += animTimeStep;
 		for (AnimationIndex i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {
 			updateIKRigConfigTime(animTimeStep, i);
 		}

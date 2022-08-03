@@ -117,56 +117,48 @@ namespace Mona{
 
         void displacePointT(int pointIndex, int lowIndex, int highIndex, float newT, bool scalePoints = true, float pointScalingRatio = 1) {
             MONA_ASSERT(lowIndex < highIndex && 0 <= lowIndex && highIndex < m_tValues.size(), "LIC: low and high index must be within bounds.");
-            MONA_ASSERT(lowIndex <= pointIndex && pointIndex <=highIndex , "LIC: input point index must be within input bounds");
-			// testing
-			for (int i = 1; i < m_tValues.size(); i++) {
-				MONA_ASSERT(m_tValues[i - 1] < m_tValues[i], "LIC: tValues must come in a strictly ascending order");
-			}
+            MONA_ASSERT(lowIndex <= pointIndex && pointIndex <= highIndex, "LIC: input point index must be within input bounds");
             float oldT = m_tValues[pointIndex];
             if (oldT == newT) { return; }
             if (pointIndex != lowIndex) {
-				MONA_ASSERT(getTValue(lowIndex) < newT,
-					"LIC: If not the lower end, newT cannot subceed or match original low t bound.");
+                MONA_ASSERT(getTValue(lowIndex) < newT,
+                    "LIC: If not the lower end, newT cannot subceed or match original low t bound.");
                 float fractionBelow = funcUtils::getFraction(m_tValues[lowIndex], oldT, newT);
-				for (int i = lowIndex + 1; i <= pointIndex; i++) {
-					m_tValues[i] = funcUtils::lerp(m_tValues[lowIndex], m_tValues[i], fractionBelow);
-					if (scalePoints) {
-						m_curvePoints[i] = funcUtils::lerp(m_curvePoints[lowIndex], m_curvePoints[i], fractionBelow * pointScalingRatio);
-					}
-				}
+                for (int i = lowIndex + 1; i <= pointIndex; i++) {
+                    m_tValues[i] = funcUtils::lerp(m_tValues[lowIndex], m_tValues[i], fractionBelow);
+                    if (scalePoints) {
+                        m_curvePoints[i] = funcUtils::lerp(m_curvePoints[lowIndex], m_curvePoints[i], fractionBelow * pointScalingRatio);
+                    }
+                }
             }
-            
+
             if (pointIndex != highIndex) {
-				MONA_ASSERT(newT < getTValue(highIndex),
-					"LIC: If not the higher end, newT cannot exceed or match original high t bound.");
-				float fractionAbove = funcUtils::getFraction(m_tValues[highIndex], oldT, newT);
-				for (int i = pointIndex; i < highIndex; i++) {
+                MONA_ASSERT(newT < getTValue(highIndex),
+                    "LIC: If not the higher end, newT cannot exceed or match original high t bound.");
+                float fractionAbove = funcUtils::getFraction(m_tValues[highIndex], oldT, newT);
+                for (int i = pointIndex; i < highIndex; i++) {
                     if (pointIndex < i || pointIndex == lowIndex) {
-						m_tValues[i] = funcUtils::lerp(m_tValues[highIndex], m_tValues[i], fractionAbove);
-						if (scalePoints) {
-							m_curvePoints[i] = funcUtils::lerp(m_curvePoints[highIndex], m_curvePoints[i], fractionAbove * pointScalingRatio);
-						}
-                    }					
-				}
+                        m_tValues[i] = funcUtils::lerp(m_tValues[highIndex], m_tValues[i], fractionAbove);
+                        if (scalePoints) {
+                            m_curvePoints[i] = funcUtils::lerp(m_curvePoints[highIndex], m_curvePoints[i], fractionAbove * pointScalingRatio);
+                        }
+                    }
+                }
             }
 
+            std::vector<float> newTValues = { m_tValues[0] };
+            newTValues.reserve(getNumberOfPoints());
+            std::vector<glm::vec<D, float>> newCurvePoints = { m_curvePoints[0] };
+            newCurvePoints.reserve(getNumberOfPoints());
 			// correccion de valores
-			for (int i = lowIndex; 0 <= i; i--) {
-				if (m_tValues[i] == m_tValues[i + 1]) {
-                    epsilonAdjustment_subtract(m_tValues[i]);
-				}
-			}
-			for (int i = highIndex; i < m_tValues.size(); i++) {
-				if (m_tValues[i - 1] == m_tValues[i]) {
-                    epsilonAdjustment_add(m_tValues[i]);
-				}
-			}
-
-            // testing
-			for (int i = 1; i < m_tValues.size(); i++) {
-				MONA_ASSERT(m_tValues[i - 1] < m_tValues[i], "LIC: tValues must come in a strictly ascending order");
-			}
-            
+            for (int i = 1; i < getNumberOfPoints(); i++) {
+                if (m_tValues[i - 1] < m_tValues[i]) {
+                    newTValues.push_back(m_tValues[i]);
+                    newCurvePoints.push_back(m_curvePoints[i]);
+                }
+            }
+            m_curvePoints = newCurvePoints;
+            m_tValues = newTValues;            
         }
 
         void setCurvePoint(int pointIndex, glm::vec<D, float> newValue) {

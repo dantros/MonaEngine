@@ -188,7 +188,11 @@ namespace Mona{
         }
         else {
             trData->setTargetTrajectory(baseCurve, TrajectoryType::STATIC, baseTrajectory.getSubTrajectoryID());
-        }        
+        }
+
+		// testing
+		auto targetCurve = trData->getTargetTrajectory().getEECurve();
+        targetCurve.debugPrintCurvePoints(0);
     }
 
     void TrajectoryGenerator::generateDynamicTrajectory(EETrajectory baseTrajectory, 
@@ -302,6 +306,12 @@ namespace Mona{
             m_tgData.baseVelocitiesR.push_back(baseCurve.getVelocity(baseCurve.getTValue(pIndex), true));
         }
 
+        // testing
+        auto targetCurve = baseCurve;
+        targetCurve.debugPrintCurvePoints(0);
+
+
+
         // seteo de otros parametros
         m_tgData.varCurve = &baseCurve;
         m_gradientDescent.setArgNum(initialArgs.size());
@@ -317,7 +327,11 @@ namespace Mona{
         }
         else {
             trData->setTargetTrajectory(baseCurve, TrajectoryType::DYNAMIC, baseTrajectory.getSubTrajectoryID());
-        }   
+        }
+
+        // testing
+        targetCurve = trData->getTargetTrajectory().getEECurve();
+        targetCurve.debugPrintCurvePoints(0);
     }
 
 	

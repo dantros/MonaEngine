@@ -9,6 +9,7 @@
 #include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include "Log.hpp"
+#include "ConsoleColor.h"
 
 namespace Mona {
 
@@ -73,7 +74,25 @@ namespace Mona {
 			result += " ]";
 			return result;
         }
-    
+
+        template <int D>
+        inline void printColoredStdVector(std::vector<glm::vec<D, float>> vec, bool spread = true) {
+            auto colors = { green, red, yellow, blue };
+			std::cout << "[ ";
+			for (int i = 0; i < vec.size(); i++) {
+                std::cout << "[";
+                for (int j = 0; j < D; j++) {
+                    std::cout << *(colors.begin() + j % colors.size()) << vec[i][j];
+                    if (j != D - 1) { std::cout << ", "; }
+                }
+                std::cout << white << "]";
+                if (i != vec.size() - 1) { 
+                    std::cout << ", "; 
+                    if (spread) { std::cout << std::endl; }
+                }				
+			}
+			std::cout << " ]" << std::endl;
+        }    
 
     
     }

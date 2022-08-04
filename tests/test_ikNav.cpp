@@ -45,13 +45,13 @@ Mona::GameObjectHandle<Mona::GameObject> AddTerrain(Mona::World& world) {
 		float minSigma = 3;
 		float maxSigma = 20;
 		std::srand(5);
-		for (int i = 0; i < funcNum; i++) {
+		/*for (int i = 0; i < funcNum; i++) {
 			float randMax = RAND_MAX;
 			result += gaussian(x, y, Mona::funcUtils::lerp(minHeight, maxHeight, std::rand() / randMax),
 				Mona::funcUtils::lerp(minSigma, maxSigma, std::rand() / randMax),
-				{ Mona::funcUtils::lerp(minXY[0], maxXY[0], std::rand()/ randMax),
+				{ Mona::funcUtils::lerp(minXY[0], maxXY[0], std::rand() / randMax),
 				Mona::funcUtils::lerp(minXY[1], maxXY[1], std::rand() / randMax) });
-		}
+		}*/
 		return result;
 	};
 
@@ -106,7 +106,7 @@ public:
 		eventManager.Subscribe(m_debugGUISubcription, this, &IKRigCharacter::OnDebugGUIEvent);
 
 		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
-		m_transform->SetTranslation({ 0,0, 10 });
+		m_transform->SetTranslation({ 0,0, 50 });
 		m_transform->SetScale({ 0.05,0.05,0.05 });
 		m_transform->Rotate(glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(180.f));
 		m_transform->Rotate(glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(90.f));

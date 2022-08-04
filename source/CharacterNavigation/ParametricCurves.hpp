@@ -8,6 +8,7 @@
 #include <vector>
 #include "../Core/Log.hpp"
 #include "../Core/FuncUtils.hpp"
+#include "../Core/GlmUtils.hpp"
 #include <math.h>
 
 namespace Mona{
@@ -373,6 +374,27 @@ namespace Mona{
 			float targetLength = glm::distance(newStart, newEnd);
 			scale(glm::vec3(targetLength / origLength));
 			translate(-getStart() + newStart);
+		}
+
+		void debugPrintTValues() {
+            std::cout << "tValues: " << std::endl;
+            std::cout << funcUtils::vecToString(m_tValues) << std::endl;
+		}
+
+
+		void debugPrintCurvePoints(float floorZ) {
+            MONA_ASSERT(m_dimension == 3, "LIC: only available for dim 3 LICs.");
+			float minZ = std::numeric_limits<float>::max();
+			for (int i = 0; i < getNumberOfPoints(); i++) {
+				if (m_curvePoints[i][2] < minZ) {
+                    minZ = m_curvePoints[i][2];
+				}
+			}
+            if (minZ < floorZ) {
+                glmUtils::printColoredStdVector(m_curvePoints);
+                MONA_ASSERT(floorZ <= minZ, "LIC DEBUG.");
+            }            
+
 		}
     };
     

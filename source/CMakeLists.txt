@@ -19,6 +19,7 @@ set(MONA_HEADERS
 				Core/AssimpTransformations.hpp
 				Core/FuncUtils.hpp
 				Core/GlmUtils.hpp
+				Core/ConsoleColor.h
 				Platform/Window.hpp
 				Platform/Input.hpp
 				Platform/KeyCodes.hpp

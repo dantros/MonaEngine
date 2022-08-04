@@ -79,13 +79,17 @@ namespace Mona{
         return dataPtr->betaValue*result;
     };
 
-    std::function<void(std::vector<float>&, TGData*)>  postDescentStepCustomBehaviour = 
-        [](std::vector<float>& varPCoord, TGData* dataPtr)->void {
+    std::function<void(std::vector<float>&, TGData*, std::vector<float>&)>  postDescentStepCustomBehaviour =
+        [](std::vector<float>& varPCoord, TGData* dataPtr, std::vector<float>& argsRawDelta)->void {
         glm::vec3 newPos;
         int D = 3;
         for (int i = 0; i < dataPtr->pointIndexes.size(); i++) {
             for (int j = 0; j < D; j++) {
-                newPos[j] = std::max(dataPtr->minValues[i * D + j], varPCoord[i * D + j]);
+                if (varPCoord[i * D + j] <= dataPtr->minValues[i * D + j]) {
+                    varPCoord[i * D + j] = dataPtr->minValues[i * D + j];
+                    argsRawDelta[i * D + j] = 0;
+                }
+                newPos[j] = varPCoord[i * D + j];
             }
             int pIndex = dataPtr->pointIndexes[i];
             dataPtr->varCurve->setCurvePoint(pIndex, newPos);
@@ -101,9 +105,12 @@ namespace Mona{
     void TrajectoryGenerator::init() {
         FunctionTerm<TGData> term1(term1Function, term1PartialDerivativeFunction);
         FunctionTerm<TGData> term2(term2Function, term2PartialDerivativeFunction);
-        m_gradientDescent = GradientDescent<TGData>({ term1 }, 0, &m_tgData, postDescentStepCustomBehaviour);
-        m_tgData.descentRate = m_ikRig->getRigHeight() * m_ikRig->getRigScale() / 500;
+        m_gradientDescent = GradientDescent<TGData>({ term2 }, 0, &m_tgData, postDescentStepCustomBehaviour);
+        m_tgData.descentRate = 0.001;
         m_tgData.maxIterations = 200;
+        m_tgData.alphaValue = 0.8;
+        m_tgData.betaValue = 1.0;
+        m_tgData.targetPosDelta = m_ikRig->getRigHeight()/pow(10, 8);
     }
 
 	void TrajectoryGenerator::generateNewTrajectories(AnimationIndex animIndex,
@@ -189,10 +196,6 @@ namespace Mona{
         else {
             trData->setTargetTrajectory(baseCurve, TrajectoryType::STATIC, baseTrajectory.getSubTrajectoryID());
         }
-
-		// testing
-		auto targetCurve = trData->getTargetTrajectory().getEECurve();
-        targetCurve.debugPrintCurvePoints(0);
     }
 
     void TrajectoryGenerator::generateDynamicTrajectory(EETrajectory baseTrajectory, 
@@ -203,13 +206,14 @@ namespace Mona{
         LIC<3>& baseCurve = baseTrajectory.getEECurve();
         EEGlobalTrajectoryData* trData = config->getEETrajectoryData(ikChain);
         FrameIndex currentFrame = config->getCurrentFrameIndex();
-        FrameIndex initialFrame = config->getFrame(baseCurve.getTValue(0));
+        FrameIndex initialFrame = config->getFrame(baseCurve.getTRange()[0]);
+        FrameIndex finalFrame = config->getFrame(baseCurve.getTRange()[1]);
 
         // llevar a reproduction time
         float currentAnimTime = config->getAnimationTime(currentFrame);
         float currentRepTime = config->getReproductionTime(currentFrame);
         baseCurve.offsetTValues(-currentAnimTime);
-        baseCurve.offsetTValues(currentRepTime);      
+        baseCurve.offsetTValues(currentRepTime);
 
         float initialRepTime = baseCurve.getTValue(0);
         glm::vec3 initialPos = trData->getSavedPosition(initialFrame);
@@ -218,21 +222,22 @@ namespace Mona{
         if (!trData->getTargetTrajectory().getEECurve().inTRange(initialRepTime)) {
             float referenceTime = config->getReproductionTime(currentFrame);
             glm::vec3 sampledCurveReferencePoint = baseCurve.evalCurve(referenceTime);
-            float floorDistanceToStart = glm::distance(glm::vec2(baseCurve.getStart()), glm::vec2(sampledCurveReferencePoint));
-            glm::vec3 floorReferencePoint(glm::vec2(currentPos), m_environmentData.getTerrainHeight(glm::vec2(currentPos),
-                transformManager, staticMeshManager));
+            float xyDistanceToStart = glm::distance(glm::vec2(baseCurve.getStart()), glm::vec2(sampledCurveReferencePoint));
+            glm::vec2 xyReferencePoint = glm::vec2(currentPos);
             glm::vec2 sampledCurveReferenceDirection = glm::vec2(sampledCurveReferencePoint) - glm::vec2(baseCurve.getStart());
             glm::vec2 targetDirection = -glm::normalize(glm::rotate(sampledCurveReferenceDirection, xyMovementRotAngle));
             float supportHeight = trData->getSupportHeight(initialFrame);
-            initialPos = calcStrideStartingPoint(supportHeight, floorReferencePoint, floorDistanceToStart,
+            initialPos = calcStrideStartingPoint(supportHeight, xyReferencePoint, xyDistanceToStart,
                 targetDirection, 4, transformManager, staticMeshManager);
         }
 
         float targetDistance = glm::distance(baseCurve.getStart(), baseCurve.getEnd());
         glm::vec3 originalDirection = glm::normalize(baseCurve.getEnd() - baseCurve.getStart());
         glm::vec2 targetXYDirection = glm::normalize(glm::rotate(glm::vec2(originalDirection), xyMovementRotAngle));
-        float supportHeight = trData->getSupportHeight(initialFrame);
-        std::vector<glm::vec3> strideData = calcStrideData(supportHeight, initialPos, targetDistance, targetXYDirection, 8, transformManager, staticMeshManager);
+        float supportHeightStart = trData->getSupportHeight(initialFrame);
+        float supportHeightEnd = trData->getSupportHeight(finalFrame);
+        std::vector<glm::vec3> strideData = calcStrideData(supportHeightStart, supportHeightEnd, 
+            initialPos, targetDistance, targetXYDirection, 8, transformManager, staticMeshManager);
         if (strideData.size() == 0) { // si no es posible avanzar por la elevacion del terreno
             LIC<3> staticBaseCurve({ currentPos, currentPos }, { currentAnimTime, currentAnimTime + config->getAnimationDuration() });
             generateStaticTrajectory(EETrajectory(staticBaseCurve, TrajectoryType::STATIC, -2), ikChain, config, xyMovementRotAngle,
@@ -241,7 +246,13 @@ namespace Mona{
         }
         glm::vec3 finalPos = strideData.back();
 
+		// testing
+		baseCurve.debugPrintCurvePoints();
+
         baseCurve.fitEnds(initialPos, finalPos);
+
+		// testing
+		baseCurve.debugPrintCurvePoints();
 
         // setear los minimos de altura y aplicar el descenso de gradiente
         m_tgData.pointIndexes.clear();
@@ -281,7 +292,7 @@ namespace Mona{
         }
 
         for (int i = 0; i < m_tgData.pointIndexes.size()*3;i++) {
-            m_tgData.minValues.push_back(std::numeric_limits<float>::min());
+            m_tgData.minValues.push_back(std::numeric_limits<float>::lowest());
         }
         for (int i = 0; i < curvePointIndex_stridePointIndex.size(); i++){
             int curvePointIndex = curvePointIndex_stridePointIndex[i].first;
@@ -299,23 +310,26 @@ namespace Mona{
         std::vector<float> initialArgs(m_tgData.pointIndexes.size() * 3);
         for (int i = 0; i < m_tgData.pointIndexes.size(); i++) {
             int pIndex = m_tgData.pointIndexes[i];
-            for (int j = 0; j < 2; j++) {
+            for (int j = 0; j < 3; j++) {
                 initialArgs[i * 3 + j] = baseCurve.getCurvePoint(pIndex)[j];
             }
             m_tgData.baseVelocitiesL.push_back(baseCurve.getVelocity(baseCurve.getTValue(pIndex)));
             m_tgData.baseVelocitiesR.push_back(baseCurve.getVelocity(baseCurve.getTValue(pIndex), true));
         }
 
-        // testing
-        auto targetCurve = baseCurve;
-        targetCurve.debugPrintCurvePoints(0);
-
-
-
         // seteo de otros parametros
         m_tgData.varCurve = &baseCurve;
         m_gradientDescent.setArgNum(initialArgs.size());
-        m_gradientDescent.computeArgsMin(m_tgData.descentRate, m_tgData.maxIterations, initialArgs);
+
+        // testing
+        m_tgData.minValues = std::vector<float>(m_tgData.pointIndexes.size() * 3, std::numeric_limits<float>::lowest());
+        initialArgs = std::vector<float>(initialArgs.size(), 0);
+        for (int i = 1; i < baseCurve.getNumberOfPoints() - 1; i++) {
+            baseCurve.setCurvePoint(i, glm::vec3(0));
+        }
+
+
+        m_gradientDescent.computeArgsMin(m_tgData.descentRate, m_tgData.maxIterations, m_tgData.targetPosDelta, initialArgs);
 
         float repCountOffset = config->getNextFrameIndex() == 0 ? 1 : 0;
         float transitionTime = config->getReproductionTime(config->getNextFrameIndex(), repCountOffset);
@@ -330,8 +344,8 @@ namespace Mona{
         }
 
         // testing
-        targetCurve = trData->getTargetTrajectory().getEECurve();
-        targetCurve.debugPrintCurvePoints(0);
+        auto targetCurve = trData->getTargetTrajectory().getEECurve();
+        targetCurve.debugPrintCurvePoints();
     }
 
 	
@@ -373,8 +387,8 @@ namespace Mona{
         else {
             HipGlobalTrajectoryData* hipTrData = config->getHipTrajectoryData();
             // buscamos la curva dinamica a la que le quede mas tiempo
-            float tInfLimitRep = std::numeric_limits<float>::min();
-            float tSupLimitRep = std::numeric_limits<float>::min();
+            float tInfLimitRep = std::numeric_limits<float>::lowest();
+            float tSupLimitRep = std::numeric_limits<float>::lowest();
             EETrajectory baseEETargetTr;
             EEGlobalTrajectoryData* baseEETrData;
             for (int i = 0; i < m_ikChains.size(); i++) {
@@ -547,7 +561,7 @@ namespace Mona{
                 if (i != hipHighPointIndex_hip) {
                     m_tgData.pointIndexes.push_back(i);
                     for (int j = 0; j < 3; j++) {
-                        m_tgData.minValues.push_back(std::numeric_limits<float>::min());
+                        m_tgData.minValues.push_back(std::numeric_limits<float>::lowest());
                     }
                 }
                 
@@ -568,7 +582,7 @@ namespace Mona{
             // seteo de otros parametros
             m_tgData.varCurve = &hipTrFinalCurve;
             m_gradientDescent.setArgNum(initialArgs.size());
-            m_gradientDescent.computeArgsMin(m_tgData.descentRate, m_tgData.maxIterations, initialArgs);
+            m_gradientDescent.computeArgsMin(m_tgData.descentRate, m_tgData.maxIterations, m_tgData.targetPosDelta, initialArgs);
 
 			float repCountOffset = config->getNextFrameIndex() == 0 ? 1 : 0;
 			float transitionTime = config->getReproductionTime(config->getNextFrameIndex(), repCountOffset);
@@ -587,33 +601,36 @@ namespace Mona{
 
 
 	glm::vec3 TrajectoryGenerator::calcStrideStartingPoint(float supportHeight,
-		glm::vec3 referencePoint, float targetDistance,
+		glm::vec2 xyReferencePoint, float targetDistance,
 		glm::vec2 targetDirection, int stepNum,
 		ComponentManager<TransformComponent>& transformManager,
 		ComponentManager<StaticMeshComponent>& staticMeshManager) {
-		glm::vec2 refPointBase(referencePoint[0], referencePoint[1]);
 		std::vector<glm::vec3> collectedPoints;
 		collectedPoints.reserve(stepNum);
 		for (int i = 1; i <= stepNum; i++) {
-			glm::vec2 testPoint = refPointBase + targetDirection * targetDistance * ((float)i / stepNum);
+			glm::vec2 testPoint = xyReferencePoint + targetDirection * targetDistance * ((float)i / stepNum);
 			float calcHeight = m_environmentData.getTerrainHeight(testPoint,
 				transformManager, staticMeshManager);
-			collectedPoints.push_back(glm::vec3(testPoint, supportHeight + calcHeight));
+			collectedPoints.push_back(glm::vec3(testPoint, calcHeight));
 		}
 		float minDistanceDiff = std::numeric_limits<float>::max();
+		glm::vec3 floorReferencePoint = glm::vec3(xyReferencePoint, m_environmentData.getTerrainHeight(xyReferencePoint,
+			transformManager, staticMeshManager));
 		glm::vec3 closest = collectedPoints[0];
 		for (int i = 0; i < collectedPoints.size(); i++) {
-			float distDiff = std::abs(glm::distance(referencePoint, collectedPoints[i]) - targetDistance);
+			float distDiff = std::abs(glm::distance(floorReferencePoint, collectedPoints[i]) - targetDistance);
 			if (distDiff < minDistanceDiff) {
 				minDistanceDiff = distDiff;
 				closest = collectedPoints[i];
 			}
 		}
+        closest[2] += supportHeight;
 		return closest;
 	}
     
 
-	std::vector<glm::vec3> TrajectoryGenerator::calcStrideData(float supportHeight, glm::vec3 startingPoint, float targetDistance,
+	std::vector<glm::vec3> TrajectoryGenerator::calcStrideData(float supportHeightStart, float supportHeightEnd,
+        glm::vec3 startingPoint, float targetDistance,
 		glm::vec2 targetDirection, int stepNum,
 		ComponentManager<TransformComponent>& transformManager,
 		ComponentManager<StaticMeshComponent>& staticMeshManager) {
@@ -621,15 +638,18 @@ namespace Mona{
 		collectedPoints.reserve(stepNum);
 		for (int i = 1; i <= stepNum; i++) {
 			glm::vec2 testPoint = glm::vec2(startingPoint) + targetDirection * targetDistance * ((float)i / stepNum);
+            float supportHeight = funcUtils::lerp(supportHeightStart, supportHeightEnd, (float) i / stepNum);
 			float calcHeight = supportHeight + m_environmentData.getTerrainHeight(testPoint, transformManager, staticMeshManager);
 			collectedPoints.push_back(glm::vec3(testPoint, calcHeight));
 		}
+        // validacion de los puntos
 		std::vector<glm::vec3> strideDataPoints;
 		strideDataPoints.reserve(stepNum);
 		float previousDistance = 0;
+        float epsilon = targetDistance * 0.005;
 		for (int i = 0; i < collectedPoints.size(); i++) {
 			float distance = glm::distance(startingPoint, collectedPoints[i]);
-			if (distance <= targetDistance && previousDistance * 0.9 <= distance) {
+			if (distance <= targetDistance+epsilon && previousDistance * 0.9 <= distance) {
 				strideDataPoints.push_back(collectedPoints[i]);
 				previousDistance = distance;
 			}
@@ -654,7 +674,7 @@ namespace Mona{
 		}
 
 		std::vector<glm::vec3> targetPoints(m_ikChains.size());
-		float zValue = std::numeric_limits<float>::min();
+		float zValue = std::numeric_limits<float>::lowest();
 		for (int i = 0; i < m_ikChains.size(); i++) {
 			EEGlobalTrajectoryData* trData = config->getEETrajectoryData(m_ikChains[i]);
 			LIC<3> eeCurve = trData->getTargetTrajectory().getEECurve();
@@ -664,8 +684,8 @@ namespace Mona{
 		}
 
 		// valor mas bajo de z para las tr actuales de los ee
-		zValue += m_ikRig->getRigHeight() * m_ikRig->getRigScale() / 1.5;
-		float zDelta = m_ikRig->getRigHeight() * m_ikRig->getRigScale() / 1000;
+		zValue += m_ikRig->getRigHeight() / 1.5;
+		float zDelta = m_ikRig->getRigHeight() / 1000;
 		std::vector<bool> conditions(m_ikChains.size());
 		for (int i = 0; i < m_ikChains.size(); i++) { conditions[i] = false; }
 		int maxSteps = 5000;

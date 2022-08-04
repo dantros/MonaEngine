@@ -56,7 +56,7 @@ namespace Mona {
 		m_rigHeight = legLenght * 2;
 	}
 
-	void IKRig::init() {
+	void IKRig::init(float rigScale) {
 		std::vector<ChainIndex> ikChains;
 		for (ChainIndex i = 0; i < m_ikChains.size(); i++) {
 			ikChains.push_back(i);
@@ -66,6 +66,7 @@ namespace Mona {
 		m_forwardKinematics = ForwardKinematics(this);
 		m_trajectoryGenerator = TrajectoryGenerator(this, ikChains);
 		m_trajectoryGenerator.init();
+		m_rigHeight *= rigScale;
 	}
 
 	const std::vector<int>& IKRig::getTopology() const { 

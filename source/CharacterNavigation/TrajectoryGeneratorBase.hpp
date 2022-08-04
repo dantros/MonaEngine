@@ -59,7 +59,7 @@ namespace Mona{
         TrajectoryType m_trajectoryType;
         // Indice del punto de la curva que tiene el tiempo en el que ocurre la
         // de maxima altura de la cadera
-        float m_hipMaxAltitudeTime = std::numeric_limits<float>::min();
+        float m_hipMaxAltitudeTime = std::numeric_limits<float>::lowest();
         int m_subTrajectoryID = -1;
     public:
         EETrajectory() = default;
@@ -67,7 +67,7 @@ namespace Mona{
         bool isDynamic() { return m_trajectoryType == TrajectoryType::DYNAMIC; }
         LIC<3>& getEECurve() { return m_curve; }
         float getHipMaxAltitudeTime() {
-            MONA_ASSERT(m_hipMaxAltitudeTime != std::numeric_limits<float>::min(), "EETrajectory: Accessing unitialized value.");
+            MONA_ASSERT(m_hipMaxAltitudeTime != std::numeric_limits<float>::lowest(), "EETrajectory: Accessing unitialized value.");
             return m_hipMaxAltitudeTime;
         }
         int getSubTrajectoryID() {

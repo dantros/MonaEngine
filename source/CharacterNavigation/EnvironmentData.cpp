@@ -27,7 +27,7 @@ namespace Mona{
 
     float EnvironmentData::getTerrainHeight(glm::vec2 xyPoint, ComponentManager<TransformComponent>& transformManager,
         ComponentManager<StaticMeshComponent>& staticMeshManager) {
-        float maxHeight = std::numeric_limits<float>::min();
+        float maxHeight = std::numeric_limits<float>::lowest();
         for (int i = 0; i < m_terrains.size(); i++) {
             if (!staticMeshManager.IsValid(m_terrains[i].m_meshHandle)) {
                 m_terrains.erase(m_terrains.begin() + i);

@@ -118,6 +118,15 @@ namespace Mona {
             return true;
         }
 
+        template <typename T>
+        inline T stdVectorSum(std::vector<T> vec) {
+            T result = 0;
+            for (int i = 0; i < vec.size(); i++) {
+                result += vec[i];
+            }
+            return result;
+        }
+
         template < typename T>
         inline T lerp(T minVal, T maxVal, float fraction) {
             return minVal + (maxVal - minVal) * fraction;

@@ -130,11 +130,15 @@ namespace Mona {
 		return dataPtr->gammaValue * 2 * (varAngles[varIndex] - dataPtr->previousAngles[varIndex]);
 	};
 
-	std::function<void(std::vector<float>&, IKData*)>  postDescentStepCustomBehaviour = [](std::vector<float>& args, IKData* dataPtr)->void {
+	std::function<void(std::vector<float>&, IKData*, std::vector<float>&)>  postDescentStepCustomBehaviour =
+		[](std::vector<float>& args, IKData* dataPtr, std::vector<float>& argsRawDelta)->void {
 		// aplicar restricciones de movimiento
 		for (int i = 0; i < args.size(); i++) {
 			int jIndex = dataPtr->jointIndexes[i];
-			if (args[i] < dataPtr->motionRanges[jIndex][0]) { args[i] = dataPtr->motionRanges[jIndex][0]; }
+			if (args[i] <= dataPtr->motionRanges[jIndex][0]) { 
+				args[i] = dataPtr->motionRanges[jIndex][0];
+				argsRawDelta[i] = 0;
+			}
 			else if (dataPtr->motionRanges[jIndex][1] < args[i]) { args[i] = dataPtr->motionRanges[jIndex][1]; }
 		}
 		// setear nuevos angulos
@@ -159,6 +163,10 @@ namespace Mona {
 		m_gradientDescent = GradientDescent<IKData>(terms, 0, &m_ikData, postDescentStepCustomBehaviour);
 		m_ikData.descentRate = 0.01;
 		m_ikData.maxIterations = 100;
+		m_ikData.alphaValue = 0.2f;
+		m_ikData.betaValue = 0.6f;
+		m_ikData.gammaValue = 0.2f;
+		m_ikData.targetAngleDelta = 0.0f;
 		setIKChains(m_ikChains);
 	}
 
@@ -212,7 +220,8 @@ namespace Mona {
 		}
 		// calcular arreglos de transformaciones
 		setDescentTransformArrays(&m_ikData);
-		std::vector<float> computedAngles = m_gradientDescent.computeArgsMin(m_ikData.descentRate, m_ikData.maxIterations, m_ikData.previousAngles);
+		std::vector<float> computedAngles = m_gradientDescent.computeArgsMin(m_ikData.descentRate, 
+			m_ikData.maxIterations, m_ikData.targetAngleDelta, m_ikData.previousAngles);
 		std::vector<std::pair<JointIndex, glm::fquat>> result(computedAngles.size());
 		std::vector<JointRotation>* dmicRot = m_ikData.rigConfig->getDynamicJointRotations(m_ikData.rigConfig->getNextFrameIndex());
 		for (int i = 0; i < m_ikData.jointIndexes.size(); i++) {

@@ -12,6 +12,7 @@ namespace Mona {
 	class IKRigController {
 		friend class IKNavigationComponent;
 		IKRig m_ikRig;
+		glm::vec3 m_rigScale;
 		InnerComponentHandle m_skeletalMeshHandle;
 		glm::mat4 m_baseGlobalTransform;
 		float m_reproductionTime = 0;

@@ -14,10 +14,10 @@ namespace Mona {
 		glm::decompose(baseGlobalTransform, glblScale, glblRotation, glblTranslation, glblSkew, glblPerspective);
 		MONA_ASSERT(glmUtils::isApproxUniform(glblScale), "Global scale must be uniform");
 		m_baseGlobalTransform = baseGlobalTransform;
-		m_ikRig.m_rigScale = glblScale[0];
+		m_rigScale = glblScale;
 	}
 	void IKRigController::init() {
-		m_ikRig.init();
+		m_ikRig.init(m_rigScale[0]);
 	}
 
 	void IKRigController::validateTerrains(ComponentManager<StaticMeshComponent>& staticMeshManager) {
@@ -142,7 +142,7 @@ namespace Mona {
 		int frameNum = animationClip->m_animationTracks[0].rotationTimeStamps.size();
 
 		// minima distancia entre posiciones de un frame a otro para considerarlo un movimiento
-		float minDistance = m_ikRig.m_rigScale * m_ikRig.m_rigHeight / 1000;
+		float minDistance = m_ikRig.m_rigHeight / 1000;
 
 		// Guardamos la informacion de traslacion y rotacion de la cadera, antes de eliminarla
 		auto hipTrack = animationClip->m_animationTracks[animationClip->GetTrackIndex(m_ikRig.m_hipJoint)];
@@ -155,7 +155,7 @@ namespace Mona {
 		std::vector<glm::vec3> hipTranslations;
 		hipTranslations.reserve(frameNum);
 		JointIndex hipIndex = m_ikRig.m_hipJoint;
-		glm::vec3 previousHipPosition(std::numeric_limits<float>::min());
+		glm::vec3 previousHipPosition(std::numeric_limits<float>::lowest());
 		glm::vec3 hipScale; glm::quat hipRotation; glm::vec3 hipTranslation; glm::vec3 hipSkew; glm::vec4 hipPerspective;
 		for (int i = 0; i < frameNum; i++) {
 			float timeStamp = hipTrack.rotationTimeStamps[i];
@@ -195,7 +195,7 @@ namespace Mona {
 		float floorZ = std::numeric_limits<float>::max(); // altura del piso para la animacion
 		for (int i = 0; i < m_ikRig.getTopology().size(); i++) { glblTransforms[i] = glm::identity<glm::mat4>(); }
 		std::vector<glm::vec3> previousPositions(m_ikRig.getTopology().size());
-		std::fill(previousPositions.begin(), previousPositions.end(), glm::vec3(std::numeric_limits<float>::min()));
+		std::fill(previousPositions.begin(), previousPositions.end(), glm::vec3(std::numeric_limits<float>::lowest()));
 		for (int i = 0; i < chainNum; i++) {
 			supportFramesPerChain[i] = std::vector<bool>(frameNum);
 			glblPositionsPerChain[i] = std::vector<glm::vec3>(frameNum);
@@ -253,12 +253,8 @@ namespace Mona {
 		}
 
 		// dividimos cada trayectoria global (por ee) en sub trayectorias dinamicas y estaticas.
-		std::vector<bool> brokenTrajectories(chainNum);
-		std::vector<bool> continueTrajectory(chainNum);
-		for (int i = 0; i < chainNum; i++) {
-			brokenTrajectories[i] = false;
-			continueTrajectory[i] = false;
-		}
+		std::vector<bool> brokenTrajectories(chainNum, false);
+		std::vector<bool> continueTrajectory(chainNum, false);
 		for (int i = 0; i < chainNum; i++) {
 			std::vector<EETrajectory> subTrajectories;
 			bool allStatic = funcUtils::conditionArray_AND(supportFramesPerChain[i]);
@@ -365,12 +361,13 @@ namespace Mona {
 				currentConfig->m_eeTrajectoryData[i].m_originalSubTrajectories[j].m_subTrajectoryID = j;
 			}
 		}
+
 		// guardamos los tiempos de maxima altitud de la cadera
 		LIC<3>& hipTr = currentConfig->getHipTrajectoryData()->m_originalTranslations;
 		for (int i = 0; i < m_ikRig.m_ikChains.size(); i++) {
 			EEGlobalTrajectoryData& trData = currentConfig->m_eeTrajectoryData[i];
 			for (int j = 0; j < trData.m_originalSubTrajectories.size(); j++) {
-				float maxZ = std::numeric_limits<float>::min();
+				float maxZ = std::numeric_limits<float>::lowest();
 				int savedIndex = -1;
 				LIC<3>& currentCurve = trData.m_originalSubTrajectories[j].getEECurve();
 				for (int k = 0; k < currentCurve.getNumberOfPoints(); k++) {
@@ -471,7 +468,7 @@ namespace Mona {
 			std::vector<ChainIndex> tgChainIndices = m_ikRig.m_trajectoryGenerator.getIKChains();
 			glm::mat4 toModelSpace = glm::inverse(glmUtils::translationToMat4(hipTrData->getTargetTranslation(targetTime)) *
 				glmUtils::rotationToMat4(hipTrData->getTargetRotation(targetTime)) *
-				glmUtils::scaleToMat4(glm::vec3(m_ikRig.m_rigScale)));
+				glmUtils::scaleToMat4(m_rigScale));
 			for (int i = 0; i < tgChainIndices.size();i++) {
 				ChainIndex cIndex = tgChainIndices[i];
 				IKChain* ikChain = m_ikRig.getIKChain(cIndex);

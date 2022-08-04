@@ -16,12 +16,13 @@ namespace Mona{
     struct TGData {
         std::vector<glm::vec3> baseVelocitiesR;
         std::vector<glm::vec3> baseVelocitiesL;
-        float alphaValue = 0.8;
-        float betaValue = 0.2;
+        float alphaValue;
+        float betaValue;
         LIC<3>* varCurve;
         std::vector<int> pointIndexes;
-        std::vector<float> minValues; // tama�o D*pointIndexes.size()
+        std::vector<float> minValues; // tamano D*pointIndexes.size()
         float descentRate;
+        float targetPosDelta;
         int maxIterations;
     };
 
@@ -54,11 +55,12 @@ namespace Mona{
 
         float calcHipAdjustedHeight(IKRigConfig* config, glm::vec2 basePoint, float targetCurvesTime_rep,
             float originalCurvesTime_extendedAnim);
-        glm::vec3 calcStrideStartingPoint(float supportHeight, glm::vec3 referencePoint, float targetDistance, 
+        glm::vec3 calcStrideStartingPoint(float supportHeight, glm::vec2 xyReferencePoint, float targetDistance, 
             glm::vec2 targetDirection, int stepNum,
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
-        std::vector<glm::vec3> calcStrideData(float supportHeight, glm::vec3 startingPoint, float targetDistance,
+        std::vector<glm::vec3> calcStrideData(float supportHeightStart, float supportHeightEnd, 
+            glm::vec3 startingPoint, float targetDistance,
             glm::vec2 targetDirection, int stepNum,
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);

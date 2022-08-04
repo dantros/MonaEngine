@@ -350,13 +350,15 @@ namespace Mona{
 		}
 
 		void fitStartAndDir(glm::vec3 newStart, glm::vec3 targetDirection) {
+            MONA_ASSERT(m_dimension == 3, "LIC: LIC must have a dimension equal to 3.");
             translate(-getStart());
 			// rotarla para que quede en linea con las pos inicial y final
 			glm::fquat targetRotation = glm::identity<glm::fquat>();
 			glm::vec3 originalDirection = glm::normalize(getEnd() - getStart());
 			if (originalDirection != targetDirection) {
-				glm::vec3 rotAxis = glm::normalize(glm::cross(originalDirection, targetDirection));
-				float rotAngle = glm::orientedAngle(originalDirection, targetDirection, rotAxis);
+                glm::vec3 crossVec = glm::cross(originalDirection, targetDirection);
+				glm::vec3 rotAxis = glm::normalize(crossVec);
+                float rotAngle = glm::asin(glm::length(crossVec));
 				targetRotation = glm::fquat(rotAngle, rotAxis);
 			}
 			rotate(targetRotation);
@@ -382,18 +384,10 @@ namespace Mona{
 		}
 
 
-		void debugPrintCurvePoints(float floorZ) {
+		void debugPrintCurvePoints() {
             MONA_ASSERT(m_dimension == 3, "LIC: only available for dim 3 LICs.");
-			float minZ = std::numeric_limits<float>::max();
-			for (int i = 0; i < getNumberOfPoints(); i++) {
-				if (m_curvePoints[i][2] < minZ) {
-                    minZ = m_curvePoints[i][2];
-				}
-			}
-            if (minZ < floorZ) {
-                glmUtils::printColoredStdVector(m_curvePoints);
-                MONA_ASSERT(floorZ <= minZ, "LIC DEBUG.");
-            }            
+			glmUtils::printColoredStdVector(m_curvePoints);
+            MONA_ASSERT(false, "LIC: Debug");
 
 		}
     };

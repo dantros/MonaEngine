@@ -234,8 +234,7 @@ namespace Mona {
 
 	std::vector<glm::mat4> ForwardKinematics::CustomSpaceTransforms(glm::mat4 baseTransform, AnimationIndex animIndex, FrameIndex frame, bool useDynamicRotations) {
 		IKRigConfig* config = m_ikRig->getAnimationConfig(animIndex);
-		std::vector<glm::mat4> customSpaceTr(m_ikRig->getTopology().size());
-		for (int i = 0; i < m_ikRig->getTopology().size(); i++) { customSpaceTr[i] = glm::identity<glm::mat4>(); }
+		std::vector<glm::mat4> customSpaceTr(m_ikRig->getTopology().size(), glm::identity<glm::mat4>());
 		std::vector<JointRotation>const& rotations = useDynamicRotations ? (*config->getDynamicJointRotations(frame)) : config->getBaseJointRotations(frame);
 		for (int i = 0; i < config->getJointIndices().size(); i++) {
 			JointIndex jIndex = config->getJointIndices()[i];

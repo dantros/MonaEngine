@@ -32,21 +32,6 @@ namespace Mona{
         glm::vec<D, float> getStart() { return m_curvePoints[0]; }
         glm::vec<D, float> getEnd() { return m_curvePoints.back(); }
         LIC() = default;
-		void epsilonAdjustment_add(float& value) const {
-			float epsilon = m_tEpsilon;
-			while (value + epsilon == value) {
-				epsilon *= 2;
-			}
-			value += epsilon;
-		}
-
-		void epsilonAdjustment_subtract(float& value) const{
-			float epsilon = m_tEpsilon;
-			while (value - epsilon == value) {
-				epsilon *= 2;
-			}
-			value -= epsilon;
-		}
         LIC(std::vector<glm::vec<D, float>> curvePoints, std::vector<float> tValues, float tEpsilon = 0.000001) {
             MONA_ASSERT(1 < curvePoints.size(), "LIC: must provide at least two points.");
             MONA_ASSERT(curvePoints.size() == tValues.size(), "LIC: there must be exactly one tValue per spline point.");
@@ -61,8 +46,8 @@ namespace Mona{
             m_tEpsilon = tEpsilon;
 
             // se ajustan los extremos con un epsilon
-            epsilonAdjustment_add(m_tValues.back());
-            epsilonAdjustment_subtract(m_tValues[0]);
+            funcUtils::epsilonAdjustment_add(m_tValues.back(), m_tEpsilon);
+            funcUtils::epsilonAdjustment_subtract(m_tValues[0], m_tEpsilon);
         }
 
         
@@ -275,7 +260,7 @@ namespace Mona{
             }
             if (transitionTValues.size() == 1) {
                 float extraTValue = transitionTValues[0];
-                curve1.epsilonAdjustment_add(extraTValue);
+                funcUtils::epsilonAdjustment_add(extraTValue, curve1.m_tEpsilon);
                 transitionTValues.push_back(extraTValue);
                 transitionCurvePoints.push_back(transitionCurvePoints[0]);
             }           
@@ -339,7 +324,7 @@ namespace Mona{
 		static LIC<D> connectPoint(LIC<D> curve1, glm::vec<D,float> extraPoint, float extraPointTValue, float extraPointTOffset) {
             glm::vec<D, float> transitionVel = curve1.getVelocity(curve1.getTRange()[1]);
             float extraPointFinalTValue = extraPointTValue + extraPointTOffset;
-            curve1.epsilonAdjustment_add(extraPointFinalTValue);
+            funcUtils::epsilonAdjustment_add(extraPointFinalTValue, curve1.m_tEpsilon);
             if (curve1.getTRange()[1] < extraPointFinalTValue) {
 				float tDiff = extraPointFinalTValue - curve1.getTRange()[1];
                 glm::vec<D, float> modifiedPoint = curve1.m_curvePoints.back() + transitionVel * tDiff;

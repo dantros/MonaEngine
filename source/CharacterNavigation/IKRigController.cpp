@@ -427,7 +427,7 @@ namespace Mona {
 		IKRigConfig& config = m_ikRig.m_animationConfigs[animIndex];
 		HipGlobalTrajectoryData* hipTrData = config.getHipTrajectoryData();
 
-		if (config.m_onFrame) { // se realiza al llegar a un frame de la animacion
+		if (config.m_onNewFrame) { // se realiza al llegar a un frame de la animacion
 			// guardado de posiciones globales ee y cadera
 			glm::mat4 baseTransform = transformManager.GetComponentPointer(m_ikRig.getTransformHandle())->GetModelMatrix();
 			FrameIndex currentFrame = config.getCurrentFrameIndex();
@@ -486,7 +486,7 @@ namespace Mona {
 	}
 	void IKRigController::updateAnimation(AnimationIndex animIndex) {
 		IKRigConfig& config = m_ikRig.m_animationConfigs[animIndex];
-		if (config.m_onFrame) {
+		if (config.m_onNewFrame) {
 			// calcular nuevas rotaciones para la animacion con ik
 			std::vector<std::pair<JointIndex, glm::fquat>> calculatedRotations = m_ikRig.calculateRotations(animIndex);
 			auto anim = config.m_animationClip;
@@ -507,13 +507,12 @@ namespace Mona {
 		auto anim = config.m_animationClip;
 		float samplingTime = anim->GetSamplingTime(m_reproductionTime, true);
 		config.m_currentReproductionTime = m_reproductionTime;
-		FrameIndex savedCurrentFrameVal = config.m_currentFrameIndex;
 		for (int i = 0; i < config.m_timeStamps.size(); i++) {
 			float nextTimeStamp = i < config.m_timeStamps.size() ? config.m_timeStamps[i + 1] : config.getAnimationDuration();
 			if (config.m_timeStamps[i] <= samplingTime && samplingTime < nextTimeStamp) {
+				config.m_onNewFrame = config.m_currentFrameIndex != i;
 				config.m_currentFrameIndex = i;
 				config.m_nextFrameIndex = (i + 1) % (config.m_timeStamps.size());
-				config.m_onFrame = config.m_currentFrameIndex != savedCurrentFrameVal;
 				break;
 			}
 		}
@@ -536,7 +535,7 @@ namespace Mona {
 
 		for (AnimationIndex i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {
 			IKRigConfig& config = m_ikRig.m_animationConfigs[i];
-			config.m_onFrame = false;
+			config.m_onNewFrame = false;
 		}
 
 	}

@@ -69,7 +69,9 @@ EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int
 		}
     }
     LIC<3> HipGlobalTrajectoryData::sampleOriginalTranslations(float initialExtendedAnimTime, float finalExtendedAnimTime) {
-		MONA_ASSERT((finalExtendedAnimTime - initialExtendedAnimTime) <= m_config->getAnimationDuration() + 0.000001,
+		float epsilonAnimDuration = m_config->getAnimationDuration();
+		funcUtils::epsilonAdjustment_add(epsilonAnimDuration, 0.000001);
+		MONA_ASSERT((finalExtendedAnimTime - initialExtendedAnimTime) <= epsilonAnimDuration,
 			"HipGlobalTrajectoryData: input extended times were invalid.");
         MONA_ASSERT(m_originalTranslations.inTRange(initialExtendedAnimTime) || m_originalTranslations.inTRange(finalExtendedAnimTime),
             "HipGlobalTrajectoryData: input extended times were invalid.");

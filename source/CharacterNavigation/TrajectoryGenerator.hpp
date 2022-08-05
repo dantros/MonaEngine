@@ -14,11 +14,10 @@ namespace Mona{
     typedef int FrameIndex;
 
     struct TGData {
-        std::vector<glm::vec3> baseVelocitiesR;
-        std::vector<glm::vec3> baseVelocitiesL;
         float alphaValue;
         float betaValue;
         LIC<3>* varCurve;
+        LIC<3> baseCurve;
         std::vector<int> pointIndexes;
         std::vector<float> minValues; // tamano D*pointIndexes.size()
         float descentRate;

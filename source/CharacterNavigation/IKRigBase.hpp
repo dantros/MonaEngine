@@ -73,7 +73,7 @@ namespace Mona {
         // Indice del siguiente frame de la animacion
         FrameIndex m_nextFrameIndex = -1;
         // Indica si es necesario actualizar las rotaciones de las joints
-        bool m_onFrame = true;
+        bool m_onNewFrame = true;
         // Numero de veces que la animacion se ha reproducido
         int m_reproductionCount = 0;
         //
@@ -115,8 +115,6 @@ namespace Mona {
         float minAngle = -90;
         // Maximo angulo de rotacion de la articulacion (grados)
         float maxAngle = 90;
-        float weight = 1;
-        bool enableIKRotation = false;
     };
     struct ChainEnds {
         // Nombre de la articulacion base de la cadena (al ser la base no se le aplica IK)
@@ -157,7 +155,6 @@ namespace Mona {
 
     class IKNode {
         friend class IKRig;
-        float m_weight = 1;
         // Minimo angulo de rotacion de la articulacion (radianes)
         float m_minAngle = -90;
         // Maximo angulo de rotacion de la articulacion (radianes)
@@ -170,7 +167,7 @@ namespace Mona {
         IKNode* m_parent = nullptr;
     public:
         IKNode() = default;
-        IKNode(std::string jointName, JointIndex jointIndex, IKNode * parent = nullptr, float weight = 1);
+        IKNode(std::string jointName, JointIndex jointIndex, IKNode * parent = nullptr);
         IKNode* getParent() const { return m_parent; }
         glm::vec2 getMotionRange() const { return glm::vec2(m_minAngle, m_maxAngle); }
         JointIndex getIndex() const { return m_jointIndex; }

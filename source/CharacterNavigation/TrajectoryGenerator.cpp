@@ -18,8 +18,8 @@ namespace Mona{
 			float tVal = dataPtr->varCurve->getTValue(pIndex);
             glm::vec3 lVel = dataPtr->varCurve->getVelocity(tVal);
             glm::vec3 rVel = dataPtr->varCurve->getVelocity(tVal, true);
-            glm::vec3 baseLVel = dataPtr->baseVelocitiesL[i];
-            glm::vec3 baseRVel = dataPtr->baseVelocitiesR[i];
+            glm::vec3 baseLVel = dataPtr->baseCurve.getVelocity(tVal);
+            glm::vec3 baseRVel = dataPtr->baseCurve.getVelocity(tVal, true);
             result += glm::distance2(lVel / glm::length(lVel), baseLVel / glm::length(baseLVel));
             result += glm::distance2(rVel / glm::length(rVel), baseRVel / glm::length(baseRVel));
 		}
@@ -35,16 +35,20 @@ namespace Mona{
         float t_kCurr = dataPtr->varCurve->getTValue(pIndex);
         float t_kNext = dataPtr->varCurve->getTValue(pIndex + 1);
 		glm::vec3 lVel = dataPtr->varCurve->getVelocity(t_kCurr);
+        float safeLVelLength = (glm::length(lVel) > 0 ? glm::length(lVel) : pow(10, -6));
 		glm::vec3 rVel = dataPtr->varCurve->getVelocity(t_kCurr, true);
-		glm::vec3 baseLVel = dataPtr->baseVelocitiesL[varIndex / D];
-		glm::vec3 baseRVel = dataPtr->baseVelocitiesR[varIndex / D];
+        float safeRVelLength = (glm::length(rVel) > 0 ? glm::length(rVel) : pow(10, -6));
+		glm::vec3 baseLVel = dataPtr->baseCurve.getVelocity(t_kCurr);
+        float safeBaseLVelLength = (glm::length(baseLVel) > 0 ? glm::length(baseLVel) : pow(10, -6));
+		glm::vec3 baseRVel = dataPtr->baseCurve.getVelocity(t_kCurr, true);
+        float safeBaseRVelLength = (glm::length(baseRVel) > 0 ? glm::length(baseRVel) : pow(10, -6));
         float result = 0;
-        result += 2 * (lVel[coordIndex] / glm::length(lVel) - baseLVel[coordIndex] / glm::length(baseLVel))
-            * ((1 / (t_kCurr - t_kPrev)) * glm::length(lVel) - lVel[coordIndex] * (lVel[coordIndex]/glm::length(lVel)) * (1 / (t_kCurr - t_kPrev)))/
-            glm::length2(lVel);
-        result += 2 * (rVel[coordIndex] / glm::length(rVel) - baseRVel[coordIndex] / glm::length(baseRVel))
-            * ((-1 / (t_kNext - t_kCurr)) * glm::length(rVel) - rVel[coordIndex] * (rVel[coordIndex] / glm::length(rVel)) * (-1 / (t_kNext - t_kCurr))) /
-            glm::length2(rVel);
+        result += 2 * (lVel[coordIndex] / safeLVelLength - baseLVel[coordIndex] / safeBaseLVelLength)
+            * ((1 / (t_kCurr - t_kPrev)) * safeLVelLength - lVel[coordIndex] * (lVel[coordIndex]/safeLVelLength) * (1 / (t_kCurr - t_kPrev)))/
+            pow(safeLVelLength, 2);
+        result += 2 * (rVel[coordIndex] / safeRVelLength - baseRVel[coordIndex] / safeBaseRVelLength)
+            * ((-1 / (t_kNext - t_kCurr)) * safeRVelLength - rVel[coordIndex] * (rVel[coordIndex] / safeRVelLength) * (-1 / (t_kNext - t_kCurr))) /
+            pow(safeRVelLength, 2);
 		return dataPtr->alphaValue * result;
 	};
 
@@ -55,8 +59,8 @@ namespace Mona{
         for (int i = 0; i < dataPtr->pointIndexes.size(); i++) {
             int pIndex = dataPtr->pointIndexes[i];
             float tVal = dataPtr->varCurve->getTValue(pIndex);
-            result += glm::distance2(dataPtr->varCurve->getVelocity(tVal),  dataPtr->baseVelocitiesL[i]);
-            result += glm::distance2(dataPtr->varCurve->getVelocity(tVal, true), dataPtr->baseVelocitiesR[i]);
+            result += glm::distance2(dataPtr->varCurve->getVelocity(tVal),  dataPtr->baseCurve.getVelocity(tVal));
+            result += glm::distance2(dataPtr->varCurve->getVelocity(tVal, true), dataPtr->baseCurve.getVelocity(tVal, true));
         }
         return dataPtr->betaValue*result;
     };
@@ -71,8 +75,8 @@ namespace Mona{
 		float t_kNext = dataPtr->varCurve->getTValue(pIndex + 1);
 		glm::vec3 lVel = dataPtr->varCurve->getVelocity(t_kCurr);
 		glm::vec3 rVel = dataPtr->varCurve->getVelocity(t_kCurr, true);
-		glm::vec3 baseLVel = dataPtr->baseVelocitiesL[varIndex / D];
-		glm::vec3 baseRVel = dataPtr->baseVelocitiesR[varIndex / D];
+        glm::vec3 baseLVel = dataPtr->baseCurve.getVelocity(t_kCurr);
+		glm::vec3 baseRVel = dataPtr->baseCurve.getVelocity(t_kCurr, true);
         float result = 0;
         result += 2 * (lVel[coordIndex] - baseLVel[coordIndex]) * (1 / (t_kCurr - t_kPrev));
         result += 2 * (rVel[coordIndex] - baseRVel[coordIndex]) * (-1 / (t_kNext - t_kCurr));
@@ -87,7 +91,7 @@ namespace Mona{
             for (int j = 0; j < D; j++) {
                 if (varPCoord[i * D + j] <= dataPtr->minValues[i * D + j]) {
                     varPCoord[i * D + j] = dataPtr->minValues[i * D + j];
-                    argsRawDelta[i * D + j] = 0;
+                    argsRawDelta[i * D + j] *= 0.5;
                 }
                 newPos[j] = varPCoord[i * D + j];
             }
@@ -105,11 +109,11 @@ namespace Mona{
     void TrajectoryGenerator::init() {
         FunctionTerm<TGData> term1(term1Function, term1PartialDerivativeFunction);
         FunctionTerm<TGData> term2(term2Function, term2PartialDerivativeFunction);
-        m_gradientDescent = GradientDescent<TGData>({ term2 }, 0, &m_tgData, postDescentStepCustomBehaviour);
-        m_tgData.descentRate = 0.001;
-        m_tgData.maxIterations = 200;
+        m_gradientDescent = GradientDescent<TGData>({ term1, term2 }, 0, &m_tgData, postDescentStepCustomBehaviour);
+        m_tgData.descentRate = m_ikRig->getRigHeight()/pow(10,5);
+        m_tgData.maxIterations = 600;
         m_tgData.alphaValue = 0.8;
-        m_tgData.betaValue = 1.0;
+        m_tgData.betaValue = 0.2;
         m_tgData.targetPosDelta = m_ikRig->getRigHeight()/pow(10, 8);
     }
 
@@ -119,8 +123,13 @@ namespace Mona{
 		// las trayectorias anteriores siempre deben llegar hasta el currentFrame
 
 		IKRigConfig* config = m_ikRig->getAnimationConfig(animIndex);
-		float xyRotationAngle = glm::orientedAngle(glm::vec3(config->getHipTrajectoryData()->getOriginalFrontVector(), 0),
-			glm::vec3(m_ikRig->getFrontVector(), 0), glm::vec3(0, 0, 1));
+        float xyRotationAngle = 0;
+        glm::vec3 originalDir = glm::vec3(config->getHipTrajectoryData()->getOriginalFrontVector(), 0);
+        glm::vec3 newDir = glm::vec3(m_ikRig->getFrontVector(), 0);
+        if (originalDir != newDir) {
+            float crossVectorL = glm::length(glm::cross(originalDir, newDir));
+			xyRotationAngle = glm::asin(crossVectorL);
+        }        
 
 		for (int i = 0; i < m_ikChains.size(); i++) {
 			ChainIndex ikChain = m_ikChains[i];
@@ -245,29 +254,27 @@ namespace Mona{
             return;
         }
         glm::vec3 finalPos = strideData.back();
-
-		// testing
-		baseCurve.debugPrintCurvePoints();
-
         baseCurve.fitEnds(initialPos, finalPos);
-
-		// testing
-		baseCurve.debugPrintCurvePoints();
+		
+        // testing
+        //std::cout << "DEBUG DYNAMIC: " << std::endl;
+		//baseCurve.debugPrintCurvePoints();
 
         // setear los minimos de altura y aplicar el descenso de gradiente
         m_tgData.pointIndexes.clear();
         m_tgData.pointIndexes.reserve(baseCurve.getNumberOfPoints());
-        m_tgData.baseVelocitiesR.clear();
-        m_tgData.baseVelocitiesR.reserve(baseCurve.getNumberOfPoints());
-		m_tgData.baseVelocitiesL.clear();
-		m_tgData.baseVelocitiesL.reserve(baseCurve.getNumberOfPoints());
         m_tgData.minValues.clear();
         m_tgData.minValues.reserve(baseCurve.getNumberOfPoints() * 3);
+		for (int i = 1; i < baseCurve.getNumberOfPoints() - 1; i++) {
+			m_tgData.pointIndexes.push_back(i);
+		}
         std::vector<std::pair<int, int>> curvePointIndex_stridePointIndex;
         std::vector<int> baseCurveIndices;
+        baseCurveIndices.reserve(baseCurve.getNumberOfPoints());
         std::vector<int> strideDataIndices;
-        for (int i = 1; i < baseCurve.getNumberOfPoints() - 1; i++) { baseCurveIndices.push_back(i); }
-        for (int i = 0; i < strideDataIndices.size(); i++) { strideDataIndices.push_back(i); }
+        strideDataIndices.reserve(strideData.size());
+        for (int i = 0; i < m_tgData.pointIndexes.size(); i++) { baseCurveIndices.push_back(m_tgData.pointIndexes[i]); }
+        for (int i = 0; i < strideData.size(); i++) { strideDataIndices.push_back(i); }
         while (0 < strideDataIndices.size() && 0 < baseCurveIndices.size()) {
             float minDistance = std::numeric_limits<float>::max();
             int minBaseCurveIndex = -1;
@@ -287,48 +294,46 @@ namespace Mona{
             strideDataIndices.erase(strideDataIndices.begin());
         }
 
-        for (int i = 1; i < baseCurve.getNumberOfPoints() - 1; i++) {
-            m_tgData.pointIndexes.push_back(i);
-        }
-
-        for (int i = 0; i < m_tgData.pointIndexes.size()*3;i++) {
-            m_tgData.minValues.push_back(std::numeric_limits<float>::lowest());
-        }
+        m_tgData.minValues = std::vector<float>(m_tgData.pointIndexes.size() * 3, std::numeric_limits<float>::lowest());
         for (int i = 0; i < curvePointIndex_stridePointIndex.size(); i++){
             int curvePointIndex = curvePointIndex_stridePointIndex[i].first;
+            int tgDataIndex = -1;
+            for (int i = 0; i < m_tgData.pointIndexes.size(); i++) {
+                if (curvePointIndex == m_tgData.pointIndexes[i]) {
+                    tgDataIndex = i;
+                    break;
+                }
+            }
             int stridePointIndex = curvePointIndex_stridePointIndex[i].second;
             // asignamos el valor minimo de z permitido al punto designado y a sus vecinos inmediatos
-            if (0 < curvePointIndex) {
-                m_tgData.minValues[(curvePointIndex - 1) * 3 + 2] = strideData[stridePointIndex][2];
+            if (0 < tgDataIndex) {
+                m_tgData.minValues[(tgDataIndex - 1) * 3 + 2] = strideData[stridePointIndex][2];
             }
-            m_tgData.minValues[(curvePointIndex) * 3 + 2] = strideData[stridePointIndex][2];
-            if (curvePointIndex < (m_tgData.pointIndexes.size() - 1)) {
-                m_tgData.minValues[(curvePointIndex + 1) * 3 + 2] = strideData[stridePointIndex][2];
+            m_tgData.minValues[tgDataIndex * 3 + 2] = strideData[stridePointIndex][2];
+            if (tgDataIndex < (m_tgData.pointIndexes.size() - 1)) {
+                m_tgData.minValues[(tgDataIndex + 1) * 3 + 2] = strideData[stridePointIndex][2];
             }
         }
-        // valores iniciales y velocidades base
+        // valores iniciales y curva base
         std::vector<float> initialArgs(m_tgData.pointIndexes.size() * 3);
         for (int i = 0; i < m_tgData.pointIndexes.size(); i++) {
             int pIndex = m_tgData.pointIndexes[i];
             for (int j = 0; j < 3; j++) {
                 initialArgs[i * 3 + j] = baseCurve.getCurvePoint(pIndex)[j];
             }
-            m_tgData.baseVelocitiesL.push_back(baseCurve.getVelocity(baseCurve.getTValue(pIndex)));
-            m_tgData.baseVelocitiesR.push_back(baseCurve.getVelocity(baseCurve.getTValue(pIndex), true));
         }
-
-        // seteo de otros parametros
+        m_tgData.baseCurve = baseCurve;
         m_tgData.varCurve = &baseCurve;
-        m_gradientDescent.setArgNum(initialArgs.size());
 
-        // testing
-        m_tgData.minValues = std::vector<float>(m_tgData.pointIndexes.size() * 3, std::numeric_limits<float>::lowest());
+        // testing 
+        /*m_tgData.minValues = std::vector<float>(m_tgData.pointIndexes.size() * 3, std::numeric_limits<float>::lowest());
         initialArgs = std::vector<float>(initialArgs.size(), 0);
         for (int i = 1; i < baseCurve.getNumberOfPoints() - 1; i++) {
             baseCurve.setCurvePoint(i, glm::vec3(0));
-        }
-
-
+        }*/
+        //
+               
+        m_gradientDescent.setArgNum(initialArgs.size());
         m_gradientDescent.computeArgsMin(m_tgData.descentRate, m_tgData.maxIterations, m_tgData.targetPosDelta, initialArgs);
 
         float repCountOffset = config->getNextFrameIndex() == 0 ? 1 : 0;
@@ -342,10 +347,8 @@ namespace Mona{
         else {
             trData->setTargetTrajectory(baseCurve, TrajectoryType::DYNAMIC, baseTrajectory.getSubTrajectoryID());
         }
-
-        // testing
-        auto targetCurve = trData->getTargetTrajectory().getEECurve();
-        targetCurve.debugPrintCurvePoints();
+		// testing
+        //baseCurve.debugPrintCurvePoints();
     }
 
 	
@@ -550,10 +553,6 @@ namespace Mona{
 
             m_tgData.pointIndexes.clear();
             m_tgData.pointIndexes.reserve(hipTrCurveAdjustedFall.getNumberOfPoints());
-            m_tgData.baseVelocitiesL.clear();
-            m_tgData.baseVelocitiesL.reserve(hipTrCurveAdjustedFall.getNumberOfPoints());
-			m_tgData.baseVelocitiesR.clear();
-			m_tgData.baseVelocitiesR.reserve(hipTrCurveAdjustedFall.getNumberOfPoints());
             m_tgData.minValues.clear();
             m_tgData.minValues.reserve(hipTrCurveAdjustedFall.getNumberOfPoints() * 3);
             for (int i = 1; i < hipTrCurveAdjustedFall.getNumberOfPoints() - 1; i++) {
@@ -568,16 +567,15 @@ namespace Mona{
                 
             }
 
-            // valores iniciales y velocidades base
+            // valores iniciales y curva base
             std::vector<float> initialArgs(m_tgData.pointIndexes.size() * 3);
             for (int i = 0; i < m_tgData.pointIndexes.size(); i++) {
                 int pIndex = m_tgData.pointIndexes[i];
                 for (int j = 0; j < 2; j++) {
                     initialArgs[i * 3 + j] = hipTrCurveAdjustedFall.getCurvePoint(pIndex)[j];
                 }
-                m_tgData.baseVelocitiesL.push_back(hipTrCurveAdjustedFall.getVelocity(hipTrCurveAdjustedFall.getTValue(pIndex)));
-                m_tgData.baseVelocitiesR.push_back(hipTrCurveAdjustedFall.getVelocity(hipTrCurveAdjustedFall.getTValue(pIndex), true));
             }
+            m_tgData.baseCurve = hipTrCurveAdjustedFall;
 
             // seteo de otros parametros
             m_tgData.varCurve = &hipTrFinalCurve;
@@ -666,9 +664,9 @@ namespace Mona{
 		std::vector<float> origDistances(m_ikChains.size());
 		LIC<3> hipTrCurve = hipTrData->sampleOriginalTranslations(originalCurvesTime_extendedAnim,
 			originalCurvesTime_extendedAnim + config->getAnimationDuration());
+        glm::vec3 hipPoint = hipTrCurve.evalCurve(originalCurvesTime_extendedAnim);
 		for (int i = 0; i < m_ikChains.size(); i++) {
 			EEGlobalTrajectoryData* trData = config->getEETrajectoryData(m_ikChains[i]);
-			glm::vec3 hipPoint = hipTrCurve.evalCurve(originalCurvesTime_extendedAnim);
 			glm::vec3 eePoint = trData->getSubTrajectory(originalCurvesTime_anim).getEECurve().evalCurve(originalCurvesTime_anim);
 			origDistances[i] = glm::distance(hipPoint, eePoint);
 		}
@@ -684,23 +682,24 @@ namespace Mona{
 		}
 
 		// valor mas bajo de z para las tr actuales de los ee
-		zValue += m_ikRig->getRigHeight() / 1.5;
-		float zDelta = m_ikRig->getRigHeight() / 1000;
-		std::vector<bool> conditions(m_ikChains.size());
-		for (int i = 0; i < m_ikChains.size(); i++) { conditions[i] = false; }
-		int maxSteps = 5000;
+		zValue += m_ikRig->getRigHeight()*0.8;
+		float zDelta = m_ikRig->getRigHeight() / 500;
+		std::vector<bool> conditions1(m_ikChains.size(), false);
+        std::vector<bool> conditions2(m_ikChains.size(), true);
+		int maxSteps = 1000;
 		int steps = 0;
-		while (!funcUtils::conditionArray_AND(conditions)) {
+        std::vector<float> prevDistances(m_ikChains.size(), std::numeric_limits<float>::max());
+		while (!funcUtils::conditionArray_AND(conditions1) && funcUtils::conditionArray_OR(conditions2) && steps < maxSteps) {
 			zValue -= zDelta;
-			// update conditions
+            std::vector<float> currDistances(m_ikChains.size());
 			for (int i = 0; i < m_ikChains.size(); i++) {
-				float currentDistance = glm::distance(targetPoints[i], glm::vec3(basePoint, zValue));
-				conditions[i] = currentDistance <= origDistances[i];
+				currDistances[i] = glm::distance(targetPoints[i], glm::vec3(basePoint, zValue));
+				conditions1[i] = currDistances[i] <= origDistances[i];
+                conditions2[i] = currDistances[i] <= prevDistances[i];
 			}
+            prevDistances = currDistances;
+
 			steps += 1;
-			if (maxSteps < steps) {
-				break;
-			}
 		}
 
 		return zValue;

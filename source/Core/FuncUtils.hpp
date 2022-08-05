@@ -137,6 +137,21 @@ namespace Mona {
             MONA_ASSERT(minVal != maxVal, "FuncUtils: extreme values cannot be equal.");
             return (val - minVal) / (maxVal - minVal);
         }
+
+
+		inline void epsilonAdjustment_add(float& value, float epsilon) {
+			while (value + epsilon == value) {
+				epsilon *= 2;
+			}
+			value += epsilon;
+		}
+
+		inline void epsilonAdjustment_subtract(float& value, float epsilon) {
+			while (value - epsilon == value) {
+				epsilon *= 2;
+			}
+			value -= epsilon;
+		}
 	}
     
 }

@@ -97,7 +97,7 @@ namespace Mona {
 			currentTimeIndexes[i] = 0;
 			conditions[i] = currentTimeIndexes[i] < tracks[i].rotationTimeStamps.size();
 		}
-		while (funcUtils::conditionArray_OR(conditions)) {
+		while (funcUtils::conditionVector_OR(conditions)) {
 			// seteamos el valor del timestamp que le corresponde a cada track
 			for (int i = 0; i < nTracks; i++) {
 				currentTimes[i] = conditions[i] ? tracks[i].rotationTimeStamps[currentTimeIndexes[i]] : std::numeric_limits<float>::max();
@@ -257,7 +257,7 @@ namespace Mona {
 		std::vector<bool> continueTrajectory(chainNum, false);
 		for (int i = 0; i < chainNum; i++) {
 			std::vector<EETrajectory> subTrajectories;
-			bool allStatic = funcUtils::conditionArray_AND(supportFramesPerChain[i]);
+			bool allStatic = funcUtils::conditionVector_AND(supportFramesPerChain[i]);
 			if (allStatic) {
 				glm::vec3 staticPos = glblPositionsPerChain[i][0];
 				LIC<3> staticTr({ staticPos, staticPos }, { currentConfig->getAnimationTime(0), currentConfig->getAnimationTime(frameNum-1) });

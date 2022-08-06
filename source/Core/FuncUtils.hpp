@@ -100,18 +100,18 @@ namespace Mona {
             return minIndexes;
         }
 
-        inline bool conditionArray_OR(std::vector<bool> condArr) {
-            for (int i = 0; i < condArr.size(); i++) {
-                if (condArr[i]) {
+        inline bool conditionVector_OR(std::vector<bool> condVec) {
+            for (int i = 0; i < condVec.size(); i++) {
+                if (condVec[i]) {
                     return true;
                 }
             }
             return false;
         }
 
-        inline bool conditionArray_AND(std::vector<bool> condArr) {
-            for (int i = 0; i < condArr.size(); i++) {
-                if (!condArr[i]) {
+        inline bool conditionVector_AND(std::vector<bool> condVec) {
+            for (int i = 0; i < condVec.size(); i++) {
+                if (!condVec[i]) {
                     return false;
                 }
             }

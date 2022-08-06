@@ -72,7 +72,7 @@ namespace Mona {
 			std::vector<float> argsRawDelta(args.size());
 			std::vector<bool> continueDescent(args.size(), true);
 			int stepNum = 0;
-			while (stepNum < maxIterations && funcUtils::conditionArray_AND(continueDescent)) {
+			while (stepNum < maxIterations && funcUtils::conditionVector_OR(continueDescent)) {
 				gradient = computeGradient(args);
 				for (int i = 0; i < args.size(); i++) {
 					if (!useSGDM || stepNum == 0) {

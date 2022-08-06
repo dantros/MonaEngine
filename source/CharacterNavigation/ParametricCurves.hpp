@@ -23,15 +23,25 @@ namespace Mona{
         std::vector<float> m_tValues = { 1,0 };
         // dimension de los puntos
         int m_dimension = 0;
-        float m_tEpsilon = 0.000001;
+        float m_tEpsilon;
 		glm::vec<D, float> getRightHandVelocity(float t) {
 			MONA_ASSERT(inTRange(t), "LIC: t must be a value between {0} and {1}.", m_tValues[0], m_tValues.back());
-			if (t == m_tValues.back()) { return glm::vec<D, float>(0); }
-			for (int i = 0; i < m_tValues.size(); i++) {
-				if (m_tValues[i] == t) {
-					return (m_curvePoints[i + 1] - m_curvePoints[i]) / (m_tValues[i + 1] - m_tValues[i]);
+			if (m_tValues.back() <= t && t - m_tValues.back() <= m_tEpsilon) { return glm::vec<D, float>(0); }
+
+			// si estamos en el entorno de uno punto
+			if (m_tValues.back() - t <= m_tEpsilon) {
+				return (m_curvePoints[m_tValues.size() - 1] - m_curvePoints[m_tValues.size()-2]) / 
+                    (m_tValues[m_tValues.size() - 1] - m_tValues[m_tValues.size() - 2]);
+			}
+			for (int i = 0; i < m_tValues.size() - 1; i++) {
+				if (abs(m_tValues[i] - t) <= m_tEpsilon) {
+                    return (m_curvePoints[i + 1] - m_curvePoints[i]) / (m_tValues[i + 1] - m_tValues[i]);
 				}
-				else if (m_tValues[i] < t && t < m_tValues[i + 1]) {
+			}
+
+			// si no
+			for (int i = 0; i < m_tValues.size() - 1; i++) {
+				if (m_tValues[i] <= t && t <= m_tValues[i + 1]) {
 					return (m_curvePoints[i + 1] - m_curvePoints[i]) / (m_tValues[i + 1] - m_tValues[i]);
 				}
 			}
@@ -40,7 +50,7 @@ namespace Mona{
 		bool correctTValues() {
 			bool needCorrection = false;
 			for (int i = 1; i < m_tValues.size(); i++) {
-				if (m_tValues[i] - m_tValues[i-1] < m_tEpsilon) {
+				if (m_tValues[i] - m_tValues[i-1] <= 2*m_tEpsilon) {
 					needCorrection = true;
                     break;
 				}
@@ -53,7 +63,7 @@ namespace Mona{
             // de izquierda a derecha
 			std::vector<int> targetIndexesLeftToRight;
 			for (int i = 1; i < getNumberOfPoints()-1; i++) {
-				if (m_tValues[i] - m_tValues[i - 1] < m_tEpsilon) {
+				if (m_tValues[i] - m_tValues[i - 1] <= 2*m_tEpsilon) {
 					targetIndexesLeftToRight.push_back(i);
 				}
 			}
@@ -65,7 +75,7 @@ namespace Mona{
             // de derecha a izquierda
 			std::vector<int> targetIndexesRightToLeft;
 			for (int i = getNumberOfPoints() - 2; 0 <= i; i--) {
-				if (m_tValues[i + 1] - m_tValues[i] <= m_tEpsilon) {
+				if (m_tValues[i + 1] - m_tValues[i] <= 2*m_tEpsilon) {
 					targetIndexesLeftToRight.push_back(i);
 				}
 			}
@@ -77,7 +87,7 @@ namespace Mona{
 
 			// chequeo final
 			for (int i = 1; i < m_tValues.size(); i++) {
-				if (m_tValues[i] - m_tValues[i - 1] < m_tEpsilon) {
+				if (m_tValues[i] - m_tValues[i - 1] < 2*m_tEpsilon) {
 					return false;
 				}
 			}
@@ -85,30 +95,26 @@ namespace Mona{
 		}
     public:
         glm::vec2 getTRange() const { return glm::vec2({ m_tValues[0], m_tValues.back() }); }
-        bool inTRange(float t) const { return m_tValues[0] <= t && t <= m_tValues.back(); }
+        bool inTRange(float t) const { return m_tValues[0]-m_tEpsilon <= t && t <= m_tValues.back()+m_tEpsilon; }
         int getNumberOfPoints() const { return m_curvePoints.size(); }
         int getDimension() const { return m_dimension; }
         float getTEpsilon() const { return m_tEpsilon; }
         glm::vec<D, float> getStart() { return m_curvePoints[0]; }
         glm::vec<D, float> getEnd() { return m_curvePoints.back(); }
         LIC() = default;
-        LIC(std::vector<glm::vec<D, float>> curvePoints, std::vector<float> tValues, float tEpsilon = 0.000001) {
+        LIC(std::vector<glm::vec<D, float>> curvePoints, std::vector<float> tValues, float tEpsilon = 0.00001) {
             MONA_ASSERT(1 < curvePoints.size(), "LIC: must provide at least two points.");
             MONA_ASSERT(curvePoints.size() == tValues.size(), "LIC: there must be exactly one tValue per spline point.");
             MONA_ASSERT(0 < tEpsilon, "LIC: tEpsilon must be greater than 0.");
+            m_tEpsilon = tEpsilon;
             // chequeamos que los tValues vengan correctamente ordenados
             for (int i = 1; i < tValues.size(); i++) {
-                MONA_ASSERT(m_tEpsilon <= tValues[i] - tValues[i-1], 
-                    "LIC: tValues must come in a strictly ascending order and differ in more than tEpsilon.");
+                MONA_ASSERT(2*m_tEpsilon <= tValues[i] - tValues[i-1], 
+                    "LIC: tValues must come in a strictly ascending order and differ in more than 2*tEpsilon.");
             }
             m_curvePoints = curvePoints;
             m_tValues = tValues;
             m_dimension = D;
-            m_tEpsilon = tEpsilon;
-
-            // se ajustan los extremos con un epsilon
-            funcUtils::epsilonAdjustment_add(m_tValues.back(), m_tEpsilon);
-            funcUtils::epsilonAdjustment_subtract(m_tValues[0], m_tEpsilon);
         }
 
         glm::vec<D, float> getVelocity(float t, bool rightHandVelocity = false) {
@@ -116,14 +122,22 @@ namespace Mona{
                 return getRightHandVelocity(t);
             }
             MONA_ASSERT(inTRange(t), "LIC: t must be a value between {0} and {1}.", m_tValues[0], m_tValues.back());
-            if (t == m_tValues[0]) { return glm::vec<D, float>(0); }
-            for (int i = 0; i < m_tValues.size(); i++) {
-                if (m_tValues[i] == t) {
+            if (t <= m_tValues[0] && abs(m_tValues[0] - t) <= m_tEpsilon) { return glm::vec<D, float>(0); }
+            // si estamos en el entorno de uno punto
+			if (t - m_tValues[0] <= m_tEpsilon) {
+				return (m_curvePoints[1] - m_curvePoints[0]) / (m_tValues[1] - m_tValues[0]);
+			}
+            for (int i = 1; i < m_tValues.size(); i++) {
+                if (abs(m_tValues[i] - t) < m_tEpsilon) {
                     return (m_curvePoints[i] - m_curvePoints[i - 1]) / (m_tValues[i] - m_tValues[i - 1]);
                 }
-                else if (m_tValues[i] < t && t < m_tValues[i + 1]) {
+            }
+
+            // si no
+            for (int i = 0; i < m_tValues.size() - 1; i++) {
+                if (m_tValues[i] <= t && t <= m_tValues[i + 1]) {
                     return (m_curvePoints[i + 1] - m_curvePoints[i]) / (m_tValues[i + 1] - m_tValues[i]);
-                }
+                }                
             }
             return glm::vec<D, float>(0);
         }
@@ -137,6 +151,8 @@ namespace Mona{
 
         glm::vec<D, float> evalCurve(float t) {
             MONA_ASSERT(inTRange(t), "LIC: t must be a value between {0} and {1}.", m_tValues[0], m_tValues.back());
+            if (abs(t - m_tValues[0]) <= m_tEpsilon) { return m_curvePoints[0]; }
+            if (abs(t - m_tValues.back()) <= m_tEpsilon) { return m_curvePoints.back(); }
             for (int i = 0; i < m_tValues.size() - 1; i++) {
                 if (m_tValues[i] <= t && t <= m_tValues[i + 1]) {
                     float fraction = funcUtils::getFraction(m_tValues[i], m_tValues[i + 1], t);
@@ -266,7 +282,7 @@ namespace Mona{
 			jointTValues = curve1.m_tValues;
 			jointCurvePoints = curve1.m_curvePoints;
 			for (int i = 0; i < curve2.m_tValues.size(); i++) {
-				if (epsilon <= curve2.m_tValues[i] - curve1.m_tValues.back()) {
+				if (2*epsilon <= curve2.m_tValues[i] - curve1.m_tValues.back()) {
 					jointTValues.insert(jointTValues.end(), curve2.m_tValues.begin() + i, curve2.m_tValues.end());
 					jointCurvePoints.insert(jointCurvePoints.end(), curve2.m_curvePoints.begin() + i, curve2.m_curvePoints.end());
 					break;
@@ -292,14 +308,14 @@ namespace Mona{
                 else { break; }
             }
             for (int i = 0; i < curve2.m_tValues.size(); i++) {
-                if (transitionT <= curve2.m_tValues[i] && epsilon <= curve2.m_tValues[i] - transitionTValues.back()) {
+                if (transitionT <= curve2.m_tValues[i] && 2*epsilon <= curve2.m_tValues[i] - transitionTValues.back()) {
                     transitionTValues.push_back(curve2.m_tValues[i]);
                     transitionCurvePoints.push_back(curve2.m_curvePoints[i]);
                 }
             }
             if (transitionTValues.size() == 1) {
                 float extraTValue = transitionTValues[0];
-                funcUtils::epsilonAdjustment_add(extraTValue, epsilon);
+                funcUtils::epsilonAdjustment_add(extraTValue, 2*epsilon);
                 transitionTValues.push_back(extraTValue);
                 transitionCurvePoints.push_back(transitionCurvePoints[0]);
             }           

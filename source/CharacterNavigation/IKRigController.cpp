@@ -320,7 +320,7 @@ namespace Mona {
 					else if (curvePoints_2.size() == 1) {
 						connectedIndex = subTrajectories.size();
 						LIC<3> part1(curvePoints_1, tValues_1);
-						fullCurve = LIC<3>::connectPoint(part1, curvePoints_2[0], tValues_2[0], currentConfig->getAnimationDuration());
+						fullCurve = LIC<3>::connectPoint(part1, tValues_2[0], currentConfig->getAnimationDuration());
 					}
 					else if(1 < curvePoints_2.size()) {
 						connectedIndex = subTrajectories.size();

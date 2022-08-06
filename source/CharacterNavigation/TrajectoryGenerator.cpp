@@ -109,11 +109,11 @@ namespace Mona{
     void TrajectoryGenerator::init() {
         FunctionTerm<TGData> term1(term1Function, term1PartialDerivativeFunction);
         FunctionTerm<TGData> term2(term2Function, term2PartialDerivativeFunction);
-        m_gradientDescent = GradientDescent<TGData>({ term2 }, 0, &m_tgData, postDescentStepCustomBehaviour);
+        m_gradientDescent = GradientDescent<TGData>({ term1, term2 }, 0, &m_tgData, postDescentStepCustomBehaviour);
         m_tgData.descentRate = m_ikRig->getRigHeight()/pow(10,5);
         m_tgData.maxIterations = 600;
         m_tgData.alphaValue = 0.8;
-        m_tgData.betaValue = 1.0;
+        m_tgData.betaValue = 0.2;
         m_tgData.targetPosDelta = m_ikRig->getRigHeight()/pow(10, 6);
     }
 
@@ -422,8 +422,6 @@ namespace Mona{
             
             // testing
             std::cout << "DEBUG HIP TR" << std::endl;
-            std::cout << "original tr curve." << std::endl;
-            hipTrCurve.debugPrintCurvePoints();
 
             float hipOriginalXYDistance = glm::length(glm::vec2(hipTrCurve.getEnd() - hipTrCurve.getStart()));
 
@@ -583,8 +581,6 @@ namespace Mona{
             
 
 			// testing
-            std::cout << "before gr descent adj fall." << std::endl;
-            hipTrCurveAdjustedFall.debugPrintCurvePoints();
 			std::cout << "before gr descent final curve." << std::endl;
 			hipTrFinalCurve.debugPrintCurvePoints();
 

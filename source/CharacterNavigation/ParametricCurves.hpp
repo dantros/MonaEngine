@@ -88,6 +88,7 @@ namespace Mona{
         bool inTRange(float t) const { return m_tValues[0] <= t && t <= m_tValues.back(); }
         int getNumberOfPoints() const { return m_curvePoints.size(); }
         int getDimension() const { return m_dimension; }
+        float getTEpsilon() const { return m_tEpsilon; }
         glm::vec<D, float> getStart() { return m_curvePoints[0]; }
         glm::vec<D, float> getEnd() { return m_curvePoints.back(); }
         LIC() = default;
@@ -212,8 +213,10 @@ namespace Mona{
             }
             for (int i = startInd; i < m_tValues.size() - 1; i++) {
                 if (m_tEpsilon <= maxT - m_tValues[i]) {
-					sampleTValues.push_back(m_tValues[i]);
-					samplePoints.push_back(m_curvePoints[i]);
+                    if (m_tEpsilon <= m_tValues[i] - minT) {
+						sampleTValues.push_back(m_tValues[i]);
+						samplePoints.push_back(m_curvePoints[i]);
+                    }					
                 }
                 else {
 					sampleTValues.push_back(maxT);
@@ -254,6 +257,8 @@ namespace Mona{
         }
 
         static LIC<D> join(const LIC& curve1, const LIC& curve2) {
+            MONA_ASSERT(curve1.m_tEpsilon == curve2.m_tEpsilon, "LIC: both curves must have the same tEpsilon.");
+            float epsilon = curve1.m_tEpsilon;
             std::vector<float> jointTValues;
             jointTValues.reserve(curve1.m_curvePoints.size() + curve2.m_curvePoints.size());
             std::vector<glm::vec<D, float>> jointCurvePoints;
@@ -261,18 +266,20 @@ namespace Mona{
 			jointTValues = curve1.m_tValues;
 			jointCurvePoints = curve1.m_curvePoints;
 			for (int i = 0; i < curve2.m_tValues.size(); i++) {
-				if (curve1.m_tEpsilon <= curve2.m_tValues[i] - curve1.m_tValues.back()) {
+				if (epsilon <= curve2.m_tValues[i] - curve1.m_tValues.back()) {
 					jointTValues.insert(jointTValues.end(), curve2.m_tValues.begin() + i, curve2.m_tValues.end());
 					jointCurvePoints.insert(jointCurvePoints.end(), curve2.m_curvePoints.begin() + i, curve2.m_curvePoints.end());
 					break;
 				}
 			}
-			return LIC(jointCurvePoints, jointTValues, curve1.m_tEpsilon);
+			return LIC(jointCurvePoints, jointTValues, epsilon);
             
         }
 
         static LIC<D> transition(const LIC& curve1, const LIC& curve2, float transitionT) {
             MONA_ASSERT(curve1.inTRange(transitionT) && curve2.inTRange(transitionT), "LIC: transitionT must be within t ranges of both curves.");
+            MONA_ASSERT(curve1.m_tEpsilon == curve2.m_tEpsilon, "LIC: both curves must have the same tEpsilon.");
+            float epsilon = curve1.m_tEpsilon;
             std::vector<float> transitionTValues;
             transitionTValues.reserve(curve1.m_curvePoints.size() + curve2.m_curvePoints.size());
             std::vector<glm::vec<D, float>> transitionCurvePoints;
@@ -285,18 +292,18 @@ namespace Mona{
                 else { break; }
             }
             for (int i = 0; i < curve2.m_tValues.size(); i++) {
-                if (transitionT <= curve2.m_tValues[i]) {
+                if (transitionT <= curve2.m_tValues[i] && epsilon <= curve2.m_tValues[i] - transitionTValues.back()) {
                     transitionTValues.push_back(curve2.m_tValues[i]);
                     transitionCurvePoints.push_back(curve2.m_curvePoints[i]);
                 }
             }
             if (transitionTValues.size() == 1) {
                 float extraTValue = transitionTValues[0];
-                funcUtils::epsilonAdjustment_add(extraTValue, curve1.m_tEpsilon);
+                funcUtils::epsilonAdjustment_add(extraTValue, epsilon);
                 transitionTValues.push_back(extraTValue);
                 transitionCurvePoints.push_back(transitionCurvePoints[0]);
             }           
-            return LIC(transitionCurvePoints, transitionTValues);
+            return LIC(transitionCurvePoints, transitionTValues, epsilon);
         }
 
         float getTValue(int pointIndex) const {

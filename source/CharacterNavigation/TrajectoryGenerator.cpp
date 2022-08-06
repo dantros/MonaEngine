@@ -668,8 +668,7 @@ namespace Mona{
 		float originalCurvesTime_anim = config->adjustAnimationTime(originalCurvesTime_extendedAnim);
 		// distancias originales de ee's con cadera
 		std::vector<float> origDistances(m_ikChains.size());
-		LIC<3> hipTrCurve = hipTrData->sampleOriginalTranslations(originalCurvesTime_extendedAnim,
-			originalCurvesTime_extendedAnim + config->getAnimationDuration());
+		LIC<3> hipTrCurve = hipTrData->sampleOriginalTranslations(originalCurvesTime_extendedAnim,	originalCurvesTime_extendedAnim + config->getAnimationDuration());
         glm::vec3 hipPoint = hipTrCurve.evalCurve(originalCurvesTime_extendedAnim);
 		for (int i = 0; i < m_ikChains.size(); i++) {
 			EEGlobalTrajectoryData* trData = config->getEETrajectoryData(m_ikChains[i]);

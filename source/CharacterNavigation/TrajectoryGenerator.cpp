@@ -417,6 +417,8 @@ namespace Mona{
             LIC<1> hipRotAnglCurve = hipTrData->sampleOriginalRotationAngles(tInfLimitExtendedAnim, tSupLimitExtendedAnim);
             LIC<3> hipRotAxCurve = hipTrData->sampleOriginalRotationAxes(tInfLimitExtendedAnim, tSupLimitExtendedAnim);
             
+            // testing
+            std::cout << "DEBUG HIP TR" << std::endl;
 
             float hipOriginalXYDistance = glm::length(glm::vec2(hipTrCurve.getEnd() - hipTrCurve.getStart()));
 
@@ -447,7 +449,7 @@ namespace Mona{
             float highEndNewTime = highEndNewDist / hipHighEndOriginalSpeed;
 
             float hipHighNewTimeFraction = funcUtils::getFraction(0, startHighNewTime + highEndNewTime, startHighNewTime);
-            float hipHighNewTime = funcUtils::lerp(baseEETargetCurve.getTRange()[0], baseEETargetCurve.getTRange()[1], hipHighNewTimeFraction);
+            float hipHighNewTime_rep = funcUtils::lerp(baseEETargetCurve.getTRange()[0], baseEETargetCurve.getTRange()[1], hipHighNewTimeFraction);
 
             int hipHighPointIndex_hip = hipTrCurve.getClosestPointIndex(hipHighOriginalTime_extendedAnim);
 			// ajuste a tiempo de reproduccion
@@ -455,9 +457,9 @@ namespace Mona{
 			hipRotAnglCurve.offsetTValues(-hipRotAnglCurve.getTRange()[0] + tInfLimitRep);
 			hipRotAxCurve.offsetTValues(-hipRotAxCurve.getTRange()[0] + tInfLimitRep);
             
-			hipTrCurve.displacePointT(hipHighPointIndex_hip, 0, hipTrCurve.getNumberOfPoints() - 1, hipHighNewTime, true);
-			hipRotAnglCurve.displacePointT(hipHighPointIndex_hip, 0, hipTrCurve.getNumberOfPoints() - 1, hipHighNewTime, true);
-			hipRotAxCurve.displacePointT(hipHighPointIndex_hip, 0, hipTrCurve.getNumberOfPoints() - 1, hipHighNewTime, false);
+			hipTrCurve.displacePointT(hipHighPointIndex_hip, 0, hipTrCurve.getNumberOfPoints() - 1, hipHighNewTime_rep, true);
+			hipRotAnglCurve.displacePointT(hipHighPointIndex_hip, 0, hipTrCurve.getNumberOfPoints() - 1, hipHighNewTime_rep, true);
+			hipRotAxCurve.displacePointT(hipHighPointIndex_hip, 0, hipTrCurve.getNumberOfPoints() - 1, hipHighNewTime_rep, false);
 
             // tercer paso: encontrar el punto final
             // creamos una curva que represente la trayectoria de caida
@@ -484,7 +486,7 @@ namespace Mona{
             float originalFallDuration = fallCurve.getTRange()[1] - fallCurve.getTRange()[0];
             float baseEEOriginalXYFallDist = glm::length(glm::vec2(baseEEOriginalCurve.getEnd() - 
                 baseEEOriginalCurve.evalCurve(hipHighOriginalTime_extendedAnim)));
-            float baseEETargetXYFallDist = glm::length(glm::vec2(baseEETargetCurve.getEnd() - baseEETargetCurve.evalCurve(hipHighNewTime)));
+            float baseEETargetXYFallDist = glm::length(glm::vec2(baseEETargetCurve.getEnd() - baseEETargetCurve.evalCurve(hipHighNewTime_rep)));
             float xyFallDistRatio = baseEETargetXYFallDist / baseEEOriginalXYFallDist;
             float newFallDuration = originalFallDuration * xyFallDistRatio;
 
@@ -527,19 +529,17 @@ namespace Mona{
             int finalIndex = hipTrCurveAdjustedFall.getNumberOfPoints() - 1;
             hipTrCurveAdjustedFall.displacePointT(finalIndex, hipHighPointIndex_hip, finalIndex, hipTrCurve.getTRange()[1], false);
 
-
             // actualizamos la orientacion de la curva y la trasladamos la curva al punto encontrado
-            hipTrCurveAdjustedFall.translate(-hipTrCurveAdjustedFall.getStart()); // llevar al origen
-            // escalamos la trayectoria para ajustarla a la distancia recorrida
+            hipTrCurveAdjustedFall.translate(-hipTrCurveAdjustedFall.getStart());
             float baseEEOriginalXYDist = glm::length(glm::vec2(baseEEOriginalCurve.getEnd() - baseEEOriginalCurve.getStart()));
             float baseEETargetXYDist = glm::length(glm::vec2(baseEETargetCurve.getEnd() - baseEETargetCurve.getStart()));
             float eeXYDistRatio = baseEETargetXYDist / baseEEOriginalXYDist;
             float hipNewXYDist = glm::length(glm::vec2(hipTrCurveAdjustedFall.getEnd() - hipTrCurveAdjustedFall.getStart()));
             float hipXYDistRatio = hipNewXYDist / hipOriginalXYDistance;
-            float hipEEXYDistRatio = hipXYDistRatio / eeXYDistRatio;
-            glm::vec3 scalingVec(glm::vec2((hipTrCurveAdjustedFall.getEnd() - hipTrCurveAdjustedFall.getStart()) * (1 / hipEEXYDistRatio)), 0);
-            hipTrCurveAdjustedFall.scale(scalingVec);
+            float eeHipXYDistRatio = eeXYDistRatio / hipXYDistRatio ;
+            glm::vec3 scalingVec(eeHipXYDistRatio, eeHipXYDistRatio, 1);
             glm::fquat xyRot(xyMovementRotAngle, glm::vec3(0, 0, 1));
+            hipTrCurveAdjustedFall.scale(scalingVec);            
             hipTrCurveAdjustedFall.rotate(xyRot);
             hipTrCurveAdjustedFall.translate(initialTrans);
 
@@ -548,7 +548,7 @@ namespace Mona{
 
             glm::vec2 hipHighBasePoint = glm::vec2(hipTrFinalCurve.getCurvePoint(hipHighPointIndex_hip));
             glm::vec3 hipHighAdjustedZ = glm::vec3(hipHighBasePoint, calcHipAdjustedHeight(config, hipHighBasePoint, 
-                hipHighNewTime, config->adjustAnimationTime(hipHighOriginalTime_extendedAnim)));
+                hipHighNewTime_rep, hipHighOriginalTime_extendedAnim));
             hipTrFinalCurve.setCurvePoint(hipHighPointIndex_hip, hipHighAdjustedZ);
 
             m_tgData.pointIndexes.clear();
@@ -577,10 +577,16 @@ namespace Mona{
             }
             m_tgData.baseCurve = hipTrCurveAdjustedFall;
 
+			// testing
+			hipTrCurveAdjustedFall.debugPrintCurvePoints();
+
             // seteo de otros parametros
             m_tgData.varCurve = &hipTrFinalCurve;
             m_gradientDescent.setArgNum(initialArgs.size());
             m_gradientDescent.computeArgsMin(m_tgData.descentRate, m_tgData.maxIterations, m_tgData.targetPosDelta, initialArgs);
+
+			// testing
+			hipTrFinalCurve.debugPrintCurvePoints();
 
 			float repCountOffset = config->getNextFrameIndex() == 0 ? 1 : 0;
 			float transitionTime = config->getReproductionTime(config->getNextFrameIndex(), repCountOffset);

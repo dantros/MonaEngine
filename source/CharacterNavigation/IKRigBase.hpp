@@ -147,8 +147,7 @@ namespace Mona {
         ChainEnds leftFoot;
         ChainEnds rightFoot;
         std::string hipJointName;
-        void setJointData(std::string jointName, float minAngle, float maxAngle, float weight = 1, bool enableData = true);
-        void enableJointData(std::string jointName, bool enableData);
+        void setJointData(std::string jointName, float minAngle, float maxAngle);
         JointData getJointData(std::string jointName);
         bool isValid();
     };

@@ -24,34 +24,6 @@ namespace Mona{
         // dimension de los puntos
         int m_dimension = 0;
         float m_tEpsilon = 0.000001;
-    public:
-        glm::vec2 getTRange() const { return glm::vec2({ m_tValues[0], m_tValues.back() }); }
-        bool inTRange(float t) const { return m_tValues[0] <= t && t <= m_tValues.back(); }
-        int getNumberOfPoints() const { return m_curvePoints.size(); }
-        int getDimension() const { return m_dimension; }
-        glm::vec<D, float> getStart() { return m_curvePoints[0]; }
-        glm::vec<D, float> getEnd() { return m_curvePoints.back(); }
-        LIC() = default;
-        LIC(std::vector<glm::vec<D, float>> curvePoints, std::vector<float> tValues, float tEpsilon = 0.000001) {
-            MONA_ASSERT(1 < curvePoints.size(), "LIC: must provide at least two points.");
-            MONA_ASSERT(curvePoints.size() == tValues.size(), "LIC: there must be exactly one tValue per spline point.");
-            // chequeamos que los tValues vengan correctamente ordenados
-            for (int i = 1; i < tValues.size(); i++) {
-                MONA_ASSERT(tValues[i - 1] < tValues[i], "LIC: tValues must come in a strictly ascending order");
-            }
-            m_curvePoints = curvePoints;
-            m_tValues = tValues;
-            m_dimension = D;
-            MONA_ASSERT(0 < tEpsilon, "LIC: tEpsilon must be greater than 0.");
-            m_tEpsilon = tEpsilon;
-
-            // se ajustan los extremos con un epsilon
-            funcUtils::epsilonAdjustment_add(m_tValues.back(), m_tEpsilon);
-            funcUtils::epsilonAdjustment_subtract(m_tValues[0], m_tEpsilon);
-        }
-
-        
-
 		glm::vec<D, float> getRightHandVelocity(float t) {
 			MONA_ASSERT(inTRange(t), "LIC: t must be a value between {0} and {1}.", m_tValues[0], m_tValues.back());
 			if (t == m_tValues.back()) { return glm::vec<D, float>(0); }
@@ -65,6 +37,78 @@ namespace Mona{
 			}
 			return glm::vec<D, float>(0);;
 		}
+		bool correctTValues() {
+			bool needCorrection = false;
+			for (int i = 1; i < m_tValues.size(); i++) {
+				if (m_tValues[i] - m_tValues[i-1] < m_tEpsilon) {
+					needCorrection = true;
+                    break;
+				}
+			}
+			if (!needCorrection) {
+				return true;
+			}
+
+			// correccion de valores
+            // de izquierda a derecha
+			std::vector<int> targetIndexesLeftToRight;
+			for (int i = 1; i < getNumberOfPoints()-1; i++) {
+				if (m_tValues[i] - m_tValues[i - 1] < m_tEpsilon) {
+					targetIndexesLeftToRight.push_back(i);
+				}
+			}
+			for (int i = targetIndexesLeftToRight.size() - 1; 0 <= i; i--) {
+				int tIndex = targetIndexesLeftToRight[i];
+				m_tValues[tIndex] = (m_tValues[tIndex] + m_tValues[tIndex + 1]) / 2.0f;
+				m_curvePoints[tIndex] = (m_curvePoints[tIndex] + m_curvePoints[tIndex + 1]) / 2.0f;
+			}
+            // de derecha a izquierda
+			std::vector<int> targetIndexesRightToLeft;
+			for (int i = getNumberOfPoints() - 2; 0 <= i; i--) {
+				if (m_tValues[i + 1] - m_tValues[i] <= m_tEpsilon) {
+					targetIndexesLeftToRight.push_back(i);
+				}
+			}
+			for (int i = targetIndexesRightToLeft.size() - 1; 0 <= i; i--) {
+				int tIndex = targetIndexesRightToLeft[i];
+				m_tValues[tIndex] = (m_tValues[tIndex] + m_tValues[tIndex - 1]) / 2.0f;
+				m_curvePoints[tIndex] = (m_curvePoints[tIndex] + m_curvePoints[tIndex - 1]) / 2.0f;
+			}
+
+			// chequeo final
+			for (int i = 1; i < m_tValues.size(); i++) {
+				if (m_tValues[i] - m_tValues[i - 1] < m_tEpsilon) {
+					return false;
+				}
+			}
+			return true;
+		}
+    public:
+        glm::vec2 getTRange() const { return glm::vec2({ m_tValues[0], m_tValues.back() }); }
+        bool inTRange(float t) const { return m_tValues[0] <= t && t <= m_tValues.back(); }
+        int getNumberOfPoints() const { return m_curvePoints.size(); }
+        int getDimension() const { return m_dimension; }
+        glm::vec<D, float> getStart() { return m_curvePoints[0]; }
+        glm::vec<D, float> getEnd() { return m_curvePoints.back(); }
+        LIC() = default;
+        LIC(std::vector<glm::vec<D, float>> curvePoints, std::vector<float> tValues, float tEpsilon = 0.000001) {
+            MONA_ASSERT(1 < curvePoints.size(), "LIC: must provide at least two points.");
+            MONA_ASSERT(curvePoints.size() == tValues.size(), "LIC: there must be exactly one tValue per spline point.");
+            MONA_ASSERT(0 < tEpsilon, "LIC: tEpsilon must be greater than 0.");
+            // chequeamos que los tValues vengan correctamente ordenados
+            for (int i = 1; i < tValues.size(); i++) {
+                MONA_ASSERT(m_tEpsilon <= tValues[i] - tValues[i-1], 
+                    "LIC: tValues must come in a strictly ascending order and differ in more than tEpsilon.");
+            }
+            m_curvePoints = curvePoints;
+            m_tValues = tValues;
+            m_dimension = D;
+            m_tEpsilon = tEpsilon;
+
+            // se ajustan los extremos con un epsilon
+            funcUtils::epsilonAdjustment_add(m_tValues.back(), m_tEpsilon);
+            funcUtils::epsilonAdjustment_subtract(m_tValues[0], m_tEpsilon);
+        }
 
         glm::vec<D, float> getVelocity(float t, bool rightHandVelocity = false) {
             if (rightHandVelocity) {
@@ -101,7 +145,10 @@ namespace Mona{
             return glm::vec<D, float>(0);
         }
 
-        void displacePointT(int pointIndex, int lowIndex, int highIndex, float newT, bool scalePoints = true, float pointScalingRatio = 1) {
+        
+
+        void displacePointT(int pointIndex, int lowIndex, int highIndex, float newT, 
+            bool scalePoints = true, float pointScalingRatio = 1, int maxCorrectionSteps = 3) {
             MONA_ASSERT(lowIndex < highIndex && 0 <= lowIndex && highIndex < m_tValues.size(), "LIC: low and high index must be within bounds.");
             MONA_ASSERT(lowIndex <= pointIndex && pointIndex <= highIndex, "LIC: input point index must be within input bounds");
             float oldT = m_tValues[pointIndex];
@@ -132,19 +179,14 @@ namespace Mona{
                 }
             }
 
-            std::vector<float> newTValues = { m_tValues[0] };
-            newTValues.reserve(getNumberOfPoints());
-            std::vector<glm::vec<D, float>> newCurvePoints = { m_curvePoints[0] };
-            newCurvePoints.reserve(getNumberOfPoints());
-			// correccion de valores
-            for (int i = 1; i < getNumberOfPoints(); i++) {
-                if (m_tValues[i - 1] < m_tValues[i]) {
-                    newTValues.push_back(m_tValues[i]);
-                    newCurvePoints.push_back(m_curvePoints[i]);
-                }
+            // correccion de valores
+            bool corrected = false;
+            int correctionSteps = 0;
+            while (!corrected && correctionSteps < maxCorrectionSteps) {
+                corrected = correctTValues();
+                correctionSteps += 1;
             }
-            m_curvePoints = newCurvePoints;
-            m_tValues = newTValues;            
+            MONA_ASSERT(corrected, "LIC: tValues were pushed too close together.");                       
         }
 
         void setCurvePoint(int pointIndex, glm::vec<D, float> newValue) {
@@ -153,7 +195,7 @@ namespace Mona{
         }
 
         LIC<D> sample(float minT, float maxT) {
-            MONA_ASSERT(minT < maxT, "LIC: maxT must be greater than minT.");
+            MONA_ASSERT(m_tEpsilon <= maxT - minT, "LIC: maxT must be greater than minT by at least tEpsilon.");
             MONA_ASSERT(inTRange(minT) && inTRange(maxT), "LIC: Both minT and maxT must be in t range.");
             std::vector<float> sampleTValues;
             sampleTValues.reserve(m_tValues.size());
@@ -169,12 +211,14 @@ namespace Mona{
                 }
             }
             for (int i = startInd; i < m_tValues.size() - 1; i++) {
-                sampleTValues.push_back(m_tValues[i]);
-                samplePoints.push_back(m_curvePoints[i]);
-                if (m_tValues[i] < maxT && maxT <= m_tValues[i + 1]) {
-                    sampleTValues.push_back(maxT);
-                    samplePoints.push_back(evalCurve(maxT));
-                    break;
+                if (m_tEpsilon <= maxT - m_tValues[i]) {
+					sampleTValues.push_back(m_tValues[i]);
+					samplePoints.push_back(m_curvePoints[i]);
+                }
+                else {
+					sampleTValues.push_back(maxT);
+					samplePoints.push_back(evalCurve(maxT));
+					break;
                 }
             }
             if (samplePoints.size() == 0 || samplePoints.size() == 1) {
@@ -209,34 +253,22 @@ namespace Mona{
             }
         }
 
-        static LIC<D> join(const LIC& curve1, const LIC& curve2, bool preserveLeft=true) {
+        static LIC<D> join(const LIC& curve1, const LIC& curve2) {
             std::vector<float> jointTValues;
             jointTValues.reserve(curve1.m_curvePoints.size() + curve2.m_curvePoints.size());
             std::vector<glm::vec<D, float>> jointCurvePoints;
             jointCurvePoints.reserve(curve1.m_curvePoints.size() + curve2.m_curvePoints.size());
-            if (preserveLeft) {
-                jointTValues = curve1.m_tValues;
-                jointCurvePoints = curve1.m_curvePoints;
-                for (int i = 0; i < curve2.m_tValues.size(); i++) {
-                    if (curve1.m_tValues.back() < curve2.m_tValues[i]) {
-                        jointTValues.insert(jointTValues.end(), curve2.m_tValues.begin() + i, curve2.m_tValues.end());
-                        jointCurvePoints.insert(jointCurvePoints.end(), curve2.m_curvePoints.begin() + i, curve2.m_curvePoints.end());
-                        break;
-                    }
-                }
-            }
-            else {
-                for (int i = 0; i < curve1.m_tValues.size(); i++) {
-                    if (curve2.m_tValues[0] <= curve1.m_tValues[i]) {
-                        jointTValues.insert(jointTValues.end(), curve2.m_tValues.begin(), curve2.m_tValues.end());
-                        jointCurvePoints.insert(jointCurvePoints.end(), curve2.m_curvePoints.begin(), curve2.m_curvePoints.end());
-                        break;
-                    }
-                    jointTValues.push_back(curve1.m_tValues[i]);
-                    jointCurvePoints.push_back(curve1.m_curvePoints[i]);
-                }
-            }
-            return LIC(jointCurvePoints, jointTValues);
+			jointTValues = curve1.m_tValues;
+			jointCurvePoints = curve1.m_curvePoints;
+			for (int i = 0; i < curve2.m_tValues.size(); i++) {
+				if (curve1.m_tEpsilon <= curve2.m_tValues[i] - curve1.m_tValues.back()) {
+					jointTValues.insert(jointTValues.end(), curve2.m_tValues.begin() + i, curve2.m_tValues.end());
+					jointCurvePoints.insert(jointCurvePoints.end(), curve2.m_curvePoints.begin() + i, curve2.m_curvePoints.end());
+					break;
+				}
+			}
+			return LIC(jointCurvePoints, jointTValues, curve1.m_tEpsilon);
+            
         }
 
         static LIC<D> transition(const LIC& curve1, const LIC& curve2, float transitionT) {
@@ -372,7 +404,6 @@ namespace Mona{
 		void debugPrintCurvePoints() {
             MONA_ASSERT(m_dimension == 3, "LIC: only available for dim 3 LICs.");
 			glmUtils::printColoredStdVector(m_curvePoints);
-            MONA_ASSERT(false, "LIC: Debug");
 
 		}
     };

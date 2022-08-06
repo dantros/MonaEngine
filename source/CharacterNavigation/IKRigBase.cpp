@@ -117,14 +117,13 @@ namespace Mona{
 		return false;
 	}
 
-	IKNode::IKNode(std::string jointName, JointIndex jointIndex, IKNode* parent, float weight) {
+	IKNode::IKNode(std::string jointName, JointIndex jointIndex, IKNode* parent) {
 		m_jointName = jointName;
 		m_jointIndex = jointIndex;
 		m_parent = parent;
-		m_weight = weight;
 	}
 
-	void RigData::setJointData(std::string jointName, float minAngle, float maxAngle, float weight, bool enableData) {
+	void RigData::setJointData(std::string jointName, float minAngle, float maxAngle) {
 		if (jointName == "") {
 			MONA_LOG_ERROR("RigData: jointName cannot be empty string.");
 			return;
@@ -135,15 +134,10 @@ namespace Mona{
 		}
 		jointData[jointName].minAngle = minAngle;
 		jointData[jointName].maxAngle = maxAngle;
-		jointData[jointName].weight = weight;
-		jointData[jointName].enableIKRotation = enableData;
 	}
 
 	JointData RigData::getJointData(std::string jointName) {
 		return JointData(jointData[jointName]);
-	}
-	void RigData::enableJointData(std::string jointName, bool enableData) {
-		jointData[jointName].enableIKRotation = enableData;
 	}
 
 	bool RigData::isValid() {

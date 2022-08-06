@@ -140,6 +140,8 @@ namespace Mona {
 
 
 		inline void epsilonAdjustment_add(float& value, float epsilon) {
+            MONA_ASSERT(0 < epsilon, "FuncUtils: epsilon must be greater than 0.");
+            if (epsilon == 0) { return; }
 			while (value + epsilon == value) {
 				epsilon *= 2;
 			}
@@ -147,6 +149,8 @@ namespace Mona {
 		}
 
 		inline void epsilonAdjustment_subtract(float& value, float epsilon) {
+            MONA_ASSERT(0 < epsilon, "FuncUtils: epsilon must be greater than 0.");
+            if (epsilon == 0) { return; }
 			while (value - epsilon == value) {
 				epsilon *= 2;
 			}

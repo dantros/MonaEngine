@@ -35,10 +35,8 @@ namespace Mona {
 		// setear constraints
 		for (JointIndex i = 0; i < jointNum; i++) {
 			JointData currData = rigData.jointData[m_nodes[i].m_jointName];
-			if (currData.enableIKRotation) {
-				m_nodes[i].m_minAngle = currData.minAngle;
-				m_nodes[i].m_maxAngle = currData.maxAngle;
-			}
+			m_nodes[i].m_minAngle = currData.minAngle;
+			m_nodes[i].m_maxAngle = currData.maxAngle;
 		}
 
 		// setear el la altura del rig

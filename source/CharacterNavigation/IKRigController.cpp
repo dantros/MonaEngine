@@ -319,14 +319,21 @@ namespace Mona {
 					}
 					else if (curvePoints_2.size() == 1) {
 						connectedIndex = subTrajectories.size();
-						LIC<3> part1(curvePoints_1, tValues_1);
-						fullCurve = LIC<3>::connectPoint(part1, tValues_2[0], currentConfig->getAnimationDuration());
+						LIC<3> curve(curvePoints_1, tValues_1);
+						float tDiff = tValues_2[0] + currentConfig->getAnimationDuration() - curve.getTRange()[1];
+						if (0 < tDiff) {
+							fullCurve = LIC<3>::connectPoint(curve, curvePoints_2[0], tDiff);
+						}
+						else {
+							fullCurve = curve;
+						}						
 					}
 					else if(1 < curvePoints_2.size()) {
 						connectedIndex = subTrajectories.size();
 						LIC<3> part1(curvePoints_1, tValues_1);
 						LIC<3> part2(curvePoints_2, tValues_2);
-						fullCurve = LIC<3>::connect(part1, part2, currentConfig->getAnimationDuration());
+						float tDiff = tValues_2[0] + currentConfig->getAnimationDuration() - tValues_1.back();
+						fullCurve = LIC<3>::connect(part1, part2, tDiff);
 					}
 					subTrajectories.push_back(EETrajectory(fullCurve, trType));
 									

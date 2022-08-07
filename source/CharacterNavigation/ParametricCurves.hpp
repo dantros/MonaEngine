@@ -50,7 +50,7 @@ namespace Mona{
 
         bool tValuesAreValid() {
 			for (int i = 1; i < m_tValues.size(); i++) {
-				if (m_tValues[i] - m_tValues[i - 1] < 2 * m_tEpsilon) {
+				if (m_tValues[i] - m_tValues[i - 1] <= 2 * m_tEpsilon) {
                     return false;
 				}
 			}
@@ -108,7 +108,7 @@ namespace Mona{
             m_tEpsilon = tEpsilon;
             m_tValues = tValues;
             // chequeamos que los tValues vengan correctamente ordenados
-            MONA_ASSERT(tValuesAreValid(), "LIC: tValues must come in a strictly ascending order and differ in at least 2*tEpsilon.");
+            MONA_ASSERT(tValuesAreValid(), "LIC: tValues must come in a strictly ascending order and differ in more than 2*tEpsilon.");
             m_curvePoints = curvePoints;
             m_dimension = D;
         }
@@ -359,37 +359,37 @@ namespace Mona{
             return m_tValues.size() - 1;
         }
 
-        static LIC<D> connect(LIC<D> curve1, LIC<D> curve2, float curve2TOffset) {
+        static LIC<D> connect(LIC<D> curve1, LIC<D> curve2, float tDiff) {
+            MONA_ASSERT(0 <= tDiff, "LIC: tDiff must be at least 0.");
+            MONA_ASSERT(curve1.m_tEpsilon == curve2.m_tEpsilon, "LIC: both curves must have the same tEpsilon.");
+            float epsilon = curve1.m_tEpsilon;
+			if (tDiff <= 2 * epsilon) {
+				funcUtils::epsilonAdjustment_add(tDiff, 3 * epsilon);
+			}
             glm::vec<D, float> velEndC1 = curve1.getVelocity(curve1.getTRange()[1]);
             glm::vec<D, float> velStartC2 = curve2.getVelocity(curve2.getTRange()[0]);
             glm::vec<D, float> transitionVel = (velEndC1 + velStartC2) / 2.0f;
-            float tDiff = (curve2.getTRange()[0] + curve2TOffset) - curve1.getTRange()[1];
             glm::vec<D, float> transitionPoint = curve1.m_curvePoints.back() + transitionVel * tDiff;
             // desplazamos las posiciones de la parte 2 al punto de transicion
             curve2.translate(- curve2.getStart() + transitionPoint);
             // luego hacemos el desplazamiento temporal
-            curve2.offsetTValues(curve2TOffset);
+            curve2.offsetTValues(-curve2.getTRange()[0] + curve1.getTRange()[1] + tDiff);
             return LIC<D>::join(curve1, curve2);
         }
 
-		static LIC<D> connectPoint(LIC<D> curve1, float extraPointTValue, float extraPointTOffset) {
-            glm::vec<D, float> transitionVel = curve1.getVelocity(curve1.getTRange()[1]);
-            float extraPointFinalTValue = extraPointTValue + extraPointTOffset;
-            float epsilon = curve1.m_tEpsilon;
-            funcUtils::epsilonAdjustment_add(extraPointFinalTValue, curve1.m_tEpsilon);
-            if (curve1.getTRange()[1] < extraPointFinalTValue) {
-				float tDiff = extraPointFinalTValue - curve1.getTRange()[1];
-                float newTDiff = tDiff;
-                if (newTDiff < 2 * epsilon) {
-                    funcUtils::epsilonAdjustment_add(newTDiff, 2 * epsilon);
-                }
-                extraPointFinalTValue -= tDiff;
-                extraPointFinalTValue += newTDiff;
-                glm::vec<D, float> modifiedPoint = curve1.m_curvePoints.back() + transitionVel * newTDiff;
-                curve1.m_curvePoints.push_back(modifiedPoint);
-                curve1.m_tValues.push_back(extraPointFinalTValue);
-            }
-            return curve1;	
+		static LIC<D> connectPoint(LIC<D> curve, glm::vec<D, float> extraPoint, float tDiff) {
+            MONA_ASSERT(0 < tDiff, "LIC: tDiff must be greater than 0.");
+            float epsilon = curve.m_tEpsilon;
+            glm::vec<D, float> modifiedPoint = extraPoint;
+			if (tDiff <= 2 * epsilon) {
+				funcUtils::epsilonAdjustment_add(tDiff, 3 * epsilon);
+                glm::vec<D, float> transitionVel = curve.getVelocity(curve.getTRange()[1]);
+                modifiedPoint = curve.m_curvePoints.back() + transitionVel * tDiff;
+			}
+            float extraPointTValue = curve.getTRange()[1] + tDiff;
+			curve.m_curvePoints.push_back(modifiedPoint);
+			curve.m_tValues.push_back(extraPointTValue);
+            return curve;	
 		}
 
 		void fitStartAndDir(glm::vec3 newStart, glm::vec3 targetDirection) {

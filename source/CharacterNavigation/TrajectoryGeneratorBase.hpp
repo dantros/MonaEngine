@@ -33,6 +33,9 @@ namespace Mona{
         std::vector<float> m_savedRotationAngles;
         std::vector<glm::vec3> m_savedRotationAxes;
         IKRigConfig* m_config;
+		template <int D>
+        LIC<D> sampleOriginaCurve(float initialExtendedAnimTime, float finalExtendedAnimTime,
+            LIC<D>& originalCurve);
     public:
         LIC<1> sampleOriginalRotationAngles(float initialAnimTime, float finalAnimTime);
         LIC<3> sampleOriginalRotationAxes(float initialAnimTime, float finalAnimTime);

@@ -123,13 +123,10 @@ namespace Mona{
 		// las trayectorias anteriores siempre deben llegar hasta el currentFrame
 
 		IKRigConfig* config = m_ikRig->getAnimationConfig(animIndex);
-        float xyRotationAngle = 0;
-        glm::vec3 originalDir = glm::vec3(config->getHipTrajectoryData()->getOriginalFrontVector(), 0);
+        glm::vec3 originalDir = glm::vec3(config->getOriginalFrontVector(), 0);
         glm::vec3 newDir = glm::vec3(m_ikRig->getFrontVector(), 0);
-        if (originalDir != newDir) {
-            float crossVectorL = glm::length(glm::cross(originalDir, newDir));
-			xyRotationAngle = glm::asin(crossVectorL);
-        }        
+        glm::vec3 upVec = { 0,0,1 };
+        float xyRotationAngle = glm::orientedAngle(originalDir, newDir, upVec);
 
 		for (int i = 0; i < m_ikChains.size(); i++) {
 			ChainIndex ikChain = m_ikChains[i];
@@ -541,7 +538,8 @@ namespace Mona{
             float hipXYDistRatio = hipNewXYDist / hipOriginalXYDistance;
             float eeHipXYDistRatio = eeXYDistRatio / hipXYDistRatio ;
             glm::vec3 scalingVec(eeHipXYDistRatio, eeHipXYDistRatio, 1);
-            glm::fquat xyRot(xyMovementRotAngle, glm::vec3(0, 0, 1));
+            glm::vec3 upVec = { 0,0,1 };
+            glm::fquat xyRot = glm::angleAxis(xyMovementRotAngle, upVec);
             hipTrCurveAdjustedFall.scale(scalingVec);            
             hipTrCurveAdjustedFall.rotate(xyRot);
             hipTrCurveAdjustedFall.translate(initialTrans);

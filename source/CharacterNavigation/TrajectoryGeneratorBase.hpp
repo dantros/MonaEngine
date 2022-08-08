@@ -24,8 +24,6 @@ namespace Mona{
         LIC<3> m_originalRotationAxes;
         // Traslaciones originales
         LIC<3> m_originalTranslations;
-        // Direccion original de la cadera
-        glm::vec2 m_originalFrontVector;
         LIC<1> m_targetRotationAngles;
         LIC<3> m_targetRotationAxes;
         LIC<3> m_targetTranslations;
@@ -40,7 +38,6 @@ namespace Mona{
         LIC<1> sampleOriginalRotationAngles(float initialAnimTime, float finalAnimTime);
         LIC<3> sampleOriginalRotationAxes(float initialAnimTime, float finalAnimTime);
         LIC<3> sampleOriginalTranslations(float initialAnimTime, float finalAnimTime);
-        glm::vec2 getOriginalFrontVector() { return m_originalFrontVector; }
         glm::vec3 getSavedTranslation(FrameIndex frame) { return m_savedTranslations[frame]; }
         float getSavedRotationAngle(FrameIndex frame) { return m_savedRotationAngles[frame]; }
         glm::vec3 getSavedRotationAxis(FrameIndex frame) { return m_savedRotationAxes[frame]; }

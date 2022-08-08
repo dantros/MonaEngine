@@ -78,6 +78,8 @@ namespace Mona {
         int m_reproductionCount = 0;
         //
         AnimationType m_animationType;
+        // Vector que indica la direccion front basal (global) de la animacion
+        glm::vec2 m_originalFrontVector;
     public:
         IKRigConfig(std::shared_ptr<AnimationClip> animation, AnimationIndex animIndex, ForwardKinematics* fk);
         const std::vector<JointRotation>& getBaseJointRotations(FrameIndex frame) const { return m_baseJointRotations[frame]; }
@@ -108,6 +110,7 @@ namespace Mona {
         float adjustAnimationTime(float extendedAnimationTime);
         std::vector<JointIndex>const& getJointIndices() { return m_jointIndices; }
         bool hasJoint(JointIndex joint);
+        glm::vec2 getOriginalFrontVector() { return m_originalFrontVector; }
     };
 
     struct JointData {

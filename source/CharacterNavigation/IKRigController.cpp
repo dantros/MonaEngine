@@ -183,8 +183,9 @@ namespace Mona {
 		currentConfig->m_hipTrajectoryData.m_originalRotationAngles = LIC<1>(hipRotAngles, hipTimeStamps);
 		currentConfig->m_hipTrajectoryData.m_originalRotationAxes = LIC<3>(hipRotAxes, hipTimeStamps);
 		currentConfig->m_hipTrajectoryData.m_originalTranslations = LIC<3>(hipTranslations, hipTimeStamps);
-		currentConfig->m_hipTrajectoryData.m_originalFrontVector = glm::normalize(glm::vec2(hipTrack.positions.back()) - 
-			glm::vec2(hipTrack.positions[0]));
+		currentConfig->m_originalFrontVector = glm::normalize(
+			glm::vec2(currentConfig->m_hipTrajectoryData.m_originalTranslations.getEnd()) -
+			glm::vec2(currentConfig->m_hipTrajectoryData.m_originalTranslations.getStart()));
 
 		// Ahora guardamos las trayectorias originales de los ee y definimos sus frames de soporte
 		std::vector<float> rotTimeStamps = animationClip->m_animationTracks[0].rotationTimeStamps;

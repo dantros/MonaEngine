@@ -10,6 +10,7 @@
 #include "../Core/FuncUtils.hpp"
 #include "../Core/GlmUtils.hpp"
 #include <math.h>
+#include <numbers>
 
 namespace Mona{
 
@@ -392,27 +393,31 @@ namespace Mona{
             return curve;	
 		}
 
-		void fitStartAndDir(glm::vec3 newStart, glm::vec3 targetDirection) {
+        void fitStartAndDir(glm::vec3 newStart, glm::vec3 targetDirection, glm::vec3 upVector = {0,0,1}) {
             MONA_ASSERT(m_dimension == 3, "LIC: LIC must have a dimension equal to 3.");
             translate(-getStart());
 			// rotarla para que quede en linea con las pos inicial y final
 			glm::fquat targetRotation = glm::identity<glm::fquat>();
 			glm::vec3 originalDirection = glm::normalize(getEnd() - getStart());
-			if (originalDirection != targetDirection) {
-                glm::vec3 crossVec = glm::cross(originalDirection, targetDirection);
+            float epsilon = 0.001;
+            float rotAngle = glm::orientedAngle(originalDirection, targetDirection, upVector);
+            if (abs(rotAngle - std::numbers::pi) <=epsilon || abs(rotAngle + std::numbers::pi) <= epsilon) {
+                targetRotation = angleAxis(rotAngle, upVector);
+            }
+            else if (epsilon < abs(rotAngle)) {
+				glm::vec3 crossVec = glm::cross(originalDirection, targetDirection);
 				glm::vec3 rotAxis = glm::normalize(crossVec);
-                float rotAngle = glm::asin(glm::length(crossVec));
-				targetRotation = glm::fquat(rotAngle, rotAxis);
-			}
+                targetRotation = angleAxis(rotAngle, rotAxis);
+            }
 			rotate(targetRotation);
 			translate(newStart);
 		}
 
-		void fitEnds(glm::vec3 newStart, glm::vec3 newEnd) {
+        void fitEnds(glm::vec3 newStart, glm::vec3 newEnd, glm::vec3 upVector = {0,0,1}) {
 			MONA_ASSERT(m_dimension == 3, "LIC: LIC must have a dimension equal to 3.");
 
 			glm::vec3 targetDirection = glm::normalize(newEnd - newStart);
-            fitStartAndDir(newStart, targetDirection);
+            fitStartAndDir(newStart, targetDirection, upVector);
 
 			// escalarla para que llegue a newEnd
 			float origLength = glm::distance(getStart(), getEnd());

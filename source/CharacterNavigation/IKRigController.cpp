@@ -291,9 +291,9 @@ namespace Mona {
 					std::vector<float> tValues_2;
 					std::vector<glm::vec3>* selectedCPArr = &curvePoints_1;
 					std::vector<float>* selectedTVArr = &tValues_1;
-					GATHER_POINTS:
+				GATHER_POINTS:
 					while (baseFrameType == supportFramesPerChain[i][currFrame]) {
-						currentConfig->m_eeTrajectoryData[i].m_supportHeights[currFrame] = baseFrameType ? 
+						currentConfig->m_eeTrajectoryData[i].m_supportHeights[currFrame] = baseFrameType ?
 							glblPositionsPerChain[i][currFrame][2] : supportHeight;
 						currentConfig->m_eeTrajectoryData[i].m_supportHeights[currFrame] -= floorZ;
 						(*selectedCPArr).push_back(glblPositionsPerChain[i][currFrame]);
@@ -306,7 +306,7 @@ namespace Mona {
 							break;
 						}
 						if (currFrame == curveStartFrame) { break; }
-						
+
 					}
 					if (continueTrajectory[i]) {
 						selectedCPArr = &curvePoints_2;
@@ -327,9 +327,9 @@ namespace Mona {
 						}
 						else {
 							fullCurve = curve;
-						}						
+						}
 					}
-					else if(1 < curvePoints_2.size()) {
+					else if (1 < curvePoints_2.size()) {
 						connectedIndex = subTrajectories.size();
 						LIC<3> part1(curvePoints_1, tValues_1);
 						LIC<3> part2(curvePoints_2, tValues_2);
@@ -337,7 +337,7 @@ namespace Mona {
 						fullCurve = LIC<3>::connect(part1, part2, tDiff);
 					}
 					subTrajectories.push_back(EETrajectory(fullCurve, trType));
-									
+
 				}
 				if (connectedIndex != -1) {
 					// falta agregar la misma curva pero al comienzo del arreglo (con otro desplazamiento temporal)
@@ -362,7 +362,16 @@ namespace Mona {
 					subTrajectories.push_back(tempTr[minIndex]);
 					tempTr.erase(tempTr.begin() + minIndex);
 				}
-			}			
+
+				// corregimos las posiciones de la trayectoria insertada al principio (si es que la hubo)
+				if (connectedIndex != -1) {
+					glm::vec3 targetEnd = subTrajectories[1].getEECurve().getStart();
+					LIC<3>& curveToCorrect = subTrajectories[0].getEECurve();
+					curveToCorrect.translate(-curveToCorrect.getEnd());
+					curveToCorrect.translate(targetEnd);
+				}
+			}
+
 			// asignamos las sub trayectorias a la cadena correspondiente
 			currentConfig->m_eeTrajectoryData[i].m_originalSubTrajectories = subTrajectories;
 			for (int j = 0; j < subTrajectories.size(); j++) {

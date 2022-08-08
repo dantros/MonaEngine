@@ -673,36 +673,50 @@ namespace Mona{
 		std::vector<float> origDistances(m_ikChains.size());
 		LIC<3> hipTrCurve = hipTrData->sampleOriginalTranslations(originalCurvesTime_extendedAnim,	originalCurvesTime_extendedAnim + config->getAnimationDuration());
         glm::vec3 hipPoint = hipTrCurve.evalCurve(originalCurvesTime_extendedAnim);
+        // TESTING
+        std::cout << "calc hip high -> hip tr curve:" << std::endl;
+        hipTrCurve.debugPrintCurvePoints();
+        std::cout << "calc hip high -> ee curves:" << std::endl;
 		for (int i = 0; i < m_ikChains.size(); i++) {
 			EEGlobalTrajectoryData* trData = config->getEETrajectoryData(m_ikChains[i]);
 			glm::vec3 eePoint = trData->getSubTrajectory(originalCurvesTime_anim).getEECurve().evalCurve(originalCurvesTime_anim);
 			origDistances[i] = glm::distance(hipPoint, eePoint);
+            std::cout << "times: " << std::endl;
+            trData->getSubTrajectory(originalCurvesTime_anim).getEECurve().debugPrintTValues();
+            std::cout << "points: " << std::endl;
+            trData->getSubTrajectory(originalCurvesTime_anim).getEECurve().debugPrintCurvePoints();
 		}
 
 		std::vector<glm::vec3> targetPoints(m_ikChains.size());
 		float zValue = std::numeric_limits<float>::lowest();
+        std::cout << "calc hip high -> target ee curves:" << std::endl;
 		for (int i = 0; i < m_ikChains.size(); i++) {
 			EEGlobalTrajectoryData* trData = config->getEETrajectoryData(m_ikChains[i]);
 			LIC<3> eeCurve = trData->getTargetTrajectory().getEECurve();
 			targetPoints[i] = eeCurve.inTRange(targetCurvesTime_rep) ? eeCurve.evalCurve(targetCurvesTime_rep) :
 				eeCurve.getCurvePoint(eeCurve.getClosestPointIndex(targetCurvesTime_rep));
 			if (zValue < targetPoints[i][2]) { zValue = targetPoints[i][2]; }
+			std::cout << "times: " << std::endl;
+			eeCurve.debugPrintTValues();
+			std::cout << "points: " << std::endl;
+			eeCurve.debugPrintCurvePoints();
+
 		}
 
 		// valor mas bajo de z para las tr actuales de los ee
 		zValue += m_ikRig->getRigHeight()*0.8;
 		float zDelta = m_ikRig->getRigHeight() / 500;
-		std::vector<bool> conditions1(m_ikChains.size(), false);
+		std::vector<bool> conditions1(m_ikChains.size(), true);
         std::vector<bool> conditions2(m_ikChains.size(), true);
 		int maxSteps = 1000;
 		int steps = 0;
         std::vector<float> prevDistances(m_ikChains.size(), std::numeric_limits<float>::max());
-		while (!funcUtils::conditionVector_AND(conditions1) && funcUtils::conditionVector_OR(conditions2) && steps < maxSteps) {
+		while (funcUtils::conditionVector_OR(conditions1) && funcUtils::conditionVector_OR(conditions2) && steps < maxSteps) {
 			zValue -= zDelta;
             std::vector<float> currDistances(m_ikChains.size());
 			for (int i = 0; i < m_ikChains.size(); i++) {
 				currDistances[i] = glm::distance(targetPoints[i], glm::vec3(basePoint, zValue));
-				conditions1[i] = currDistances[i] <= origDistances[i];
+				conditions1[i] = origDistances[i] < currDistances[i];
                 conditions2[i] = currDistances[i] <= prevDistances[i];
 			}
             prevDistances = currDistances;

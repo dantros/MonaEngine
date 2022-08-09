@@ -85,6 +85,7 @@ namespace Mona{
         // Posiciones guardadas calculadas para frames previos con IK
         std::vector<glm::vec3> m_savedPositions;
     public:
+        LIC<3> sampleExtendedSubTrajectory(float animationTime, float duration);
         EETrajectory getSubTrajectory(float animationTime);
         EETrajectory getSubTrajectoryByID(int subTrajectoryID);
         int getSubTrajectoryNum() { return m_originalSubTrajectories.size(); }

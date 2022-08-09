@@ -98,5 +98,18 @@ EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int
         return EETrajectory();
     }
 
+	LIC<3> EEGlobalTrajectoryData::sampleExtendedSubTrajectory(float animationTime, float duration) {
+		EETrajectory firstTr = getSubTrajectory(animationTime);
+		LIC<3> extendedCurve = firstTr.getEECurve();
+		int currID = firstTr.getSubTrajectoryID();
+		while (!extendedCurve.inTRange(animationTime + duration)) {
+			currID = (currID + 1) % m_originalSubTrajectories.size();
+			EETrajectory additionalTr = getSubTrajectoryByID(currID);
+			LIC<3> additionalCurve = additionalTr.getEECurve();
+			extendedCurve = LIC<3>::connect(extendedCurve, additionalCurve, 0);
+		}
+		return extendedCurve.sample(animationTime, animationTime + duration);
+	}
+
 
 }

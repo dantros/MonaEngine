@@ -224,7 +224,7 @@ namespace Mona{
                     break;
                 }
             }
-            for (int i = startInd; i < m_tValues.size() - 1; i++) {
+            for (int i = startInd; i < m_tValues.size(); i++) {
                 if (m_tEpsilon*2 < maxT - m_tValues[i]) {
                     if (m_tEpsilon*2 < m_tValues[i] - minT) {
 						sampleTValues.push_back(m_tValues[i]);

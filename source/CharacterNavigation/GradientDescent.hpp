@@ -14,6 +14,7 @@ namespace Mona {
 		template <typename dataT>
 		friend class GradientDescent;
 		dataT* m_dataPtr;
+		float m_weight = 1.0f;
 		// funcion que calcula el valor del termino dado un vector con los valores de las variables
 		std::function<float(const std::vector<float>&, dataT*)> m_termFunction;
 		// funcion que calcula el valor de la derivada del termino,
@@ -59,7 +60,9 @@ namespace Mona {
 			std::vector<float> gradient(m_argNum, 0.0f);
 			for (int i = 0; i < m_terms.size(); i++) {
 				for (int j = 0; j < m_argNum; j++) {
-					gradient[j] += m_terms[i].calcTermPartialDerivative(args, j);
+					if (m_terms[i].m_weight != 0) {
+						gradient[j] += m_terms[i].m_weight * m_terms[i].calcTermPartialDerivative(args, j);
+					}					
 				}
 			}
 			return gradient;
@@ -98,7 +101,9 @@ namespace Mona {
 			MONA_ASSERT(args.size() == m_argNum, "GradientDescent: number of args does not match argNum value");
 			float functionValue = 0;
 			for (int i = 0; i < m_terms.size(); i++) {
-				functionValue += m_terms[i].calcTerm(args);
+				if (m_terms[i].m_weight != 0) {
+					functionValue += m_terms[i].m_weight * m_terms[i].calcTerm(args);
+				}				
 			}
 			return functionValue;
 		};
@@ -106,6 +111,14 @@ namespace Mona {
 		void  setArgNum(int argNum) {
 			m_argNum = argNum;
 		};
+
+		int getTermNum() {
+			return m_terms.size();
+		}
+
+		void setTermWeight(int termIndex, float weight){
+			m_terms[termIndex].m_weight = weight;
+		}
 	};	
 };
 

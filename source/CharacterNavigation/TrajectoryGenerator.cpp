@@ -23,7 +23,7 @@ namespace Mona{
             result += glm::distance2(lVel / glm::length(lVel), baseLVel / glm::length(baseLVel));
             result += glm::distance2(rVel / glm::length(rVel), baseRVel / glm::length(baseRVel));
 		}
-		return dataPtr->alphaValue * result;
+		return result;
 	};
 
 	std::function<float(const std::vector<float>&, int, TGData*)> term1PartialDerivativeFunction =
@@ -49,7 +49,7 @@ namespace Mona{
         result += 2 * (rVel[coordIndex] / safeRVelLength - baseRVel[coordIndex] / safeBaseRVelLength)
             * ((-1 / (t_kNext - t_kCurr)) * safeRVelLength - rVel[coordIndex] * (rVel[coordIndex] / safeRVelLength) * (-1 / (t_kNext - t_kCurr))) /
             pow(safeRVelLength, 2);
-		return dataPtr->alphaValue * result;
+		return result;
 	};
 
     // segundo termino: acercar los modulos de las velocidades
@@ -62,7 +62,7 @@ namespace Mona{
             result += glm::distance2(dataPtr->varCurve->getVelocity(tVal),  dataPtr->baseCurve.getVelocity(tVal));
             result += glm::distance2(dataPtr->varCurve->getVelocity(tVal, true), dataPtr->baseCurve.getVelocity(tVal, true));
         }
-        return dataPtr->betaValue*result;
+        return result;
     };
 
     std::function<float(const std::vector<float>&, int, TGData*)> term2PartialDerivativeFunction =
@@ -80,7 +80,7 @@ namespace Mona{
         float result = 0;
         result += 2 * (lVel[coordIndex] - baseLVel[coordIndex]) * (1 / (t_kCurr - t_kPrev));
         result += 2 * (rVel[coordIndex] - baseRVel[coordIndex]) * (-1 / (t_kNext - t_kCurr));
-        return dataPtr->betaValue*result;
+        return result;
     };
 
     std::function<void(std::vector<float>&, TGData*, std::vector<float>&)>  postDescentStepCustomBehaviour =
@@ -150,7 +150,6 @@ namespace Mona{
         trData->setTargetTrajectory(fixedCurve, TrajectoryType::STATIC, -2);
     }
 
-
 	void TrajectoryGenerator::generateEETrajectory(ChainIndex ikChain, IKRigConfig* config, float xyMovementRotAngle,
 		ComponentManager<TransformComponent>& transformManager,
 		ComponentManager<StaticMeshComponent>& staticMeshManager) {
@@ -169,13 +168,13 @@ namespace Mona{
         TrajectoryType trType;
 		if (originalTrajectory.isDynamic()) {
             trType = TrajectoryType::DYNAMIC;
-            m_tgData.alphaValue = 0.8f;
-            m_tgData.betaValue = 0.2f;
+            m_gradientDescent.setTermWeight(0, m_tgData.alphaValue);
+            m_gradientDescent.setTermWeight(1, m_tgData.betaValue);
 		}
 		else {
 			trType = TrajectoryType::STATIC;
-			m_tgData.alphaValue = 0.0f;
-			m_tgData.betaValue = 1.0f;
+			m_gradientDescent.setTermWeight(0, 0);
+			m_gradientDescent.setTermWeight(1, 1);
 		}
         LIC<3>& baseCurve = originalTrajectory.getEECurve();
 
@@ -346,7 +345,8 @@ namespace Mona{
             glm::vec2 basePoint(initialTrans);
             // chequear si hay una curva previa generada
             if (!hipTrData->getTargetTranslations().inTRange(initialTime)) {
-                initialTrans = glm::vec3(basePoint, calcHipAdjustedHeight(config, basePoint, initialTime, config->getAnimationTime(currentFrame)));
+                initialTrans = glm::vec3(basePoint, calcHipAdjustedHeight(basePoint, initialTime, config->getAnimationTime(currentFrame), config, 
+                    transformManager, staticMeshManager));
             }
             LIC<1> newHipRotAngles({ glm::vec1(initialRotAngle), glm::vec1(initialRotAngle) }, { initialTime, initialTime + config->getAnimationDuration() });
             LIC<3> newHipRotAxes({ initialRotAxis, initialRotAxis }, { initialTime, initialTime + config->getAnimationDuration() });
@@ -397,7 +397,7 @@ namespace Mona{
             // chequear si hay una curva previa generada
             if (!hipTrData->getTargetTranslations().inTRange(tInfLimitRep)) {
                 initialTrans = glm::vec3(glm::vec2(initialTrans), 
-                    calcHipAdjustedHeight(config, glm::vec2(initialTrans), tInfLimitRep, tInfLimitExtendedAnim));
+                    calcHipAdjustedHeight(glm::vec2(initialTrans), tInfLimitRep, tInfLimitExtendedAnim, config, transformManager, staticMeshManager));
             }
             
             // segundo paso: ajustar punto de maxima altura
@@ -481,7 +481,7 @@ namespace Mona{
 				newTimes.push_back(hipTrCurve.getTValue(i));
             }
             for (int i = hipHighPointIndex_hip + 1; i < hipTrCurve.getNumberOfPoints(); i++) {
-                if (hipTrCurve.getTValue(i) < calcT && hipTrCurve.getTEpsilon()*2<(calcT- hipTrCurve.getTValue(i))) {
+                if (hipTrCurve.getTValue(i) < calcT && hipTrCurve.getTEpsilon()*3 <(calcT- hipTrCurve.getTValue(i))) {
                     newPoints.push_back(hipTrCurve.getCurvePoint(i));
                     newTimes.push_back(hipTrCurve.getTValue(i));
                 }
@@ -516,8 +516,8 @@ namespace Mona{
             LIC<3> hipTrFinalCurve = hipTrCurveAdjustedFall;
 
             glm::vec2 hipHighBasePoint = glm::vec2(hipTrFinalCurve.getCurvePoint(hipHighPointIndex_hip));
-            glm::vec3 hipHighAdjustedZ = glm::vec3(hipHighBasePoint, calcHipAdjustedHeight(config, hipHighBasePoint, 
-                hipHighNewTime_rep, hipHighOriginalTime_extendedAnim));
+            glm::vec3 hipHighAdjustedZ = glm::vec3(hipHighBasePoint, calcHipAdjustedHeight(hipHighBasePoint, 
+                hipHighNewTime_rep, hipHighOriginalTime_extendedAnim, config, transformManager, staticMeshManager));
             hipTrFinalCurve.setCurvePoint(hipHighPointIndex_hip, hipHighAdjustedZ);
 
             m_tgData.pointIndexes.clear();
@@ -552,8 +552,8 @@ namespace Mona{
 			std::cout << "before gr descent final curve." << std::endl;
 			hipTrFinalCurve.debugPrintCurvePoints();
 
-            m_tgData.alphaValue = 0.8f;
-            m_tgData.betaValue = 0.2f;
+			m_gradientDescent.setTermWeight(0, m_tgData.alphaValue);
+			m_gradientDescent.setTermWeight(1, m_tgData.betaValue);
             m_tgData.baseCurve = hipTrCurveAdjustedFall;
             m_tgData.varCurve = &hipTrFinalCurve;
             m_gradientDescent.setArgNum(initialArgs.size());
@@ -637,8 +637,49 @@ namespace Mona{
 		return strideDataPoints;
 	}
 
-	float TrajectoryGenerator::calcHipAdjustedHeight(IKRigConfig* config, glm::vec2 basePoint, float targetCurvesTime_rep,
-		float originalCurvesTime_extendedAnim) {
+	LIC<3> TrajectoryGenerator::calcSimplifiedTrajectoryExtension(float reproductionTime1, float reproductionTime2,
+		bool extendEnd, glm::vec3 anchorPoint,
+		ChainIndex ikChain, IKRigConfig* config,
+		ComponentManager<TransformComponent>& transformManager,
+		ComponentManager<StaticMeshComponent>& staticMeshManager) {
+		MONA_ASSERT(reproductionTime1 < reproductionTime2, "TrajectoryGenerator: reproductionTime1 must be greater than reproductionTime2.");
+		EEGlobalTrajectoryData* trData = config->getEETrajectoryData(ikChain);
+		float t1_anim = config->getAnimationTime(reproductionTime1);
+        float t2_anim = config->getAnimationTime(reproductionTime2);
+        FrameIndex frameStart = config->getFrame(t1_anim);
+        FrameIndex frameEnd = config->getFrame(t2_anim);
+        float supportHeightStart = trData->getSupportHeight(frameStart);
+        float supportHeightEnd = trData->getSupportHeight(frameEnd);
+		float duration = reproductionTime2 - reproductionTime1;
+		LIC<3> sampledTr = trData->sampleExtendedSubTrajectory(t1_anim, duration);
+        float targetDistance = glm::length(sampledTr.getEnd() - sampledTr.getStart());
+        glm::vec2 targetDirection = glm::normalize(sampledTr.getEnd() - sampledTr.getStart());
+		if (extendEnd) {
+            sampledTr.offsetTValues(-sampledTr.getTRange()[0] + reproductionTime1);
+            std::vector<glm::vec3> strideData = calcStrideData(supportHeightStart, supportHeightEnd, anchorPoint,
+                targetDistance, targetDirection, 5, transformManager, staticMeshManager);
+			if (0 < strideData.size()) {
+				sampledTr.fitEnds(anchorPoint, strideData.back());
+				return sampledTr;
+			}
+		}
+		else {
+            sampledTr.offsetTValues(-sampledTr.getTRange()[1] + reproductionTime2);
+            std::vector<glm::vec3> strideData = calcStrideData(supportHeightEnd, supportHeightStart, anchorPoint,
+				targetDistance, -targetDirection, 5, transformManager, staticMeshManager);
+			if (0 < strideData.size()) {
+				sampledTr.fitEnds(strideData.back(), anchorPoint);
+				return sampledTr;
+			}
+		}
+        return LIC<3>({ anchorPoint, anchorPoint }, { reproductionTime1, reproductionTime2 });    	
+	}
+
+
+	float TrajectoryGenerator::calcHipAdjustedHeight(glm::vec2 basePoint, float targetCurvesTime_rep,
+		float originalCurvesTime_extendedAnim, IKRigConfig* config,
+		ComponentManager<TransformComponent>& transformManager,
+		ComponentManager<StaticMeshComponent>& staticMeshManager) {
 		HipGlobalTrajectoryData* hipTrData = config->getHipTrajectoryData();
 		float originalCurvesTime_anim = config->adjustAnimationTime(originalCurvesTime_extendedAnim);
 		// distancias originales de ee's con cadera
@@ -665,8 +706,24 @@ namespace Mona{
 		for (int i = 0; i < m_ikChains.size(); i++) {
 			EEGlobalTrajectoryData* trData = config->getEETrajectoryData(m_ikChains[i]);
 			LIC<3> eeCurve = trData->getTargetTrajectory().getEECurve();
-			targetPoints[i] = eeCurve.inTRange(targetCurvesTime_rep) ? eeCurve.evalCurve(targetCurvesTime_rep) :
-				eeCurve.getCurvePoint(eeCurve.getClosestPointIndex(targetCurvesTime_rep));
+            if (eeCurve.inTRange(targetCurvesTime_rep)) {
+                targetPoints[i] = eeCurve.evalCurve(targetCurvesTime_rep);
+            }
+            else {
+                LIC<3> trExtension;
+                if (targetCurvesTime_rep < eeCurve.getTRange()[0]) {
+                    trExtension = calcSimplifiedTrajectoryExtension(targetCurvesTime_rep, eeCurve.getTRange()[0], false,
+                        eeCurve.getStart(), m_ikChains[i], config, transformManager, staticMeshManager);
+                }
+                else {
+					trExtension = calcSimplifiedTrajectoryExtension(eeCurve.getTRange()[1], targetCurvesTime_rep, true,
+						eeCurve.getEnd(), m_ikChains[i], config, transformManager, staticMeshManager);
+                }
+                std::cout << "calc hip high -> target ee curve extension:" << std::endl;
+                trExtension.debugPrintTValues();
+                trExtension.debugPrintCurvePoints();
+                targetPoints[i] = trExtension.evalCurve(targetCurvesTime_rep);
+            }
 			if (zValue < targetPoints[i][2]) { zValue = targetPoints[i][2]; }
 			std::cout << "times: " << std::endl;
 			eeCurve.debugPrintTValues();

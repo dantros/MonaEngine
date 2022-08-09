@@ -547,8 +547,8 @@ namespace Mona{
             
 
 			// testing
-			std::cout << "base ee curve." << std::endl;
-            baseEETargetCurve.debugPrintCurvePoints();
+			std::cout << "base hip curve." << std::endl;
+            hipTrCurve.debugPrintCurvePoints();
 			std::cout << "before gr descent final curve." << std::endl;
 			hipTrFinalCurve.debugPrintCurvePoints();
 
@@ -680,11 +680,23 @@ namespace Mona{
 		float originalCurvesTime_extendedAnim, IKRigConfig* config,
 		ComponentManager<TransformComponent>& transformManager,
 		ComponentManager<StaticMeshComponent>& staticMeshManager) {
+
+        
+
+
 		HipGlobalTrajectoryData* hipTrData = config->getHipTrajectoryData();
 		float originalCurvesTime_anim = config->adjustAnimationTime(originalCurvesTime_extendedAnim);
 		// distancias originales de ee's con cadera
 		std::vector<float> origDistances(m_ikChains.size());
 		LIC<3> hipTrCurve = hipTrData->sampleOriginalTranslations(originalCurvesTime_extendedAnim,	originalCurvesTime_extendedAnim + config->getAnimationDuration());
+        
+		// DEBUG
+		float debugAnimTime = config->getAnimationTime(targetCurvesTime_rep);
+        float debugZ = hipTrCurve.evalCurve(debugAnimTime)[2];
+        return debugZ;
+		// DEBUG
+        
+        
         glm::vec3 hipPoint = hipTrCurve.evalCurve(originalCurvesTime_extendedAnim);
         // TESTING
         std::cout << "calc hip high -> hip tr curve:" << std::endl;

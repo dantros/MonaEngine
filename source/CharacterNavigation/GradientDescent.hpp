@@ -68,7 +68,7 @@ namespace Mona {
 			return gradient;
 		}
 		std::vector<float> computeArgsMin(float descentRate, int maxIterations, float targetArgDelta,
-			const std::vector<float>& initialArgs, bool useSGDM=true) {
+			const std::vector<float>& initialArgs, bool useSGDM=true, bool softenSteps = true) {
 			MONA_ASSERT(initialArgs.size() == m_argNum, "GradientDescent: number of args does not match argNum value");
 			std::vector<float> args = initialArgs;
 			std::vector<float> gradient;
@@ -78,11 +78,16 @@ namespace Mona {
 			while (stepNum < maxIterations && funcUtils::conditionVector_OR(continueDescent)) {
 				gradient = computeGradient(args);
 				for (int i = 0; i < args.size(); i++) {
+					if (stepNum < 0 && softenSteps) {
+						if (argsRawDelta[i] * 10 <= gradient[i]) {
+							gradient[i] = argsRawDelta[i] * 10;
+						}
+					}					
 					if (!useSGDM || stepNum == 0) {
 						argsRawDelta[i] = gradient[i];
 					}
 					else {
-						argsRawDelta[i] = 0.95 * argsRawDelta[i] + 0.05 * gradient[i];
+						argsRawDelta[i] = 0.9 * argsRawDelta[i] + 0.1 * gradient[i];
 					}
 					float argDelta = descentRate * argsRawDelta[i];
 					args[i] -= argDelta;

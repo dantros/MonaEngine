@@ -79,7 +79,7 @@ namespace Mona {
 						argsRawDelta[i] = gradient[i];
 					}
 					else {
-						argsRawDelta[i] = 0.8 * argsRawDelta[i] + 0.2 * gradient[i];
+						argsRawDelta[i] = 0.95 * argsRawDelta[i] + 0.05 * gradient[i];
 					}
 					float argDelta = descentRate * argsRawDelta[i];
 					args[i] -= argDelta;

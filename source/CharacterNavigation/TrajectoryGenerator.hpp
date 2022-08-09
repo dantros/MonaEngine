@@ -39,13 +39,9 @@ namespace Mona{
         void generateEETrajectory(ChainIndex ikChain, IKRigConfig* config, float xyMovementRotAngle,
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
-        void generateStaticTrajectory(EETrajectory baseTrajectory, ChainIndex ikChain, 
-            IKRigConfig* config, float xyMovementRotAngle,
-            ComponentManager<TransformComponent>& transformManager,
-            ComponentManager<StaticMeshComponent>& staticMeshManager);
-        void generateDynamicTrajectory(EETrajectory baseTrajectory,
+        void generateFixedTrajectory(glm::vec2 basePos,
+            glm::vec2 timeRange, float supportHeight,
             ChainIndex ikChain, IKRigConfig* config,
-            float xyMovementRotAngle,
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
         void generateHipTrajectory(IKRigConfig* config, float xyMovementRotAngle,

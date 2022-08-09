@@ -30,7 +30,7 @@ namespace Mona{
 			if (m_tValues.back() <= t && t - m_tValues.back() <= m_tEpsilon) { return glm::vec<D, float>(0); }
 
 			// si estamos en el entorno de un punto
-			if (m_tValues.back() - t <= m_tEpsilon) {
+			if (abs(m_tValues.back() - t) <= m_tEpsilon) {
 				return (m_curvePoints[m_tValues.size() - 1] - m_curvePoints[m_tValues.size()-2]) / 
                     (m_tValues[m_tValues.size() - 1] - m_tValues[m_tValues.size() - 2]);
 			}
@@ -102,7 +102,7 @@ namespace Mona{
         glm::vec<D, float> getStart() { return m_curvePoints[0]; }
         glm::vec<D, float> getEnd() { return m_curvePoints.back(); }
         LIC() = default;
-        LIC(std::vector<glm::vec<D, float>> curvePoints, std::vector<float> tValues, float tEpsilon = 0.00001) {
+        LIC(std::vector<glm::vec<D, float>> curvePoints, std::vector<float> tValues, float tEpsilon = 0.0001) {
             MONA_ASSERT(1 < curvePoints.size(), "LIC: must provide at least two points.");
             MONA_ASSERT(curvePoints.size() == tValues.size(), "LIC: there must be exactly one tValue per spline point.");
             MONA_ASSERT(0 < tEpsilon, "LIC: tEpsilon must be greater than 0.");
@@ -121,11 +121,11 @@ namespace Mona{
             MONA_ASSERT(inTRange(t), "LIC: t must be a value between {0} and {1}.", m_tValues[0], m_tValues.back());
             if (t <= m_tValues[0] && abs(m_tValues[0] - t) <= m_tEpsilon) { return glm::vec<D, float>(0); }
             // si estamos en el entorno de uno punto
-			if (t - m_tValues[0] <= m_tEpsilon) {
+			if (abs(t - m_tValues[0]) <= m_tEpsilon) {
 				return (m_curvePoints[1] - m_curvePoints[0]) / (m_tValues[1] - m_tValues[0]);
 			}
             for (int i = 1; i < m_tValues.size(); i++) {
-                if (abs(m_tValues[i] - t) < m_tEpsilon) {
+                if (abs(m_tValues[i] - t) <= m_tEpsilon) {
                     return (m_curvePoints[i] - m_curvePoints[i - 1]) / (m_tValues[i] - m_tValues[i - 1]);
                 }
             }
@@ -415,14 +415,15 @@ namespace Mona{
 
         void fitEnds(glm::vec3 newStart, glm::vec3 newEnd, glm::vec3 upVector = {0,0,1}) {
 			MONA_ASSERT(m_dimension == 3, "LIC: LIC must have a dimension equal to 3.");
+            if (0 < glm::length(newEnd - newStart)) {
+				glm::vec3 targetDirection = glm::normalize(newEnd - newStart);
+				fitStartAndDir(newStart, targetDirection, upVector);
 
-			glm::vec3 targetDirection = glm::normalize(newEnd - newStart);
-            fitStartAndDir(newStart, targetDirection, upVector);
-
-			// escalarla para que llegue a newEnd
-			float origLength = glm::distance(getStart(), getEnd());
-			float targetLength = glm::distance(newStart, newEnd);
-			scale(glm::vec3(targetLength / origLength));
+				// escalarla para que llegue a newEnd
+				float origLength = glm::distance(getStart(), getEnd());
+				float targetLength = glm::distance(newStart, newEnd);
+				scale(glm::vec3(targetLength / origLength));
+            }			
 			translate(-getStart() + newStart);
 		}
 

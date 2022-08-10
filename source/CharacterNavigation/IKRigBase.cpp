@@ -27,7 +27,7 @@ namespace Mona{
 		for (FrameIndex i = 0; i < frameNum; i++) {
 			m_baseJointRotations[i]  = std::vector<JointRotation>(jointNum);
 			for (int j = 0; j < jointNum; j++) {
-				JointIndex jIndex = getJointIndices()[i];
+				JointIndex jIndex = getJointIndices()[j];
 				int trackIndex = animation->GetTrackIndex(jIndex);
 				m_baseJointRotations[i][j] = JointRotation(animation->m_animationTracks[trackIndex].rotations[i]);
 			}
@@ -97,11 +97,11 @@ namespace Mona{
 		}
 	}
 
-	FrameIndex IKRigConfig::getFrame(float animationTime) {
+	FrameIndex IKRigConfig::getFrame(float extendedAnimationTime) {
 		// llevar el tiempo al rango correcto
-		animationTime = adjustAnimationTime(animationTime);
+		extendedAnimationTime = adjustAnimationTime(extendedAnimationTime);
 		for (FrameIndex i = 0; i < m_timeStamps.size()-1; i++) {
-			if (m_timeStamps[i] <= animationTime && animationTime < m_timeStamps[i + 1]) {
+			if (m_timeStamps[i] <= extendedAnimationTime && extendedAnimationTime < m_timeStamps[i + 1]) {
 				return i;
 			}
 		}

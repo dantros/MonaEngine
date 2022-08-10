@@ -30,6 +30,7 @@ namespace Mona{
         std::vector<glm::vec3> m_savedTranslations;
         std::vector<float> m_savedRotationAngles;
         std::vector<glm::vec3> m_savedRotationAxes;
+        std::vector<bool> m_savedDataValid;
         IKRigConfig* m_config;
 		template <int D>
         LIC<D> sampleOriginaCurve(float initialExtendedAnimTime, float finalExtendedAnimTime,
@@ -41,6 +42,7 @@ namespace Mona{
         glm::vec3 getSavedTranslation(FrameIndex frame) { return m_savedTranslations[frame]; }
         float getSavedRotationAngle(FrameIndex frame) { return m_savedRotationAngles[frame]; }
         glm::vec3 getSavedRotationAxis(FrameIndex frame) { return m_savedRotationAxes[frame]; }
+        bool isSavedDataValid(FrameIndex frame) { return m_savedDataValid[frame]; }
         LIC<1> getTargetRotationAngles() { return m_targetRotationAngles; }
         LIC<3> getTargetRotationAxes() { return m_targetRotationAxes; }
         LIC<3> getTargetTranslations() { return m_targetTranslations; }
@@ -84,12 +86,14 @@ namespace Mona{
         std::vector<float> m_supportHeights;
         // Posiciones guardadas calculadas para frames previos con IK
         std::vector<glm::vec3> m_savedPositions;
+        std::vector<bool> m_savedDataValid;
     public:
         LIC<3> sampleExtendedSubTrajectory(float animationTime, float duration);
         EETrajectory getSubTrajectory(float animationTime);
         EETrajectory getSubTrajectoryByID(int subTrajectoryID);
         int getSubTrajectoryNum() { return m_originalSubTrajectories.size(); }
         glm::vec3 getSavedPosition(FrameIndex frame) { return m_savedPositions[frame]; }
+        bool isSavedDataValid(FrameIndex frame) { return m_savedDataValid[frame]; }
         float getSupportHeight(FrameIndex frame) { return m_supportHeights[frame]; }
         EETrajectory& getTargetTrajectory() { return m_targetTrajectory; }
         void setTargetTrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int subTrajectoryID) { 

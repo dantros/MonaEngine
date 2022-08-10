@@ -78,11 +78,11 @@ namespace Mona {
 			while (stepNum < maxIterations && funcUtils::conditionVector_OR(continueDescent)) {
 				gradient = computeGradient(args);
 				for (int i = 0; i < args.size(); i++) {
-					if (stepNum < 0 && softenSteps) {
-						if (argsRawDelta[i] * 10 <= gradient[i]) {
+					/*if (0 < stepNum && softenSteps) {
+						if (abs(argsRawDelta[i] - gradient[i]) < abs(argsRawDelta[i]*10)) {
 							gradient[i] = argsRawDelta[i] * 10;
 						}
-					}					
+					}*/					
 					if (!useSGDM || stepNum == 0) {
 						argsRawDelta[i] = gradient[i];
 					}

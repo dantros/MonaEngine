@@ -26,7 +26,7 @@ namespace Mona {
 		AnimationIndex removeAnimation(std::shared_ptr<AnimationClip> animationClip);
 		void updateIKRigConfigTime(float animationTimeStep, AnimationIndex animIndex);
 		void updateTrajectories(AnimationIndex animIndex, ComponentManager<TransformComponent>& transformManager,
-			ComponentManager<StaticMeshComponent>& staticMeshManager);
+			ComponentManager<StaticMeshComponent>& staticMeshManager, bool active);
 		void updateAnimation(AnimationIndex animIndex);
 		void updateIKRig(float timeStep, ComponentManager<TransformComponent>& transformManager,
 			ComponentManager<StaticMeshComponent>& staticMeshManager, ComponentManager<SkeletalMeshComponent>& skeletalMeshManager);

@@ -360,22 +360,18 @@ namespace Mona{
             return m_tValues.size() - 1;
         }
 
-        static LIC<D> connect(LIC<D> curve1, LIC<D> curve2, float tDiff) {
-            MONA_ASSERT(0 <= tDiff, "LIC: tDiff must be at least 0.");
+        static LIC<D> connect(LIC<D> curve1, LIC<D> curve2) {
             MONA_ASSERT(curve1.m_tEpsilon == curve2.m_tEpsilon, "LIC: both curves must have the same tEpsilon.");
             float epsilon = curve1.m_tEpsilon;
-			if (tDiff <= 2 * epsilon) {
-				funcUtils::epsilonAdjustment_add(tDiff, 3 * epsilon);
-			}
-            glm::vec<D, float> velEndC1 = curve1.getVelocity(curve1.getTRange()[1]);
-            glm::vec<D, float> velStartC2 = curve2.getVelocity(curve2.getTRange()[0]);
-            glm::vec<D, float> transitionVel = (velEndC1 + velStartC2) / 2.0f;
-            glm::vec<D, float> transitionPoint = curve1.m_curvePoints.back() + transitionVel * tDiff;
-            // desplazamos las posiciones de la parte 2 al punto de transicion
-            curve2.translate(- curve2.getStart() + transitionPoint);
-            // luego hacemos el desplazamiento temporal
-            curve2.offsetTValues(-curve2.getTRange()[0] + curve1.getTRange()[1] + tDiff);
-            return LIC<D>::join(curve1, curve2);
+            curve2.translate(-curve2.getStart() + curve1.getEnd());
+            curve2.offsetTValues(-curve2.getTRange()[0] + curve1.getTRange()[1]);
+            std::vector<float> connectedTValues = curve1.m_tValues;
+            std::vector<glm::vec<D, float>> connectedCurvePoints = curve1.m_curvePoints;
+            for (int i = 1; i < curve2.m_tValues.size();i++) {
+                connectedTValues.push_back(curve2.m_tValues[i]);
+                connectedCurvePoints.push_back(curve2.m_curvePoints[i]);
+            }
+            return LIC<D>(connectedCurvePoints, connectedTValues);
         }
 
 		static LIC<D> connectPoint(LIC<D> curve, glm::vec<D, float> extraPoint, float tDiff) {

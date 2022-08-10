@@ -23,6 +23,7 @@ EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int
         m_savedRotationAngles = std::vector<float>(frameNum);
         m_savedRotationAxes = std::vector<glm::vec3>(frameNum);
         m_savedTranslations = std::vector<glm::vec3>(frameNum);
+		m_savedDataValid = std::vector<bool>(frameNum, false);
         m_config = config;
     }
 
@@ -43,8 +44,7 @@ EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int
 		else {
 			LIC<D> part1 = originalCurve.sample(initialAnimTime, originalCurve.getTRange()[1]);
 			LIC<D> part2 = originalCurve.sample(originalCurve.getTRange()[0], finalAnimTime);
-			float tDiff = part2.getTRange()[0] + m_config->getAnimationDuration() - part1.getTRange()[1];
-			LIC<D> result = LIC<D>::connect(part1, part2, tDiff);
+			LIC<D> result = LIC<D>::connect(part1, part2);
 			result.offsetTValues(-result.getTRange()[0]);
 			result.offsetTValues(initialExtendedAnimTime);
 			return result;
@@ -85,6 +85,7 @@ EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int
 
     void  EEGlobalTrajectoryData::init(int frameNum) {
         m_savedPositions = std::vector<glm::vec3>(frameNum);
+		m_savedDataValid = std::vector<bool>(frameNum, false);
         m_supportHeights = std::vector<float>(frameNum);
     }
 
@@ -106,7 +107,7 @@ EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int
 			currID = (currID + 1) % m_originalSubTrajectories.size();
 			EETrajectory additionalTr = getSubTrajectoryByID(currID);
 			LIC<3> additionalCurve = additionalTr.getEECurve();
-			extendedCurve = LIC<3>::connect(extendedCurve, additionalCurve, 0);
+			extendedCurve = LIC<3>::connect(extendedCurve, additionalCurve);
 		}
 		return extendedCurve.sample(animationTime, animationTime + duration);
 	}

@@ -333,8 +333,7 @@ namespace Mona {
 						connectedIndex = subTrajectories.size();
 						LIC<3> part1(curvePoints_1, tValues_1);
 						LIC<3> part2(curvePoints_2, tValues_2);
-						float tDiff = tValues_2[0] + currentConfig->getAnimationDuration() - tValues_1.back();
-						fullCurve = LIC<3>::connect(part1, part2, tDiff);
+						fullCurve = LIC<3>::connect(part1, part2);
 					}
 					subTrajectories.push_back(EETrajectory(fullCurve, trType));
 
@@ -419,6 +418,7 @@ namespace Mona {
 			currentConfig->m_baseJointRotations[i][m_ikRig.m_hipJoint] = JointRotation(glm::identity<glm::fquat>());
 			currentConfig->m_dynamicJointRotations[i][m_ikRig.m_hipJoint] = JointRotation(glm::identity<glm::fquat>());
 		}
+		currentConfig->m_jointPositions[m_ikRig.m_hipJoint] = glm::vec3(0);
 
 		m_ikRig.m_currentAnim = 0;
 	}
@@ -440,66 +440,78 @@ namespace Mona {
 
 	float lastTrajectoryUpdateTime = 0;
 	void IKRigController::updateTrajectories(AnimationIndex animIndex, ComponentManager<TransformComponent>& transformManager,
-		ComponentManager<StaticMeshComponent>& staticMeshManager) {
+		ComponentManager<StaticMeshComponent>& staticMeshManager, bool active) {
 		IKRigConfig& config = m_ikRig.m_animationConfigs[animIndex];
 		HipGlobalTrajectoryData* hipTrData = config.getHipTrajectoryData();
-
-		if (config.m_onNewFrame) { // se realiza al llegar a un frame de la animacion
+		std::vector<ChainIndex> ikChains = m_ikRig.m_trajectoryGenerator.getIKChains();
+		FrameIndex currentFrame = config.getCurrentFrameIndex();
+		EEGlobalTrajectoryData* trData;
+		if (active) {
+			if (config.m_onNewFrame) { // se realiza al llegar a un frame de la animacion
 			// guardado de posiciones globales ee y cadera
-			glm::mat4 baseTransform = transformManager.GetComponentPointer(m_ikRig.getTransformHandle())->GetModelMatrix();
-			FrameIndex currentFrame = config.getCurrentFrameIndex();
-			std::vector<glm::mat4> globalTransforms = config.getCustomSpaceTransforms(baseTransform, currentFrame, true);
-			std::vector<ChainIndex> ikChains = m_ikRig.m_trajectoryGenerator.getIKChains();
+				glm::mat4 baseTransform = transformManager.GetComponentPointer(m_ikRig.getTransformHandle())->GetModelMatrix();
+				std::vector<glm::mat4> globalTransforms = config.getCustomSpaceTransforms(baseTransform, currentFrame, true);
+				for (int i = 0; i < ikChains.size(); i++) {
+					trData = config.getEETrajectoryData(ikChains[i]);
+					JointIndex ee = m_ikRig.m_ikChains[ikChains[i]].getJoints().back();
+					trData->m_savedPositions[currentFrame] = globalTransforms[ee] * glm::vec4(0, 0, 0, 1);
+					trData->m_savedDataValid[currentFrame] = true;
+				}
+				glm::mat4 hipTransform = globalTransforms[m_ikRig.m_hipJoint];
+				glm::vec3 hipScale; glm::fquat hipRot; glm::vec3 hipTrans; glm::vec3 hipSkew; glm::vec4 hipPers;
+				glm::decompose(hipTransform, hipScale, hipRot, hipTrans, hipSkew, hipPers);
+				hipTrData->m_savedTranslations[currentFrame] = hipTrans;
+				hipTrData->m_savedRotationAngles[currentFrame] = glm::angle(hipRot);
+				hipTrData->m_savedRotationAxes[currentFrame] = glm::axis(hipRot);
+				hipTrData->m_savedDataValid[currentFrame] = true;
 
-			EEGlobalTrajectoryData* trData;
-			for (int i = 0; i < ikChains.size(); i++) {
-				trData = config.getEETrajectoryData(ikChains[i]);
-				JointIndex ee = m_ikRig.m_ikChains[ikChains[i]].getJoints().back();
-				trData->m_savedPositions[currentFrame] = globalTransforms[ee] * glm::vec4(0, 0, 0, 1);
-			}
-			glm::mat4 hipTransform = globalTransforms[m_ikRig.m_hipJoint];
-			glm::vec3 hipScale; glm::fquat hipRot; glm::vec3 hipTrans; glm::vec3 hipSkew; glm::vec4 hipPers;
-			glm::decompose(hipTransform, hipScale, hipRot, hipTrans, hipSkew, hipPers);
-			hipTrData->m_savedTranslations[currentFrame] = hipTrans;
-			hipTrData->m_savedRotationAngles[currentFrame] = glm::angle(hipRot);
-			hipTrData->m_savedRotationAxes[currentFrame] = glm::axis(hipRot);
-
-			// recalcular trayectorias de ee y caderas
-			bool updateNeeded = m_reproductionTime - lastTrajectoryUpdateTime > 0.2f;
-			if (!updateNeeded) {
-				for (int i = 0; i < config.m_eeTrajectoryData.size(); i++) {
-					float nextFrameRepTime = config.getReproductionTime(config.getNextFrameIndex());
-					if (!config.getEETrajectoryData(i)->getTargetTrajectory().getEECurve().inTRange(nextFrameRepTime)) {
-						updateNeeded = true;
-						break;
+				// recalcular trayectorias de ee y caderas
+				bool updateNeeded = m_reproductionTime - lastTrajectoryUpdateTime > 0.2f;
+				if (!updateNeeded) {
+					for (int i = 0; i < config.m_eeTrajectoryData.size(); i++) {
+						float nextFrameRepTime = config.getReproductionTime(config.getNextFrameIndex());
+						if (!config.getEETrajectoryData(i)->getTargetTrajectory().getEECurve().inTRange(nextFrameRepTime)) {
+							updateNeeded = true;
+							break;
+						}
 					}
 				}
-			}
-			if (updateNeeded) {
-				lastTrajectoryUpdateTime = m_reproductionTime;
-				m_ikRig.calculateTrajectories(animIndex, transformManager, staticMeshManager);
-			}			
+				if (updateNeeded) {
+					lastTrajectoryUpdateTime = m_reproductionTime;
+					m_ikRig.calculateTrajectories(animIndex, transformManager, staticMeshManager);
+				}
 
-			// asignar objetivos a ee's
-			float targetTime = config.getReproductionTime(config.getNextFrameIndex());
-			std::vector<ChainIndex> tgChainIndices = m_ikRig.m_trajectoryGenerator.getIKChains();
-			glm::mat4 toModelSpace = glm::inverse(glmUtils::translationToMat4(hipTrData->getTargetTranslation(targetTime)) *
-				glmUtils::rotationToMat4(hipTrData->getTargetRotation(targetTime)) *
-				glmUtils::scaleToMat4(m_rigScale));
-			for (int i = 0; i < tgChainIndices.size();i++) {
-				ChainIndex cIndex = tgChainIndices[i];
-				IKChain* ikChain = m_ikRig.getIKChain(cIndex);
-				trData = config.getEETrajectoryData(cIndex);
-				glm::vec3 eeTarget = toModelSpace *
-					glm::vec4(trData->getTargetTrajectory().getEECurve().evalCurve(targetTime), 1);
-				ikChain->setCurrentEETarget(eeTarget);
+				// asignar objetivos a ee's
+				float targetTime = config.getReproductionTime(config.getNextFrameIndex());
+				std::vector<ChainIndex> tgChainIndices = m_ikRig.m_trajectoryGenerator.getIKChains();
+				glm::mat4 toModelSpace = glm::inverse(glmUtils::translationToMat4(hipTrData->getTargetTranslation(targetTime)) *
+					glmUtils::rotationToMat4(hipTrData->getTargetRotation(targetTime)) *
+					glmUtils::scaleToMat4(m_rigScale));
+				for (int i = 0; i < tgChainIndices.size(); i++) {
+					ChainIndex cIndex = tgChainIndices[i];
+					IKChain* ikChain = m_ikRig.getIKChain(cIndex);
+					trData = config.getEETrajectoryData(cIndex);
+					glm::vec3 eeTarget = toModelSpace *
+						glm::vec4(trData->getTargetTrajectory().getEECurve().evalCurve(targetTime), 1);
+					ikChain->setCurrentEETarget(eeTarget);
+				}
 			}
-		}	
-		// setear transformacion global
-		glm::fquat glblRot = hipTrData->getTargetRotation(config.getCurrentReproductionTime());
-		glm::vec3 glblTr = hipTrData->getTargetTranslation(config.getCurrentReproductionTime());
-		transformManager.GetComponentPointer(m_ikRig.getTransformHandle())->SetRotation(glblRot);
-		transformManager.GetComponentPointer(m_ikRig.getTransformHandle())->SetTranslation(glblTr);
+			// setear transformacion global
+			glm::fquat glblRot = hipTrData->getTargetRotation(config.getCurrentReproductionTime());
+			glm::vec3 glblTr = hipTrData->getTargetTranslation(config.getCurrentReproductionTime());
+			transformManager.GetComponentPointer(m_ikRig.getTransformHandle())->SetRotation(glblRot);
+			transformManager.GetComponentPointer(m_ikRig.getTransformHandle())->SetTranslation(glblTr);
+		}
+		else {
+			if (config.m_onNewFrame) {
+				for (int i = 0; i < ikChains.size(); i++) {
+					trData = config.getEETrajectoryData(ikChains[i]);
+					trData->m_savedDataValid[currentFrame] = false;
+				}
+				hipTrData->m_savedDataValid[currentFrame] = false;
+			}
+		}
+		
 	}
 	void IKRigController::updateAnimation(AnimationIndex animIndex) {
 		IKRigConfig& config = m_ikRig.m_animationConfigs[animIndex];
@@ -546,7 +558,7 @@ namespace Mona {
 		}
 		updateFrontVector(timeStep);
 		if (m_ikRig.m_currentAnim != -1) {
-			updateTrajectories(m_ikRig.m_currentAnim, transformManager, staticMeshManager);
+			updateTrajectories(m_ikRig.m_currentAnim, transformManager, staticMeshManager, true);
 			updateAnimation(m_ikRig.m_currentAnim);
 		}
 

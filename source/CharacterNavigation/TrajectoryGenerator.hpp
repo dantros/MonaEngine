@@ -36,7 +36,7 @@ namespace Mona{
         std::vector<ChainIndex> m_ikChains;
         GradientDescent<TGData> m_gradientDescent;
         TGData m_tgData;
-        void generateEETrajectory(ChainIndex ikChain, IKRigConfig* config, float xyMovementRotAngle,
+        void generateEETrajectory(ChainIndex ikChain, IKRigConfig* config,
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
         void generateFixedTrajectory(glm::vec2 basePos,
@@ -49,7 +49,7 @@ namespace Mona{
             ChainIndex ikChain, IKRigConfig* config,
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
-        void generateHipTrajectory(IKRigConfig* config, float xyMovementRotAngle,
+        void generateHipTrajectory(IKRigConfig* config,
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
 
@@ -70,7 +70,8 @@ namespace Mona{
         TrajectoryGenerator(IKRig* ikRig, std::vector<ChainIndex> ikChains);
         TrajectoryGenerator() = default;
         void init();
-        void generateNewTrajectories(AnimationIndex animIndex, ComponentManager<TransformComponent>& transformManager,
+        void generateNewTrajectories(AnimationIndex animIndex,
+            ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
         std::vector<ChainIndex> getIKChains() { return m_ikChains; }
         void setIKChains(std::vector<ChainIndex> ikChains) { m_ikChains = ikChains; }

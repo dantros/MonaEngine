@@ -30,7 +30,7 @@ namespace Mona {
 		void updateAnimation(AnimationIndex animIndex);
 		void updateIKRig(float timeStep, ComponentManager<TransformComponent>& transformManager,
 			ComponentManager<StaticMeshComponent>& staticMeshManager, ComponentManager<SkeletalMeshComponent>& skeletalMeshManager);
-		void updateFrontVector(float time);
+		void updateMovementDirection(float timeStep);
 		void init();
 	};
 

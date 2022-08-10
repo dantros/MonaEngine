@@ -25,6 +25,7 @@ namespace Mona {
 	}
 
 	void IKRigController::addAnimation(std::shared_ptr<AnimationClip> animationClip) {
+		// la animacion debe tener globalmente vector front={0,1,0} y up={0,0,1}
 		if (animationClip->GetSkeleton() != m_ikRig.m_skeleton) {
 			MONA_LOG_ERROR("IKRigController: Input animation does not correspond to base skeleton.");
 			return;
@@ -144,6 +145,7 @@ namespace Mona {
 		// minima distancia entre posiciones de un frame a otro para considerarlo un movimiento
 		float minDistance = m_ikRig.m_rigHeight / 1000;
 
+
 		// Guardamos la informacion de traslacion y rotacion de la cadera, antes de eliminarla
 		auto hipTrack = animationClip->m_animationTracks[animationClip->GetTrackIndex(m_ikRig.m_hipJoint)];
 		std::vector<float> hipTimeStamps;
@@ -183,9 +185,6 @@ namespace Mona {
 		currentConfig->m_hipTrajectoryData.m_originalRotationAngles = LIC<1>(hipRotAngles, hipTimeStamps);
 		currentConfig->m_hipTrajectoryData.m_originalRotationAxes = LIC<3>(hipRotAxes, hipTimeStamps);
 		currentConfig->m_hipTrajectoryData.m_originalTranslations = LIC<3>(hipTranslations, hipTimeStamps);
-		currentConfig->m_originalFrontVector = glm::normalize(
-			glm::vec2(currentConfig->m_hipTrajectoryData.m_originalTranslations.getEnd()) -
-			glm::vec2(currentConfig->m_hipTrajectoryData.m_originalTranslations.getStart()));
 
 		// Ahora guardamos las trayectorias originales de los ee y definimos sus frames de soporte
 		std::vector<float> rotTimeStamps = animationClip->m_animationTracks[0].rotationTimeStamps;
@@ -433,9 +432,8 @@ namespace Mona {
 		return -1;
 	}
 
-	void IKRigController::updateFrontVector(float timeStep) {
+	void IKRigController::updateMovementDirection(float timeStep) {
 		m_ikRig.m_rotationAngle += m_ikRig.m_angularSpeed * timeStep;
-		m_ikRig.m_frontVector = glm::rotate(m_ikRig.m_frontVector, m_ikRig.m_rotationAngle);
 	}
 
 	float lastTrajectoryUpdateTime = 0;
@@ -447,6 +445,10 @@ namespace Mona {
 		FrameIndex currentFrame = config.getCurrentFrameIndex();
 		EEGlobalTrajectoryData* trData;
 		if (active) {
+			// nueva rotacion
+			glm::vec3 upVec = { 0,0,1 };
+			glm::fquat updatedRotation = glm::angleAxis(m_ikRig.m_rotationAngle, upVec);
+			transformManager.GetComponentPointer(m_ikRig.getTransformHandle())->SetRotation(updatedRotation);
 			if (config.m_onNewFrame) { // se realiza al llegar a un frame de la animacion
 			// guardado de posiciones globales ee y cadera
 				glm::mat4 baseTransform = transformManager.GetComponentPointer(m_ikRig.getTransformHandle())->GetModelMatrix();
@@ -482,24 +484,25 @@ namespace Mona {
 				}
 
 				// asignar objetivos a ee's
-				float targetTime = config.getReproductionTime(config.getNextFrameIndex());
+				float targetTimeNext = config.getReproductionTime(config.getNextFrameIndex());
 				std::vector<ChainIndex> tgChainIndices = m_ikRig.m_trajectoryGenerator.getIKChains();
-				glm::mat4 toModelSpace = glm::inverse(glmUtils::translationToMat4(hipTrData->getTargetTranslation(targetTime)) *
-					glmUtils::rotationToMat4(hipTrData->getTargetRotation(targetTime)) *
+				glm::mat4 toModelSpace = glm::inverse(glmUtils::translationToMat4(hipTrData->getTargetTranslation(targetTimeNext)) *
+					glmUtils::rotationToMat4(hipTrData->getTargetRotation(targetTimeNext)) *
 					glmUtils::scaleToMat4(m_rigScale));
 				for (int i = 0; i < tgChainIndices.size(); i++) {
 					ChainIndex cIndex = tgChainIndices[i];
 					IKChain* ikChain = m_ikRig.getIKChain(cIndex);
 					trData = config.getEETrajectoryData(cIndex);
 					glm::vec3 eeTarget = toModelSpace *
-						glm::vec4(trData->getTargetTrajectory().getEECurve().evalCurve(targetTime), 1);
+						glm::vec4(trData->getTargetTrajectory().getEECurve().evalCurve(targetTimeNext), 1);
 					ikChain->setCurrentEETarget(eeTarget);
 				}
+				// asignar info de rotacion a la cadera en la animacion
+				config.m_animationClip->SetRotation(hipTrData->getTargetRotation(targetTimeNext),
+					config.getNextFrameIndex(), m_ikRig.m_hipJoint);
 			}
-			// setear transformacion global
-			glm::fquat glblRot = hipTrData->getTargetRotation(config.getCurrentReproductionTime());
+			// setear transformacion global (traslacion y direccion de movimiento)
 			glm::vec3 glblTr = hipTrData->getTargetTranslation(config.getCurrentReproductionTime());
-			transformManager.GetComponentPointer(m_ikRig.getTransformHandle())->SetRotation(glblRot);
 			transformManager.GetComponentPointer(m_ikRig.getTransformHandle())->SetTranslation(glblTr);
 		}
 		else {
@@ -556,7 +559,7 @@ namespace Mona {
 		for (AnimationIndex i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {
 			updateIKRigConfigTime(animTimeStep, i);
 		}
-		updateFrontVector(timeStep);
+		updateMovementDirection(animTimeStep);
 		if (m_ikRig.m_currentAnim != -1) {
 			updateTrajectories(m_ikRig.m_currentAnim, transformManager, staticMeshManager, true);
 			updateAnimation(m_ikRig.m_currentAnim);

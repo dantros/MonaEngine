@@ -102,7 +102,7 @@ namespace Mona{
         glm::vec<D, float> getStart() { return m_curvePoints[0]; }
         glm::vec<D, float> getEnd() { return m_curvePoints.back(); }
         LIC() = default;
-        LIC(std::vector<glm::vec<D, float>> curvePoints, std::vector<float> tValues, float tEpsilon = 0.01) {
+        LIC(std::vector<glm::vec<D, float>> curvePoints, std::vector<float> tValues, float tEpsilon = 0.0001) {
             MONA_ASSERT(1 < curvePoints.size(), "LIC: must provide at least two points.");
             MONA_ASSERT(curvePoints.size() == tValues.size(), "LIC: there must be exactly one tValue per spline point.");
             MONA_ASSERT(0 < tEpsilon, "LIC: tEpsilon must be greater than 0.");
@@ -194,7 +194,7 @@ namespace Mona{
             }
 
             // correccion de valores
-            bool corrected = false;
+            bool corrected = tValuesAreValid();
             int correctionSteps = 0;
             while (!corrected && correctionSteps < maxCorrectionSteps) {
                 corrected = correctTValues();

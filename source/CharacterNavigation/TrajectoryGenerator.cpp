@@ -123,20 +123,16 @@ namespace Mona{
 		ComponentManager<StaticMeshComponent>& staticMeshManager) {
 		// las trayectorias anteriores siempre deben llegar hasta el currentFrame
 
-		IKRigConfig* config = m_ikRig->getAnimationConfig(animIndex);
-        glm::vec3 originalDir = glm::vec3(config->getOriginalFrontVector(), 0);
-        glm::vec3 newDir = glm::vec3(m_ikRig->getFrontVector(), 0);
-        glm::vec3 upVec = { 0,0,1 };
-        float xyRotationAngle = glm::orientedAngle(originalDir, newDir, upVec);
+        IKRigConfig* config = m_ikRig->getAnimationConfig(animIndex);
 
 		for (int i = 0; i < m_ikChains.size(); i++) {
 			ChainIndex ikChain = m_ikChains[i];
 			JointIndex eeIndex = m_ikRig->getIKChain(ikChain)->getJoints().back();
-			generateEETrajectory(ikChain, config, xyRotationAngle, transformManager, staticMeshManager);
+			generateEETrajectory(ikChain, config, transformManager, staticMeshManager);
 		}
 
 		// queda setear la trayectoria de la cadera
-		generateHipTrajectory(config, xyRotationAngle, transformManager, staticMeshManager);
+		generateHipTrajectory(config, transformManager, staticMeshManager);
 	}
 
     void TrajectoryGenerator::generateFixedTrajectory(glm::vec2 basePos,
@@ -151,7 +147,7 @@ namespace Mona{
         trData->setTargetTrajectory(fixedCurve, TrajectoryType::STATIC, -2);
     }
 
-	void TrajectoryGenerator::generateEETrajectory(ChainIndex ikChain, IKRigConfig* config, float xyMovementRotAngle,
+	void TrajectoryGenerator::generateEETrajectory(ChainIndex ikChain, IKRigConfig* config,
 		ComponentManager<TransformComponent>& transformManager,
 		ComponentManager<StaticMeshComponent>& staticMeshManager) {
 		EEGlobalTrajectoryData* trData = config->getEETrajectoryData(ikChain);
@@ -200,8 +196,9 @@ namespace Mona{
             glm::vec3 sampledCurveReferencePoint = baseCurve.evalCurve(referenceTime);
             float xyDistanceToStart = glm::distance(glm::vec2(baseCurve.getStart()), glm::vec2(sampledCurveReferencePoint));
             glm::vec2 xyReferencePoint = glm::vec2(currentPos);
-            glm::vec2 sampledCurveReferenceDirection = glm::vec2(sampledCurveReferencePoint) - glm::vec2(baseCurve.getStart());
-            glm::vec2 targetDirection = -glm::normalize(glm::rotate(sampledCurveReferenceDirection, xyMovementRotAngle));
+            glm::vec2 sampledCurveReferenceDirection = glm::normalize(glm::vec2(sampledCurveReferencePoint) - 
+                glm::vec2(baseCurve.getStart()));
+            glm::vec2 targetDirection = -glm::rotate(sampledCurveReferenceDirection, m_ikRig->getRotationAngle());
             float supportHeight = trData->getSupportHeight(initialFrame);
             initialPos = calcStrideStartingPoint(supportHeight, xyReferencePoint, xyDistanceToStart,
                 targetDirection, 4, transformManager, staticMeshManager);
@@ -209,7 +206,7 @@ namespace Mona{
 
         float targetDistance = glm::distance(baseCurve.getStart(), baseCurve.getEnd());
         glm::vec3 originalDirection = glm::normalize(baseCurve.getEnd() - baseCurve.getStart());
-        glm::vec2 targetXYDirection = glm::normalize(glm::rotate(glm::vec2(originalDirection), xyMovementRotAngle));
+        glm::vec2 targetXYDirection = glm::normalize(glm::rotate(glm::vec2(originalDirection), m_ikRig->getRotationAngle()));
         float supportHeightStart = trData->getSupportHeight(initialFrame);
         float supportHeightEnd = trData->getSupportHeight(finalFrame);
         std::vector<glm::vec3> strideData = calcStrideData(supportHeightStart, supportHeightEnd,
@@ -221,6 +218,8 @@ namespace Mona{
         }
         glm::vec3 finalPos = strideData.back();
         baseCurve.fitEnds(initialPos, finalPos);
+        baseCurve.fitStartAndDir(initialPos, originalDirection);
+
 
         // DEBUG
 
@@ -339,7 +338,6 @@ namespace Mona{
 	
 
     void TrajectoryGenerator::generateHipTrajectory(IKRigConfig* config,
-        float xyMovementRotAngle,
         ComponentManager<TransformComponent>& transformManager,
         ComponentManager<StaticMeshComponent>& staticMeshManager) {
 
@@ -406,6 +404,8 @@ namespace Mona{
             LIC<1> hipRotAnglCurve = hipTrData->sampleOriginalRotationAngles(tInfLimitExtendedAnim, tSupLimitExtendedAnim);
             LIC<3> hipRotAxCurve = hipTrData->sampleOriginalRotationAxes(tInfLimitExtendedAnim, tSupLimitExtendedAnim);
             
+            glm::vec3 hipTrOriginalDirection = glm::normalize(hipTrCurve.getEnd() - hipTrCurve.getStart());
+
             // testing
             std::cout << "DEBUG HIP TR" << std::endl;
 
@@ -445,10 +445,6 @@ namespace Mona{
 			std::cout << "base hip curve." << std::endl;
 			hipTrCurve.debugPrintCurvePoints();
 
-            glm::vec3 testUpVec = { 0,0,1 };
-            glm::fquat testXYRot = glm::angleAxis(xyMovementRotAngle, testUpVec);
-            hipTrCurve.translate(-hipTrCurve.getStart());
-			hipTrCurve.rotate(testXYRot);
 			hipTrCurve.translate(initialTrans);
 
 			std::cout << "base hip curve repositioned." << std::endl;
@@ -588,7 +584,7 @@ namespace Mona{
             float eeHipXYDistRatio = eeXYDistRatio / hipXYDistRatio ;
             glm::vec3 scalingVec(eeHipXYDistRatio, eeHipXYDistRatio, 1);
             glm::vec3 upVec = { 0,0,1 };
-            glm::fquat xyRot = glm::angleAxis(xyMovementRotAngle, upVec);
+            glm::fquat xyRot = glm::angleAxis(m_ikRig->getRotationAngle(), upVec);
             hipTrCurveAdjustedFall.scale(scalingVec);            
             hipTrCurveAdjustedFall.rotate(xyRot);
             hipTrCurveAdjustedFall.translate(initialTrans);
@@ -641,6 +637,8 @@ namespace Mona{
             m_tgData.varCurve = &hipTrFinalCurve;
             m_gradientDescent.setArgNum(initialArgs.size());
             m_gradientDescent.computeArgsMin(m_tgData.descentRate, m_tgData.maxIterations, m_tgData.targetPosDelta, initialArgs);
+
+            hipTrFinalCurve.fitStartAndDir(initialTrans, hipTrOriginalDirection);
 
 			// testing
             std::cout << "after gr descent." << std::endl;
@@ -775,6 +773,8 @@ namespace Mona{
         
 		// DEBUG
 		float debugAnimTime = config->getAnimationTime(targetCurvesTime_rep);
+        while (debugAnimTime < hipTrCurve.getTRange()[0]) { debugAnimTime += config->getAnimationDuration(); }
+        while (hipTrCurve.getTRange()[1] < debugAnimTime) { debugAnimTime -= config->getAnimationDuration(); }
         float debugZ = hipTrCurve.evalCurve(debugAnimTime)[2];
         return debugZ;
 		// DEBUG

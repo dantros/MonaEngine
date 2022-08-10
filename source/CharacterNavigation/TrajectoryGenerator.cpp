@@ -437,37 +437,37 @@ namespace Mona{
 
 			// DEBUG
 
-			std::cout << "base ee original curve" << std::endl;
-            baseEEOriginalCurve.debugPrintTValues();
-			baseEEOriginalCurve.debugPrintCurvePoints();
-			std::cout << "base ee target curve" << std::endl;
-			baseEETargetCurve.debugPrintCurvePoints();
-			std::cout << "base hip curve." << std::endl;
-			hipTrCurve.debugPrintCurvePoints();
+			//std::cout << "base ee original curve" << std::endl;
+   //         baseEEOriginalCurve.debugPrintTValues();
+			//baseEEOriginalCurve.debugPrintCurvePoints();
+			//std::cout << "base ee target curve" << std::endl;
+			//baseEETargetCurve.debugPrintCurvePoints();
+			//std::cout << "base hip curve." << std::endl;
+			//hipTrCurve.debugPrintCurvePoints();
 
-			hipTrCurve.translate(initialTrans);
+			//hipTrCurve.translate(initialTrans);
 
-			std::cout << "base hip curve repositioned." << std::endl;
-			hipTrCurve.debugPrintCurvePoints();
+			//std::cout << "base hip curve repositioned." << std::endl;
+			//hipTrCurve.debugPrintCurvePoints();
 
-			// ajuste a tiempo de reproduccion
-			hipTrCurve.offsetTValues(-hipTrCurve.getTRange()[0] + tInfLimitRep);
-			hipRotAnglCurve.offsetTValues(-hipRotAnglCurve.getTRange()[0] + tInfLimitRep);
-			hipRotAxCurve.offsetTValues(-hipRotAxCurve.getTRange()[0] + tInfLimitRep);
+			//// ajuste a tiempo de reproduccion
+			//hipTrCurve.offsetTValues(-hipTrCurve.getTRange()[0] + tInfLimitRep);
+			//hipRotAnglCurve.offsetTValues(-hipRotAnglCurve.getTRange()[0] + tInfLimitRep);
+			//hipRotAxCurve.offsetTValues(-hipRotAxCurve.getTRange()[0] + tInfLimitRep);
 
-			float testRepCountOffset = config->getNextFrameIndex() == 0 ? 1 : 0;
-			float testTransitionTime = config->getReproductionTime(config->getNextFrameIndex(), testRepCountOffset);
-			if (hipTrData->getTargetTranslations().inTRange(testTransitionTime)) {
-				hipTrData->setTargetTranslations(LIC<3>::transition(hipTrData->getTargetTranslations(), hipTrCurve, testTransitionTime));
-				hipTrData->setTargetRotationAngles(LIC<1>::transition(hipTrData->getTargetRotationAngles(), hipRotAnglCurve, testTransitionTime));
-				hipTrData->setTargetRotationAxes(LIC<3>::transition(hipTrData->getTargetRotationAxes(), hipRotAxCurve, testTransitionTime));
-			}
-			else {
-				hipTrData->setTargetRotationAngles(hipRotAnglCurve);
-				hipTrData->setTargetRotationAxes(hipRotAxCurve);
-				hipTrData->setTargetTranslations(hipTrCurve);
-			}
-            return;
+			//float testRepCountOffset = config->getNextFrameIndex() == 0 ? 1 : 0;
+			//float testTransitionTime = config->getReproductionTime(config->getNextFrameIndex(), testRepCountOffset);
+			//if (hipTrData->getTargetTranslations().inTRange(testTransitionTime)) {
+			//	hipTrData->setTargetTranslations(LIC<3>::transition(hipTrData->getTargetTranslations(), hipTrCurve, testTransitionTime));
+			//	hipTrData->setTargetRotationAngles(LIC<1>::transition(hipTrData->getTargetRotationAngles(), hipRotAnglCurve, testTransitionTime));
+			//	hipTrData->setTargetRotationAxes(LIC<3>::transition(hipTrData->getTargetRotationAxes(), hipRotAxCurve, testTransitionTime));
+			//}
+			//else {
+			//	hipTrData->setTargetRotationAngles(hipRotAnglCurve);
+			//	hipTrData->setTargetRotationAxes(hipRotAxCurve);
+			//	hipTrData->setTargetTranslations(hipTrCurve);
+			//}
+   //         return;
 			// DEBUG
 
 

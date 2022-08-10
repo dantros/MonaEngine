@@ -445,10 +445,6 @@ namespace Mona {
 		FrameIndex currentFrame = config.getCurrentFrameIndex();
 		EEGlobalTrajectoryData* trData;
 		if (active) {
-			// nueva rotacion
-			glm::vec3 upVec = { 0,0,1 };
-			glm::fquat updatedRotation = glm::angleAxis(m_ikRig.m_rotationAngle, upVec);
-			transformManager.GetComponentPointer(m_ikRig.getTransformHandle())->SetRotation(updatedRotation);
 			if (config.m_onNewFrame) { // se realiza al llegar a un frame de la animacion
 			// guardado de posiciones globales ee y cadera
 				glm::mat4 baseTransform = transformManager.GetComponentPointer(m_ikRig.getTransformHandle())->GetModelMatrix();
@@ -485,6 +481,7 @@ namespace Mona {
 
 				// asignar objetivos a ee's
 				float targetTimeNext = config.getReproductionTime(config.getNextFrameIndex());
+				float targetTimeCurr = config.getReproductionTime(config.getCurrentFrameIndex());
 				std::vector<ChainIndex> tgChainIndices = m_ikRig.m_trajectoryGenerator.getIKChains();
 				glm::mat4 toModelSpace = glm::inverse(glmUtils::translationToMat4(hipTrData->getTargetTranslation(targetTimeNext)) *
 					glmUtils::rotationToMat4(hipTrData->getTargetRotation(targetTimeNext)) *
@@ -498,10 +495,16 @@ namespace Mona {
 					ikChain->setCurrentEETarget(eeTarget);
 				}
 				// asignar info de rotacion a la cadera en la animacion
+				config.m_animationClip->SetRotation(hipTrData->getTargetRotation(targetTimeCurr),
+					config.getCurrentFrameIndex(), m_ikRig.m_hipJoint);
 				config.m_animationClip->SetRotation(hipTrData->getTargetRotation(targetTimeNext),
 					config.getNextFrameIndex(), m_ikRig.m_hipJoint);
 			}
 			// setear transformacion global (traslacion y direccion de movimiento)
+			// nueva rotacion
+			glm::vec3 upVec = { 0,0,1 };
+			glm::fquat updatedRotation = glm::angleAxis(m_ikRig.m_rotationAngle, upVec);
+			transformManager.GetComponentPointer(m_ikRig.getTransformHandle())->SetRotation(updatedRotation);
 			glm::vec3 glblTr = hipTrData->getTargetTranslation(config.getCurrentReproductionTime());
 			transformManager.GetComponentPointer(m_ikRig.getTransformHandle())->SetTranslation(glblTr);
 		}

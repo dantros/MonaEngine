@@ -442,8 +442,10 @@ namespace Mona{
 
 
 			// DEBUG
-            glm::vec2 targetDir = glm::rotate(m_ikRig->getFrontVector(), m_ikRig->getRotationAngle());
-            hipTrCurve.fitStartAndDir(initialTrans, glm::vec3(targetDir, 0));
+            glm::vec3 targetDir = glm::rotate(hipTrOriginalDirection, m_ikRig->getRotationAngle(), m_ikRig->getUpVector());
+            std::cout << "rot angle: " << m_ikRig->getRotationAngle() << std::endl;
+            std::cout << "target dir:  x->" << targetDir[0] << ", y->" <<targetDir[1]<<", z->" << targetDir[2] << std::endl;
+            hipTrCurve.fitStartAndDir(initialTrans, targetDir);
 
 			// ajuste a tiempo de reproduccion
 			hipTrCurve.offsetTValues(-hipTrCurve.getTRange()[0] + tInfLimitRep);

@@ -45,13 +45,13 @@ Mona::GameObjectHandle<Mona::GameObject> AddTerrain(Mona::World& world) {
 		float minSigma = 3;
 		float maxSigma = 20;
 		std::srand(5);
-		/*for (int i = 0; i < funcNum; i++) {
+		for (int i = 0; i < funcNum; i++) {
 			float randMax = RAND_MAX;
 			result += gaussian(x, y, Mona::funcUtils::lerp(minHeight, maxHeight, std::rand() / randMax),
 				Mona::funcUtils::lerp(minSigma, maxSigma, std::rand() / randMax),
 				{ Mona::funcUtils::lerp(minXY[0], maxXY[0], std::rand() / randMax),
 				Mona::funcUtils::lerp(minXY[1], maxXY[1], std::rand() / randMax) });
-		}*/
+		}
 		return result;
 	};
 

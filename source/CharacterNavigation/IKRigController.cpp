@@ -410,12 +410,14 @@ namespace Mona {
 			}	
 		}
 
-		// Se remueve el movimiento de las caderas
-		animationClip->RemoveJointRotation(m_ikRig.m_hipJoint);
+		// Se remueve el movimiento de las caderas y se setea la rotacion basal
+		glm::vec3 baseScale; glm::quat baseRotation; glm::vec3 baseTranslation; glm::vec3 baseSkew; glm::vec4 basePerspective;
+		glm::decompose(m_baseGlobalTransform, baseScale, baseRotation, baseTranslation, baseSkew, basePerspective);
 		animationClip->RemoveJointTranslation(m_ikRig.m_hipJoint);
-		for (FrameIndex i = 0; i < currentConfig->m_baseJointRotations.size(); i++) {
-			currentConfig->m_baseJointRotations[i][m_ikRig.m_hipJoint] = JointRotation(glm::identity<glm::fquat>());
-			currentConfig->m_dynamicJointRotations[i][m_ikRig.m_hipJoint] = JointRotation(glm::identity<glm::fquat>());
+		for (FrameIndex i = 0; i < currentConfig->getFrameNum(); i++) {
+			currentConfig->m_baseJointRotations[i][m_ikRig.m_hipJoint] = JointRotation(baseRotation);
+			currentConfig->m_dynamicJointRotations[i][m_ikRig.m_hipJoint] = JointRotation(baseRotation);
+			animationClip->SetRotation(baseRotation, i, m_ikRig.m_hipJoint);
 		}
 		currentConfig->m_jointPositions[m_ikRig.m_hipJoint] = glm::vec3(0);
 
@@ -457,7 +459,7 @@ namespace Mona {
 					// para compensar el poco espacio entre en ultimo y el primer frame
 					if (currentFrame == config.getFrameNum() - 2) {
 						trData->m_savedDataValid[0] = true;
-						trData->m_savedPositions[currentFrame] = globalTransforms[ee] * glm::vec4(0, 0, 0, 1);
+						trData->m_savedPositions[0] = globalTransforms[ee] * glm::vec4(0, 0, 0, 1);
 					}
 				}
 				glm::mat4 hipTransform = globalTransforms[m_ikRig.m_hipJoint];
@@ -589,7 +591,7 @@ namespace Mona {
 		updateMovementDirection(animTimeStep);
 		if (m_ikRig.m_currentAnim != -1) {
 			updateTrajectories(m_ikRig.m_currentAnim, transformManager, staticMeshManager, true);
-			//updateAnimation(m_ikRig.m_currentAnim);
+			updateAnimation(m_ikRig.m_currentAnim);
 		}
 
 		for (AnimationIndex i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {

@@ -14,22 +14,23 @@ namespace Mona{
 
 		int frameNum = animation->m_animationTracks[0].rotationTimeStamps.size();
 		int jointNum = animation->m_animationTracks.size();
-		m_jointPositions.resize(jointNum);
-		m_jointScales.resize(jointNum);
+		int totalJointNum = topology.size();
+		m_jointPositions = std::vector<glm::vec3>(totalJointNum, glm::vec3(0));
+		m_jointScales = std::vector<glm::vec3>(totalJointNum, glm::vec3(1));
 		m_timeStamps = animation->m_animationTracks[0].rotationTimeStamps;
 		for (int i = 0; i < jointNum;i++) {
 			JointIndex jIndex = getJointIndices()[i];
 			int trackIndex = animation->GetTrackIndex(jIndex);
-			m_jointPositions[i] = animation->m_animationTracks[trackIndex].positions[0];
-			m_jointScales[i] = animation->m_animationTracks[trackIndex].scales[0];
+			m_jointPositions[jIndex] = animation->m_animationTracks[trackIndex].positions[0];
+			m_jointScales[jIndex] = animation->m_animationTracks[trackIndex].scales[0];
 		}
 		m_baseJointRotations.resize(frameNum);
 		for (FrameIndex i = 0; i < frameNum; i++) {
-			m_baseJointRotations[i]  = std::vector<JointRotation>(jointNum);
+			m_baseJointRotations[i]  = std::vector<JointRotation>(totalJointNum, JointRotation());
 			for (int j = 0; j < jointNum; j++) {
 				JointIndex jIndex = getJointIndices()[j];
 				int trackIndex = animation->GetTrackIndex(jIndex);
-				m_baseJointRotations[i][j] = JointRotation(animation->m_animationTracks[trackIndex].rotations[i]);
+				m_baseJointRotations[i][jIndex] = JointRotation(animation->m_animationTracks[trackIndex].rotations[i]);
 			}
 		}
 		m_dynamicJointRotations = m_baseJointRotations;

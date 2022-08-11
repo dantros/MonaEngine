@@ -226,8 +226,8 @@ namespace Mona {
 		std::vector<JointRotation>* dmicRot = m_ikData.rigConfig->getDynamicJointRotations(m_ikData.rigConfig->getNextFrameIndex());
 		for (int i = 0; i < m_ikData.jointIndexes.size(); i++) {
 			JointIndex jIndex = m_ikData.jointIndexes[i];
-			(*dmicRot)[i].setRotationAngle(computedAngles[i]);
-			result[i] = { jIndex,(* dmicRot)[i].getQuatRotation() };
+			(*dmicRot)[jIndex].setRotationAngle(computedAngles[i]);
+			result[i] = { jIndex,(* dmicRot)[jIndex].getQuatRotation() };
 		}
 		return result;		
 	}
@@ -240,9 +240,9 @@ namespace Mona {
 			JointIndex jIndex = config->getJointIndices()[i];
 			glm::mat4 baseTransform_ = i == 0 ? baseTransform : customSpaceTr[m_ikRig->getTopology()[jIndex]];
 			customSpaceTr[jIndex] = baseTransform_ *
-				glmUtils::translationToMat4(config->getJointPositions()[i]) *
-				glmUtils::rotationToMat4(rotations[i].getQuatRotation()) *
-				glmUtils::scaleToMat4(config->getJointScales()[i]);
+				glmUtils::translationToMat4(config->getJointPositions()[jIndex]) *
+				glmUtils::rotationToMat4(rotations[jIndex].getQuatRotation()) *
+				glmUtils::scaleToMat4(config->getJointScales()[jIndex]);
 		}
 		return customSpaceTr;
 	}
@@ -287,14 +287,13 @@ namespace Mona {
 
 	std::vector<glm::mat4> ForwardKinematics::JointSpaceTransforms(AnimationIndex animIndex, FrameIndex frame, bool useDynamicRotations) {
 		IKRigConfig* config = m_ikRig->getAnimationConfig(animIndex);
-		std::vector<glm::mat4> jointSpaceTr(m_ikRig->getTopology().size());
-		for (int i = 0; i < m_ikRig->getTopology().size(); i++) { jointSpaceTr[i] = glm::identity<glm::mat4>(); }
+		std::vector<glm::mat4> jointSpaceTr(m_ikRig->getTopology().size(), glm::identity<glm::mat4>());
 		std::vector<JointRotation>const& rotations = useDynamicRotations ? (*config->getDynamicJointRotations(frame)) : config->getBaseJointRotations(frame);
 		for (int i = 0; i < config->getJointIndices().size(); i++) {
 			JointIndex jIndex = config->getJointIndices()[i];
-			jointSpaceTr[jIndex] = glmUtils::translationToMat4(config->getJointPositions()[i]) *
-				glmUtils::rotationToMat4(rotations[i].getQuatRotation()) *
-				glmUtils::scaleToMat4(config->getJointScales()[i]);
+			jointSpaceTr[jIndex] = glmUtils::translationToMat4(config->getJointPositions()[jIndex]) *
+				glmUtils::rotationToMat4(rotations[jIndex].getQuatRotation()) *
+				glmUtils::scaleToMat4(config->getJointScales()[jIndex]);
 		}
 		return jointSpaceTr;
 	}

@@ -412,9 +412,6 @@ namespace Mona{
             
             glm::vec3 hipTrOriginalDirection = glm::normalize(hipTrCurve.getEnd() - hipTrCurve.getStart());
 
-            // testing
-            std::cout << "DEBUG HIP TR" << std::endl;
-
             float hipOriginalXYDistance = glm::length(glm::vec2(hipTrCurve.getEnd() - hipTrCurve.getStart()));
 
             FrameIndex initialFrame = config->getFrame(tInfLimitExtendedAnim);
@@ -442,34 +439,30 @@ namespace Mona{
 
 
 			// DEBUG
-            glm::vec3 targetDir = glm::rotate(hipTrOriginalDirection, m_ikRig->getRotationAngle(), m_ikRig->getUpVector());
-            std::cout << "rot angle: " << m_ikRig->getRotationAngle() << std::endl;
-            std::cout << "target dir:  x->" << targetDir[0] << ", y->" <<targetDir[1]<<", z->" << targetDir[2] << std::endl;
-            hipTrCurve.fitStartAndDir(initialTrans, targetDir);
+   //         glm::vec3 targetDir = glm::rotate(hipTrOriginalDirection, m_ikRig->getRotationAngle(), m_ikRig->getUpVector());
+   //         std::cout << "rot angle: " << m_ikRig->getRotationAngle() << std::endl;
+   //         std::cout << "target dir:  x->" << targetDir[0] << ", y->" <<targetDir[1]<<", z->" << targetDir[2] << std::endl;
+   //         hipTrCurve.fitStartAndDir(initialTrans, targetDir);
 
-			// ajuste a tiempo de reproduccion
-			hipTrCurve.offsetTValues(-hipTrCurve.getTRange()[0] + tInfLimitRep);
-			hipRotAnglCurve.offsetTValues(-hipRotAnglCurve.getTRange()[0] + tInfLimitRep);
-			hipRotAxCurve.offsetTValues(-hipRotAxCurve.getTRange()[0] + tInfLimitRep);
+			//// ajuste a tiempo de reproduccion
+			//hipTrCurve.offsetTValues(-hipTrCurve.getTRange()[0] + tInfLimitRep);
+			//hipRotAnglCurve.offsetTValues(-hipRotAnglCurve.getTRange()[0] + tInfLimitRep);
+			//hipRotAxCurve.offsetTValues(-hipRotAxCurve.getTRange()[0] + tInfLimitRep);
 
-			float testRepCountOffset = config->getNextFrameIndex() == 0 ? 1 : 0;
-			float testTransitionTime = config->getReproductionTime(config->getNextFrameIndex(), testRepCountOffset);
-			if (hipTrData->getTargetTranslations().inTRange(testTransitionTime)) {
-				hipTrData->setTargetTranslations(LIC<3>::transition(hipTrData->getTargetTranslations(), hipTrCurve, testTransitionTime));
-				hipTrData->setTargetRotationAngles(LIC<1>::transition(hipTrData->getTargetRotationAngles(), hipRotAnglCurve, testTransitionTime));
-				hipTrData->setTargetRotationAxes(LIC<3>::transition(hipTrData->getTargetRotationAxes(), hipRotAxCurve, testTransitionTime));
-			}
-			else {
-				hipTrData->setTargetRotationAngles(hipRotAnglCurve);
-				hipTrData->setTargetRotationAxes(hipRotAxCurve);
-				hipTrData->setTargetTranslations(hipTrCurve);
-			}
-            return;
+			//float testRepCountOffset = config->getNextFrameIndex() == 0 ? 1 : 0;
+			//float testTransitionTime = config->getReproductionTime(config->getNextFrameIndex(), testRepCountOffset);
+			//if (hipTrData->getTargetTranslations().inTRange(testTransitionTime)) {
+			//	hipTrData->setTargetTranslations(LIC<3>::transition(hipTrData->getTargetTranslations(), hipTrCurve, testTransitionTime));
+			//	hipTrData->setTargetRotationAngles(LIC<1>::transition(hipTrData->getTargetRotationAngles(), hipRotAnglCurve, testTransitionTime));
+			//	hipTrData->setTargetRotationAxes(LIC<3>::transition(hipTrData->getTargetRotationAxes(), hipRotAxCurve, testTransitionTime));
+			//}
+			//else {
+			//	hipTrData->setTargetRotationAngles(hipRotAnglCurve);
+			//	hipTrData->setTargetRotationAxes(hipRotAxCurve);
+			//	hipTrData->setTargetTranslations(hipTrCurve);
+			//}
+   //         return;
 			// DEBUG
-
-
-
-
 
             
             // segundo paso: ajustar punto de maxima altura
@@ -580,8 +573,7 @@ namespace Mona{
             float hipXYDistRatio = hipNewXYDist / hipOriginalXYDistance;
             float eeHipXYDistRatio = eeXYDistRatio / hipXYDistRatio ;
             glm::vec3 scalingVec(eeHipXYDistRatio, eeHipXYDistRatio, 1);
-            glm::vec3 upVec = { 0,0,1 };
-            glm::fquat xyRot = glm::angleAxis(m_ikRig->getRotationAngle(), upVec);
+            glm::fquat xyRot = glm::angleAxis(m_ikRig->getRotationAngle(), m_ikRig->getUpVector());
             hipTrCurveAdjustedFall.scale(scalingVec);            
             hipTrCurveAdjustedFall.rotate(xyRot);
             hipTrCurveAdjustedFall.translate(initialTrans);

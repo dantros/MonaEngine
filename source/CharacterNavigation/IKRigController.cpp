@@ -181,7 +181,7 @@ namespace Mona {
 			previousHipPosition = hipPosition;
 		}
 
-		currentConfig->m_hipTrajectoryData.init(frameNum, currentConfig);
+		currentConfig->m_hipTrajectoryData.init(currentConfig);
 		currentConfig->m_hipTrajectoryData.m_originalRotationAngles = LIC<1>(hipRotAngles, hipTimeStamps);
 		currentConfig->m_hipTrajectoryData.m_originalRotationAxes = LIC<3>(hipRotAxes, hipTimeStamps);
 		currentConfig->m_hipTrajectoryData.m_originalTranslations = LIC<3>(hipTranslations, hipTimeStamps);
@@ -199,7 +199,7 @@ namespace Mona {
 		for (int i = 0; i < chainNum; i++) {
 			supportFramesPerChain[i] = std::vector<bool>(frameNum);
 			glblPositionsPerChain[i] = std::vector<glm::vec3>(frameNum);
-			currentConfig->m_eeTrajectoryData[i].init(frameNum);
+			currentConfig->m_eeTrajectoryData[i].init(currentConfig);
 		}
 		for (int i = 0; i < frameNum; i++) {
 			// calculo de las transformaciones en model space
@@ -454,6 +454,11 @@ namespace Mona {
 					JointIndex ee = m_ikRig.m_ikChains[ikChains[i]].getJoints().back();
 					trData->m_savedPositions[currentFrame] = globalTransforms[ee] * glm::vec4(0, 0, 0, 1);
 					trData->m_savedDataValid[currentFrame] = true;
+					// para compensar el poco espacio entre en ultimo y el primer frame
+					if (currentFrame == config.getFrameNum() - 2) {
+						trData->m_savedDataValid[0] = true;
+						trData->m_savedPositions[currentFrame] = globalTransforms[ee] * glm::vec4(0, 0, 0, 1);
+					}
 				}
 				glm::mat4 hipTransform = globalTransforms[m_ikRig.m_hipJoint];
 				glm::vec3 hipScale; glm::fquat hipRot; glm::vec3 hipTrans; glm::vec3 hipSkew; glm::vec4 hipPers;
@@ -462,9 +467,16 @@ namespace Mona {
 				hipTrData->m_savedRotationAngles[currentFrame] = glm::angle(hipRot);
 				hipTrData->m_savedRotationAxes[currentFrame] = glm::axis(hipRot);
 				hipTrData->m_savedDataValid[currentFrame] = true;
+				// para compensar el poco espacio entre en ultimo y el primer frame
+				if (currentFrame == config.getFrameNum() - 2) {
+					hipTrData->m_savedTranslations[0] = hipTrans;
+					hipTrData->m_savedRotationAngles[0] = glm::angle(hipRot);
+					hipTrData->m_savedRotationAxes[0] = glm::axis(hipRot);
+					hipTrData->m_savedDataValid[0] = true;
+				}
 
 				// recalcular trayectorias de ee y caderas
-				bool updateNeeded = m_reproductionTime - lastTrajectoryUpdateTime > 0.2f;
+				bool updateNeeded = m_reproductionTime - lastTrajectoryUpdateTime > 0.05f;
 				if (!updateNeeded) {
 					for (int i = 0; i < config.m_eeTrajectoryData.size(); i++) {
 						float nextFrameRepTime = config.getReproductionTime(config.getNextFrameIndex());
@@ -513,8 +525,16 @@ namespace Mona {
 				for (int i = 0; i < ikChains.size(); i++) {
 					trData = config.getEETrajectoryData(ikChains[i]);
 					trData->m_savedDataValid[currentFrame] = false;
+					// para compensar el poco espacio entre en ultimo y el primer frame
+					if (currentFrame == config.getFrameNum() - 2) {
+						trData->m_savedDataValid[0] = false;
+					}
 				}
 				hipTrData->m_savedDataValid[currentFrame] = false;
+				// para compensar el poco espacio entre en ultimo y el primer frame
+				if (currentFrame == config.getFrameNum() - 2) {
+					hipTrData->m_savedDataValid[0] = false;
+				}
 			}
 		}
 		
@@ -528,6 +548,10 @@ namespace Mona {
 			FrameIndex nextFrame = config.getNextFrameIndex();
 			for (int i = 0; i < calculatedRotations.size(); i++) {
 				anim->SetRotation(calculatedRotations[i].second, nextFrame, calculatedRotations[i].first);
+				// para compensar el poco espacio entre en ultimo y el primer frame
+				if (nextFrame == config.getFrameNum() - 1) {
+					anim->SetRotation(calculatedRotations[i].second, 0, calculatedRotations[i].first);
+				}
 			}
 		}		
 	}
@@ -565,7 +589,7 @@ namespace Mona {
 		updateMovementDirection(animTimeStep);
 		if (m_ikRig.m_currentAnim != -1) {
 			updateTrajectories(m_ikRig.m_currentAnim, transformManager, staticMeshManager, true);
-			updateAnimation(m_ikRig.m_currentAnim);
+			//updateAnimation(m_ikRig.m_currentAnim);
 		}
 
 		for (AnimationIndex i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {

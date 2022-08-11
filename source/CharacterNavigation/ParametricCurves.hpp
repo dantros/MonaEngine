@@ -298,7 +298,7 @@ namespace Mona{
             std::vector<glm::vec<D, float>> transitionCurvePoints;
             transitionCurvePoints.reserve(curve1.m_curvePoints.size() + curve2.m_curvePoints.size());
             for (int i = 0; i < curve1.m_tValues.size(); i++) {
-                if (curve1.m_tValues[i] < transitionT) {
+                if (curve1.m_tValues[i] < transitionT || abs(curve1.m_tValues[i]-transitionT)<=2*epsilon) {
                     transitionTValues.push_back(curve1.m_tValues[i]);
                     transitionCurvePoints.push_back(curve1.m_curvePoints[i]);
                 }

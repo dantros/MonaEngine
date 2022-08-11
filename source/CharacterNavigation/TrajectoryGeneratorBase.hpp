@@ -51,7 +51,7 @@ namespace Mona{
         void setTargetRotationAngles(LIC<1> targetRotationAngles) { m_targetRotationAngles = targetRotationAngles; }
         void setTargetRotationAxes(LIC<3> targetRotationAxes) { m_targetRotationAxes = targetRotationAxes; }
         void setTargetTranslations(LIC<3> targetTranslations) { m_targetTranslations = targetTranslations; }
-        void init(int frameNum, IKRigConfig* config);
+        void init(IKRigConfig* config);
     };
 
     class EETrajectory {
@@ -87,6 +87,7 @@ namespace Mona{
         // Posiciones guardadas calculadas para frames previos con IK
         std::vector<glm::vec3> m_savedPositions;
         std::vector<bool> m_savedDataValid;
+        IKRigConfig* m_config;
     public:
         LIC<3> sampleExtendedSubTrajectory(float animationTime, float duration);
         EETrajectory getSubTrajectory(float animationTime);
@@ -98,7 +99,7 @@ namespace Mona{
         EETrajectory& getTargetTrajectory() { return m_targetTrajectory; }
         void setTargetTrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int subTrajectoryID) { 
             m_targetTrajectory = EETrajectory(trajectory, trajectoryType, subTrajectoryID); }
-        void init(int frameNum);
+        void init(IKRigConfig* config);
     };
     
 }

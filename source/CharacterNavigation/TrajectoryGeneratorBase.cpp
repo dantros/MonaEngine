@@ -19,7 +19,8 @@ EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int
     }
 
 
-    void HipGlobalTrajectoryData::init(int frameNum, IKRigConfig* config) {
+    void HipGlobalTrajectoryData::init(IKRigConfig* config) {
+		int frameNum = config->getFrameNum();
         m_savedRotationAngles = std::vector<float>(frameNum);
         m_savedRotationAxes = std::vector<glm::vec3>(frameNum);
         m_savedTranslations = std::vector<glm::vec3>(frameNum);
@@ -62,20 +63,15 @@ EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int
     }
 
 	EETrajectory EEGlobalTrajectoryData::getSubTrajectory(float animationTime) {
+		FrameIndex currFrame = m_config->getFrame(animationTime);
+		float nextAnimationTime = m_config->getAnimationTime((currFrame + 1) % m_config->getFrameNum());
+		if (nextAnimationTime < animationTime) {
+			nextAnimationTime += m_config->getAnimationDuration();
+		}
 		for (int i = 0; i < m_originalSubTrajectories.size(); i++) {
-			if (i == m_originalSubTrajectories.size() - 1) {
-				if (m_originalSubTrajectories[i].getEECurve().inTRange(animationTime)) {
-					return m_originalSubTrajectories[i];
-				}
-			}
-			else {
-				if (m_originalSubTrajectories[i].getEECurve().inTRange(animationTime) &&
-					m_originalSubTrajectories[i + 1].getEECurve().inTRange(animationTime)) {
-					return m_originalSubTrajectories[i + 1];
-				}
-				else if (m_originalSubTrajectories[i].getEECurve().inTRange(animationTime)) {
-					return m_originalSubTrajectories[i];
-				}
+			if (m_originalSubTrajectories[i].getEECurve().inTRange(animationTime) &&
+				m_originalSubTrajectories[i].getEECurve().inTRange(nextAnimationTime)) {
+				return m_originalSubTrajectories[i];
 			}
 
 		}
@@ -83,10 +79,12 @@ EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int
 		return EETrajectory();
 	}
 
-    void  EEGlobalTrajectoryData::init(int frameNum) {
+    void  EEGlobalTrajectoryData::init(IKRigConfig* config) {
+		int frameNum = config->getFrameNum();
         m_savedPositions = std::vector<glm::vec3>(frameNum);
 		m_savedDataValid = std::vector<bool>(frameNum, false);
         m_supportHeights = std::vector<float>(frameNum);
+		m_config = config;
     }
 
     EETrajectory EEGlobalTrajectoryData::getSubTrajectoryByID(int subTrajectoryID) {

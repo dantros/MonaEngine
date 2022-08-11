@@ -152,7 +152,9 @@ namespace Mona{
 		ComponentManager<StaticMeshComponent>& staticMeshManager) {
 		EEGlobalTrajectoryData* trData = config->getEETrajectoryData(ikChain);
 		FrameIndex currentFrame = config->getCurrentFrameIndex();
+        FrameIndex nextFrame = config->getNextFrameIndex();
 		float currentAnimTime = config->getAnimationTime(currentFrame);
+        float nextAnimTime = config->getAnimationTime(nextFrame);
 		float currentRepTime = config->getReproductionTime(currentFrame);
         float currSupportHeight = trData->getSupportHeight(currentFrame);
         glm::vec3 currentPos = trData->getSavedPosition(currentFrame);
@@ -218,10 +220,11 @@ namespace Mona{
         }
         glm::vec3 finalPos = strideData.back();
         baseCurve.fitEnds(initialPos, finalPos);
-        baseCurve.fitStartAndDir(initialPos, originalDirection);
-
 
         // DEBUG
+        std::cout << "base curve before tr: " << std::endl;
+        baseCurve.debugPrintTValues();
+        baseCurve.debugPrintCurvePoints();
 
 		float testRepCountOffset = config->getNextFrameIndex() == 0 ? 1 : 0;
 		float testTransitionTime = config->getReproductionTime(config->getNextFrameIndex(), testRepCountOffset);
@@ -230,6 +233,9 @@ namespace Mona{
 		if (testCurrSubTrID == testNewSubTrID) {
 			trData->setTargetTrajectory(LIC<3>::transition(trData->getTargetTrajectory().getEECurve(),
 				baseCurve, testTransitionTime), trType, testNewSubTrID);
+			std::cout << "base curve after tr: " << std::endl;
+			trData->getTargetTrajectory().getEECurve().debugPrintTValues();
+            trData->getTargetTrajectory().getEECurve().debugPrintCurvePoints();
 		}
 		else {
 			trData->setTargetTrajectory(baseCurve, trType, testNewSubTrID);
@@ -436,38 +442,27 @@ namespace Mona{
 
 
 			// DEBUG
+            glm::vec2 targetDir = glm::rotate(m_ikRig->getFrontVector(), m_ikRig->getRotationAngle());
+            hipTrCurve.fitStartAndDir(initialTrans, glm::vec3(targetDir, 0));
 
-			//std::cout << "base ee original curve" << std::endl;
-   //         baseEEOriginalCurve.debugPrintTValues();
-			//baseEEOriginalCurve.debugPrintCurvePoints();
-			//std::cout << "base ee target curve" << std::endl;
-			//baseEETargetCurve.debugPrintCurvePoints();
-			//std::cout << "base hip curve." << std::endl;
-			//hipTrCurve.debugPrintCurvePoints();
+			// ajuste a tiempo de reproduccion
+			hipTrCurve.offsetTValues(-hipTrCurve.getTRange()[0] + tInfLimitRep);
+			hipRotAnglCurve.offsetTValues(-hipRotAnglCurve.getTRange()[0] + tInfLimitRep);
+			hipRotAxCurve.offsetTValues(-hipRotAxCurve.getTRange()[0] + tInfLimitRep);
 
-			//hipTrCurve.translate(initialTrans);
-
-			//std::cout << "base hip curve repositioned." << std::endl;
-			//hipTrCurve.debugPrintCurvePoints();
-
-			//// ajuste a tiempo de reproduccion
-			//hipTrCurve.offsetTValues(-hipTrCurve.getTRange()[0] + tInfLimitRep);
-			//hipRotAnglCurve.offsetTValues(-hipRotAnglCurve.getTRange()[0] + tInfLimitRep);
-			//hipRotAxCurve.offsetTValues(-hipRotAxCurve.getTRange()[0] + tInfLimitRep);
-
-			//float testRepCountOffset = config->getNextFrameIndex() == 0 ? 1 : 0;
-			//float testTransitionTime = config->getReproductionTime(config->getNextFrameIndex(), testRepCountOffset);
-			//if (hipTrData->getTargetTranslations().inTRange(testTransitionTime)) {
-			//	hipTrData->setTargetTranslations(LIC<3>::transition(hipTrData->getTargetTranslations(), hipTrCurve, testTransitionTime));
-			//	hipTrData->setTargetRotationAngles(LIC<1>::transition(hipTrData->getTargetRotationAngles(), hipRotAnglCurve, testTransitionTime));
-			//	hipTrData->setTargetRotationAxes(LIC<3>::transition(hipTrData->getTargetRotationAxes(), hipRotAxCurve, testTransitionTime));
-			//}
-			//else {
-			//	hipTrData->setTargetRotationAngles(hipRotAnglCurve);
-			//	hipTrData->setTargetRotationAxes(hipRotAxCurve);
-			//	hipTrData->setTargetTranslations(hipTrCurve);
-			//}
-   //         return;
+			float testRepCountOffset = config->getNextFrameIndex() == 0 ? 1 : 0;
+			float testTransitionTime = config->getReproductionTime(config->getNextFrameIndex(), testRepCountOffset);
+			if (hipTrData->getTargetTranslations().inTRange(testTransitionTime)) {
+				hipTrData->setTargetTranslations(LIC<3>::transition(hipTrData->getTargetTranslations(), hipTrCurve, testTransitionTime));
+				hipTrData->setTargetRotationAngles(LIC<1>::transition(hipTrData->getTargetRotationAngles(), hipRotAnglCurve, testTransitionTime));
+				hipTrData->setTargetRotationAxes(LIC<3>::transition(hipTrData->getTargetRotationAxes(), hipRotAxCurve, testTransitionTime));
+			}
+			else {
+				hipTrData->setTargetRotationAngles(hipRotAnglCurve);
+				hipTrData->setTargetRotationAxes(hipRotAxCurve);
+				hipTrData->setTargetTranslations(hipTrCurve);
+			}
+            return;
 			// DEBUG
 
 
@@ -638,8 +633,6 @@ namespace Mona{
             m_gradientDescent.setArgNum(initialArgs.size());
             m_gradientDescent.computeArgsMin(m_tgData.descentRate, m_tgData.maxIterations, m_tgData.targetPosDelta, initialArgs);
 
-            hipTrFinalCurve.fitStartAndDir(initialTrans, hipTrOriginalDirection);
-
 			// testing
             std::cout << "after gr descent." << std::endl;
 			hipTrFinalCurve.debugPrintCurvePoints();
@@ -785,15 +778,6 @@ namespace Mona{
         std::cout << "calc hip high -> hip tr curve:" << std::endl;
         hipTrCurve.debugPrintCurvePoints();
         std::cout << "calc hip high -> ee curves:" << std::endl;
-		for (int i = 0; i < m_ikChains.size(); i++) {
-			EEGlobalTrajectoryData* trData = config->getEETrajectoryData(m_ikChains[i]);
-			glm::vec3 eePoint = trData->getSubTrajectory(originalCurvesTime_anim).getEECurve().evalCurve(originalCurvesTime_anim);
-			origDistances[i] = glm::distance(hipPoint, eePoint);
-            std::cout << "times: " << std::endl;
-            trData->getSubTrajectory(originalCurvesTime_anim).getEECurve().debugPrintTValues();
-            std::cout << "points: " << std::endl;
-            trData->getSubTrajectory(originalCurvesTime_anim).getEECurve().debugPrintCurvePoints();
-		}
 
 		std::vector<glm::vec3> targetPoints(m_ikChains.size());
 		float zValue = std::numeric_limits<float>::lowest();

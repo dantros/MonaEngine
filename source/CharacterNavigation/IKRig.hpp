@@ -24,6 +24,7 @@ namespace Mona{
             IKChain* getIKChain(ChainIndex chainIndex) { return &m_ikChains[chainIndex]; };
             JointIndex getHipJoint() { return m_hipJoint; }
             glm::vec2 getFrontVector() { return m_frontVector; }
+            glm::vec3 getUpVector() { return m_upVector; }
             float getRotationAngle() { return m_rotationAngle; }
             float getRigHeight() { return m_rigHeight; }
             void setAngularSpeed(float angularSpeed) { m_angularSpeed = angularSpeed; }
@@ -39,7 +40,7 @@ namespace Mona{
             AnimationIndex m_targetAnim = -1;
             // Direccion frontal base de movimiento del rig
             glm::vec2 m_frontVector = glm::vec2(0.0f, 1.0f);
-            //glm::vec3 m_upVector; (0,0,1)
+            glm::vec3 m_upVector = glm::vec3(0, 0, 1);
             //glm::vec2 m_rightVector; (1,0)
             // rapidez de giro
             float m_angularSpeed = 0;

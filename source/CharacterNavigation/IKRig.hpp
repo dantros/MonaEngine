@@ -20,7 +20,7 @@ namespace Mona{
             IKRigConfig* getAnimationConfig(AnimationIndex animIndex) { return &m_animationConfigs[animIndex]; };
             const std::vector<int>& getTopology() const;
             const std::vector<std::string>& getJointNames() const;
-            IKNode* getIKNode(JointIndex jointIndex) { return &m_nodes[jointIndex]; };
+            glm::vec2 getMotionRange(JointIndex jointIndex) { return m_motionRanges[jointIndex]; };
             IKChain* getIKChain(ChainIndex chainIndex) { return &m_ikChains[chainIndex]; };
             JointIndex getHipJoint() { return m_hipJoint; }
             glm::vec2 getFrontVector() { return m_frontVector; }
@@ -51,8 +51,8 @@ namespace Mona{
             InverseKinematics m_inverseKinematics;
             // Altura aproximada global del rig, para calculos con distancias relativas
             float m_rigHeight;
-            // Arreglo de nodos (hay uno por cada articulacion)
-            std::vector<IKNode> m_nodes;
+            // Arreglo de rangos de movimiento (hay uno por cada articulacion)
+            std::vector<glm::vec2> m_motionRanges;
             // Arreglo de cadenas IK
             std::vector<IKChain> m_ikChains;
             // Indice de la cadera

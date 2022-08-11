@@ -152,26 +152,6 @@ namespace Mona {
         bool isValid();
     };
 
-    class IKNode {
-        friend class IKRig;
-        // Minimo angulo de rotacion de la articulacion (radianes)
-        float m_minAngle = -90;
-        // Maximo angulo de rotacion de la articulacion (radianes)
-        float m_maxAngle = 90;
-        // Nombre de la articulacion
-        std::string m_jointName;
-        // Indice de la articulacion
-        int m_jointIndex = -1;
-        // Puntero al nodo padre
-        IKNode* m_parent = nullptr;
-    public:
-        IKNode() = default;
-        IKNode(std::string jointName, JointIndex jointIndex, IKNode * parent = nullptr);
-        IKNode* getParent() const { return m_parent; }
-        glm::vec2 getMotionRange() const { return glm::vec2(m_minAngle, m_maxAngle); }
-        JointIndex getIndex() const { return m_jointIndex; }
-    };
-
 }
 
 

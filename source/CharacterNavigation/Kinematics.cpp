@@ -195,7 +195,7 @@ namespace Mona {
 		m_ikData.motionRanges = std::vector<glm::vec2>(m_ikData.jointIndexes.size());
 		for (int j = 0; j < m_ikData.jointIndexes.size(); j++) {
 			JointIndex jInd = m_ikData.jointIndexes[j];
-			m_ikData.motionRanges[j] = m_ikRig->getIKNode(jInd)->getMotionRange();
+			m_ikData.motionRanges[j] = m_ikRig->getMotionRange(jInd);
 		}
 		m_gradientDescent.setArgNum(m_ikData.jointIndexes.size());
 		m_ikData.rotationAxes.resize(m_ikData.jointIndexes.size());

@@ -118,12 +118,6 @@ namespace Mona{
 		return false;
 	}
 
-	IKNode::IKNode(std::string jointName, JointIndex jointIndex, IKNode* parent) {
-		m_jointName = jointName;
-		m_jointIndex = jointIndex;
-		m_parent = parent;
-	}
-
 	void RigData::setJointData(std::string jointName, float minAngle, float maxAngle) {
 		if (jointName == "") {
 			MONA_LOG_ERROR("RigData: jointName cannot be empty string.");

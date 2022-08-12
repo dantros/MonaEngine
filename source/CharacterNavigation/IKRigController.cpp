@@ -218,9 +218,9 @@ namespace Mona {
 			for (int j = 0; j < glblPositions.size(); j++) {
 				glblPositions[j] = glblTransforms[j] * glm::vec4(0, 0, 0, 1);
 			}
-			for (int j = 0; j < chainNum; j++) {
+			for (ChainIndex j = 0; j < chainNum; j++) {
 				int eeIndex = m_ikRig.m_ikChains[j].getJoints().back();
-				bool isSupportFrame = glm::distance(glblPositions[eeIndex], previousPositions[eeIndex]) <= minDistance*5;
+				bool isSupportFrame = glm::distance(glblPositions[eeIndex], previousPositions[eeIndex]) <= minDistance*15;
 				supportFramesPerChain[j][i] = isSupportFrame;
 				glblPositionsPerChain[j][i] = glm::vec4(glblPositions[eeIndex], 1);
 			}
@@ -247,6 +247,20 @@ namespace Mona {
 				}
 			}			
 		}
+
+		// se ajustan los frames de soporte entre cadenas opuestas (izquierda y derecha)
+		std::vector<ChainIndex> pairedChains;
+		for (ChainIndex i = 0; i < m_ikRig.m_ikChains.size(); i++) {
+			IKChain currChain = m_ikRig.m_ikChains[i];
+			if (funcUtils::findIndex(pairedChains, i) == -1) {
+				for (FrameIndex j = 0; j < frameNum; j++) {
+					supportFramesPerChain[currChain.getOpposite()][j] = !supportFramesPerChain[i][j];
+				}
+				pairedChains.push_back(i);
+				pairedChains.push_back(currChain.getOpposite());
+			}
+		}
+
 		
 		for (int i = 0; i < chainNum; i++) {
 			supportFramesPerChain[i][0] = supportFramesPerChain[i].back();
@@ -283,7 +297,8 @@ namespace Mona {
 					FrameIndex initialFrame = currFrame - 1;
 					bool baseFrameType = supportFramesPerChain[i][currFrame];
 					TrajectoryType trType = baseFrameType ? TrajectoryType::STATIC : TrajectoryType::DYNAMIC;
-					supportHeight = glblPositionsPerChain[i][currFrame][2];
+					supportHeight = glblPositionsPerChain[i][initialFrame][2] - floorZ;
+					currentConfig->m_eeTrajectoryData[i].m_supportHeights[initialFrame] = supportHeight;
 					std::vector<glm::vec3> curvePoints_1 = { glblPositionsPerChain[i][initialFrame] };
 					std::vector<float> tValues_1 = { currentConfig->getAnimationTime(initialFrame) };
 					std::vector<glm::vec3> curvePoints_2;
@@ -293,8 +308,7 @@ namespace Mona {
 				GATHER_POINTS:
 					while (baseFrameType == supportFramesPerChain[i][currFrame]) {
 						currentConfig->m_eeTrajectoryData[i].m_supportHeights[currFrame] = baseFrameType ?
-							glblPositionsPerChain[i][currFrame][2] : supportHeight;
-						currentConfig->m_eeTrajectoryData[i].m_supportHeights[currFrame] -= floorZ;
+							glblPositionsPerChain[i][currFrame][2]-floorZ : supportHeight;
 						(*selectedCPArr).push_back(glblPositionsPerChain[i][currFrame]);
 						(*selectedTVArr).push_back(currentConfig->getAnimationTime(currFrame));
 						j++;
@@ -591,7 +605,7 @@ namespace Mona {
 		updateMovementDirection(animTimeStep);
 		if (m_ikRig.m_currentAnim != -1) {
 			updateTrajectories(m_ikRig.m_currentAnim, transformManager, staticMeshManager, true);
-			updateAnimation(m_ikRig.m_currentAnim);
+			//updateAnimation(m_ikRig.m_currentAnim);
 		}
 
 		for (AnimationIndex i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {

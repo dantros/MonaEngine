@@ -74,7 +74,6 @@ namespace Mona{
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
         std::vector<ChainIndex> getIKChains() { return m_ikChains; }
-        void setIKChains(std::vector<ChainIndex> ikChains) { m_ikChains = ikChains; }
     };
 
     

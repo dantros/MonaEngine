@@ -130,12 +130,15 @@ namespace Mona {
         std::vector<JointIndex> m_joints;
         // Objetivo actual para el end effector (donde debe posicionarse) (model space)
         glm::vec3 m_currentEETarget;
+        // Cadena opuesta a la actual (ej: pierna izquierda a pierna derecha). Para ajustar posiciones relativas.
+        ChainIndex m_opposite;
     public:
         IKChain() = default;
         const std::string& getName() const { return m_name; };
         const std::vector<JointIndex>& getJoints() const { return m_joints; };
         const glm::vec3& getCurrentEETarget() const { return m_currentEETarget; };
         void setCurrentEETarget(glm::vec3 currentEETarget) { m_currentEETarget = currentEETarget; }
+        ChainIndex getOpposite() { return m_opposite; }
     };
     struct RigData {
         friend class IKRig;

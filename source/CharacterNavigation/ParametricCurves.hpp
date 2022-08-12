@@ -148,8 +148,13 @@ namespace Mona{
 
         glm::vec<D, float> evalCurve(float t) {
             MONA_ASSERT(inTRange(t), "LIC: t must be a value between {0} and {1}.", m_tValues[0], m_tValues.back());
-            if (abs(t - m_tValues[0]) <= m_tEpsilon) { return m_curvePoints[0]; }
-            if (abs(t - m_tValues.back()) <= m_tEpsilon) { return m_curvePoints.back(); }
+            // si estamos en el entorno de uno punto
+            for (int i = 0; i < m_tValues.size(); i++) {
+                if (abs(t - m_tValues[i]) <= m_tEpsilon) {
+                    return m_curvePoints[i];
+                }
+            }
+            // si no
             for (int i = 0; i < m_tValues.size() - 1; i++) {
                 if (m_tValues[i] <= t && t <= m_tValues[i + 1]) {
                     float fraction = funcUtils::getFraction(m_tValues[i], m_tValues[i + 1], t);
@@ -340,23 +345,6 @@ namespace Mona{
                     else { return i; }
                 }
             }
-            return m_tValues.size() - 1;
-        }
-
-        int getPointIndex(float tValue, bool getNext=false) const {
-            if (tValue < m_tValues[0]) {
-                MONA_ASSERT(getNext, "LIC: There is no point at t={0} or before", tValue);
-                return 0;
-            }
-            for (int i = 1; i < m_tValues.size() - 1; i++) {
-                if (m_tValues[i] <= tValue && tValue <= m_tValues[i + 1]) {
-                    if (tValue == m_tValues[i]) { return i; }
-                    if (tValue == m_tValues[i + 1]) { return i + 1; }
-                    if (getNext) { return i + 1; }
-                    return i;
-                }
-            }
-            MONA_ASSERT(!getNext, "LIC: There is no point at t={0} or after", tValue);
             return m_tValues.size() - 1;
         }
 

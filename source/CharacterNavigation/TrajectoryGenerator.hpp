@@ -66,9 +66,6 @@ namespace Mona{
             glm::vec2 targetDirection, int stepNum,
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
-        void initialAdjustment(IKRigConfig* config,
-            ComponentManager<TransformComponent>& transformManager,
-            ComponentManager<StaticMeshComponent>& staticMeshManager);
     public:
         TrajectoryGenerator(IKRig* ikRig, std::vector<ChainIndex> ikChains);
         TrajectoryGenerator() = default;

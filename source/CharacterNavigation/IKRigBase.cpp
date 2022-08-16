@@ -87,20 +87,22 @@ namespace Mona{
 	}
 
 	float IKRigConfig::getAnimationTime(float reproductionTime) {
-		if (0 <= reproductionTime) {
-			return fmod(reproductionTime, m_animationClip->GetDuration()) + m_timeStamps[0];
+		while (reproductionTime < 0) {
+			reproductionTime += m_animationClip->GetDuration();
 		}
-		else {
-			while (reproductionTime < 0) {
-				reproductionTime += m_animationClip->GetDuration();
-			}
-			return fmod(reproductionTime, m_animationClip->GetDuration()) + m_timeStamps[0];
-		}
+		return fmod(reproductionTime, m_animationClip->GetDuration()) + m_timeStamps[0];
 	}
 
 	FrameIndex IKRigConfig::getFrame(float extendedAnimationTime) {
 		// llevar el tiempo al rango correcto
 		extendedAnimationTime = adjustAnimationTime(extendedAnimationTime);
+		// si estamos muy cerca de un frame
+		float epsilon = 0.000001;
+		for (FrameIndex i = 0; i < m_timeStamps.size(); i++) {
+			if (abs(m_timeStamps[i] - extendedAnimationTime) <= epsilon) {
+				return i;
+			}
+		}
 		for (FrameIndex i = 0; i < m_timeStamps.size()-1; i++) {
 			if (m_timeStamps[i] <= extendedAnimationTime && extendedAnimationTime < m_timeStamps[i + 1]) {
 				return i;

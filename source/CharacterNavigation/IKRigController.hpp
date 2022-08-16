@@ -19,7 +19,7 @@ namespace Mona {
 	public:
 		IKRigController() = default;
 		IKRigController(std::shared_ptr<Skeleton> skeleton, RigData rigData, InnerComponentHandle transformHandle,
-			InnerComponentHandle skeletalMeshHandle, glm::mat4 baseGlobalTransform);
+			InnerComponentHandle skeletalMeshHandle, ComponentManager<TransformComponent>* transformManager);
 		void validateTerrains(ComponentManager<StaticMeshComponent>& staticMeshManager);
 		void addAnimation(std::shared_ptr<AnimationClip> animationClip);
 		void setAngularSpeed(float angularSpeed) { m_ikRig.setAngularSpeed(angularSpeed); }

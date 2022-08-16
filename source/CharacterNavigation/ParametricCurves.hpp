@@ -341,7 +341,7 @@ namespace Mona{
             }
             for (int i = 1; i < m_tValues.size() - 1; i++) {
                 if (m_tValues[i] <= tValue && tValue <= m_tValues[i + 1]) {
-                    if ((m_tValues[i + 1] - tValue) <= (tValue - m_tValues[i])) { return i + 1; }
+                    if (abs(m_tValues[i + 1] - tValue) <= abs(tValue - m_tValues[i])) { return i + 1; }
                     else { return i; }
                 }
             }

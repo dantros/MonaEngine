@@ -58,6 +58,7 @@ namespace Mona{
         friend class IKRigController;
         friend class EETrajectoryData;
         LIC<3> m_curve;
+        LIC<3> m_altCurve;
         TrajectoryType m_trajectoryType;
         // Indice del punto de la curva que tiene el tiempo en el que ocurre la
         // de maxima altura de la cadera
@@ -65,9 +66,10 @@ namespace Mona{
         int m_subTrajectoryID = -1;
     public:
         EETrajectory() = default;
-        EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int subTrajectoryID = -1);
+        EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int subTrajectoryID = -1, LIC<3> altCurve=LIC<3>());
         bool isDynamic() { return m_trajectoryType == TrajectoryType::DYNAMIC; }
         LIC<3>& getEECurve() { return m_curve; }
+        LIC<3>& getAltCurve() { return m_altCurve; }
         float getHipMaxAltitudeTime() {
             MONA_ASSERT(m_hipMaxAltitudeTime != std::numeric_limits<float>::lowest(), "EETrajectory: Accessing unitialized value.");
             return m_hipMaxAltitudeTime;
@@ -97,8 +99,8 @@ namespace Mona{
         bool isSavedDataValid(FrameIndex frame) { return m_savedDataValid[frame]; }
         float getSupportHeight(FrameIndex frame) { return m_supportHeights[frame]; }
         EETrajectory& getTargetTrajectory() { return m_targetTrajectory; }
-        void setTargetTrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int subTrajectoryID) { 
-            m_targetTrajectory = EETrajectory(trajectory, trajectoryType, subTrajectoryID); }
+        void setTargetTrajectory(LIC<3> curve, TrajectoryType trajectoryType, int subTrajectoryID, LIC<3> altCurve = LIC<3>()) { 
+            m_targetTrajectory = EETrajectory(curve, trajectoryType, subTrajectoryID, altCurve); }
         void init(IKRigConfig* config);
     };
     

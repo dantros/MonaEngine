@@ -4,10 +4,11 @@
 namespace Mona{
 
 
-EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int subTrajectoryID) {
+EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int subTrajectoryID, LIC<3> altCurve) {
         m_curve = trajectory;
         m_trajectoryType = trajectoryType;
         m_subTrajectoryID = subTrajectoryID;
+		m_altCurve = altCurve;
     }
 
     glm::fquat HipGlobalTrajectoryData::getTargetRotation(float reproductionTime) {

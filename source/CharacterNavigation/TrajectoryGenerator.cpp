@@ -533,14 +533,25 @@ namespace Mona{
             // buscamos el par de puntos entre curvas opuestas que tengan una distancia xy lo mas cercana a la original
             float hipHighNewTime_rep = -1;
             float minDistDiff = std::numeric_limits<float>::max();
+            float totalTime = baseEETargetCurve.getTRange()[1] - baseEETargetCurve.getTRange()[0];
+            std::vector<float> distDiffsWPenalty;
+            std::vector<float> penalties;
+            std::vector<float> penaltyMults;
+            std::vector<float> finalPenalties;
             for (int i = 0; i < baseEETargetCurve.getNumberOfPoints(); i++) {
                 float currDist = glm::distance(glm::vec2(baseEETargetCurve.getCurvePoint(i)), 
                     glm::vec2(oppositeEETargetCurve.getCurvePoint(i)));
                 // se considera la diferencia con el tiempo original
                 float currDistDiff = abs(hipHighOriginalOppositesXYDist - currDist);
-                float penalty = currDistDiff*abs(baseEETargetCurve.getTValue(i) - hipHighOriginalTime_rep)/
-                    (baseEETargetCurve.getTRange()[1] - baseEETargetCurve.getTRange()[0]);
-                currDistDiff += penalty;
+                float currTimeDiff = abs(baseEETargetCurve.getTValue(i) - hipHighOriginalTime_rep);
+                float penalty = currDistDiff*(currTimeDiff/totalTime);
+                float penaltyMult = 0 < currTimeDiff ? totalTime / currTimeDiff : 0;
+                penaltyMult = std::clamp(penaltyMult, 0.0f, 5.0f);
+                currDistDiff += penalty*penaltyMult;
+                distDiffsWPenalty.push_back(currDistDiff);
+                penalties.push_back(penalty);
+                penaltyMults.push_back(penaltyMult);
+                finalPenalties.push_back(penalty * penaltyMult);
                 if (currDistDiff < minDistDiff) {
                     hipHighNewTime_rep = baseEETargetCurve.getTValue(i);
                     minDistDiff = currDistDiff;

@@ -37,20 +37,14 @@ namespace Mona{
 		m_animIndex = animationIndex;
 		m_forwardKinematics = forwardKinematics;
 	}
-	glm::mat4 IKRigConfig::getModelSpaceTransform(JointIndex jointIndex, FrameIndex frame, bool useDynamicRotations) {
-		return m_forwardKinematics->ModelSpaceTransform(m_animIndex, jointIndex, frame, useDynamicRotations);
+	std::vector<glm::mat4> IKRigConfig::getEEListJointSpaceTransforms(std::vector<JointIndex> eeList, FrameIndex frame, bool useDynamicRotations) {
+		return m_forwardKinematics->EEListJointSpaceTransforms(eeList, m_animIndex, frame, useDynamicRotations);
 	}
-	std::vector<glm::mat4> IKRigConfig::getModelSpaceTransforms(FrameIndex frame, bool useDynamicRotations) {
-		return m_forwardKinematics->ModelSpaceTransforms(m_animIndex, frame, useDynamicRotations);
+	std::vector<glm::mat4> IKRigConfig::getEEListModelSpaceTransforms(std::vector<JointIndex> eeList,  FrameIndex frame, bool useDynamicRotations) {
+		return m_forwardKinematics->EEListCustomSpaceTransforms(eeList, glm::identity<glm::mat4>(), m_animIndex, frame, useDynamicRotations);
 	}
-	std::vector<glm::vec3> IKRigConfig::getModelSpacePositions(FrameIndex frame, bool useDynamicRotations) {
-		return m_forwardKinematics->ModelSpacePositions(m_animIndex, frame, useDynamicRotations);
-	}
-	std::vector<glm::mat4> IKRigConfig::getCustomSpaceTransforms(glm::mat4 baseTransform, FrameIndex frame, bool useDynamicRotations) {
-		return m_forwardKinematics->CustomSpaceTransforms(baseTransform, m_animIndex, frame, useDynamicRotations);
-	}
-	std::vector<glm::mat4> IKRigConfig::getJointSpaceTransforms(FrameIndex frame, bool useDynamicRotations) {
-		return m_forwardKinematics->JointSpaceTransforms(m_animIndex, frame, useDynamicRotations);
+	std::vector<glm::mat4> IKRigConfig::getEEListCustomSpaceTransforms(std::vector<JointIndex> eeList, glm::mat4 baseTransform, FrameIndex frame, bool useDynamicRotations) {
+		return m_forwardKinematics->EEListCustomSpaceTransforms(eeList, baseTransform, m_animIndex, frame, useDynamicRotations);
 	}
 
 	float IKRigConfig::getReproductionTime(FrameIndex frame, int repCountOffset) {

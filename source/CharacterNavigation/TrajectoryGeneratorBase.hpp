@@ -28,8 +28,6 @@ namespace Mona{
         LIC<3> m_targetRotationAxes;
         LIC<3> m_targetTranslations;
         std::vector<glm::vec3> m_savedTranslations;
-        std::vector<float> m_savedRotationAngles;
-        std::vector<glm::vec3> m_savedRotationAxes;
         std::vector<bool> m_savedDataValid;
         IKRigConfig* m_config;
 		template <int D>
@@ -40,8 +38,6 @@ namespace Mona{
         LIC<3> sampleOriginalRotationAxes(float initialAnimTime, float finalAnimTime);
         LIC<3> sampleOriginalTranslations(float initialAnimTime, float finalAnimTime);
         glm::vec3 getSavedTranslation(FrameIndex frame) { return m_savedTranslations[frame]; }
-        float getSavedRotationAngle(FrameIndex frame) { return m_savedRotationAngles[frame]; }
-        glm::vec3 getSavedRotationAxis(FrameIndex frame) { return m_savedRotationAxes[frame]; }
         bool isSavedDataValid(FrameIndex frame) { return m_savedDataValid[frame]; }
         LIC<1> getTargetRotationAngles() { return m_targetRotationAngles; }
         LIC<3> getTargetRotationAxes() { return m_targetRotationAxes; }

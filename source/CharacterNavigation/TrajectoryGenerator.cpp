@@ -127,7 +127,7 @@ namespace Mona{
 
 		for (int i = 0; i < m_ikChains.size(); i++) {
 			ChainIndex ikChain = m_ikChains[i];
-			JointIndex eeIndex = m_ikRig->getIKChain(ikChain)->getJoints().back();
+			JointIndex eeIndex = m_ikRig->getIKChain(ikChain)->getEndEffector();
 			generateEETrajectory(ikChain, config, transformManager, staticMeshManager);
 		}
 

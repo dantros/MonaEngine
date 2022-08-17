@@ -22,8 +22,6 @@ EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int
 
     void HipGlobalTrajectoryData::init(IKRigConfig* config) {
 		int frameNum = config->getFrameNum();
-        m_savedRotationAngles = std::vector<float>(frameNum);
-        m_savedRotationAxes = std::vector<glm::vec3>(frameNum);
         m_savedTranslations = std::vector<glm::vec3>(frameNum);
 		m_savedDataValid = std::vector<bool>(frameNum, false);
         m_config = config;

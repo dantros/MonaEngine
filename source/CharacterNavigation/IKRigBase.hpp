@@ -96,11 +96,9 @@ namespace Mona {
         float getCurrentReproductionTime() const { return m_currentReproductionTime; }
         FrameIndex getNextFrameIndex() const { return m_nextFrameIndex; }
         FrameIndex getCurrentFrameIndex() const { return m_currentFrameIndex; }
-        glm::mat4 getModelSpaceTransform(JointIndex jointIndex, FrameIndex frame, bool useDynamicRotations);
-        std::vector<glm::mat4> getModelSpaceTransforms(FrameIndex frame, bool useDynamicRotations);
-        std::vector<glm::vec3> getModelSpacePositions(FrameIndex frame, bool useDynamicRotations);
-        std::vector<glm::mat4> getCustomSpaceTransforms(glm::mat4 baseTransform, FrameIndex frame, bool useDynamicRotations);
-        std::vector<glm::mat4> getJointSpaceTransforms(FrameIndex frame, bool useDynamicRotations);
+        std::vector<glm::mat4> getEEListJointSpaceTransforms(std::vector<JointIndex> eeList,FrameIndex frame, bool useDynamicRotations);
+        std::vector<glm::mat4> getEEListModelSpaceTransforms(std::vector<JointIndex> eeList, FrameIndex frame, bool useDynamicRotations);
+        std::vector<glm::mat4> getEEListCustomSpaceTransforms(std::vector<JointIndex> eeList, glm::mat4 baseTransform, FrameIndex frame, bool useDynamicRotations);
         EEGlobalTrajectoryData* getEETrajectoryData(ChainIndex chainIndex) { return &(m_eeTrajectoryData[chainIndex]); }
         HipGlobalTrajectoryData* getHipTrajectoryData() { return &m_hipTrajectoryData; }
         AnimationType getAnimationType() { return m_animationType; }
@@ -136,6 +134,7 @@ namespace Mona {
         IKChain() = default;
         const std::string& getName() const { return m_name; };
         const std::vector<JointIndex>& getJoints() const { return m_joints; };
+        JointIndex getEndEffector() { return m_joints.back(); }
         const glm::vec3& getCurrentEETarget() const { return m_currentEETarget; };
         void setCurrentEETarget(glm::vec3 currentEETarget) { m_currentEETarget = currentEETarget; }
         ChainIndex getOpposite() { return m_opposite; }

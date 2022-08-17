@@ -23,21 +23,19 @@ namespace Mona {
 		ForwardKinematics(IKRig* ikRig);
 		ForwardKinematics() = default;
 		std::vector<glm::mat4> CustomSpaceTransforms(glm::mat4 baseTransform, AnimationIndex animIndex, FrameIndex frame, bool useDynamicRotations);
-		glm::mat4 CustomSpaceTransform(glm::mat4 baseTransform, JointIndex jointIndex, AnimationIndex animIndex, FrameIndex frame, bool useDynamicRotations);
+		std::vector<glm::mat4> EEListCustomSpaceTransforms(std::vector<JointIndex> eeList, glm::mat4 baseTransform, AnimationIndex animIndex, FrameIndex frame, bool useDynamicRotations);
 		std::vector<glm::vec3> CustomSpacePositions(glm::mat4 baseTransform, AnimationIndex animIndex, FrameIndex frame, bool useDynamicRotations);
 		std::vector<glm::mat4> ModelSpaceTransforms(AnimationIndex animIndex, FrameIndex frame, bool useDynamicRotations);
-		glm::mat4 ModelSpaceTransform(AnimationIndex animIndex, JointIndex jointIndex, FrameIndex frame, bool useDynamicRotations);
 		std::vector<glm::vec3> ModelSpacePositions(AnimationIndex animIndex, FrameIndex frame, bool useDynamicRotations);
+		std::vector<glm::mat4> EEListJointSpaceTransforms(std::vector<JointIndex> eeList, AnimationIndex animIndex, FrameIndex frame, bool useDynamicRotations);
 		std::vector<glm::mat4> JointSpaceTransforms(AnimationIndex animIndex, FrameIndex frame, bool useDynamicRotations);
+		glm::mat4 JointSpaceTransform(AnimationIndex animIndex, JointIndex jointIndex, FrameIndex frame, bool useDynamicRotations);
 
 	};
 
 	struct IKData {
 		// constants data
 		std::vector<float> baseAngles;
-		float alphaValue;
-		float betaValue;
-		float gammaValue;
 		// variables data
 		std::vector<JointIndex> jointIndexes;
 		std::vector<glm::mat4> forwardModelSpaceTransforms; // multiplicacion en cadena desde la raiz hasta el joint i

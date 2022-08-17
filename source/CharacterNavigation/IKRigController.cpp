@@ -44,7 +44,7 @@ namespace Mona {
 			MONA_LOG_ERROR("IKRigController: Hip joint must be present in input animationClip.");
 		}
 		for (int i = 0; i < m_ikRig.m_ikChains.size(); i++) {
-			JointIndex eeIndex = m_ikRig.m_ikChains[i].getJoints().back();
+			JointIndex eeIndex = m_ikRig.m_ikChains[i].getEndEffector();
 			if (animationClip->GetTrackIndex(eeIndex) == -1) {
 				MONA_LOG_ERROR("IKRigController: Set end effector {0} must be present in input animationClip.",
 					m_ikRig.getJointNames()[eeIndex]);
@@ -184,7 +184,7 @@ namespace Mona {
 				glblPositions[j] = glblTransforms[j] * glm::vec4(0, 0, 0, 1);
 			}
 			for (ChainIndex j = 0; j < chainNum; j++) {
-				int eeIndex = m_ikRig.m_ikChains[j].getJoints().back();
+				int eeIndex = m_ikRig.m_ikChains[j].getEndEffector();
 				bool isSupportFrame = glm::distance(glblPositions[eeIndex], previousPositions[eeIndex]) <= minDistance*15;
 				supportFramesPerChain[j][i] = isSupportFrame;
 				glblPositionsPerChain[j][i] = glm::vec4(glblPositions[eeIndex], 1);
@@ -494,11 +494,15 @@ namespace Mona {
 		if (active) {
 			if (config.m_onNewFrame) { // se realiza al llegar a un frame de la animacion
 			// guardado de posiciones globales ee y cadera
+				std::vector<JointIndex> endEffectors;
+				for (int i = 0; i < ikChains.size(); i++) {
+					endEffectors.push_back(m_ikRig.m_ikChains[ikChains[i]].getEndEffector());
+				}
 				glm::mat4 baseTransform = transformManager.GetComponentPointer(m_ikRig.getTransformHandle())->GetModelMatrix();
-				std::vector<glm::mat4> globalTransforms = config.getCustomSpaceTransforms(baseTransform, currentFrame, true);
+				std::vector<glm::mat4> globalTransforms = config.getEEListCustomSpaceTransforms(endEffectors, baseTransform, currentFrame, true);
 				for (int i = 0; i < ikChains.size(); i++) {
 					trData = config.getEETrajectoryData(ikChains[i]);
-					JointIndex ee = m_ikRig.m_ikChains[ikChains[i]].getJoints().back();
+					JointIndex ee = endEffectors[i];
 					trData->m_savedPositions[currentFrame] = globalTransforms[ee] * glm::vec4(0, 0, 0, 1);
 					trData->m_savedDataValid[currentFrame] = true;
 					// para compensar el poco espacio entre en ultimo y el primer frame
@@ -511,14 +515,10 @@ namespace Mona {
 				glm::vec3 hipScale; glm::fquat hipRot; glm::vec3 hipTrans; glm::vec3 hipSkew; glm::vec4 hipPers;
 				glm::decompose(hipTransform, hipScale, hipRot, hipTrans, hipSkew, hipPers);
 				hipTrData->m_savedTranslations[currentFrame] = hipTrans;
-				hipTrData->m_savedRotationAngles[currentFrame] = glm::angle(hipRot);
-				hipTrData->m_savedRotationAxes[currentFrame] = glm::axis(hipRot);
 				hipTrData->m_savedDataValid[currentFrame] = true;
 				// para compensar el poco espacio entre en ultimo y el primer frame
 				if (currentFrame == config.getFrameNum() - 2) {
 					hipTrData->m_savedTranslations[0] = hipTrans;
-					hipTrData->m_savedRotationAngles[0] = glm::angle(hipRot);
-					hipTrData->m_savedRotationAxes[0] = glm::axis(hipRot);
 					hipTrData->m_savedDataValid[0] = true;
 				}
 
@@ -636,7 +636,7 @@ namespace Mona {
 		updateMovementDirection(animTimeStep);
 		if (m_ikRig.m_currentAnim != -1) {
 			updateTrajectories(m_ikRig.m_currentAnim, transformManager, staticMeshManager, true);
-			//updateAnimation(m_ikRig.m_currentAnim);
+			updateAnimation(m_ikRig.m_currentAnim);
 		}
 
 		for (AnimationIndex i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {

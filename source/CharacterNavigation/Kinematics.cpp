@@ -7,10 +7,6 @@
 
 namespace Mona {
 
-	ForwardKinematics::ForwardKinematics(IKRig* ikRig) {
-		m_ikRig = ikRig;
-	}
-
 	glm::mat4 rotationMatrixDerivative_dAngle(float angle, glm::vec3 axis) {
 		glm::mat4 mat = glm::identity<glm::mat4>();
 		mat[0][0] = -(pow(axis[1], 2) + pow(axis[2], 2)) * sin(angle);
@@ -31,9 +27,8 @@ namespace Mona {
 			endEffectors.push_back(dataPtr->ikChains[i]->getEndEffector());
 		}
 		dataPtr->forwardModelSpaceTransforms = dataPtr->rigConfig->getEEListModelSpaceTransforms(endEffectors,
-			dataPtr->rigConfig->getCurrentFrameIndex(), true);
-		dataPtr->jointSpaceTransforms = dataPtr->rigConfig->getEEListJointSpaceTransforms(endEffectors, 
-			dataPtr->rigConfig->getCurrentFrameIndex(), true);
+			dataPtr->rigConfig->getCurrentFrameIndex(), true, &(dataPtr->jointSpaceTransforms));
+		dataPtr->backwardModelSpaceTransformsPerChain = std::vector<std::vector<glm::mat4>>(dataPtr->ikChains.size());
 		std::vector<glm::mat4>* bt;
 		for (int i = 0; i < dataPtr->ikChains.size(); i++) {
 			std::vector<JointIndex>const& joints = dataPtr->ikChains[i]->getJoints();
@@ -89,17 +84,17 @@ namespace Mona {
 			if (ind != -1) {
 				JointIndex varJointIndex = joints[ind];
 				JointIndex firstJointIndex = joints[0];
-				JointIndex eeIndex = joints.back();
+				JointIndex eeIndex = dataPtr->ikChains[c]->getEndEffector();
 				glm::mat4 TvarRaw = dataPtr->jointSpaceTransforms[dataPtr->jointIndexes[varIndex]];
 				glm::decompose(TvarRaw, TvarScl, TvarQuat, TvarTr, skew, perspective);
 				TA = (varJointIndex != firstJointIndex ? dataPtr->forwardModelSpaceTransforms[joints[ind - 1]] :
 					glm::identity<glm::mat4>()) * glmUtils::translationToMat4(TvarTr);
 				TB = glmUtils::scaleToMat4(TvarScl) * (varJointIndex != eeIndex ?
 					dataPtr->backwardModelSpaceTransformsPerChain[c][joints[ind + 1]] : glm::identity<glm::mat4>());
-				glm::vec3 b = glm::vec3(TB * glm::vec4(0, 0, 0, 1));
+				glm::vec4 b = TB * glm::vec4(0, 0, 0, 1);
 				glm::mat4 Tvar = glmUtils::rotationToMat4(TvarQuat);
-				glm::mat4 dTvar = rotationMatrixDerivative_dAngle(varAngles[varIndex], dataPtr->rotationAxes[dataPtr->jointIndexes[varIndex]]);
-				glm::vec3 eeT = dataPtr->ikChains[c]->getCurrentEETarget();
+				glm::mat4 dTvar = rotationMatrixDerivative_dAngle(varAngles[varIndex], dataPtr->rotationAxes[varIndex]);
+				glm::vec4 eeT = glm::vec4(dataPtr->ikChains[c]->getCurrentEETarget(), 1);
 				for (int k = 0; k <= 2; k++) {
 					float mult1 = 0;
 					for (int j = 0; j <= 3; j++) {
@@ -139,12 +134,14 @@ namespace Mona {
 		[](std::vector<float>& args, IKData* dataPtr, std::vector<float>& argsRawDelta)->void {
 		// aplicar restricciones de movimiento
 		for (int i = 0; i < args.size(); i++) {
-			int jIndex = dataPtr->jointIndexes[i];
-			if (args[i] <= dataPtr->motionRanges[jIndex][0]) { 
-				args[i] = dataPtr->motionRanges[jIndex][0];
-				argsRawDelta[i] = 0;
+			if (args[i] <= dataPtr->motionRanges[i][0]) { 
+				args[i] = dataPtr->motionRanges[i][0];
+				argsRawDelta[i] *= 0.5;
 			}
-			else if (dataPtr->motionRanges[jIndex][1] < args[i]) { args[i] = dataPtr->motionRanges[jIndex][1]; }
+			else if (dataPtr->motionRanges[i][1] <= args[i]) { 
+				args[i] = dataPtr->motionRanges[i][1];
+				argsRawDelta[i] *= 0.5;
+			}
 		}
 		// setear nuevos angulos
 		std::vector<JointRotation>* configRot = dataPtr->rigConfig->getDynamicJointRotations(dataPtr->rigConfig->getNextFrameIndex());
@@ -158,6 +155,7 @@ namespace Mona {
 
 	InverseKinematics::InverseKinematics(IKRig* ikRig, std::vector<ChainIndex> ikChains) {
 		m_ikRig = ikRig;
+		m_ikChains = ikChains;
 	}
 
 	void InverseKinematics::init() {
@@ -237,6 +235,10 @@ namespace Mona {
 		return result;		
 	}
 
+	ForwardKinematics::ForwardKinematics(IKRig* ikRig) {
+		m_ikRig = ikRig;
+	}
+
 	std::vector<glm::mat4> ForwardKinematics::CustomSpaceTransforms(glm::mat4 baseTransform, AnimationIndex animIndex, FrameIndex frame, bool useDynamicRotations) {
 		IKRigConfig* config = m_ikRig->getAnimationConfig(animIndex);
 		std::vector<glm::mat4> customSpaceTr(m_ikRig->getTopology().size(), glm::identity<glm::mat4>());
@@ -252,9 +254,13 @@ namespace Mona {
 		return customSpaceTr;
 	}
 
-	std::vector<glm::mat4> ForwardKinematics::EEListCustomSpaceTransforms(std::vector<JointIndex> eeList, glm::mat4 baseTransform, AnimationIndex animIndex, FrameIndex frame, bool useDynamicRotations) {
+	std::vector<glm::mat4> ForwardKinematics::EEListCustomSpaceTransforms(std::vector<JointIndex> eeList, glm::mat4 baseTransform, 
+		AnimationIndex animIndex, FrameIndex frame, bool useDynamicRotations, std::vector<glm::mat4>* outEEListJointSpaceTransforms) {
 		IKRigConfig* config = m_ikRig->getAnimationConfig(animIndex);
 		std::vector<glm::mat4> eeListCustomSpaceTr(m_ikRig->getTopology().size(), glm::identity<glm::mat4>());
+		if (outEEListJointSpaceTransforms != nullptr) {
+			(*outEEListJointSpaceTransforms) = std::vector<glm::mat4>(m_ikRig->getTopology().size(), glm::identity<glm::mat4>());
+		}
 		std::vector<JointRotation>const& rotations = useDynamicRotations ? (*config->getDynamicJointRotations(frame)) : config->getBaseJointRotations(frame);
 		funcUtils::sortUnique(eeList);
 		std::vector<JointIndex> calcJoints;
@@ -267,6 +273,9 @@ namespace Mona {
 				// recolectar jointSpaceTransforms
 				while (currJoint != -1) {
 					eeListCustomSpaceTr[currJoint] = JointSpaceTransform(animIndex, currJoint, frame, useDynamicRotations);
+					if (outEEListJointSpaceTransforms != nullptr) {
+						(*outEEListJointSpaceTransforms)[currJoint] = eeListCustomSpaceTr[currJoint];
+					}
 					currJointHierarchy.insert(currJointHierarchy.begin(), currJoint);
 					currJoint = m_ikRig->getTopology()[currJoint];
 				}
@@ -310,28 +319,6 @@ namespace Mona {
 				glmUtils::scaleToMat4(config->getJointScales()[jIndex]);
 		}
 		return jointSpaceTr;
-	}
-
-	std::vector<glm::mat4> ForwardKinematics::EEListJointSpaceTransforms(std::vector<JointIndex> eeList, AnimationIndex animIndex, FrameIndex frame, bool useDynamicRotations) {
-		IKRigConfig* config = m_ikRig->getAnimationConfig(animIndex);
-		std::vector<glm::mat4> eeListJointSpaceTr(m_ikRig->getTopology().size(), glm::identity<glm::mat4>());
-		std::vector<JointRotation>const& rotations = useDynamicRotations ? (*config->getDynamicJointRotations(frame)) : config->getBaseJointRotations(frame);
-		funcUtils::sortUnique(eeList);
-		std::vector<JointIndex> calcJoints;
-		while (0 < eeList.size()) {
-			JointIndex currJoint = eeList.back();
-			eeList.pop_back();
-			if (funcUtils::findIndex(calcJoints, currJoint) == -1) {
-				glm::mat4 customSpaceTr = glm::identity<glm::mat4>();
-				// recolectar jointSpaceTransforms
-				while (currJoint != -1) {
-					eeListJointSpaceTr[currJoint] = JointSpaceTransform(animIndex, currJoint, frame, useDynamicRotations);
-					calcJoints.push_back(currJoint);
-					currJoint = m_ikRig->getTopology()[currJoint];
-				}
-			}
-		}
-		return eeListJointSpaceTr;
 	}
 
 	glm::mat4 ForwardKinematics::JointSpaceTransform(AnimationIndex animIndex, JointIndex jointIndex, FrameIndex frame, bool useDynamicRotations) {

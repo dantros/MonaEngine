@@ -636,7 +636,7 @@ namespace Mona {
 		updateMovementDirection(animTimeStep);
 		if (m_ikRig.m_currentAnim != -1) {
 			updateTrajectories(m_ikRig.m_currentAnim, transformManager, staticMeshManager, true);
-			updateAnimation(m_ikRig.m_currentAnim);
+			//updateAnimation(m_ikRig.m_currentAnim);
 		}
 
 		for (AnimationIndex i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {

@@ -221,7 +221,7 @@ namespace Mona{
         baseCurve.fitEnds(initialPos, finalPos);
 
         // DEBUG
-		float testRepCountOffset = config->getNextFrameIndex() == 0 ? 1 : 0;
+		/*float testRepCountOffset = config->getNextFrameIndex() == 0 ? 1 : 0;
 		float testTransitionTime = config->getReproductionTime(config->getNextFrameIndex(), testRepCountOffset);
 		int testCurrSubTrID = trData->getTargetTrajectory().getSubTrajectoryID();
 		int testNewSubTrID = originalTrajectory.getSubTrajectoryID();
@@ -232,7 +232,7 @@ namespace Mona{
 		else {
 			trData->setTargetTrajectory(baseCurve, trType, testNewSubTrID, baseCurve);
 		}
-        return;
+        return;*/
 
         // DEBUG
 
@@ -301,24 +301,8 @@ namespace Mona{
         m_tgData.baseCurve = baseCurve;
         m_tgData.varCurve = &baseCurve;
 
-
-        // testing 
-        /*std::cout << "DEBUG DYNAMIC: " << std::endl;
-        std::cout << "before gd " << std::endl;
-        baseCurve.debugPrintCurvePoints();
-        m_tgData.minValues = std::vector<float>(m_tgData.pointIndexes.size() * 3, std::numeric_limits<float>::lowest());
-        initialArgs = std::vector<float>(initialArgs.size(), 0);
-        for (int i = 1; i < baseCurve.getNumberOfPoints() - 1; i++) {
-            baseCurve.setCurvePoint(i, glm::vec3(0));
-        }*/
-        //
-
         m_gradientDescent.setArgNum(initialArgs.size());
         m_gradientDescent.computeArgsMin(m_tgData.descentRate, m_tgData.maxIterations, m_tgData.targetPosDelta, initialArgs);
-
-        // testing
-        //std::cout << "after gd " << std::endl;
-        //baseCurve.debugPrintCurvePoints();
 
         float repCountOffset = config->getNextFrameIndex() == 0 ? 1 : 0;
         float transitionTime = config->getReproductionTime(config->getNextFrameIndex(), repCountOffset);
@@ -486,13 +470,10 @@ namespace Mona{
    //         return;
 			// DEBUG
 
-            
-            // segundo paso: ajustar punto de maxima altura
-
-            // DEBUG
-            std::cout << "hip tr:" << std::endl;
-            hipTrCurve.debugPrintTValues();
-            hipTrCurve.debugPrintCurvePoints();
+			 // DEBUG
+			/*std::cout << "hip tr:" << std::endl;
+			hipTrCurve.debugPrintTValues();
+			hipTrCurve.debugPrintCurvePoints();
 			std::cout << "original base: " << std::endl;
 			baseEEOriginalCurve.debugPrintTValues();
 			baseEEOriginalCurve.debugPrintCurvePoints();
@@ -505,23 +486,28 @@ namespace Mona{
 			std::cout << "target opposite: " << std::endl;
 			oppositeEETargetCurve.debugPrintTValues();
 			oppositeEETargetCurve.debugPrintCurvePoints();
-            std::vector<float> oppositeDists_original;
-            std::vector<float> oppositeDists_target;
-            std::vector<float> oppositeDistDiffs;
+			std::vector<float> oppositeDists_original;
+			std::vector<float> oppositeDists_target;
+			std::vector<float> oppositeDistDiffs;
 			for (int i = 0; i < baseEETargetCurve.getNumberOfPoints(); i++) {
-                float distOr = glm::distance(glm::vec2(baseEEOriginalCurve.getCurvePoint(i)), glm::vec2(oppositeEEOriginalCurve.getCurvePoint(i)));
-                float distTarg = glm::distance(glm::vec2(baseEETargetCurve.getCurvePoint(i)),glm::vec2(oppositeEETargetCurve.getCurvePoint(i)));
-                oppositeDists_original.push_back(distOr);
-                oppositeDists_target.push_back(distTarg);
-                oppositeDistDiffs.push_back(abs(distOr - distTarg));
+				float distOr = glm::distance(glm::vec2(baseEEOriginalCurve.getCurvePoint(i)), glm::vec2(oppositeEEOriginalCurve.getCurvePoint(i)));
+				float distTarg = glm::distance(glm::vec2(baseEETargetCurve.getCurvePoint(i)), glm::vec2(oppositeEETargetCurve.getCurvePoint(i)));
+				oppositeDists_original.push_back(distOr);
+				oppositeDists_target.push_back(distTarg);
+				oppositeDistDiffs.push_back(abs(distOr - distTarg));
 			}
-            std::cout << "opposite distances original: " << std::endl;
-            std::cout << funcUtils::vecToString(oppositeDists_original) << std::endl;
+			std::cout << "opposite distances original: " << std::endl;
+			std::cout << funcUtils::vecToString(oppositeDists_original) << std::endl;
 			std::cout << "opposite distances target: " << std::endl;
 			std::cout << funcUtils::vecToString(oppositeDists_target) << std::endl;
 			std::cout << "opposite distance diffs: " << std::endl;
-			std::cout << funcUtils::vecToString(oppositeDistDiffs) << std::endl;
-            // DEBUG
+			std::cout << funcUtils::vecToString(oppositeDistDiffs) << std::endl;*/
+			// DEBUG
+
+            
+            // segundo paso: ajustar punto de maxima altura
+
+           
 
 
             float hipHighOriginalTime_extendedAnim = baseEEOriginalTr.getHipMaxAltitudeTime();

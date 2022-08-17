@@ -96,9 +96,10 @@ namespace Mona {
         float getCurrentReproductionTime() const { return m_currentReproductionTime; }
         FrameIndex getNextFrameIndex() const { return m_nextFrameIndex; }
         FrameIndex getCurrentFrameIndex() const { return m_currentFrameIndex; }
-        std::vector<glm::mat4> getEEListJointSpaceTransforms(std::vector<JointIndex> eeList,FrameIndex frame, bool useDynamicRotations);
-        std::vector<glm::mat4> getEEListModelSpaceTransforms(std::vector<JointIndex> eeList, FrameIndex frame, bool useDynamicRotations);
-        std::vector<glm::mat4> getEEListCustomSpaceTransforms(std::vector<JointIndex> eeList, glm::mat4 baseTransform, FrameIndex frame, bool useDynamicRotations);
+        std::vector<glm::mat4> getEEListModelSpaceTransforms(std::vector<JointIndex> eeList, FrameIndex frame, 
+            bool useDynamicRotations, std::vector<glm::mat4>* outJointSpaceTransforms = nullptr);
+        std::vector<glm::mat4> getEEListCustomSpaceTransforms(std::vector<JointIndex> eeList, glm::mat4 baseTransform, FrameIndex frame, 
+            bool useDynamicRotations, std::vector<glm::mat4>* outJointSpaceTransforms = nullptr);
         EEGlobalTrajectoryData* getEETrajectoryData(ChainIndex chainIndex) { return &(m_eeTrajectoryData[chainIndex]); }
         HipGlobalTrajectoryData* getHipTrajectoryData() { return &m_hipTrajectoryData; }
         AnimationType getAnimationType() { return m_animationType; }

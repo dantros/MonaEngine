@@ -67,27 +67,39 @@ namespace Mona {
 			}
 			return gradient;
 		}
+		enum class DescentType {
+			REGULAR,
+			SGDM
+		};
 		std::vector<float> computeArgsMin(float descentRate, int maxIterations, float targetArgDelta,
-			const std::vector<float>& initialArgs, bool useSGDM=true, bool softenSteps = true) {
+			const std::vector<float>& initialArgs, DescentType descentType=DescentType::SGDM, bool softenSteps = true) {
 			MONA_ASSERT(initialArgs.size() == m_argNum, "GradientDescent: number of args does not match argNum value");
 			std::vector<float> args = initialArgs;
 			std::vector<float> gradient;
 			std::vector<float> argsRawDelta(args.size());
 			std::vector<bool> continueDescent(args.size(), true);
 			int stepNum = 0;
+			// primer computo
+			gradient = computeGradient(args);
+			for (int i = 0; i < args.size(); i++) {
+				argsRawDelta[i] = gradient[i];
+				float argDelta = descentRate * argsRawDelta[i];
+				args[i] -= argDelta;
+			}
+			m_postDescentStepCustomBehaviour(args, m_dataPtr, argsRawDelta);		
 			while (stepNum < maxIterations && funcUtils::conditionVector_OR(continueDescent)) {
 				gradient = computeGradient(args);
 				for (int i = 0; i < args.size(); i++) {
-					if (0 < stepNum && softenSteps) {
+					if (softenSteps) {
 						if (gradient[i] != 0 && abs(argsRawDelta[i]*10) < abs(argsRawDelta[i] - gradient[i])) {
 							float sign = gradient[i] / abs(gradient[i]);
 							gradient[i] = abs(argsRawDelta[i] * 10)*sign;
 						}
-					}					
-					if (!useSGDM || stepNum == 0) {
+					}
+					if (descentType == DescentType::REGULAR) {
 						argsRawDelta[i] = gradient[i];
 					}
-					else {
+					else if(descentType == DescentType::SGDM){
 						argsRawDelta[i] = 0.9 * argsRawDelta[i] + 0.1 * gradient[i];
 					}
 					float argDelta = descentRate * argsRawDelta[i];

@@ -45,6 +45,8 @@ namespace Mona {
         friend class IKRig;
         friend class IKRigController;
     private:
+        // Indica si la animacion asociada esta activa
+        bool m_active = true;
         // Clip de animacion asociado a esta configuracion
         std::shared_ptr<AnimationClip> m_animationClip;
         // Indices de las articulaciones presentes en la animacion. Ordenados de acuerdo a la toplogia.
@@ -107,6 +109,7 @@ namespace Mona {
         float adjustAnimationTime(float extendedAnimationTime);
         std::vector<JointIndex>const& getJointIndices() { return m_jointIndices; }
         bool hasJoint(JointIndex joint);
+        bool isActive() { return m_active; }
     };
 
     struct JointData {

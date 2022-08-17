@@ -35,9 +35,6 @@ namespace Mona{
             // Informacion de configuracion del IKRig por cada animacion
             std::vector<IKRigConfig> m_animationConfigs;
             std::shared_ptr<Skeleton> m_skeleton;
-
-            AnimationIndex m_currentAnim = -1;
-            AnimationIndex m_targetAnim = -1;
             // Direccion frontal base de movimiento del rig
             glm::vec2 m_frontVector = glm::vec2(0.0f, 1.0f);
             glm::vec3 m_upVector = glm::vec3(0, 0, 1);

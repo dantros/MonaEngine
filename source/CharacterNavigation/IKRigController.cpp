@@ -465,8 +465,6 @@ namespace Mona {
 			animationClip->SetRotation(baseRotation, i, m_ikRig.m_hipJoint);
 		}
 		currentConfig->m_jointPositions[m_ikRig.m_hipJoint] = glm::vec3(0);
-
-		m_ikRig.m_currentAnim = 0;
 	}
 
 	AnimationIndex IKRigController::removeAnimation(std::shared_ptr<AnimationClip> animationClip) {
@@ -485,13 +483,13 @@ namespace Mona {
 
 	float lastTrajectoryUpdateTime = 0;
 	void IKRigController::updateTrajectories(AnimationIndex animIndex, ComponentManager<TransformComponent>& transformManager,
-		ComponentManager<StaticMeshComponent>& staticMeshManager, bool active) {
+		ComponentManager<StaticMeshComponent>& staticMeshManager) {
 		IKRigConfig& config = m_ikRig.m_animationConfigs[animIndex];
 		HipGlobalTrajectoryData* hipTrData = config.getHipTrajectoryData();
 		std::vector<ChainIndex> ikChains = m_ikRig.m_trajectoryGenerator.getIKChains();
 		FrameIndex currentFrame = config.getCurrentFrameIndex();
 		EEGlobalTrajectoryData* trData;
-		if (active) {
+		if (config.isActive()) {
 			if (config.m_onNewFrame) { // se realiza al llegar a un frame de la animacion
 			// guardado de posiciones globales ee y cadera
 				std::vector<JointIndex> endEffectors;
@@ -634,9 +632,11 @@ namespace Mona {
 			updateIKRigConfigTime(animTimeStep, i);
 		}
 		updateMovementDirection(animTimeStep);
-		if (m_ikRig.m_currentAnim != -1) {
-			updateTrajectories(m_ikRig.m_currentAnim, transformManager, staticMeshManager, true);
-			//updateAnimation(m_ikRig.m_currentAnim);
+		for (AnimationIndex i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {
+			updateTrajectories(i, transformManager, staticMeshManager);
+			if (m_ikRig.m_animationConfigs[i].isActive()) {
+				//updateAnimation(i);
+			}
 		}
 
 		for (AnimationIndex i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {

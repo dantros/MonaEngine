@@ -26,6 +26,10 @@ namespace Mona {
 				m_ikRigController.addAnimation(animationClip);
 			}
 
+			void DrawTargetCurves() {
+
+			}
+
 			int RemoveAnimation(std::shared_ptr<AnimationClip> animationClip) {
 				return m_ikRigController.removeAnimation(animationClip);
 			}

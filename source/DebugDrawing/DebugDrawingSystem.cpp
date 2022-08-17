@@ -27,7 +27,7 @@ void GLAPIENTRY MessageCallback(GLenum source,
 namespace Mona {
 
 
-	void DebugDrawingSystem::Draw(EventManager& eventManager, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) noexcept {
+	void DebugDrawingSystem_physics::Draw(EventManager& eventManager, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) noexcept {
 
 		glUseProgram(m_lineShader.GetProgramID());
 		glUniformMatrix4fv(0, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
@@ -53,7 +53,7 @@ namespace Mona {
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	}
-	void DebugDrawingSystem::StartUp(PhysicsCollisionSystem* physicsSystemPtr) noexcept {
+	void DebugDrawingSystem_physics::StartUp(PhysicsCollisionSystem* physicsSystemPtr) noexcept {
 		m_lineShader = ShaderProgram(SourcePath("source/Rendering/Shaders/LineVS.vs"),
 			SourcePath("source/Rendering/Shaders/LinePS.ps"));
 		m_physicsWorldPtr = physicsSystemPtr->GetPhysicsWorldPtr();
@@ -74,10 +74,60 @@ namespace Mona {
 		ImGui_ImplOpenGL3_Init("#version 450");
 	}
 
-	void DebugDrawingSystem::ShutDown() noexcept {
+	void DebugDrawingSystem_physics::ShutDown() noexcept {
 		ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
+	}
+
+
+	void DebugDrawingSystem_ikNav::StartUp(IKNavigationSystem* ikNavSystemPtr)  noexcept {
+		m_lineShader = ShaderProgram(SourcePath("source/Rendering/Shaders/LineVS.vs"),
+			SourcePath("source/Rendering/Shaders/LinePS.ps"));
+		m_physicsWorldPtr = physicsSystemPtr->GetPhysicsWorldPtr();
+		m_ikNavDebugDrawPtr.reset(new IKNavigationDebugDraw);
+		m_ikNavDebugDrawPtr->StartUp();
+
+		glEnable(GL_DEBUG_OUTPUT);
+		glDebugMessageCallback(MessageCallback, 0);
+		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE);
+
+		IMGUI_CHECKVERSION();
+		ImGui::CreateContext();
+		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		ImGui::StyleColorsDark();
+		ImGui_ImplGlfw_InitForOpenGL(glfwGetCurrentContext(), true);
+		ImGui_ImplOpenGL3_Init("#version 450");
+	
+	}
+	void DebugDrawingSystem_ikNav::Draw(EventManager& eventManager, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) noexcept {
+		glUseProgram(m_lineShader.GetProgramID());
+		glUniformMatrix4fv(0, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+		glUniformMatrix4fv(1, 1, GL_FALSE, glm::value_ptr(viewMatrix));
+		m_physicsWorldPtr->debugDrawWorld();
+
+
+
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+		{
+			ImGui::Begin("Debug Settings:");
+			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+			ImGui::Separator();
+			ImGui::Text("IK Navigation System Debug Draw):");
+			ImGui::Checkbox("Draw EndEffector Target Curves", &(m_ikNavDebugDrawPtr->m_drawEETargetCurves));
+			ImGui::Checkbox("Draw Hip Target Curves", &(m_ikNavDebugDrawPtr->m_drawHipTargetCurve));
+			ImGui::End();
+		}
+		eventManager.Publish(DebugGUIEvent());
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+	
+	}
+	void DebugDrawingSystem_ikNav::ShutDown() noexcept {
+	
+	
 	}
 }
 

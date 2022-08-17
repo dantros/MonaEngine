@@ -1,0 +1,1 @@
+add_library(debug-draw STATIC debug_draw.hpp debug_draw.cpp)

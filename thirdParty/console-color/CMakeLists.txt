@@ -1,0 +1,1 @@
+add_library(console-color STATIC ConsoleColor.h ConsoleColor.cpp)

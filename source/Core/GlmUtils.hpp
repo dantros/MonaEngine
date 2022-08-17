@@ -9,7 +9,7 @@
 #include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include "Log.hpp"
-#include "ConsoleColor.h"
+#include <ConsoleColor.h>
 #include <numbers>
 
 namespace Mona {

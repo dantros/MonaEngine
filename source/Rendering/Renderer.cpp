@@ -29,7 +29,7 @@ namespace Mona{
 
 
 
-	void Renderer::StartUp(EventManager& eventManager, DebugDrawingSystem* debugDrawingSystemPtr) noexcept {
+	void Renderer::StartUp(EventManager& eventManager, DebugDrawingSystem_physics* debugDrawingSystemPtr) noexcept {
 	
 		//Construcción de todos los shaders que soporta el motor.
 		m_shaders[static_cast<unsigned int >(MaterialType::UnlitFlat)] = ShaderProgram(SourcePath("source/Rendering/Shaders/UnlitFlat.vs"), SourcePath("source/Rendering/Shaders/UnlitFlat.ps"));

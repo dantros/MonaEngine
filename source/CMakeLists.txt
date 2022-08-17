@@ -19,7 +19,6 @@ set(MONA_HEADERS
 				Core/AssimpTransformations.hpp
 				Core/FuncUtils.hpp
 				Core/GlmUtils.hpp
-				Core/ConsoleColor.h
 				Platform/Window.hpp
 				Platform/Input.hpp
 				Platform/KeyCodes.hpp
@@ -84,6 +83,7 @@ set(MONA_HEADERS
 				Audio/AudioSourceComponentLifetimePolicy.hpp
 				DebugDrawing/DebugDrawingSystem.hpp
 				DebugDrawing/BulletDebugDraw.hpp
+				DebugDrawing/IKNavigationDebugDraw.hpp
 				Utilities/BasicCameraControllers.hpp)
 set(MONA_SOURCES
 				CharacterNavigation/IKRigBase.cpp
@@ -122,6 +122,7 @@ set(MONA_SOURCES
 				Audio/AudioSourceComponent.cpp
 				DebugDrawing/ImGuiBuild.cpp
 				DebugDrawing/BulletDebugDraw.cpp
+				DebugDrawing/IKNavigationDebugDraw.cpp
 				DebugDrawing/DebugDrawingSystem.cpp)
 file(GLOB_RECURSE Shaders  "${CMAKE_SOURCE_DIR}/Assets/Shaders/*")
 source_group("Shaders" FILES ${Shaders})

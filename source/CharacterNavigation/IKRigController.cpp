@@ -587,10 +587,11 @@ namespace Mona {
 	void IKRigController::updateAnimation(AnimationIndex animIndex) {
 		IKRigConfig& config = m_ikRig.m_animationConfigs[animIndex];
 		if (config.m_onNewFrame) {
-			// calcular nuevas rotaciones para la animacion con ik
-			std::vector<std::pair<JointIndex, glm::fquat>> calculatedRotations = m_ikRig.calculateRotations(animIndex);
-			auto anim = config.m_animationClip;
+			FrameIndex currFrame = config.getCurrentFrameIndex();
 			FrameIndex nextFrame = config.getNextFrameIndex();
+			// calcular nuevas rotaciones para la animacion con ik
+			std::vector<std::pair<JointIndex, glm::fquat>> calculatedRotations = m_ikRig.calculateRotations(animIndex, nextFrame);
+			auto anim = config.m_animationClip;
 			for (int i = 0; i < calculatedRotations.size(); i++) {
 				anim->SetRotation(calculatedRotations[i].second, nextFrame, calculatedRotations[i].first);
 				// para compensar el poco espacio entre en ultimo y el primer frame
@@ -635,7 +636,7 @@ namespace Mona {
 		for (AnimationIndex i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {
 			updateTrajectories(i, transformManager, staticMeshManager);
 			if (m_ikRig.m_animationConfigs[i].isActive()) {
-				//updateAnimation(i);
+				updateAnimation(i);
 			}
 		}
 

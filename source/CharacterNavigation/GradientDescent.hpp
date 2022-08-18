@@ -100,7 +100,7 @@ namespace Mona {
 						argsRawDelta[i] = gradient[i];
 					}
 					else if(descentType == DescentType::SGDM){
-						argsRawDelta[i] = 0.9 * argsRawDelta[i] + 0.1 * gradient[i];
+						argsRawDelta[i] = 0.7 * argsRawDelta[i] + 0.3 * gradient[i];
 					}
 					float argDelta = descentRate * argsRawDelta[i];
 					args[i] -= argDelta;

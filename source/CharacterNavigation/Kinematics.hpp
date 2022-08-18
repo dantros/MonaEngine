@@ -51,6 +51,7 @@ namespace Mona {
 		float descentRate;
 		float targetAngleDelta;
 		int maxIterations;
+		FrameIndex targetFrame;
 	};
 
 	class InverseKinematics {
@@ -63,7 +64,7 @@ namespace Mona {
 		InverseKinematics(IKRig* ikRig, std::vector<ChainIndex> ikChains);
 		void init();
 		void setIKChains(std::vector<ChainIndex> ikChains);
-		std::vector<std::pair<JointIndex, glm::fquat>> solveIKChains(AnimationIndex animationIndex);
+		std::vector<std::pair<JointIndex, glm::fquat>> solveIKChains(AnimationIndex animationIndex, FrameIndex targetFrame);
 	};
 
 	

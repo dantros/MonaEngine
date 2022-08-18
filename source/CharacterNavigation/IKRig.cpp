@@ -96,8 +96,8 @@ namespace Mona {
 		return ikChain;
 	}
 
-	std::vector<std::pair<JointIndex, glm::fquat>> IKRig::calculateRotations(AnimationIndex animIndex) {
-		return m_inverseKinematics.solveIKChains(animIndex);
+	std::vector<std::pair<JointIndex, glm::fquat>> IKRig::calculateRotations(AnimationIndex animIndex, FrameIndex targetFrame) {
+		return m_inverseKinematics.solveIKChains(animIndex, targetFrame);
 	}
 
 

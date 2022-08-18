@@ -56,7 +56,7 @@ namespace Mona{
             // Indice de la cadera
             JointIndex m_hipJoint;
             IKChain buildIKChain(ChainEnds chainEnds, std::string chainName);
-            std::vector<std::pair<JointIndex, glm::fquat>> calculateRotations(AnimationIndex animIndex);
+            std::vector<std::pair<JointIndex, glm::fquat>> calculateRotations(AnimationIndex animIndex, FrameIndex targetFrame);
             void calculateTrajectories(AnimationIndex animIndex,
                 ComponentManager<TransformComponent>& transformManager,
                 ComponentManager<StaticMeshComponent>& staticMeshManager);

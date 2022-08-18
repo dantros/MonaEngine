@@ -37,7 +37,8 @@ namespace Mona {
 		m_componentManagers[PointLightComponent::componentIndex].reset(new ComponentManager<PointLightComponent>());
 		m_componentManagers[SkeletalMeshComponent::componentIndex].reset(new ComponentManager<SkeletalMeshComponent>());
 		m_componentManagers[IKNavigationComponent::componentIndex].reset(new ComponentManager<IKNavigationComponent>());
-		m_debugDrawingSystem.reset(new DebugDrawingSystem_physics());
+		m_debugDrawingSystemPhysics.reset(new DebugDrawingSystem_physics());
+		m_debugDrawingSystemIKNav.reset(new DebugDrawingSystem_ikNav());
 		
 		auto& transformDataManager = GetComponentManager<TransformComponent>();
 		auto& rigidBodyDataManager = GetComponentManager<RigidBodyComponent>();
@@ -57,9 +58,11 @@ namespace Mona {
 		for (auto& componentManager : m_componentManagers)
 			componentManager->StartUp(m_eventManager, expectedObjects);
 		m_application = std::move(app);
-		m_renderer.StartUp(m_eventManager, m_debugDrawingSystem.get());
+		m_renderer.StartUp(m_eventManager, m_debugDrawingSystemIKNav.get());
+		//m_renderer.StartUp(m_eventManager, m_debugDrawingSystemPhysics.get());
 		m_audioSystem.StartUp();
-		m_debugDrawingSystem->StartUp(&m_physicsCollisionSystem);
+		m_debugDrawingSystemIKNav->StartUp(&m_ikNavigationSystyem);
+		//m_debugDrawingSystemPhysics->StartUp(&m_physicsCollisionSystem);
 		m_application.StartUp(*this);
 	
 	}
@@ -78,7 +81,8 @@ namespace Mona {
 		SkeletonManager::GetInstance().ShutDown();
 		AnimationClipManager::GetInstance().ShutDown();
 		m_renderer.ShutDown(m_eventManager);
-		m_debugDrawingSystem->ShutDown();
+		m_debugDrawingSystemIKNav->ShutDown();
+		//m_debugDrawingSystemPhysics->ShutDown();
 		m_window.ShutDown();
 		m_input.ShutDown(m_eventManager);
 		m_eventManager.ShutDown();

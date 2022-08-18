@@ -76,15 +76,13 @@ namespace Mona {
 
 	void DebugDrawingSystem_physics::ShutDown() noexcept {
 		ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
+		ImGui_ImplGlfw_Shutdown();
+		ImGui::DestroyContext();
 	}
 
 
 	void DebugDrawingSystem_ikNav::StartUp(IKNavigationSystem* ikNavSystemPtr)  noexcept {
-		m_lineShader = ShaderProgram(SourcePath("source/Rendering/Shaders/LineVS.vs"),
-			SourcePath("source/Rendering/Shaders/LinePS.ps"));
-		m_physicsWorldPtr = physicsSystemPtr->GetPhysicsWorldPtr();
+		m_ikNavSystemPtr = ikNavSystemPtr;
 		m_ikNavDebugDrawPtr.reset(new IKNavigationDebugDraw);
 		m_ikNavDebugDrawPtr->StartUp();
 
@@ -101,13 +99,7 @@ namespace Mona {
 	
 	}
 	void DebugDrawingSystem_ikNav::Draw(EventManager& eventManager, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) noexcept {
-		glUseProgram(m_lineShader.GetProgramID());
-		glUniformMatrix4fv(0, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-		glUniformMatrix4fv(1, 1, GL_FALSE, glm::value_ptr(viewMatrix));
-		m_physicsWorldPtr->debugDrawWorld();
-
-
-
+		m_ikNavDebugDrawPtr->mvpMatrix = projectionMatrix * viewMatrix;
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
@@ -123,11 +115,54 @@ namespace Mona {
 		eventManager.Publish(DebugGUIEvent());
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-	
+
+
+		std::vector<IKRigController*> ikRigControllers = m_ikNavSystemPtr->getControllersDebug();
+		for (int i = 0; i < ikRigControllers.size(); i++) {
+			IKRigController* currController = ikRigControllers[i];
+			std::vector<IKRigConfig>& currConfigs = currController->m_ikRig.m_animationConfigs;
+			for (int j = 0; j < currConfigs.size(); j++) {
+				IKRigConfig& currConfig = currConfigs[j];
+				if (m_ikNavDebugDrawPtr->m_drawEETargetCurves) {
+					for (int k = 0; k < currConfig.m_eeTrajectoryData.size(); k++) {
+						LIC<3>& currTargetCurve = currConfig.m_eeTrajectoryData[k].getTargetTrajectory().getEECurve();
+						std::vector<dd::DrawVertex> lines(currTargetCurve.getNumberOfPoints());
+						for (int l = 0; l < currTargetCurve.getNumberOfPoints(); l++) {
+							dd::DrawVertex v;
+							glm::vec3 color = m_ikNavDebugDrawPtr->m_eeCurveColor;
+							glm::vec3 point = currTargetCurve.getCurvePoint(i);
+							v.line.r = color[0]; v.line.g = color[1];v.line.b = color[2];
+							v.line.x = point[0]; v.line.y = point[1];v.line.z = point[2];
+							lines.push_back(v);
+						}
+						m_ikNavDebugDrawPtr->drawLineList(&lines[0], lines.size(), true);
+					}
+				}
+				if (m_ikNavDebugDrawPtr->m_drawHipTargetCurve) {
+					LIC<3>& hipTargetCurve = currConfig.getHipTrajectoryData()->m_targetTranslations;
+					std::vector<dd::DrawVertex> lines(hipTargetCurve.getNumberOfPoints());
+					for (int l = 0; l < hipTargetCurve.getNumberOfPoints(); l++) {
+						dd::DrawVertex v;
+						glm::vec3 color = m_ikNavDebugDrawPtr->m_hipCurveColor;
+						glm::vec3 point = hipTargetCurve.getCurvePoint(i);
+						v.line.r = color[0]; v.line.g = color[1]; v.line.b = color[2];
+						v.line.x = point[0]; v.line.y = point[1]; v.line.z = point[2];
+						lines.push_back(v);
+					}
+					m_ikNavDebugDrawPtr->drawLineList(&lines[0], lines.size(), true);
+				}
+			}
+		}
+		dd::flush();	
 	}
+
+
 	void DebugDrawingSystem_ikNav::ShutDown() noexcept {
-	
-	
+		ImGui_ImplOpenGL3_Shutdown();
+		ImGui_ImplGlfw_Shutdown();
+		ImGui::DestroyContext();
+		m_ikNavDebugDrawPtr->ShutDown();	
+		m_ikNavDebugDrawPtr.reset();
 	}
 }
 

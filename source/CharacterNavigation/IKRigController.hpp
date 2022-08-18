@@ -11,6 +11,7 @@ namespace Mona {
 	class AnimationController;
 	class IKRigController {
 		friend class IKNavigationComponent;
+		friend class DebugDrawingSystem_ikNav;
 		IKRig m_ikRig;
 		glm::vec3 m_rigScale;
 		InnerComponentHandle m_skeletalMeshHandle;

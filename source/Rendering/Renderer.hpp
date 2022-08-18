@@ -29,7 +29,7 @@ namespace Mona {
 		static constexpr int NUM_HALF_MAX_SPOT_LIGHTS = 3;
 		static constexpr int NUM_MAX_BONES = 70;
 		Renderer() = default;
-		void StartUp(EventManager& eventManager, DebugDrawingSystem_physics* debugDrawingSystemPtr) noexcept;
+		void StartUp(EventManager& eventManager, DebugDrawingSystem* debugDrawingSystemPtr) noexcept;
 		void Render(EventManager& eventManager,
 					const InnerComponentHandle& cameraHandle,
 					const glm::vec3& ambientLight,
@@ -81,7 +81,7 @@ namespace Mona {
 		std::array<ShaderProgram, 2 * static_cast<unsigned int>(MaterialType::MaterialTypeCount)> m_shaders;
 		std::vector<glm::mat4> m_currentMatrixPalette;
 		SubscriptionHandle m_onWindowResizeSubscription;
-		DebugDrawingSystem_physics* m_debugDrawingSystemPtr = nullptr;
+		DebugDrawingSystem* m_debugDrawingSystemPtr = nullptr;
 		unsigned int m_lightDataUBO = 0;
 		glm::vec4 m_backgroundColor = { 0.0f, 0.0f, 0.0f, 0.0f };
 

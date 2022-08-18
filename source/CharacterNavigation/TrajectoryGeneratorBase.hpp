@@ -18,6 +18,7 @@ namespace Mona{
     class IKRigConfig;
     class HipGlobalTrajectoryData {
         friend class IKRigController;
+        friend class DebugDrawingSystem_ikNav;
         // Angulos de rotacion originales
         LIC<1> m_originalRotationAngles;
         // Ejes de rotacion originales
@@ -76,6 +77,7 @@ namespace Mona{
     };
     class EEGlobalTrajectoryData {
         friend class IKRigController;
+        friend class DebugDrawingSystem_ikNav;
         // Trayectoria original del ee asociado a una ikChain. Descompuesta en sub trayectorias (estaticas y dinamicas)
         std::vector<EETrajectory> m_originalSubTrajectories;
         // Trayectoria objetivo generada

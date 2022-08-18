@@ -144,7 +144,8 @@ namespace Mona {
 		glm::fquat m_audioListenerOffsetRotation = glm::fquat(1.0f, 0.0f, 0.0f, 0.0f);
 
 		AnimationSystem m_animationSystem;
-		std::unique_ptr<DebugDrawingSystem_physics> m_debugDrawingSystem;
+		std::unique_ptr<DebugDrawingSystem_physics> m_debugDrawingSystemPhysics;
+		std::unique_ptr<DebugDrawingSystem_ikNav> m_debugDrawingSystemIKNav;
 
 		IKNavigationSystem m_ikNavigationSystyem;
 

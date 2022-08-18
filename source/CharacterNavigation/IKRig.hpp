@@ -14,6 +14,7 @@ namespace Mona{
     class IKRig{
         friend class IKRigController;
         friend class IKNavigationComponent;
+        friend class DebugDrawingSystem_ikNav;
         public:
             IKRig() = default;
             IKRig(std::shared_ptr<Skeleton> skeleton, RigData rigData, InnerComponentHandle transformHandle);

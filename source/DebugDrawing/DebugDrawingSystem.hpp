@@ -69,6 +69,7 @@ namespace Mona {
 	private:
 		std::unique_ptr<IKNavigationDebugDraw> m_ikNavDebugDrawPtr;
 		IKNavigationSystem* m_ikNavSystemPtr;
+		ShaderProgram m_lineShader;
 	};
 }
 

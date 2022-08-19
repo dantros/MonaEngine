@@ -12,7 +12,7 @@ namespace Mona {
 		mat[0][0] = -(pow(axis[1], 2) + pow(axis[2], 2)) * sin(angle);
 		mat[1][0] = axis[0] * axis[1] * sin(angle) + axis[2] * cos(angle);
 		mat[2][0] = axis[0] * axis[2] * sin(angle) - axis[1] * cos(angle);
-		mat[0][1] = axis[0] * axis[1] * sin(angle) - axis[1] * cos(angle);
+		mat[0][1] = axis[0] * axis[1] * sin(angle) - axis[2] * cos(angle);
 		mat[1][1] = -(pow(axis[0], 2) + pow(axis[2], 2)) * sin(angle);
 		mat[2][1] = axis[1] * axis[2] * sin(angle) + axis[0] * cos(angle);
 		mat[0][2] = axis[0] * axis[2] * sin(angle) + axis[1] * cos(angle);
@@ -162,7 +162,7 @@ namespace Mona {
 		FunctionTerm<IKData> term1(term1Function, term1PartialDerivativeFunction);
 		FunctionTerm<IKData> term2(term2Function, term2PartialDerivativeFunction);
 		FunctionTerm<IKData> term3(term3Function, term3PartialDerivativeFunction);
-		auto terms = std::vector<FunctionTerm<IKData>>({ term1 });
+		auto terms = std::vector<FunctionTerm<IKData>>({ term2 });
 		m_gradientDescent = GradientDescent<IKData>(terms, 0, &m_ikData, postDescentStepCustomBehaviour);
 		m_ikData.descentRate = 1.0f;
 		m_ikData.maxIterations = 200;

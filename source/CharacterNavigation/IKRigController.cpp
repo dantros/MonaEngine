@@ -234,20 +234,19 @@ namespace Mona {
 		ComponentManager<StaticMeshComponent>& staticMeshManager) {
 		IKRigConfig& config = m_ikRig.m_animationConfigs[animIndex];
 		HipGlobalTrajectoryData* hipTrData = config.getHipTrajectoryData();
-		std::vector<ChainIndex> ikChains = m_ikRig.m_trajectoryGenerator.getIKChains();
 		FrameIndex currentFrame = config.getCurrentFrameIndex();
 		EEGlobalTrajectoryData* trData;
 		if (config.isActive()) {
 			if (config.m_onNewFrame) { // se realiza al llegar a un frame de la animacion
 			// guardado de posiciones globales ee y cadera
 				std::vector<JointIndex> endEffectors;
-				for (int i = 0; i < ikChains.size(); i++) {
-					endEffectors.push_back(m_ikRig.m_ikChains[ikChains[i]].getEndEffector());
+				for (ChainIndex i = 0; i < m_ikRig.getChainNum(); i++) {
+					endEffectors.push_back(m_ikRig.m_ikChains[i].getEndEffector());
 				}
 				glm::mat4 baseTransform = transformManager.GetComponentPointer(m_ikRig.getTransformHandle())->GetModelMatrix();
 				std::vector<glm::mat4> globalTransforms = config.getEEListCustomSpaceTransforms(endEffectors, baseTransform, currentFrame, true);
-				for (int i = 0; i < ikChains.size(); i++) {
-					trData = config.getEETrajectoryData(ikChains[i]);
+				for (ChainIndex i = 0; i < m_ikRig.getChainNum(); i++) {
+					trData = config.getEETrajectoryData(i);
 					JointIndex ee = endEffectors[i];
 					trData->m_savedPositions[currentFrame] = globalTransforms[ee] * glm::vec4(0, 0, 0, 1);
 					trData->m_savedDataValid[currentFrame] = true;
@@ -287,14 +286,12 @@ namespace Mona {
 				// asignar objetivos a ee's
 				float targetTimeNext = config.getReproductionTime(config.getNextFrameIndex());
 				float targetTimeCurr = config.getReproductionTime(config.getCurrentFrameIndex());
-				std::vector<ChainIndex> tgChainIndices = m_ikRig.m_trajectoryGenerator.getIKChains();
 				glm::mat4 toModelSpace = glm::inverse(glmUtils::translationToMat4(hipTrData->getTargetTranslation(targetTimeNext)) *
 					glmUtils::rotationToMat4(hipTrData->getTargetRotation(targetTimeNext)) *
 					glmUtils::scaleToMat4(m_rigScale));
-				for (int i = 0; i < tgChainIndices.size(); i++) {
-					ChainIndex cIndex = tgChainIndices[i];
-					IKChain* ikChain = m_ikRig.getIKChain(cIndex);
-					trData = config.getEETrajectoryData(cIndex);
+				for (ChainIndex i = 0; i < m_ikRig.getChainNum(); i++) {
+					IKChain* ikChain = m_ikRig.getIKChain(i);
+					trData = config.getEETrajectoryData(i);
 					glm::vec3 eeTarget = toModelSpace *
 						glm::vec4(trData->getTargetTrajectory().getEECurve().evalCurve(targetTimeNext), 1);
 					ikChain->setCurrentEETarget(eeTarget);
@@ -315,8 +312,8 @@ namespace Mona {
 		}
 		else {
 			if (config.m_onNewFrame) {
-				for (int i = 0; i < ikChains.size(); i++) {
-					trData = config.getEETrajectoryData(ikChains[i]);
+				for (ChainIndex i = 0; i < m_ikRig.getChainNum(); i++) {
+					trData = config.getEETrajectoryData(i);
 					trData->m_savedDataValid[currentFrame] = false;
 					// para compensar el poco espacio entre en ultimo y el primer frame
 					if (currentFrame == config.getFrameNum() - 2) {

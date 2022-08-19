@@ -103,9 +103,8 @@ namespace Mona{
     };
 
 
-    TrajectoryGenerator::TrajectoryGenerator(IKRig* ikRig, std::vector<ChainIndex> ikChains) {
+    TrajectoryGenerator::TrajectoryGenerator(IKRig* ikRig) {
         m_ikRig = ikRig;
-        m_ikChains = ikChains;
     }
 
     void TrajectoryGenerator::init() {
@@ -126,10 +125,9 @@ namespace Mona{
 
         IKRigConfig* config = m_ikRig->getAnimationConfig(animIndex);
 
-		for (int i = 0; i < m_ikChains.size(); i++) {
-			ChainIndex ikChain = m_ikChains[i];
-			JointIndex eeIndex = m_ikRig->getIKChain(ikChain)->getEndEffector();
-			generateEETrajectory(ikChain, config, transformManager, staticMeshManager);
+        for (ChainIndex i = 0; i < m_ikRig->getChainNum(); i++) {
+			JointIndex eeIndex = m_ikRig->getIKChain(i)->getEndEffector();
+			generateEETrajectory(i, config, transformManager, staticMeshManager);
 		}
 
 		// queda setear la trayectoria de la cadera
@@ -326,9 +324,8 @@ namespace Mona{
 
         bool fixedTrajectories = false;
         FrameIndex currentFrame = config->getCurrentFrameIndex();
-        for (int i = 0; i < m_ikChains.size(); i++) {
-            ChainIndex ikChain = m_ikChains[i];
-            if (config->getEETrajectoryData(ikChain)->getTargetTrajectory().getSubTrajectoryID() == -2) { 
+        for (ChainIndex i = 0; i < m_ikRig->getChainNum(); i++) {
+            if (config->getEETrajectoryData(i)->getTargetTrajectory().getSubTrajectoryID() == -2) { 
                 fixedTrajectories = true;
                 break;
             }
@@ -369,8 +366,8 @@ namespace Mona{
             EETrajectory baseEETargetTr;
             EEGlobalTrajectoryData* baseEETrData;
             ChainIndex baseEEChain = -1;
-            for (int i = 0; i < m_ikChains.size(); i++) {
-                EEGlobalTrajectoryData* trData = config->getEETrajectoryData(m_ikChains[i]);
+            for (ChainIndex i = 0; i < m_ikRig->getChainNum(); i++) {
+                EEGlobalTrajectoryData* trData = config->getEETrajectoryData(i);
                 EETrajectory& currTr = trData->getTargetTrajectory();
                 float tCurrentSupLimit = currTr.getEECurve().getTRange()[1];
                 if (currTr.isDynamic() && tSupLimitRep < tCurrentSupLimit) {
@@ -378,7 +375,7 @@ namespace Mona{
                     tInfLimitRep = currTr.getEECurve().getTRange()[0];
                     baseEETargetTr = currTr;
                     baseEETrData = trData;
-                    baseEEChain = m_ikChains[i];
+                    baseEEChain = i;
                 }
             }
 
@@ -525,7 +522,7 @@ namespace Mona{
             std::vector<float> penalties;
             std::vector<float> penaltyMults;
             std::vector<float> finalPenalties;
-            for (int i = 0; i < baseEETargetCurve.getNumberOfPoints(); i++) {
+            for (int i = 1; i < baseEETargetCurve.getNumberOfPoints()-1; i++) {
                 float currDist = glm::distance(glm::vec2(baseEETargetCurve.getCurvePoint(i)), 
                     glm::vec2(oppositeEETargetCurve.getCurvePoint(i)));
                 // se considera la diferencia con el tiempo original
@@ -806,7 +803,7 @@ namespace Mona{
 		HipGlobalTrajectoryData* hipTrData = config->getHipTrajectoryData();
 		float originalCurvesTime_anim = config->adjustAnimationTime(originalCurvesTime_extendedAnim);
 		// distancias originales de ee's con cadera
-		std::vector<float> origDistances(m_ikChains.size());
+		std::vector<float> origDistances(m_ikRig->getChainNum());
 		LIC<3> hipTrCurve = hipTrData->sampleOriginalTranslations(originalCurvesTime_extendedAnim,	originalCurvesTime_extendedAnim + config->getAnimationDuration());
         
 		// DEBUG
@@ -824,11 +821,11 @@ namespace Mona{
         hipTrCurve.debugPrintCurvePoints();
         std::cout << "calc hip high -> ee curves:" << std::endl;
 
-		std::vector<glm::vec3> targetPoints(m_ikChains.size());
+		std::vector<glm::vec3> targetPoints(m_ikRig->getChainNum());
 		float zValue = std::numeric_limits<float>::lowest();
         std::cout << "calc hip high -> target ee curves:" << std::endl;
-		for (int i = 0; i < m_ikChains.size(); i++) {
-			EEGlobalTrajectoryData* trData = config->getEETrajectoryData(m_ikChains[i]);
+		for (ChainIndex i = 0; i < m_ikRig->getChainNum(); i++) {
+			EEGlobalTrajectoryData* trData = config->getEETrajectoryData(i);
 			LIC<3> eeCurve = trData->getTargetTrajectory().getEECurve();
             if (eeCurve.inTRange(targetCurvesTime_rep)) {
                 targetPoints[i] = eeCurve.evalCurve(targetCurvesTime_rep);
@@ -837,11 +834,11 @@ namespace Mona{
                 LIC<3> trExtension;
                 if (targetCurvesTime_rep < eeCurve.getTRange()[0]) {
                     trExtension = calcSimplifiedTrajectoryExtension(targetCurvesTime_rep, eeCurve.getTRange()[0], false,
-                        eeCurve.getStart(), m_ikChains[i], config, transformManager, staticMeshManager);
+                        eeCurve.getStart(), i, config, transformManager, staticMeshManager);
                 }
                 else {
 					trExtension = calcSimplifiedTrajectoryExtension(eeCurve.getTRange()[1], targetCurvesTime_rep, true,
-						eeCurve.getEnd(), m_ikChains[i], config, transformManager, staticMeshManager);
+						eeCurve.getEnd(), i, config, transformManager, staticMeshManager);
                 }
                 std::cout << "calc hip high -> target ee curve extension:" << std::endl;
                 trExtension.debugPrintTValues();
@@ -859,15 +856,15 @@ namespace Mona{
 		// valor mas bajo de z para las tr actuales de los ee
 		zValue += m_ikRig->getRigHeight()*0.8;
 		float zDelta = m_ikRig->getRigHeight() / 500;
-		std::vector<bool> conditions1(m_ikChains.size(), true);
-        std::vector<bool> conditions2(m_ikChains.size(), true);
+		std::vector<bool> conditions1(m_ikRig->getChainNum(), true);
+        std::vector<bool> conditions2(m_ikRig->getChainNum(), true);
 		int maxSteps = 1000;
 		int steps = 0;
-        std::vector<float> prevDistances(m_ikChains.size(), std::numeric_limits<float>::max());
+        std::vector<float> prevDistances(m_ikRig->getChainNum(), std::numeric_limits<float>::max());
 		while (funcUtils::conditionVector_OR(conditions1) && funcUtils::conditionVector_OR(conditions2) && steps < maxSteps) {
 			zValue -= zDelta;
-            std::vector<float> currDistances(m_ikChains.size());
-			for (int i = 0; i < m_ikChains.size(); i++) {
+            std::vector<float> currDistances(m_ikRig->getChainNum());
+			for (int i = 0; i < m_ikRig->getChainNum(); i++) {
 				currDistances[i] = glm::distance(targetPoints[i], glm::vec3(basePoint, zValue));
 				conditions1[i] = origDistances[i] < currDistances[i];
                 conditions2[i] = currDistances[i] <= prevDistances[i];

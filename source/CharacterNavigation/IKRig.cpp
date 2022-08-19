@@ -59,7 +59,7 @@ namespace Mona {
 		m_inverseKinematics = InverseKinematics(this, ikChains);
 		m_inverseKinematics.init();
 		m_forwardKinematics = ForwardKinematics(this);
-		m_trajectoryGenerator = TrajectoryGenerator(this, ikChains);
+		m_trajectoryGenerator = TrajectoryGenerator(this);
 		m_trajectoryGenerator.init();
 		m_rigHeight *= rigScale;
 	}

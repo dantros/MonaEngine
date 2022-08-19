@@ -33,7 +33,6 @@ namespace Mona{
     private:
         IKRig* m_ikRig;
         EnvironmentData m_environmentData;
-        std::vector<ChainIndex> m_ikChains;
         GradientDescent<TGData> m_gradientDescent;
         TGData m_tgData;
         void generateEETrajectory(ChainIndex ikChain, IKRigConfig* config,
@@ -70,13 +69,12 @@ namespace Mona{
 			std::vector<std::vector<bool>> supportFramesPerChain,
 			std::vector<std::vector<glm::vec3>> globalPositionsPerChain);
     public:
-        TrajectoryGenerator(IKRig* ikRig, std::vector<ChainIndex> ikChains);
+        TrajectoryGenerator(IKRig* ikRig);
         TrajectoryGenerator() = default;
         void init();
         void generateNewTrajectories(AnimationIndex animIndex,
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
-        std::vector<ChainIndex> getIKChains() { return m_ikChains; }
     };
 
     

@@ -881,10 +881,9 @@ namespace Mona{
 	}
 
 
-    void TrajectoryGenerator::buildHipTrajectory(IKRigConfig* config, glm::mat4 const& baseGlobalTransform, float minDistance, float floorZ) {
+    void TrajectoryGenerator::buildHipTrajectory(IKRigConfig* config, std::vector<glm::mat4> const& hipGlobalTransforms, float minDistance, float floorZ) {
         int frameNum = config->getFrameNum();
         std::shared_ptr<AnimationClip> anim = config->m_animationClip;
-		auto hipTrack = anim->m_animationTracks[anim->GetTrackIndex(m_ikRig->getHipJoint())];
 		std::vector<float> hipTimeStamps;
 		hipTimeStamps.reserve(frameNum);
 		std::vector<glm::vec3> hipRotAxes;
@@ -893,20 +892,11 @@ namespace Mona{
 		hipRotAngles.reserve(frameNum);
 		std::vector<glm::vec3> hipTranslations;
 		hipTranslations.reserve(frameNum);
-		JointIndex hipIndex = m_ikRig->getHipJoint();
 		glm::vec3 previousHipPosition(std::numeric_limits<float>::lowest());
 		glm::vec3 hipScale; glm::quat hipRotation; glm::vec3 hipTranslation; glm::vec3 hipSkew; glm::vec4 hipPerspective;
 		for (int i = 0; i < frameNum; i++) {
-			float timeStamp = hipTrack.rotationTimeStamps[i];
-			while (config->getAnimationDuration() <= timeStamp) { timeStamp -= 0.000001; }
-			JointIndex parent = hipIndex;
-			glm::mat4 hipTransform = baseGlobalTransform;
-			while (parent != -1) {
-				hipTransform *= glmUtils::translationToMat4(anim->GetPosition(timeStamp, parent, true)) *
-					glmUtils::rotationToMat4(anim->GetRotation(timeStamp, parent, true)) *
-					glmUtils::scaleToMat4(anim->GetScale(timeStamp, parent, true));
-				parent = m_ikRig->getTopology()[parent];
-			}
+			float timeStamp = config->getAnimationTime(i);
+            glm::mat4 hipTransform = hipGlobalTransforms[i];
 			glm::vec3 hipPosition = hipTransform * glm::vec4(0, 0, 0, 1);
 			if (minDistance <= glm::distance(hipPosition, previousHipPosition) || i == (frameNum - 1)) { // el valor del ultimo frame se guarda si o si
 				glm::decompose(hipTransform, hipScale, hipRotation, hipTranslation, hipSkew, hipPerspective);

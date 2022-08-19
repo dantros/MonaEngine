@@ -52,7 +52,6 @@ namespace Mona{
         void generateHipTrajectory(IKRigConfig* config,
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
-
 		float calcHipAdjustedHeight(glm::vec2 basePoint, float targetCurvesTime_rep,
 			float originalCurvesTime_extendedAnim, IKRigConfig* config,
 			ComponentManager<TransformComponent>& transformManager,
@@ -66,6 +65,10 @@ namespace Mona{
             glm::vec2 targetDirection, int stepNum,
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
+		static void buildHipTrajectory(IKRigConfig* config, std::vector<glm::mat4> const& hipGlobalTransforms, float minDistance, float floorZ);
+		static void buildEETrajectories(IKRigConfig* config,
+			std::vector<std::vector<bool>> supportFramesPerChain,
+			std::vector<std::vector<glm::vec3>> globalPositionsPerChain);
     public:
         TrajectoryGenerator(IKRig* ikRig, std::vector<ChainIndex> ikChains);
         TrajectoryGenerator() = default;
@@ -74,10 +77,6 @@ namespace Mona{
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
         std::vector<ChainIndex> getIKChains() { return m_ikChains; }
-        void buildHipTrajectory(IKRigConfig* config, glm::mat4 const& baseGlobalTransform, float minDistance, float floorZ);
-        void buildEETrajectories(IKRigConfig* config,
-            std::vector<std::vector<bool>> supportFramesPerChain,
-            std::vector<std::vector<glm::vec3>> globalPositionsPerChain);
     };
 
     

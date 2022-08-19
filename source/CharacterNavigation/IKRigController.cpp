@@ -117,6 +117,7 @@ namespace Mona {
 		std::vector<std::vector<glm::vec3>> glblPositionsPerChain(m_ikRig.m_ikChains.size());
 		std::vector<glm::vec3> glblPositions(m_ikRig.getTopology().size());
 		std::vector<glm::mat4> glblTransforms(m_ikRig.getTopology().size());
+		std::vector<glm::mat4> hipGlblTransforms;
 		float floorZ = std::numeric_limits<float>::max(); // altura del piso para la animacion
 		for (int i = 0; i < m_ikRig.getTopology().size(); i++) { glblTransforms[i] = glm::identity<glm::mat4>(); }
 		std::vector<glm::vec3> previousPositions(m_ikRig.getTopology().size());
@@ -127,7 +128,7 @@ namespace Mona {
 			currentConfig->m_eeTrajectoryData[i].init(currentConfig);
 		}
 		for (int i = 0; i < frameNum; i++) {
-			// calculo de las transformaciones en model space
+			// calculo de las transformaciones
 			float timeStamp = rotTimeStamps[i];
 			while (currentConfig->getAnimationDuration() <= timeStamp) { timeStamp -= 0.000001; }
 			for (int j = 0; j < currentConfig->getJointIndices().size(); j++) {
@@ -138,6 +139,7 @@ namespace Mona {
 					glmUtils::rotationToMat4(animationClip->GetRotation(timeStamp, jIndex, true)) *
 					glmUtils::scaleToMat4(animationClip->GetScale(timeStamp, jIndex, true));
 			}
+			hipGlblTransforms.push_back(glblTransforms[m_ikRig.m_hipJoint]);
 
 			// calculo de las posiciones
 			for (int j = 0; j < glblPositions.size(); j++) {
@@ -165,7 +167,7 @@ namespace Mona {
 		}
 
 		// Guardamos la informacion de traslacion y rotacion de la cadera, antes de eliminarla
-		m_ikRig.m_trajectoryGenerator.buildHipTrajectory(currentConfig, m_baseGlobalTransform, minDistance, floorZ);
+		TrajectoryGenerator::buildHipTrajectory(currentConfig, hipGlblTransforms, minDistance, floorZ);
 		
 		// si hay un frame que no es de soporte entre dos frames que si lo son, se setea como de soporte
 		// si el penultimo es de soporte, tambien se setea el ultimo como de soporte
@@ -199,7 +201,7 @@ namespace Mona {
 		}
 
 		// dividimos cada trayectoria global (por ee) en sub trayectorias dinamicas y estaticas.
-		m_ikRig.m_trajectoryGenerator.buildEETrajectories(currentConfig, supportFramesPerChain, glblPositionsPerChain);
+		TrajectoryGenerator::buildEETrajectories(currentConfig, supportFramesPerChain, glblPositionsPerChain);
 
 		// Se remueve el movimiento de las caderas y se setea la rotacion basal
 		glm::vec3 baseScale; glm::quat baseRotation; glm::vec3 baseTranslation; glm::vec3 baseSkew; glm::vec4 basePerspective;
@@ -330,6 +332,9 @@ namespace Mona {
 		}
 		
 	}
+
+
+	FrameIndex lastUpdatedFrame = -1;
 	void IKRigController::updateAnimation(AnimationIndex animIndex) {
 		IKRigConfig& config = m_ikRig.m_animationConfigs[animIndex];
 		if (config.m_onNewFrame) {
@@ -344,8 +349,19 @@ namespace Mona {
 				if (nextFrame == config.getFrameNum() - 1) {
 					anim->SetRotation(calculatedRotations[i].second, 0, calculatedRotations[i].first);
 				}
+				// si el current frame no fue actualizado, le asignamos el valor calculado para next frame
+				if (lastUpdatedFrame != currFrame) {
+					anim->SetRotation(calculatedRotations[i].second, currFrame, calculatedRotations[i].first);
+				}
 			}
-		}		
+			if (nextFrame == config.getFrameNum() - 1) {
+				lastUpdatedFrame = 0;
+			}
+			else {
+				lastUpdatedFrame = nextFrame;
+			}
+		}
+		
 	}
 
 	void IKRigController::updateIKRigConfigTime(float animationTimeStep, AnimationIndex animIndex) {

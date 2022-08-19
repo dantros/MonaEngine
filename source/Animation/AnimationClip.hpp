@@ -14,6 +14,7 @@ namespace Mona {
 		friend class AnimationClipManager;
 		friend class IKRigConfig;
 		friend class IKRigController;
+		friend class TrajectoryGenerator;
 		typedef int JointIndex;
 		typedef int FrameIndex;
 		struct AnimationTrack {
@@ -43,6 +44,7 @@ namespace Mona {
 		void RemoveJointTranslation(int jointIndex);
 		void RemoveJointRotation(int jointIndex);
 		void RemoveJointScaling(int jointIndex);
+		void DecompressRotations();
 
 		float GetSamplingTime(float time, bool isLooping) const;
 		std::pair<uint32_t, float> GetTimeFraction(const std::vector<float>& timeStamps, float time) const;

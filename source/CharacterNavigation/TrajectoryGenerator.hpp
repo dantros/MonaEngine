@@ -74,6 +74,10 @@ namespace Mona{
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
         std::vector<ChainIndex> getIKChains() { return m_ikChains; }
+        void buildHipTrajectory(IKRigConfig* config, glm::mat4 const& baseGlobalTransform, float minDistance, float floorZ);
+        void buildEETrajectories(IKRigConfig* config,
+            std::vector<std::vector<bool>> supportFramesPerChain,
+            std::vector<std::vector<glm::vec3>> globalPositionsPerChain);
     };
 
     

@@ -285,4 +285,47 @@ namespace Mona {
 		return -1;
 	}
 
+	void AnimationClip::DecompressRotations() {
+		int nTracks = m_animationTracks.size();
+		std::vector<bool> conditions(nTracks);
+		std::vector<int> currentTimeIndexes(nTracks);
+		std::vector<float> currentTimes(nTracks);
+		for (int i = 0; i < nTracks; i++) {
+			currentTimeIndexes[i] = 0;
+			conditions[i] = currentTimeIndexes[i] < m_animationTracks[i].rotationTimeStamps.size();
+		}
+		while (funcUtils::conditionVector_OR(conditions)) {
+			// seteamos el valor del timestamp que le corresponde a cada track
+			for (int i = 0; i < nTracks; i++) {
+				currentTimes[i] = conditions[i] ? m_animationTracks[i].rotationTimeStamps[currentTimeIndexes[i]] : std::numeric_limits<float>::max();
+			}
+			// encontramos los indices de las tracks que tienen el minimo timestamp actual
+			std::vector<int> minTimeIndexes = funcUtils::minValueIndex_multiple<float>(currentTimes); // ordenados ascendentemente
+			float currentMinTime = currentTimes[minTimeIndexes[0]];
+
+			int minTimeIndexesIndex = 0;
+			for (int i = 0; i < nTracks; i++) {
+				if (minTimeIndexesIndex < minTimeIndexes.size() && minTimeIndexes[minTimeIndexesIndex] == i) { // track actual tiene un timestamp minimo
+					minTimeIndexesIndex += 1;
+				}
+				else {
+					// si el valor a insertar cae antes del primer timestamp, se replica el ultimo valor del arreglo de rotaciones
+					// se asume animacion circular
+					int insertOffset = currentTimeIndexes[i];
+					int valIndex = currentTimeIndexes[i] > 0 ? currentTimeIndexes[i] - 1 : m_animationTracks[i].rotationTimeStamps.size() - 1;
+					auto rotIt = m_animationTracks[i].rotations.begin() + insertOffset;
+					auto timeRotIt = m_animationTracks[i].rotationTimeStamps.begin() + insertOffset;
+					m_animationTracks[i].rotations.insert(rotIt, m_animationTracks[i].rotations[valIndex]);
+					m_animationTracks[i].rotationTimeStamps.insert(timeRotIt, currentMinTime);
+				}
+				currentTimeIndexes[i] += 1;
+			}
+
+			// actualizamos las condiciones
+			for (int i = 0; i < nTracks; i++) {
+				conditions[i] = currentTimeIndexes[i] < m_animationTracks[i].rotationTimeStamps.size();
+			}
+		}
+	}
+
 }

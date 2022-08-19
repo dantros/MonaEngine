@@ -23,6 +23,7 @@ namespace Mona{
             const std::vector<std::string>& getJointNames() const;
             glm::vec2 getMotionRange(JointIndex jointIndex) { return m_motionRanges[jointIndex]; };
             IKChain* getIKChain(ChainIndex chainIndex) { return &m_ikChains[chainIndex]; };
+            int getChainNum() { return m_ikChains.size(); }
             JointIndex getHipJoint() { return m_hipJoint; }
             glm::vec2 getFrontVector() { return m_frontVector; }
             glm::vec3 getUpVector() { return m_upVector; }

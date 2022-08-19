@@ -5,6 +5,7 @@
 #include "glm/gtx/vector_angle.hpp"
 #include "IKRig.hpp"
 #include "../World/ComponentManager.hpp"
+#include "../Animation/AnimationClip.hpp"
 
 namespace Mona{
 
@@ -879,6 +880,233 @@ namespace Mona{
 		return zValue;
 	}
 
+
+    void TrajectoryGenerator::buildHipTrajectory(IKRigConfig* config, glm::mat4 const& baseGlobalTransform, float minDistance, float floorZ) {
+        int frameNum = config->getFrameNum();
+        std::shared_ptr<AnimationClip> anim = config->m_animationClip;
+		auto hipTrack = anim->m_animationTracks[anim->GetTrackIndex(m_ikRig->getHipJoint())];
+		std::vector<float> hipTimeStamps;
+		hipTimeStamps.reserve(frameNum);
+		std::vector<glm::vec3> hipRotAxes;
+		hipRotAxes.reserve(frameNum);
+		std::vector<glm::vec1> hipRotAngles;
+		hipRotAngles.reserve(frameNum);
+		std::vector<glm::vec3> hipTranslations;
+		hipTranslations.reserve(frameNum);
+		JointIndex hipIndex = m_ikRig->getHipJoint();
+		glm::vec3 previousHipPosition(std::numeric_limits<float>::lowest());
+		glm::vec3 hipScale; glm::quat hipRotation; glm::vec3 hipTranslation; glm::vec3 hipSkew; glm::vec4 hipPerspective;
+		for (int i = 0; i < frameNum; i++) {
+			float timeStamp = hipTrack.rotationTimeStamps[i];
+			while (config->getAnimationDuration() <= timeStamp) { timeStamp -= 0.000001; }
+			JointIndex parent = hipIndex;
+			glm::mat4 hipTransform = baseGlobalTransform;
+			while (parent != -1) {
+				hipTransform *= glmUtils::translationToMat4(anim->GetPosition(timeStamp, parent, true)) *
+					glmUtils::rotationToMat4(anim->GetRotation(timeStamp, parent, true)) *
+					glmUtils::scaleToMat4(anim->GetScale(timeStamp, parent, true));
+				parent = m_ikRig->getTopology()[parent];
+			}
+			glm::vec3 hipPosition = hipTransform * glm::vec4(0, 0, 0, 1);
+			if (minDistance <= glm::distance(hipPosition, previousHipPosition) || i == (frameNum - 1)) { // el valor del ultimo frame se guarda si o si
+				glm::decompose(hipTransform, hipScale, hipRotation, hipTranslation, hipSkew, hipPerspective);
+				hipRotAngles.push_back(glm::vec1(glm::angle(hipRotation)));
+				hipRotAxes.push_back(glm::axis(hipRotation));
+				hipTranslation[2] -= floorZ;
+				hipTranslations.push_back(hipTranslation);
+				hipTimeStamps.push_back(timeStamp);
+			}
+			previousHipPosition = hipPosition;
+		}
+
+		config->m_hipTrajectoryData.init(config);
+		config->m_hipTrajectoryData.m_originalRotationAngles = LIC<1>(hipRotAngles, hipTimeStamps);
+		config->m_hipTrajectoryData.m_originalRotationAxes = LIC<3>(hipRotAxes, hipTimeStamps);
+		config->m_hipTrajectoryData.m_originalTranslations = LIC<3>(hipTranslations, hipTimeStamps);
+    }
+
+    void TrajectoryGenerator::buildEETrajectories(IKRigConfig* config, 
+        std::vector<std::vector<bool>> supportFramesPerChain, 
+        std::vector<std::vector<glm::vec3>> globalPositionsPerChain) {
+        int chainNum = supportFramesPerChain.size();
+        int frameNum = config->getFrameNum();
+		std::vector<int> connectedCurveIndexes(chainNum, -1);
+		std::vector<bool> continueTrajectory(chainNum, false);
+		for (int i = 0; i < chainNum; i++) {
+			std::vector<EETrajectory> subTrajectories;
+			bool allStatic = funcUtils::conditionVector_AND(supportFramesPerChain[i]);
+			if (allStatic) {
+				glm::vec3 staticPos = globalPositionsPerChain[i][0];
+				LIC<3> staticTr({ staticPos, staticPos }, { config->getAnimationTime(0), config->getAnimationTime(frameNum - 1) });
+				subTrajectories.push_back(EETrajectory(staticTr, TrajectoryType::STATIC, 0));
+				for (int j = 0; j < frameNum; j++) { config->m_eeTrajectoryData[i].m_supportHeights[j] = globalPositionsPerChain[i][j][2]; }
+			}
+			else {
+				// encontrar primer punto de interes (dinamica luego de uno estatico)
+				FrameIndex curveStartFrame = -1;
+				for (int j = 1; j < frameNum; j++) {
+					if (supportFramesPerChain[i][j - 1] && !supportFramesPerChain[i][j]) {
+						curveStartFrame = j;
+						break;
+					}
+				}
+				MONA_ASSERT(curveStartFrame != -1, "IKRigController: There must be at least one support frame per ee trajectory.");
+				std::vector<std::pair<int, int>> shInterpolationLimits;
+				float supportHeight;
+				int j = curveStartFrame;
+				FrameIndex currFrame;
+				while (j < frameNum + curveStartFrame) {
+					currFrame = j % frameNum;
+					FrameIndex initialFrame = 0 < currFrame ? currFrame - 1 : frameNum - 1;
+					bool baseFrameType = supportFramesPerChain[i][currFrame];
+					TrajectoryType trType = baseFrameType ? TrajectoryType::STATIC : TrajectoryType::DYNAMIC;
+					supportHeight = globalPositionsPerChain[i][initialFrame][2];
+					config->m_eeTrajectoryData[i].m_supportHeights[initialFrame] = supportHeight;
+					if (trType == TrajectoryType::DYNAMIC) {
+						shInterpolationLimits.push_back({ j - 1, j });
+					}
+					std::vector<glm::vec3> curvePoints_1 = { globalPositionsPerChain[i][initialFrame] };
+					std::vector<float> tValues_1 = { config->getAnimationTime(initialFrame) };
+					std::vector<glm::vec3> curvePoints_2;
+					std::vector<float> tValues_2;
+					std::vector<glm::vec3>* selectedCPArr = &curvePoints_1;
+					std::vector<float>* selectedTVArr = &tValues_1;
+				GATHER_POINTS:
+					while (baseFrameType == supportFramesPerChain[i][currFrame]) {
+						config->m_eeTrajectoryData[i].m_supportHeights[currFrame] = baseFrameType ?
+							globalPositionsPerChain[i][currFrame][2] : supportHeight;
+						(*selectedCPArr).push_back(globalPositionsPerChain[i][currFrame]);
+						(*selectedTVArr).push_back(config->getAnimationTime(currFrame));
+						j++;
+						currFrame = j % frameNum;
+						if (j == frameNum) {
+							continueTrajectory[i] = true;
+							break;
+						}
+						if (currFrame == curveStartFrame) { break; }
+
+					}
+					if (continueTrajectory[i]) {
+						selectedCPArr = &curvePoints_2;
+						selectedTVArr = &tValues_2;
+						continueTrajectory[i] = false;
+						goto GATHER_POINTS;
+					}
+					LIC<3> fullCurve;
+					if (curvePoints_2.size() == 0) {
+						fullCurve = LIC<3>(curvePoints_1, tValues_1);
+					}
+					else if (curvePoints_2.size() == 1) {
+						connectedCurveIndexes[i] = subTrajectories.size();
+						LIC<3> curve(curvePoints_1, tValues_1);
+						float tDiff = tValues_2[0] + config->getAnimationDuration() - curve.getTRange()[1];
+						if (0 < tDiff) {
+							fullCurve = LIC<3>::connectPoint(curve, curvePoints_2[0], tDiff);
+						}
+						else {
+							fullCurve = curve;
+						}
+					}
+					else if (1 < curvePoints_2.size()) {
+						connectedCurveIndexes[i] = subTrajectories.size();
+						LIC<3> part1(curvePoints_1, tValues_1);
+						LIC<3> part2(curvePoints_2, tValues_2);
+						fullCurve = LIC<3>::connect(part1, part2);
+					}
+					subTrajectories.push_back(EETrajectory(fullCurve, trType));
+					if (trType == TrajectoryType::DYNAMIC) {
+						shInterpolationLimits.back().second = j;
+					}
+				}
+				if (connectedCurveIndexes[i] != -1) {
+					// falta agregar la misma curva pero al comienzo del arreglo (con otro desplazamiento temporal)
+					LIC<3> connectedCurve = subTrajectories[connectedCurveIndexes[i]].getEECurve();
+					TrajectoryType connectedTrType = subTrajectories[connectedCurveIndexes[i]].isDynamic() ? TrajectoryType::DYNAMIC : TrajectoryType::STATIC;
+					connectedCurve.offsetTValues(-config->getAnimationDuration());
+					subTrajectories.push_back(EETrajectory(connectedCurve, connectedTrType));
+				}
+				// nos aseguramos de que las curvas esten bien ordenadas
+				std::vector<EETrajectory> tempTr = subTrajectories;
+				subTrajectories = {};
+				while (0 < tempTr.size()) {
+					float minT = std::numeric_limits<float>::max();
+					int minIndex = -1;
+					for (int t = 0; t < tempTr.size(); t++) {
+						float currT = tempTr[t].getEECurve().getTRange()[0];
+						if (currT < minT) {
+							minT = currT;
+							minIndex = t;
+						}
+					}
+					subTrajectories.push_back(tempTr[minIndex]);
+					tempTr.erase(tempTr.begin() + minIndex);
+				}
+
+				// corregimos las posiciones de la trayectoria insertada al principio (si es que la hubo)
+				if (connectedCurveIndexes[i] != -1) {
+					glm::vec3 targetEnd = subTrajectories[1].getEECurve().getStart();
+					LIC<3>& curveToCorrect = subTrajectories[0].getEECurve();
+					curveToCorrect.translate(-curveToCorrect.getEnd());
+					curveToCorrect.translate(targetEnd);
+				}
+
+				// interpolamos los valores de support height para las curvas dinamicas
+				for (int k = 0; k < shInterpolationLimits.size(); k++) {
+					float sh1 = config->m_eeTrajectoryData[i].m_supportHeights[shInterpolationLimits[k].first % frameNum];
+					float sh2 = config->m_eeTrajectoryData[i].m_supportHeights[shInterpolationLimits[k].second % frameNum];
+					int minIndex = shInterpolationLimits[k].first;
+					int maxIndex = shInterpolationLimits[k].second;
+					if (sh1 != sh2) {
+						for (int l = minIndex; l <= maxIndex; l++) {
+							FrameIndex shFrame = l % frameNum;
+							float shFraction = funcUtils::getFraction(minIndex, maxIndex, l);
+							config->m_eeTrajectoryData[i].m_supportHeights[shFrame] = funcUtils::lerp(sh1, sh2, shFraction);
+						}
+					}
+				}
+			}
+
+			// asignamos las sub trayectorias a la cadena correspondiente
+			config->m_eeTrajectoryData[i].m_originalSubTrajectories = subTrajectories;
+			for (int j = 0; j < subTrajectories.size(); j++) {
+				config->m_eeTrajectoryData[i].m_originalSubTrajectories[j].m_subTrajectoryID = j;
+			}
+		}
+
+
+		// guardamos los tiempos de maxima altitud de la cadera
+		LIC<3>& hipTr = config->getHipTrajectoryData()->m_originalTranslations;
+		for (int i = 0; i <chainNum; i++) {
+			EEGlobalTrajectoryData& trData = config->m_eeTrajectoryData[i];
+			for (int j = 0; j < trData.m_originalSubTrajectories.size(); j++) {
+				float maxZ = std::numeric_limits<float>::lowest();
+				int savedIndex = -1;
+				LIC<3>& currentCurve = trData.m_originalSubTrajectories[j].getEECurve();
+				for (int k = 0; k < currentCurve.getNumberOfPoints(); k++) {
+					float tValue = currentCurve.getTValue(k);
+					if (connectedCurveIndexes[i] != -1) {
+						if (j == 0) {
+							if (!hipTr.inTRange(tValue)) {
+								tValue += config->getAnimationDuration();
+							}
+						}
+						else if (j == trData.m_originalSubTrajectories.size() - 1) {
+							if (!hipTr.inTRange(tValue)) {
+								tValue -= config->getAnimationDuration();
+							}
+						}
+					}
+					float hipZ = hipTr.evalCurve(tValue)[2];
+					if (maxZ < hipZ) {
+						maxZ = hipZ;
+						savedIndex = k;
+					}
+				}
+				config->m_eeTrajectoryData[i].m_originalSubTrajectories[j].m_hipMaxAltitudeTime =
+					currentCurve.getTValue(savedIndex);
+			}
+		}
+    }
 
     
 }

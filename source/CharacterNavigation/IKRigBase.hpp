@@ -45,6 +45,7 @@ namespace Mona {
         friend class IKRig;
         friend class IKRigController;
         friend class DebugDrawingSystem_ikNav;
+        friend class TrajectoryGenerator;
     private:
         // Indica si la animacion asociada esta activa
         bool m_active = true;

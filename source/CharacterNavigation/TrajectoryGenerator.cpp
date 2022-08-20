@@ -85,8 +85,8 @@ namespace Mona{
         return result;
     };
 
-    std::function<void(std::vector<float>&, TGData*, std::vector<float>&)>  postDescentStepCustomBehaviour =
-        [](std::vector<float>& varPCoord, TGData* dataPtr, std::vector<float>& argsRawDelta)->void {
+    std::function<void(std::vector<float>&, TGData*, std::vector<float>&, int)>  postDescentStepCustomBehaviour =
+        [](std::vector<float>& varPCoord, TGData* dataPtr, std::vector<float>& argsRawDelta, int varIndex_progressive)->void {
         glm::vec3 newPos;
         int D = 3;
         for (int i = 0; i < dataPtr->pointIndexes.size(); i++) {

@@ -37,6 +37,11 @@ namespace Mona{
 		m_animIndex = animationIndex;
 		m_forwardKinematics = forwardKinematics;
 	}
+
+	std::vector<glm::mat4> IKRigConfig::getEEListJointSpaceTransforms(std::vector<JointIndex> eeList, FrameIndex frame,
+		bool useDynamicRotations) {
+		return m_forwardKinematics->EEListJointSpaceTransforms(eeList, m_animIndex,	frame, useDynamicRotations);
+	}
 	std::vector<glm::mat4> IKRigConfig::getEEListModelSpaceTransforms(std::vector<JointIndex> eeList,  FrameIndex frame, 
 		bool useDynamicRotations, std::vector<glm::mat4>* outJointSpaceTransforms) {
 		return m_forwardKinematics->EEListCustomSpaceTransforms(eeList, glm::identity<glm::mat4>(), m_animIndex, 

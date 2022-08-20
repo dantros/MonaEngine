@@ -32,8 +32,8 @@ namespace Mona {
 		m_motionRanges = std::vector<glm::vec2>(jointNum, glm::vec2(-std::numbers::pi, -std::numbers::pi));
 		for (JointIndex i = 0; i < jointNum; i++) {
 			JointData currData = rigData.jointData[jointNames[i]];
-			m_motionRanges[i][0] = currData.minAngle;
-			m_motionRanges[i][1] = currData.maxAngle;
+			m_motionRanges[i][0] = glm::radians(currData.minAngle);
+			m_motionRanges[i][1] = glm::radians(currData.maxAngle);
 		}
 
 		// setear el la altura del rig

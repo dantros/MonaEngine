@@ -268,10 +268,11 @@ namespace Mona {
 				}
 
 				// recalcular trayectorias de ee y caderas
+				int repOffset_next = config.getCurrentFrameIndex() < config.getFrameNum() - 1 ? 0 : 1;
 				bool updateNeeded = m_reproductionTime - lastTrajectoryUpdateTime > 0.05f;
 				if (!updateNeeded) {
 					for (int i = 0; i < config.m_eeTrajectoryData.size(); i++) {
-						float nextFrameRepTime = config.getReproductionTime(config.getNextFrameIndex());
+						float nextFrameRepTime = config.getReproductionTime(config.getNextFrameIndex(), repOffset_next);
 						if (!config.getEETrajectoryData(i)->getTargetTrajectory().getEECurve().inTRange(nextFrameRepTime)) {
 							updateNeeded = true;
 							break;
@@ -284,11 +285,19 @@ namespace Mona {
 				}
 
 				// asignar objetivos a ee's
-				float targetTimeNext = config.getReproductionTime(config.getNextFrameIndex());
+				float targetTimeNext = config.getReproductionTime(config.getNextFrameIndex(), repOffset_next);
 				float targetTimeCurr = config.getReproductionTime(config.getCurrentFrameIndex());
-				glm::mat4 toModelSpace = glm::inverse(glmUtils::translationToMat4(hipTrData->getTargetTranslation(targetTimeNext)) *
-					glmUtils::rotationToMat4(hipTrData->getTargetRotation(targetTimeNext)) *
-					glmUtils::scaleToMat4(m_rigScale));
+				float deltaT = targetTimeNext - targetTimeCurr;
+				// DEBUG
+				std::vector<glm::vec3> nextFrameModelSpacePos =  m_ikRig.m_forwardKinematics.ModelSpacePositions(animIndex, config.m_nextFrameIndex, true);
+				std::cout << "next model space pos: next frame "<< config.m_nextFrameIndex << std::endl;
+				glmUtils::printColoredStdVector(nextFrameModelSpacePos);
+				// DEBUG
+
+				glm::mat4 nextGlblTransform = glmUtils::translationToMat4(hipTrData->getTargetTranslation(targetTimeNext)) *
+					glmUtils::rotationToMat4(glm::angleAxis(m_ikRig.m_rotationAngle + m_ikRig.m_angularSpeed*deltaT, m_ikRig.getUpVector())) *
+					glmUtils::scaleToMat4(m_rigScale);
+				glm::mat4 toModelSpace = glm::inverse(nextGlblTransform);
 				for (ChainIndex i = 0; i < m_ikRig.getChainNum(); i++) {
 					IKChain* ikChain = m_ikRig.getIKChain(i);
 					trData = config.getEETrajectoryData(i);
@@ -304,8 +313,7 @@ namespace Mona {
 			}
 			// setear transformacion global (traslacion y direccion de movimiento)
 			// nueva rotacion
-			glm::vec3 upVec = { 0,0,1 };
-			glm::fquat updatedRotation = glm::angleAxis(m_ikRig.m_rotationAngle, upVec);
+			glm::fquat updatedRotation = glm::angleAxis(m_ikRig.m_rotationAngle, m_ikRig.getUpVector());
 			transformManager.GetComponentPointer(m_ikRig.getTransformHandle())->SetRotation(updatedRotation);
 			glm::vec3 glblTr = hipTrData->getTargetTranslation(config.getCurrentReproductionTime());
 			transformManager.GetComponentPointer(m_ikRig.getTransformHandle())->SetTranslation(glblTr);

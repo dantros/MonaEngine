@@ -132,8 +132,10 @@ namespace Mona {
         friend class IKRig;
         // Nombre de la cadena
         std::string m_name;
-        // Articulaciones que conforman la cadena, desde el origen hasta el ee
+        // Articulaciones que conforman la cadena, desde el origen hasta el ee (no incluye la base)
         std::vector<JointIndex> m_joints;
+        // Articulacion basal (no es parte movil de la cadena)
+        JointIndex m_baseJoint;
         // Objetivo actual para el end effector (donde debe posicionarse) (model space)
         glm::vec3 m_currentEETarget;
         // Cadena opuesta a la actual (ej: pierna izquierda a pierna derecha). Para ajustar posiciones relativas.
@@ -142,6 +144,7 @@ namespace Mona {
         IKChain() = default;
         const std::string& getName() const { return m_name; };
         const std::vector<JointIndex>& getJoints() const { return m_joints; };
+        JointIndex getBaseJoint() { return m_baseJoint; }
         JointIndex getEndEffector() { return m_joints.back(); }
         const glm::vec3& getCurrentEETarget() const { return m_currentEETarget; };
         void setCurrentEETarget(glm::vec3 currentEETarget) { m_currentEETarget = currentEETarget; }

@@ -100,7 +100,7 @@ namespace Mona {
 		IKRigConfig* currentConfig = m_ikRig.getAnimationConfig(newIndex);
 		currentConfig->m_eeTrajectoryData = std::vector<EEGlobalTrajectoryData>(m_ikRig.m_ikChains.size());
 
-		int chainNum = m_ikRig.m_ikChains.size();
+		int chainNum = m_ikRig.getChainNum();
 
 		// numero de rotaciones por joint con la animaciond descomprimida
 		int frameNum = animationClip->m_animationTracks[0].rotationTimeStamps.size();
@@ -113,8 +113,8 @@ namespace Mona {
 
 		// Guardamos las trayectorias originales de los ee y definimos sus frames de soporte
 		std::vector<float> rotTimeStamps = animationClip->m_animationTracks[0].rotationTimeStamps;
-		std::vector<std::vector<bool>> supportFramesPerChain(m_ikRig.m_ikChains.size());
-		std::vector<std::vector<glm::vec3>> glblPositionsPerChain(m_ikRig.m_ikChains.size());
+		std::vector<std::vector<bool>> supportFramesPerChain(chainNum);
+		std::vector<std::vector<glm::vec3>> glblPositionsPerChain(chainNum);
 		std::vector<glm::vec3> glblPositions(m_ikRig.getTopology().size());
 		std::vector<glm::mat4> glblTransforms(m_ikRig.getTopology().size());
 		std::vector<glm::mat4> hipGlblTransforms;
@@ -288,11 +288,6 @@ namespace Mona {
 				float targetTimeNext = config.getReproductionTime(config.getNextFrameIndex(), repOffset_next);
 				float targetTimeCurr = config.getReproductionTime(config.getCurrentFrameIndex());
 				float deltaT = targetTimeNext - targetTimeCurr;
-				// DEBUG
-				std::vector<glm::vec3> nextFrameModelSpacePos =  m_ikRig.m_forwardKinematics.ModelSpacePositions(animIndex, config.m_nextFrameIndex, true);
-				std::cout << "next model space pos: next frame "<< config.m_nextFrameIndex << std::endl;
-				glmUtils::printColoredStdVector(nextFrameModelSpacePos);
-				// DEBUG
 
 				glm::mat4 nextGlblTransform = glmUtils::translationToMat4(hipTrData->getTargetTranslation(targetTimeNext)) *
 					glmUtils::rotationToMat4(glm::angleAxis(m_ikRig.m_rotationAngle + m_ikRig.m_angularSpeed*deltaT, m_ikRig.getUpVector())) *
@@ -301,8 +296,7 @@ namespace Mona {
 				for (ChainIndex i = 0; i < m_ikRig.getChainNum(); i++) {
 					IKChain* ikChain = m_ikRig.getIKChain(i);
 					trData = config.getEETrajectoryData(i);
-					glm::vec3 eeTarget = toModelSpace *
-						glm::vec4(trData->getTargetTrajectory().getEECurve().evalCurve(targetTimeNext), 1);
+					glm::vec3 eeTarget = toModelSpace *glm::vec4(trData->getTargetTrajectory().getEECurve().evalCurve(targetTimeNext), 1);
 					ikChain->setCurrentEETarget(eeTarget);
 				}
 				// asignar info de rotacion a la cadera en la animacion

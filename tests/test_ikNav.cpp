@@ -31,15 +31,15 @@ Mona::GameObjectHandle<Mona::GameObject> AddTerrain(Mona::World& world) {
 	//float planeScale = 10.0f;
 	auto transform = world.AddComponent<Mona::TransformComponent>(terrain);
 	//transform->SetScale(glm::vec3(planeScale));
-	glm::vec2 minXY(-10000, -10000);
-	glm::vec2 maxXY(10000, 10000);
+	glm::vec2 minXY(-100, -100);
+	glm::vec2 maxXY(100, 100);
 	int numInnerVerticesWidth = 100;
 	int numInnerVerticesHeight = 100;
 	auto heighFunc = [](float x, float y) -> float {
 		float result = 0;
 		int funcNum = 100;
-		glm::vec2 minXY(-10000, -10000);
-		glm::vec2 maxXY(10000, 10000);
+		glm::vec2 minXY(-100, -100);
+		glm::vec2 maxXY(100, 100);
 		float minHeight = -15;
 		float maxHeight = 70;
 		float minSigma = 3;
@@ -107,7 +107,7 @@ public:
 
 		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
 		m_transform->SetTranslation({ 0,0, 0 });
-		//m_transform->SetScale({ 0.05,0.05,0.05 });
+		m_transform->SetScale({ 0.05,0.05,0.05 });
 		m_transform->Rotate(glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(180.f));
 		m_transform->Rotate(glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(90.f));
 

@@ -85,6 +85,7 @@ namespace Mona {
 		while (jIndex != -1) {
 			if (jointNames[jIndex] == chainEnds.baseJointName) {
 				chainBaseIndex = jIndex;
+				ikChain.m_baseJoint = chainBaseIndex;
 				break;
 			}
 			// la joint correspondiente a la base de la cadena no se guarda para ser modificada mediante IK

@@ -8,15 +8,16 @@
 namespace Mona {
 
 	glm::mat4 rotationMatrixDerivative_dAngle(float angle, glm::vec3 axis) {
+		// column major!!
 		glm::mat4 mat(0.0f);
 		mat[0][0] = sin(angle) * (pow(axis[0], 2) - 1);;
-		mat[1][0] = axis[0] * axis[1] * sin(angle) + axis[2] * cos(angle);
-		mat[2][0] = axis[0] * axis[2] * sin(angle) - axis[1] * cos(angle);
-		mat[0][1] = axis[0] * axis[1] * sin(angle) - axis[2] * cos(angle);
+		mat[0][1] = axis[0] * axis[1] * sin(angle) + axis[2] * cos(angle);
+		mat[0][2] = axis[0] * axis[2] * sin(angle) - axis[1] * cos(angle);
+		mat[1][0] = axis[0] * axis[1] * sin(angle) - axis[2] * cos(angle);
 		mat[1][1] = sin(angle) * (pow(axis[1], 2) - 1);;
-		mat[2][1] = axis[1] * axis[2] * sin(angle) + axis[0] * cos(angle);
-		mat[0][2] = axis[0] * axis[2] * sin(angle) + axis[1] * cos(angle);
-		mat[1][2] = axis[1] * axis[2] * sin(angle) - axis[0] * cos(angle);
+		mat[1][2] = axis[1] * axis[2] * sin(angle) + axis[0] * cos(angle);
+		mat[2][0] = axis[0] * axis[2] * sin(angle) + axis[1] * cos(angle);
+		mat[2][1] = axis[1] * axis[2] * sin(angle) - axis[0] * cos(angle);
 		mat[2][2] = sin(angle) * (pow(axis[2], 2) - 1);;
 		return mat;
 	}
@@ -67,37 +68,35 @@ namespace Mona {
 		// buscamos las cadenas afectadas
 		std::vector<IKChain*> affectedChains;
 		std::vector<int> indexes;
+		std::vector<JointIndex> endEffectors;
+		JointIndex varJoint = dataPtr->jointIndexes[varIndex];
 		for (int i = 0; i < dataPtr->ikChains.size(); i++) {
 			std::vector<JointIndex>const& joints = dataPtr->ikChains[i]->getJoints();
-			int ind = funcUtils::findIndex(joints, dataPtr->jointIndexes[varIndex]);
+			int ind = funcUtils::findIndex(joints, varJoint);
 			if (ind != -1) {
 				affectedChains.push_back(dataPtr->ikChains[i]);
 				indexes.push_back(ind);
+				endEffectors.push_back(affectedChains.back()->getEndEffector());
 			}
 		}
 		// calcular arreglos de transformaciones
-		JointIndex varJoint = dataPtr->jointIndexes[varIndex];
-		std::vector<JointIndex> endEffectors;
-		for (int i = 0; i < affectedChains.size(); i++) {
-			endEffectors.push_back(affectedChains[i]->getEndEffector());
-		}
 		std::vector<glm::mat4> jointSpaceTransforms;
 		// multiplicacion en cadena desde la raiz hasta el joint i
 		std::vector<glm::mat4> forwardModelSpaceTransforms = dataPtr->rigConfig->getEEListModelSpaceTransforms(endEffectors,
 			dataPtr->targetFrame, true, &jointSpaceTransforms);
 		
 		// DEBUG
-		std::vector<glm::vec3> debugPositions(forwardModelSpaceTransforms.size());
-		for (int i = 0; i < forwardModelSpaceTransforms.size(); i++) {
-			debugPositions[i] = forwardModelSpaceTransforms[i] * glm::vec4(0, 0, 0, 1);
-		}
-		std::cout << "model space pos gd next frame : "<<dataPtr->targetFrame << std::endl;
-		glmUtils::printColoredStdVector(debugPositions);
+		//std::vector<glm::vec3> debugPositions(forwardModelSpaceTransforms.size());
+		//for (int i = 0; i < forwardModelSpaceTransforms.size(); i++) {
+		//	debugPositions[i] = forwardModelSpaceTransforms[i] * glm::vec4(0, 0, 0, 1);
+		//}
+		//std::cout << "model space pos gd next frame : "<<dataPtr->targetFrame << std::endl;
+		//glmUtils::printColoredStdVector(debugPositions);
 		//DEBUG
 
 
 		// multiplicacion en cadena desde el ee de la cadena hasta el joint i
-		std::vector<std::vector<glm::mat4>> backwardModelSpaceTransformsPerChain = std::vector<std::vector<glm::mat4>>(affectedChains.size());
+		std::vector<std::vector<glm::mat4>> backwardModelSpaceTransformsPerChain(affectedChains.size());
 		std::vector<glm::mat4>* bt;
 		for (int i = 0; i < affectedChains.size(); i++) {
 			std::vector<JointIndex>const& joints = affectedChains[i]->getJoints();
@@ -110,15 +109,15 @@ namespace Mona {
 		}
 
 		for (int c = 0; c < affectedChains.size(); c++) {
-			// chequeamos si el angulo variable es parte de la cadena actual
 			std::vector<JointIndex>const& joints = affectedChains[c]->getJoints();
 			int ind = indexes[c];
 			// matriz de trnasformacion de la joint actual
-			glm::mat4 TvarRaw = jointSpaceTransforms[dataPtr->jointIndexes[varIndex]];
+			glm::mat4 TvarRaw = jointSpaceTransforms[varJoint];
 			glm::decompose(TvarRaw, TvarScl, TvarQuat, TvarTr, skew, perspective);
 			// matriz que va a la izquierda de la matriz de rotacion de la joint actual en el calculo de la posicion con FK
 			TA = (0 < ind ? forwardModelSpaceTransforms[joints[ind - 1]] :
-				glm::identity<glm::mat4>()) * glmUtils::translationToMat4(TvarTr);
+				forwardModelSpaceTransforms[affectedChains[c]->getBaseJoint()]) * glmUtils::translationToMat4(TvarTr);
+
 			// matriz que va a la  derecha de la matriz de rotacion de la joint actual en el calculo de la posicion con FK
 			TB = glmUtils::scaleToMat4(TvarScl) * (ind < joints.size() - 1 ?
 				backwardModelSpaceTransformsPerChain[c][joints[ind + 1]] : glm::identity<glm::mat4>());
@@ -127,17 +126,25 @@ namespace Mona {
 			glm::mat4 dTvar = rotationMatrixDerivative_dAngle(varAngles[varIndex], dataPtr->rotationAxes[varIndex]);
 			glm::vec4 eeT = glm::vec4(affectedChains[c]->getCurrentEETarget(), 1);
 			glm::vec4 eePosCurr_d = forwardModelSpaceTransforms[joints.back()] * glm::vec4(0, 0, 0, 1);
+			// DEBUG
+			/*if (affectedChains[c]->getName() == "leftLeg") {
+				std::cout << "adjusted ee pos: " << affectedChains[c]->getName() << std::endl;
+				glmUtils::printColoredVec(eePosCurr_d);
+				std::cout << "ee target: " << affectedChains[c]->getName() << std::endl;
+				glmUtils::printColoredVec(eeT);
+			}	*/		
+			// DEBUG
 			for (int k = 0; k <= 3; k++) {
 				float mult1 = 0;
 				for (int j = 0; j <= 3; j++) {
 					for (int i = 0; i <= 3; i++) {
-						mult1 += b[j] * TA[k][i] * Tvar[i][j] - eeT[k] / 16;
+						mult1 += b[j] * TA[i][k] * Tvar[j][i] - eeT[k] / 16;
 					}
 				}
 				float mult2 = 0;
 				for (int j = 0; j <= 3; j++) {
 					for (int i = 0; i <= 3; i++) {
-						mult2 += b[j] * TA[k][i] * dTvar[i][j];
+						mult2 += b[j] * TA[i][k] * dTvar[j][i];
 					}
 				}
 				result += mult1 * mult2;
@@ -190,9 +197,9 @@ namespace Mona {
 		FunctionTerm<IKData> term3(term3Function, term3PartialDerivativeFunction);
 		auto terms = std::vector<FunctionTerm<IKData>>({ term2 });
 		m_gradientDescent = GradientDescent<IKData>(terms, 0, &m_ikData, postDescentStepCustomBehaviour);
-		m_ikData.descentRate = 1*pow(10,-3);
+		m_ikData.descentRate = 1*pow(10,-4);
 		m_ikData.maxIterations = 500;
-		m_ikData.targetAngleDelta = 0.000001f;
+		m_ikData.targetAngleDelta = 0.00001f;
 		m_gradientDescent.setTermWeight(0, 1.0f);
 		//m_gradientDescent.setTermWeight(1, 0.6f);
 		//m_gradientDescent.setTermWeight(1, 0.2f);
@@ -235,6 +242,7 @@ namespace Mona {
 	std::vector<std::pair<JointIndex, glm::fquat>> InverseKinematics::solveIKChains(AnimationIndex animationIndex, FrameIndex targetFrame) {
 
 		m_ikData.rigConfig = m_ikRig->getAnimationConfig(animationIndex);
+		m_ikData.targetFrame = targetFrame;
 
 		FrameIndex previousFrame = 0 < targetFrame ? targetFrame - 1 : m_ikData.rigConfig->getFrameNum()-1;
 
@@ -245,17 +253,13 @@ namespace Mona {
 		for (int i = 0; i < m_ikData.jointIndexes.size(); i++) {
 			m_ikData.previousAngles[i] = (*dynamicRotations_prev)[m_ikData.jointIndexes[i]].getRotationAngle();
 		}
-		std::vector<float> initialArgs; // = m_ikData.previousAngles;
+		std::vector<float> initialArgs = m_ikData.previousAngles;
 
 		for (int i = 0; i < m_ikData.jointIndexes.size(); i++) {
 			m_ikData.rotationAxes[i] = baseRotations_target[m_ikData.jointIndexes[i]].getRotationAxis();
 			m_ikData.baseAngles[i] = baseRotations_target[m_ikData.jointIndexes[i]].getRotationAngle();
 		}
-		m_ikData.targetFrame = targetFrame;
 		std::vector<JointRotation>* dynamicRotations_target = m_ikData.rigConfig->getDynamicJointRotations(targetFrame);
-		for (int i = 0; i < m_ikData.jointIndexes.size(); i++) {
-			initialArgs.push_back(baseRotations_target[m_ikData.jointIndexes[i]].getRotationAngle());
-		}
 		// ajustamos las rotaciones dinamicas a los argumentos iniciales
 		for (int i = 0; i < m_ikData.jointIndexes.size(); i++) {
 			JointIndex jIndex = m_ikData.jointIndexes[i];

@@ -93,8 +93,20 @@ namespace Mona {
                 }				
 			}
 			std::cout << " ]" << std::endl;
-        }    
+        }
 
+
+        template <int D>
+        inline void printColoredVec(glm::vec<D, float> vec) {
+            auto colors = { green, red, yellow, blue };
+            std::cout << white << "[";
+            for (int i = 0; i < D; i++) {
+                std::cout << *(colors.begin() + i % colors.size()) << vec[i] << white;
+                if (i != D - 1) { std::cout << ", "; }
+            }
+            std::cout << white <<"]";
+            std::cout << std::endl;        
+        }
     
     }
         

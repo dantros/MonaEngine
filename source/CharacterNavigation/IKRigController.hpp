@@ -13,7 +13,6 @@ namespace Mona {
 		friend class IKNavigationComponent;
 		friend class DebugDrawingSystem_ikNav;
 		IKRig m_ikRig;
-		glm::vec3 m_rigScale;
 		InnerComponentHandle m_skeletalMeshHandle;
 		glm::mat4 m_baseGlobalTransform;
 		float m_reproductionTime = 0;

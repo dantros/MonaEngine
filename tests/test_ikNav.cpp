@@ -126,9 +126,9 @@ public:
 		m_skeletalMesh = world.AddComponent<Mona::SkeletalMeshComponent>(*this, skinnedMesh, m_walkingAnimation, materialPtr);
 
 		Mona::RigData rigData;
-		rigData.leftLeg.baseJointName = "Hips";
+		rigData.leftLeg.baseJointName = "LeftUpLeg";
 		rigData.leftLeg.endEffectorName = "LeftFoot";
-		rigData.rightLeg.baseJointName = "Hips";
+		rigData.rightLeg.baseJointName = "RightUpLeg";
 		rigData.rightLeg.endEffectorName = "RightFoot";
 		rigData.hipJointName = "Hips";
 		m_ikNavHandle = world.AddComponent<Mona::IKNavigationComponent>(*this, rigData);

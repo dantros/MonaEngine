@@ -15,12 +15,12 @@ namespace Mona {
 		glm::decompose(baseGlobalTransform, glblScale, glblRotation, glblTranslation, glblSkew, glblPerspective);
 		MONA_ASSERT(glmUtils::isApproxUniform(glblScale), "Global scale must be uniform");
 		m_baseGlobalTransform = baseGlobalTransform;
-		m_rigScale = glblScale;
+		m_ikRig.m_rigScale = glblScale[0];
 		// descartamos la rotacion de la transformacion base
 		transformManager->GetComponentPointer(transformHandle)->SetRotation(glm::identity<glm::fquat>());
 	}
 	void IKRigController::init() {
-		m_ikRig.init(m_rigScale[0]);
+		m_ikRig.init();
 	}
 
 	void IKRigController::validateTerrains(ComponentManager<StaticMeshComponent>& staticMeshManager) {
@@ -106,7 +106,7 @@ namespace Mona {
 		int frameNum = animationClip->m_animationTracks[0].rotationTimeStamps.size();
 
 		// minima distancia entre posiciones de un frame a otro para considerarlo un movimiento
-		float minDistance = m_ikRig.m_rigHeight / 1000;
+		float minDistance = m_ikRig.m_rigHeight*m_ikRig.m_rigScale / 1000;
 
 
 		
@@ -291,7 +291,7 @@ namespace Mona {
 
 				glm::mat4 nextGlblTransform = glmUtils::translationToMat4(hipTrData->getTargetTranslation(targetTimeNext)) *
 					glmUtils::rotationToMat4(glm::angleAxis(m_ikRig.m_rotationAngle + m_ikRig.m_angularSpeed*deltaT, m_ikRig.getUpVector())) *
-					glmUtils::scaleToMat4(m_rigScale);
+					glmUtils::scaleToMat4(glm::vec3(m_ikRig.m_rigScale));
 				glm::mat4 toModelSpace = glm::inverse(nextGlblTransform);
 				for (ChainIndex i = 0; i < m_ikRig.getChainNum(); i++) {
 					IKChain* ikChain = m_ikRig.getIKChain(i);

@@ -29,10 +29,11 @@ namespace Mona{
             glm::vec3 getUpVector() { return m_upVector; }
             float getRotationAngle() { return m_rotationAngle; }
             float getRigHeight() { return m_rigHeight; }
+            float getRigScale() { return m_rigScale; }
             void setAngularSpeed(float angularSpeed) { m_angularSpeed = angularSpeed; }
             float getAngularSpeed() { return m_angularSpeed; }
             InnerComponentHandle getTransformHandle() { return m_transformHandle; }
-            void init(float rigScale);
+            void init();
         private:
             // Informacion de configuracion del IKRig por cada animacion
             std::vector<IKRigConfig> m_animationConfigs;
@@ -48,8 +49,10 @@ namespace Mona{
             InnerComponentHandle m_transformHandle;
             ForwardKinematics m_forwardKinematics;
             InverseKinematics m_inverseKinematics;
-            // Altura aproximada global del rig, para calculos con distancias relativas
+            // Altura aproximada del rig(model space), para calculos con distancias relativas
             float m_rigHeight;
+            // Escala global del rig
+            float m_rigScale;
             // Arreglo de rangos de movimiento (hay uno por cada articulacion)
             std::vector<glm::vec2> m_motionRanges;
             // Arreglo de cadenas IK

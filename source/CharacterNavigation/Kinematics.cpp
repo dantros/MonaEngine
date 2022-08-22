@@ -115,8 +115,11 @@ namespace Mona {
 			glm::mat4 TvarRaw = jointSpaceTransforms[varJoint];
 			glm::decompose(TvarRaw, TvarScl, TvarQuat, TvarTr, skew, perspective);
 			// matriz que va a la izquierda de la matriz de rotacion de la joint actual en el calculo de la posicion con FK
+			JointIndex chainParent = affectedChains[c]->getParentJoint();
+			glm::mat4 chainBaseTransform = chainParent == -1 ? glm::identity<glm::mat4>() :
+				forwardModelSpaceTransforms[chainParent];
 			TA = (0 < ind ? forwardModelSpaceTransforms[joints[ind - 1]] :
-				forwardModelSpaceTransforms[affectedChains[c]->getBaseJoint()]) * glmUtils::translationToMat4(TvarTr);
+				chainBaseTransform) * glmUtils::translationToMat4(TvarTr);
 
 			// matriz que va a la  derecha de la matriz de rotacion de la joint actual en el calculo de la posicion con FK
 			TB = glmUtils::scaleToMat4(TvarScl) * (ind < joints.size() - 1 ?
@@ -197,9 +200,9 @@ namespace Mona {
 		FunctionTerm<IKData> term3(term3Function, term3PartialDerivativeFunction);
 		auto terms = std::vector<FunctionTerm<IKData>>({ term2 });
 		m_gradientDescent = GradientDescent<IKData>(terms, 0, &m_ikData, postDescentStepCustomBehaviour);
-		m_ikData.descentRate = 1*pow(10,-4);
+		m_ikData.descentRate = 1 / (pow(10, 2) * m_ikRig->getRigHeight());
 		m_ikData.maxIterations = 500;
-		m_ikData.targetAngleDelta = 0.00001f;
+		m_ikData.targetAngleDelta = 1 / (pow(10, 3) * m_ikRig->getRigHeight());
 		m_gradientDescent.setTermWeight(0, 1.0f);
 		//m_gradientDescent.setTermWeight(1, 0.6f);
 		//m_gradientDescent.setTermWeight(1, 0.2f);

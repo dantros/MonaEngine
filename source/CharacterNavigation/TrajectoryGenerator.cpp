@@ -111,11 +111,11 @@ namespace Mona{
         FunctionTerm<TGData> term1(term1Function, term1PartialDerivativeFunction);
         FunctionTerm<TGData> term2(term2Function, term2PartialDerivativeFunction);
         m_gradientDescent = GradientDescent<TGData>({ term1, term2 }, 0, &m_tgData, postDescentStepCustomBehaviour);
-        m_tgData.descentRate = m_ikRig->getRigHeight()/pow(10,5);
+        m_tgData.descentRate = 1 / pow(10, 5);
         m_tgData.maxIterations = 600;
         m_tgData.alphaValue = 0.8;
         m_tgData.betaValue = 0.2;
-        m_tgData.targetPosDelta = m_ikRig->getRigHeight()/pow(10, 6);
+        m_tgData.targetPosDelta = 1 /pow(10, 6);
     }
 
 	void TrajectoryGenerator::generateNewTrajectories(AnimationIndex animIndex,
@@ -854,8 +854,8 @@ namespace Mona{
 		}
 
 		// valor mas bajo de z para las tr actuales de los ee
-		zValue += m_ikRig->getRigHeight()*0.8;
-		float zDelta = m_ikRig->getRigHeight() / 500;
+		zValue += m_ikRig->getRigHeight()*m_ikRig->getRigScale()*0.8;
+		float zDelta = m_ikRig->getRigHeight() * m_ikRig->getRigScale() / 500;
 		std::vector<bool> conditions1(m_ikRig->getChainNum(), true);
         std::vector<bool> conditions2(m_ikRig->getChainNum(), true);
 		int maxSteps = 1000;

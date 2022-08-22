@@ -51,7 +51,7 @@ namespace Mona {
 		m_rigHeight = legLenght * 2;
 	}
 
-	void IKRig::init(float rigScale) {
+	void IKRig::init() {
 		std::vector<ChainIndex> ikChains;
 		for (ChainIndex i = 0; i < m_ikChains.size(); i++) {
 			ikChains.push_back(i);
@@ -61,7 +61,6 @@ namespace Mona {
 		m_forwardKinematics = ForwardKinematics(this);
 		m_trajectoryGenerator = TrajectoryGenerator(this);
 		m_trajectoryGenerator.init();
-		m_rigHeight *= rigScale;
 	}
 
 	const std::vector<int>& IKRig::getTopology() const { 
@@ -83,17 +82,15 @@ namespace Mona {
 		int chainBaseIndex = -1;
 		JointIndex jIndex = eeIndex;
 		while (jIndex != -1) {
+			ikChain.m_joints.insert(ikChain.m_joints.begin(), jIndex);
 			if (jointNames[jIndex] == chainEnds.baseJointName) {
 				chainBaseIndex = jIndex;
-				ikChain.m_baseJoint = chainBaseIndex;
 				break;
 			}
-			// la joint correspondiente a la base de la cadena no se guarda para ser modificada mediante IK
-			// , ya que esta es una articulacion que se considera fija
-			ikChain.m_joints.insert(ikChain.m_joints.begin(), jIndex);
 			jIndex = topology[jIndex];
 		}
 		MONA_ASSERT(chainBaseIndex != -1, "IKRig: base joint and end effector were not on the same chain!");
+		ikChain.m_parentJoint = topology[chainBaseIndex];
 		return ikChain;
 	}
 

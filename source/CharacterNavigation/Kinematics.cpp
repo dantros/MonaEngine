@@ -198,14 +198,14 @@ namespace Mona {
 		FunctionTerm<IKData> term1(term1Function, term1PartialDerivativeFunction);
 		FunctionTerm<IKData> term2(term2Function, term2PartialDerivativeFunction);
 		FunctionTerm<IKData> term3(term3Function, term3PartialDerivativeFunction);
-		auto terms = std::vector<FunctionTerm<IKData>>({ term2 });
+		auto terms = std::vector<FunctionTerm<IKData>>({ term1, term2, term3 });
 		m_gradientDescent = GradientDescent<IKData>(terms, 0, &m_ikData, postDescentStepCustomBehaviour);
-		m_ikData.descentRate = 1 / (pow(10, 2) * m_ikRig->getRigHeight());
+		m_ikData.descentRate = 1.0f;
 		m_ikData.maxIterations = 500;
-		m_ikData.targetAngleDelta = 1 / (pow(10, 3) * m_ikRig->getRigHeight());
-		m_gradientDescent.setTermWeight(0, 1.0f);
-		//m_gradientDescent.setTermWeight(1, 0.6f);
-		//m_gradientDescent.setTermWeight(1, 0.2f);
+		m_ikData.targetAngleDelta = 1 / pow(10, 3);
+		m_gradientDescent.setTermWeight(0, 0.25f);
+		m_gradientDescent.setTermWeight(1, 0.6f / (pow(10, 2) * m_ikRig->getRigHeight()));
+		m_gradientDescent.setTermWeight(2, 0.15f);
 		setIKChains(m_ikChains);
 	}
 

@@ -30,25 +30,14 @@ EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int
 	template <int D>
 	LIC<D> HipGlobalTrajectoryData::sampleOriginaCurve(float initialExtendedAnimTime, float finalExtendedAnimTime,
 		LIC<D>& originalCurve) {
-		float epsilonAnimDuration = m_config->getAnimationDuration();
-		funcUtils::epsilonAdjustment_add(epsilonAnimDuration, originalCurve.getTEpsilon());
-		MONA_ASSERT((finalExtendedAnimTime - initialExtendedAnimTime) <= epsilonAnimDuration,
-			"HipGlobalTrajectoryData: input extended times were invalid.");
 		MONA_ASSERT(initialExtendedAnimTime < finalExtendedAnimTime,
 			"HipGlobalTrajectoryData: finalExtendedTime must be greater than initialExtendedTime.");
-		float initialAnimTime = m_config->adjustAnimationTime(initialExtendedAnimTime);
-		float finalAnimTime = m_config->adjustAnimationTime(finalExtendedAnimTime);
-		if (initialAnimTime < finalAnimTime) {
-			return originalCurve.sample(initialAnimTime, finalAnimTime);
+		LIC<D> extendedCurve = originalCurve;
+		while (!(extendedCurve.inTRange(initialExtendedAnimTime) && extendedCurve.inTRange(finalExtendedAnimTime))) {
+			extendedCurve = LIC<D>::connect(extendedCurve, originalCurve, true);
+			extendedCurve = LIC<D>::connect(extendedCurve, originalCurve, false);
 		}
-		else {
-			LIC<D> part1 = originalCurve.sample(initialAnimTime, originalCurve.getTRange()[1]);
-			LIC<D> part2 = originalCurve.sample(originalCurve.getTRange()[0], finalAnimTime);
-			LIC<D> result = LIC<D>::connect(part1, part2);
-			result.offsetTValues(-result.getTRange()[0]);
-			result.offsetTValues(initialExtendedAnimTime);
-			return result;
-		}
+		return extendedCurve.sample(initialExtendedAnimTime, finalExtendedAnimTime);
 	}
 
     LIC<1> HipGlobalTrajectoryData::sampleOriginalRotationAngles(float initialExtendedAnimTime, float finalExtendedAnimTime) {

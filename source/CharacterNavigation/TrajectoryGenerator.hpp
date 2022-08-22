@@ -43,18 +43,14 @@ namespace Mona{
             ChainIndex ikChain, IKRigConfig* config,
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
-        LIC<3> calcSimplifiedTrajectoryExtension(float reproductionTime1, float reproductionTime2, 
-            bool extendEnd, glm::vec3 anchorPoint,
-            ChainIndex ikChain, IKRigConfig* config,
-            ComponentManager<TransformComponent>& transformManager,
-            ComponentManager<StaticMeshComponent>& staticMeshManager);
         void generateHipTrajectory(IKRigConfig* config,
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
-		float calcHipAdjustedHeight(glm::vec2 basePoint, float targetCurvesTime_rep,
-			float originalCurvesTime_extendedAnim, IKRigConfig* config,
-			ComponentManager<TransformComponent>& transformManager,
-			ComponentManager<StaticMeshComponent>& staticMeshManager);
+		float calcHipAdjustedHeight(glm::vec2 basePoint,
+            std::pair<EEGlobalTrajectoryData*, EEGlobalTrajectoryData*> oppositeTrajectories, float targetCurvesTime_rep,
+            float originalCurvesTime_extendedAnim, IKRigConfig* config,
+            ComponentManager<TransformComponent>& transformManager,
+            ComponentManager<StaticMeshComponent>& staticMeshManager);
         glm::vec3 calcStrideStartingPoint(float supportHeight, glm::vec2 xyReferencePoint, float targetDistance, 
             glm::vec2 targetDirection, int stepNum,
             ComponentManager<TransformComponent>& transformManager,

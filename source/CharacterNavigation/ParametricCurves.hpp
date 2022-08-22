@@ -348,18 +348,30 @@ namespace Mona{
             return m_tValues.size() - 1;
         }
 
-        static LIC<D> connect(LIC<D> curve1, LIC<D> curve2) {
+        static LIC<D> connect(LIC<D> curve1, LIC<D> curve2, bool connectAtFront=true) {
             MONA_ASSERT(curve1.m_tEpsilon == curve2.m_tEpsilon, "LIC: both curves must have the same tEpsilon.");
             float epsilon = curve1.m_tEpsilon;
-            curve2.translate(-curve2.getStart() + curve1.getEnd());
-            curve2.offsetTValues(-curve2.getTRange()[0] + curve1.getTRange()[1]);
             std::vector<float> connectedTValues = curve1.m_tValues;
             std::vector<glm::vec<D, float>> connectedCurvePoints = curve1.m_curvePoints;
-            for (int i = 1; i < curve2.m_tValues.size();i++) {
-                connectedTValues.push_back(curve2.m_tValues[i]);
-                connectedCurvePoints.push_back(curve2.m_curvePoints[i]);
+            if (connectAtFront) {
+                curve2.translate(-curve2.getStart() + curve1.getEnd());
+                curve2.offsetTValues(-curve2.getTRange()[0] + curve1.getTRange()[1]);
+                for (int i = 1; i < curve2.m_tValues.size(); i++) {
+                    connectedTValues.push_back(curve2.m_tValues[i]);
+                    connectedCurvePoints.push_back(curve2.m_curvePoints[i]);
+                }
+            }
+            else {
+                curve2.translate(-curve2.getEnd() + curve1.getStart());
+                curve2.offsetTValues(-curve2.getTRange()[1] + curve1.getTRange()[0]);
+                for (int i = curve2.m_tValues.size()-2; 0 <= i ; i--) {
+                    connectedTValues.insert(connectedTValues.begin(), curve2.m_tValues[i]);
+                    connectedCurvePoints.insert(connectedCurvePoints.begin(), curve2.m_curvePoints[i]);
+                }
             }
             return LIC<D>(connectedCurvePoints, connectedTValues);
+            
+            
         }
 
 		static LIC<D> connectPoint(LIC<D> curve, glm::vec<D, float> extraPoint, float tDiff) {

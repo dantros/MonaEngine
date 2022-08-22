@@ -229,7 +229,6 @@ namespace Mona {
 		m_ikRig.m_rotationAngle += m_ikRig.m_angularSpeed * timeStep;
 	}
 
-	float lastTrajectoryUpdateTime = 0;
 	void IKRigController::updateTrajectories(AnimationIndex animIndex, ComponentManager<TransformComponent>& transformManager,
 		ComponentManager<StaticMeshComponent>& staticMeshManager) {
 		IKRigConfig& config = m_ikRig.m_animationConfigs[animIndex];
@@ -268,23 +267,10 @@ namespace Mona {
 				}
 
 				// recalcular trayectorias de ee y caderas
-				int repOffset_next = config.getCurrentFrameIndex() < config.getFrameNum() - 1 ? 0 : 1;
-				bool updateNeeded = m_reproductionTime - lastTrajectoryUpdateTime > 0.05f;
-				if (!updateNeeded) {
-					for (int i = 0; i < config.m_eeTrajectoryData.size(); i++) {
-						float nextFrameRepTime = config.getReproductionTime(config.getNextFrameIndex(), repOffset_next);
-						if (!config.getEETrajectoryData(i)->getTargetTrajectory().getEECurve().inTRange(nextFrameRepTime)) {
-							updateNeeded = true;
-							break;
-						}
-					}
-				}
-				if (updateNeeded) {
-					lastTrajectoryUpdateTime = m_reproductionTime;
-					m_ikRig.calculateTrajectories(animIndex, transformManager, staticMeshManager);
-				}
+				m_ikRig.calculateTrajectories(animIndex, transformManager, staticMeshManager);
 
 				// asignar objetivos a ee's
+				int repOffset_next = config.getCurrentFrameIndex() < config.getFrameNum() - 1 ? 0 : 1;
 				float targetTimeNext = config.getReproductionTime(config.getNextFrameIndex(), repOffset_next);
 				float targetTimeCurr = config.getReproductionTime(config.getCurrentFrameIndex());
 				float deltaT = targetTimeNext - targetTimeCurr;

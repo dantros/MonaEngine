@@ -36,9 +36,9 @@ namespace Mona{
         LIC<D> sampleOriginaCurve(float initialExtendedAnimTime, float finalExtendedAnimTime,
             LIC<D>& originalCurve);
     public:
-        LIC<1> sampleOriginalRotationAngles(float initialAnimTime, float finalAnimTime);
-        LIC<3> sampleOriginalRotationAxes(float initialAnimTime, float finalAnimTime);
-        LIC<3> sampleOriginalTranslations(float initialAnimTime, float finalAnimTime);
+        LIC<1> sampleOriginalRotationAngles(float initialExtendedAnimTime, float finalExtendedAnimTime);
+        LIC<3> sampleOriginalRotationAxes(float initialExtendedAnimTime, float finalExtendedAnimTime);
+        LIC<3> sampleOriginalTranslations(float initialExtendedAnimTime, float finalExtendedAnimTime);
         glm::vec3 getSavedTranslation(FrameIndex frame) { return m_savedTranslations[frame]; }
         bool isSavedDataValid(FrameIndex frame) { return m_savedDataValid[frame]; }
         LIC<1> getTargetRotationAngles() { return m_targetRotationAngles; }

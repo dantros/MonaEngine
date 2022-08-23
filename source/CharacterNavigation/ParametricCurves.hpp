@@ -120,7 +120,7 @@ namespace Mona{
             }
             MONA_ASSERT(inTRange(t), "LIC: t must be a value between {0} and {1}.", m_tValues[0], m_tValues.back());
             if (t <= m_tValues[0] && abs(m_tValues[0] - t) <= m_tEpsilon) { return glm::vec<D, float>(0); }
-            // si estamos en el entorno de uno punto
+            // si estamos en el entorno de un punto
 			if (abs(t - m_tValues[0]) <= m_tEpsilon) {
 				return (m_curvePoints[1] - m_curvePoints[0]) / (m_tValues[1] - m_tValues[0]);
 			}
@@ -139,9 +139,23 @@ namespace Mona{
             return glm::vec<D, float>(0);
         }
 
-		
+        glm::vec<D, float> getPointVelocity(int pointIndex, bool rightHandVelocity = false) {
+            MONA_ASSERT(0 <= pointIndex && pointIndex < m_curvePoints.size(), "LIC: input index must be within bounds");
+            if (!rightHandVelocity) {
+                if (pointIndex == 0) {
+                    return glm::vec3(0);
+                }
+                return (m_curvePoints[pointIndex] - m_curvePoints[pointIndex - 1]) / (m_tValues[pointIndex] - m_tValues[pointIndex - 1]);
+            }
+            else {
+                if (pointIndex == m_tValues.size() - 1) {
+                    return glm::vec3(0);
+                }
+                return (m_curvePoints[pointIndex + 1] - m_curvePoints[pointIndex]) / (m_tValues[pointIndex + 1] - m_tValues[pointIndex]);
+            }        
+        }
 
-        glm::vec<D, float> getAcceleration(int pointIndex) {
+        glm::vec<D, float> getPointAcceleration(int pointIndex) {
             MONA_ASSERT(0 < pointIndex && pointIndex < m_tValues.size() - 1, "LIC: pointIndex must be an inner point.");
             return (getVelocity(getTValue(pointIndex + 1)) - getVelocity(getTValue(pointIndex))) / (getTValue(pointIndex + 1) - getTValue(pointIndex));
         }

@@ -103,7 +103,7 @@ namespace Mona {
 				gradient = computeGradient(args);
 				for (int i = 0; i < args.size(); i++) {
 					if (softenSteps) {
-						if (gradient[i] != 0 && abs(argsRawDelta[i]*10) < abs(gradient[i])) {
+						if (gradient[i] != 0 && argsRawDelta[i]!=0 && abs(argsRawDelta[i]*10) < abs(gradient[i])) {
 							float sign = gradient[i] / abs(gradient[i]);
 							gradient[i] = abs(argsRawDelta[i] * 10)*sign;
 						}

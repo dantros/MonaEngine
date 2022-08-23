@@ -192,6 +192,7 @@ namespace Mona {
 		}
 
 		void setTermWeight(int termIndex, float weight){
+			MONA_ASSERT(0 <= termIndex && termIndex < m_terms.size(), "GradientDescent: input termIndex was out of bounds.");
 			m_terms[termIndex].m_weight = weight;
 		}
 	};	

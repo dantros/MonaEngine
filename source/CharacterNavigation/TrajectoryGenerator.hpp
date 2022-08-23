@@ -46,8 +46,8 @@ namespace Mona{
         void generateHipTrajectory(IKRigConfig* config,
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
-		float calcHipAdjustedHeight(glm::vec2 basePoint,
-            std::pair<EEGlobalTrajectoryData*, EEGlobalTrajectoryData*> oppositeTrajectories, float targetCurvesTime_rep,
+		float calcHipAdjustedHeight(std::pair<EEGlobalTrajectoryData*, EEGlobalTrajectoryData*> oppositeTrajectories, 
+            float targetCurvesTime_rep,
             float originalCurvesTime_extendedAnim, IKRigConfig* config,
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);

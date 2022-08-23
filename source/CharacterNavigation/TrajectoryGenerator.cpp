@@ -18,9 +18,8 @@ namespace Mona{
         float result = 0;
         for (int i = 0; i < dataPtr->pointIndexes.size(); i++) {
             int pIndex = dataPtr->pointIndexes[i];
-            float tVal = dataPtr->varCurve->getTValue(pIndex);
-            result += glm::distance2(dataPtr->varCurve->getVelocity(tVal),  dataPtr->baseCurve.getVelocity(tVal));
-            result += glm::distance2(dataPtr->varCurve->getVelocity(tVal, true), dataPtr->baseCurve.getVelocity(tVal, true));
+            result += glm::distance2(dataPtr->varCurve->getPointVelocity(pIndex),  dataPtr->baseCurve.getPointVelocity(pIndex));
+            result += glm::distance2(dataPtr->varCurve->getPointVelocity(pIndex, true), dataPtr->baseCurve.getPointVelocity(pIndex, true));
         }
         return result;
     };
@@ -405,44 +404,8 @@ namespace Mona{
                 glm::vec2 targetDirection = glm::rotate(glm::vec2(hipTrOriginalDirection), m_ikRig->getRotationAngle());
                 glm::vec2 targetXYPos = currXYHipPos - targetDirection * targetXYDistance;
 				initialTrans = glm::vec3(glm::vec2(targetXYPos),
-					calcHipAdjustedHeight(glm::vec2(targetXYPos), trDataPair,
-                        tInfLimitRep, tInfLimitExtendedAnim, config, transformManager, staticMeshManager));
+					calcHipAdjustedHeight(trDataPair, tInfLimitRep, tInfLimitExtendedAnim, config, transformManager, staticMeshManager));
             }
-
-			 // DEBUG
-			/*std::cout << "hip tr:" << std::endl;
-			hipTrCurve.debugPrintTValues();
-			hipTrCurve.debugPrintCurvePoints();
-			std::cout << "original base: " << std::endl;
-			baseEEOriginalCurve.debugPrintTValues();
-			baseEEOriginalCurve.debugPrintCurvePoints();
-			std::cout << "target base: " << std::endl;
-			baseEETargetCurve.debugPrintTValues();
-			baseEETargetCurve.debugPrintCurvePoints();
-			std::cout << "original opposite: " << std::endl;
-			oppositeEEOriginalCurve.debugPrintTValues();
-			oppositeEEOriginalCurve.debugPrintCurvePoints();
-			std::cout << "target opposite: " << std::endl;
-			oppositeEETargetCurve.debugPrintTValues();
-			oppositeEETargetCurve.debugPrintCurvePoints();
-			std::vector<float> oppositeDists_original;
-			std::vector<float> oppositeDists_target;
-			std::vector<float> oppositeDistDiffs;
-			for (int i = 0; i < baseEETargetCurve.getNumberOfPoints(); i++) {
-				float distOr = glm::distance(glm::vec2(baseEEOriginalCurve.getCurvePoint(i)), glm::vec2(oppositeEEOriginalCurve.getCurvePoint(i)));
-				float distTarg = glm::distance(glm::vec2(baseEETargetCurve.getCurvePoint(i)), glm::vec2(oppositeEETargetCurve.getCurvePoint(i)));
-				oppositeDists_original.push_back(distOr);
-				oppositeDists_target.push_back(distTarg);
-				oppositeDistDiffs.push_back(abs(distOr - distTarg));
-			}
-			std::cout << "opposite distances original: " << std::endl;
-			std::cout << funcUtils::vecToString(oppositeDists_original) << std::endl;
-			std::cout << "opposite distances target: " << std::endl;
-			std::cout << funcUtils::vecToString(oppositeDists_target) << std::endl;
-			std::cout << "opposite distance diffs: " << std::endl;
-			std::cout << funcUtils::vecToString(oppositeDistDiffs) << std::endl;*/
-			// DEBUG
-
             
             // segundo paso: ajustar punto de maxima altura      
             float hipHighOriginalTime_extendedAnim = baseEEOriginalTr.getHipMaxAltitudeTime();
@@ -480,23 +443,44 @@ namespace Mona{
             }
             int hipHighPointIndex_hip = hipTrCurve.getClosestPointIndex(hipHighOriginalTime_extendedAnim);
 
+            
+
 			// ajuste a tiempo de reproduccion
-			hipTrCurve.offsetTValues(-hipTrCurve.getTRange()[0] + tInfLimitRep);
-			hipRotAnglCurve.offsetTValues(-hipRotAnglCurve.getTRange()[0] + tInfLimitRep);
-			hipRotAxCurve.offsetTValues(-hipRotAxCurve.getTRange()[0] + tInfLimitRep);
+			hipTrCurve.offsetTValues(-tInfLimitExtendedAnim + tInfLimitRep);
+			hipRotAnglCurve.offsetTValues(-tInfLimitExtendedAnim + tInfLimitRep);
+			hipRotAxCurve.offsetTValues(-tInfLimitExtendedAnim + tInfLimitRep);
             
 			hipTrCurve.displacePointT(hipHighPointIndex_hip, 0, hipTrCurve.getNumberOfPoints() - 1, hipHighNewTime_rep, true);
 			hipRotAnglCurve.displacePointT(hipHighPointIndex_hip, 0, hipTrCurve.getNumberOfPoints() - 1, hipHighNewTime_rep, true);
 			hipRotAxCurve.displacePointT(hipHighPointIndex_hip, 0, hipTrCurve.getNumberOfPoints() - 1, hipHighNewTime_rep, false);
 
+
+            // correccion de posicion y orientacion
+            hipTrCurve.translate(-hipTrCurve.getStart());
+            glm::fquat xyRot = glm::angleAxis(m_ikRig->getRotationAngle(), m_ikRig->getUpVector());
+            hipTrCurve.rotate(xyRot);
+            hipTrCurve.translate(initialTrans);
+
             LIC<3> hipTrCorrectedCurve = hipTrCurve;
             // ajustar el valor el z del punto de maxima altura
-            glm::vec3 hipHighBasePoint = hipTrCurve.getCurvePoint(hipHighPointIndex_hip);
-            float hipHightPointAdjustedZ = calcHipAdjustedHeight(hipHighBasePoint, trDataPair,
+           /* glm::vec3 hipHighBasePoint = hipTrCurve.getCurvePoint(hipHighPointIndex_hip);
+            float hipHightPointAdjustedZ = calcHipAdjustedHeight(trDataPair,
                 hipHighNewTime_rep, hipHighOriginalTime_extendedAnim, config, transformManager, staticMeshManager);
-            hipTrCorrectedCurve.setCurvePoint(hipHighPointIndex_hip, glm::vec3(glm::vec2(hipHighBasePoint), hipHightPointAdjustedZ));
-            // aplicamos descenso de gradiente tomando en cuenta el punto recien ajustado
+            hipTrCorrectedCurve.setCurvePoint(hipHighPointIndex_hip, glm::vec3(glm::vec2(hipHighBasePoint), hipHightPointAdjustedZ));*/
 
+
+            // DEBUG
+            for (int i = 1; i < hipTrCorrectedCurve.getNumberOfPoints(); i++) {
+                float tVal_rep = hipTrCorrectedCurve.getTValue(i);
+                float adjustedZ = calcHipAdjustedHeight(trDataPair, tVal_rep, tVal_rep - tInfLimitRep + tInfLimitExtendedAnim, 
+                    config, transformManager, staticMeshManager);
+                glm::vec3 adjustedPoint(glm::vec2(hipTrCorrectedCurve.evalCurve(tVal_rep)), adjustedZ);
+                hipTrCorrectedCurve.setCurvePoint(i, adjustedPoint);
+            }
+
+             // DEBUG
+            
+            // aplicamos descenso de gradiente tomando en cuenta los ajustes
             m_tgData.pointIndexes.clear();
             m_tgData.pointIndexes.reserve(hipTrCorrectedCurve.getNumberOfPoints());
             m_tgData.minValues.clear();
@@ -598,11 +582,9 @@ namespace Mona{
 
             // DEBUG
             LIC<3> hipTrFinalCurve = hipTrCorrectedCurve;
-                
             // DEBUG
 
-            // actualizamos la orientacion de la curva y la trasladamos la curva al punto encontrado
-            hipTrFinalCurve.translate(-hipTrFinalCurve.getStart());
+            // escalamos la curva de acuerdo a las trayectorias de los ee
             float baseEEOriginalXYDist = glm::length(glm::vec2(baseEEOriginalCurve.getEnd() - baseEEOriginalCurve.getStart()));
             float baseEETargetXYDist = glm::length(glm::vec2(baseEETargetCurve.getEnd() - baseEETargetCurve.getStart()));
             float eeXYDistRatio = baseEETargetXYDist / baseEEOriginalXYDist;
@@ -610,10 +592,7 @@ namespace Mona{
             float hipXYDistRatio = hipNewXYDist / hipOriginalXYDistance;
             float eeHipXYDistRatio = eeXYDistRatio / hipXYDistRatio ;
             glm::vec3 scalingVec(eeHipXYDistRatio, eeHipXYDistRatio, 1);
-            glm::fquat xyRot = glm::angleAxis(m_ikRig->getRotationAngle(), m_ikRig->getUpVector());
-            hipTrFinalCurve.scale(scalingVec);            
-            hipTrFinalCurve.rotate(xyRot);
-            hipTrFinalCurve.translate(initialTrans);
+            //hipTrFinalCurve.scale(scalingVec);
 
 			float repCountOffset = config->getNextFrameIndex() == 0 ? 1 : 0;
 			float transitionTime = config->getReproductionTime(config->getNextFrameIndex(), repCountOffset);
@@ -695,8 +674,8 @@ namespace Mona{
 	}
 
 
-	float TrajectoryGenerator::calcHipAdjustedHeight(glm::vec2 basePoint, 
-        std::pair<EEGlobalTrajectoryData*, EEGlobalTrajectoryData*> oppositeTrajectories ,float targetCurvesTime_rep,
+	float TrajectoryGenerator::calcHipAdjustedHeight(std::pair<EEGlobalTrajectoryData*, EEGlobalTrajectoryData*> oppositeTrajectories,
+        float targetCurvesTime_rep,
 		float originalCurvesTime_extendedAnim, IKRigConfig* config,
 		ComponentManager<TransformComponent>& transformManager,
 		ComponentManager<StaticMeshComponent>& staticMeshManager) {
@@ -704,48 +683,37 @@ namespace Mona{
         
 		HipGlobalTrajectoryData* hipTrData = config->getHipTrajectoryData();
 		LIC<3> hipTrCurve = hipTrData->sampleOriginalTranslations(originalCurvesTime_extendedAnim,	originalCurvesTime_extendedAnim + config->getAnimationDuration());
-        glm::vec3 hipOriginalPoint = hipTrCurve.evalCurve(originalCurvesTime_extendedAnim);
+        float hipOriginalZ = hipTrCurve.evalCurve(originalCurvesTime_extendedAnim)[2];
 
         // distancias originales de ee's con cadera
-        std::vector<float> origDistances(2);
+        std::vector<float> origZDiffs(2);
         int baseID1 = oppositeTrajectories.first->getTargetTrajectory().getSubTrajectoryID();
-        glm::vec3 originalPoint1 = oppositeTrajectories.first->getSubTrajectoryByID(baseID1).getEECurve().evalCurve(originalCurvesTime_extendedAnim);
+        float originalZ1 = oppositeTrajectories.first->getSubTrajectoryByID(baseID1).getEECurve().evalCurve(originalCurvesTime_extendedAnim)[2];
         int baseID2 = oppositeTrajectories.second->getTargetTrajectory().getSubTrajectoryID();
-        glm::vec3 originalPoint2 = oppositeTrajectories.second->getSubTrajectoryByID(baseID2).getEECurve().evalCurve(originalCurvesTime_extendedAnim);
-        origDistances[0] = glm::distance(hipOriginalPoint, originalPoint1);
-        origDistances[1] = glm::distance(hipOriginalPoint, originalPoint2);
+        float originalZ2 = oppositeTrajectories.second->getSubTrajectoryByID(baseID2).getEECurve().evalCurve(originalCurvesTime_extendedAnim)[2];
+        origZDiffs[0] = hipOriginalZ - originalZ1;
+        origZDiffs[1] = hipOriginalZ - originalZ2;
 
-		std::vector<glm::vec3> targetPoints(2);
-        targetPoints[0] = oppositeTrajectories.first->getTargetTrajectory().getEECurve().evalCurve(targetCurvesTime_rep);
-        targetPoints[1] = oppositeTrajectories.second->getTargetTrajectory().getEECurve().evalCurve(targetCurvesTime_rep);
-		float zValue = std::min(targetPoints[0][2], targetPoints[1][2]);
-
-        // DEBUG
-        return zValue + 4.0f;
-
-        // DEBUG
+		std::vector<float> targetPointsZ(2);
+        targetPointsZ[0] = oppositeTrajectories.first->getTargetTrajectory().getEECurve().evalCurve(targetCurvesTime_rep)[2];
+        targetPointsZ[1] = oppositeTrajectories.second->getTargetTrajectory().getEECurve().evalCurve(targetCurvesTime_rep)[2];
+		float zValue = std::min(targetPointsZ[0], targetPointsZ[1]);
 
 		// valor mas bajo de z para las tr actuales de los ee
-		zValue += m_ikRig->getRigHeight()*m_ikRig->getRigScale()*0.8f;
 		float zDelta = m_ikRig->getRigHeight() * m_ikRig->getRigScale() / 500;
-		std::vector<bool> conditions1(2, true);
-        std::vector<bool> conditions2(2, true);
+		std::vector<bool> conditions(2, true);
 		int maxSteps = 1000;
 		int steps = 0;
-        std::vector<float> prevDistances(2, std::numeric_limits<float>::max());
-		while (funcUtils::conditionVector_OR(conditions1) && funcUtils::conditionVector_OR(conditions2) && steps < maxSteps) {
-			zValue -= zDelta;
-            std::vector<float> currDistances(2);
+		while (funcUtils::conditionVector_AND(conditions) && steps < maxSteps) {
+			zValue += zDelta;
+            std::vector<float> currZDiffs(2);
 			for (int i = 0; i < 2; i++) {
-				currDistances[i] = glm::distance(targetPoints[i], glm::vec3(basePoint, zValue));
-				conditions1[i] = origDistances[i] < currDistances[i];
-                conditions2[i] = currDistances[i] <= prevDistances[i];
+				currZDiffs[i] = zValue - targetPointsZ[i];
+				conditions[i] = currZDiffs[i] < origZDiffs[i];
 			}
-            prevDistances = currDistances;
 
 			steps += 1;
 		}
-
 		return zValue;
 	}
 

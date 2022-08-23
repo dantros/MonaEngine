@@ -24,23 +24,8 @@ namespace Mona {
 
 	// terminos para el descenso de gradiente
 	
-	// termino 1 (acercar la animacion creada a la animacion original)
+	// termino 1 (seguir la curva deseada para el end effector)
 	std::function<float(const std::vector<float>&, IKData*)> term1Function =
-		[](const std::vector<float>& varAngles, IKData* dataPtr)->float {
-		float result = 0;
-		for (int i = 0; i < varAngles.size(); i++) {
-			result += pow(varAngles[i] - dataPtr->baseAngles[i], 2);
-		}
-		return result;
-	};
-
-	std::function<float(const std::vector<float>&, int, IKData*)> term1PartialDerivativeFunction =
-		[](const std::vector<float>& varAngles, int varIndex, IKData* dataPtr)->float {
-		return 2 * (varAngles[varIndex] - dataPtr->baseAngles[varIndex]);
-	};
-
-	// termino 2 (seguir la curva deseada para el end effector)
-	std::function<float(const std::vector<float>&, IKData*)> term2Function =
 		[](const std::vector<float>& varAngles, IKData* dataPtr)->float {
 		float result = 0;
 		int eeIndex;
@@ -60,7 +45,7 @@ namespace Mona {
 		return result;
 	};
 
-	std::function<float(const std::vector<float>&, int, IKData*)> term2PartialDerivativeFunction =
+	std::function<float(const std::vector<float>&, int, IKData*)> term1PartialDerivativeFunction =
 		[](const std::vector<float>& varAngles, int varIndex, IKData* dataPtr)->float {
 		float result = 0;
 		glm::mat4 TA; glm::mat4 TB; glm::vec3 TvarScl; glm::fquat TvarQuat;	glm::vec3 TvarTr;
@@ -84,16 +69,6 @@ namespace Mona {
 		// multiplicacion en cadena desde la raiz hasta el joint i
 		std::vector<glm::mat4> forwardModelSpaceTransforms = dataPtr->rigConfig->getEEListModelSpaceTransforms(endEffectors,
 			dataPtr->targetFrame, true, &jointSpaceTransforms);
-		
-		// DEBUG
-		//std::vector<glm::vec3> debugPositions(forwardModelSpaceTransforms.size());
-		//for (int i = 0; i < forwardModelSpaceTransforms.size(); i++) {
-		//	debugPositions[i] = forwardModelSpaceTransforms[i] * glm::vec4(0, 0, 0, 1);
-		//}
-		//std::cout << "model space pos gd next frame : "<<dataPtr->targetFrame << std::endl;
-		//glmUtils::printColoredStdVector(debugPositions);
-		//DEBUG
-
 
 		// multiplicacion en cadena desde el ee de la cadena hasta el joint i
 		std::vector<std::vector<glm::mat4>> backwardModelSpaceTransformsPerChain(affectedChains.size());
@@ -129,14 +104,6 @@ namespace Mona {
 			glm::mat4 dTvar = rotationMatrixDerivative_dAngle(varAngles[varIndex], dataPtr->rotationAxes[varIndex]);
 			glm::vec4 eeT = glm::vec4(affectedChains[c]->getCurrentEETarget(), 1);
 			glm::vec4 eePosCurr_d = forwardModelSpaceTransforms[joints.back()] * glm::vec4(0, 0, 0, 1);
-			// DEBUG
-			/*if (affectedChains[c]->getName() == "leftLeg") {
-				std::cout << "adjusted ee pos: " << affectedChains[c]->getName() << std::endl;
-				glmUtils::printColoredVec(eePosCurr_d);
-				std::cout << "ee target: " << affectedChains[c]->getName() << std::endl;
-				glmUtils::printColoredVec(eeT);
-			}	*/		
-			// DEBUG
 			for (int k = 0; k <= 3; k++) {
 				float mult1 = 0;
 				for (int j = 0; j <= 3; j++) {
@@ -155,6 +122,23 @@ namespace Mona {
 		}
 		return 2 * result;
 	};
+
+	// termino 2 (acercar la animacion creada a la animacion original)
+	std::function<float(const std::vector<float>&, IKData*)> term2Function =
+		[](const std::vector<float>& varAngles, IKData* dataPtr)->float {
+		float result = 0;
+		for (int i = 0; i < varAngles.size(); i++) {
+			result += pow(varAngles[i] - dataPtr->baseAngles[i], 2);
+		}
+		return result;
+	};
+
+	std::function<float(const std::vector<float>&, int, IKData*)> term2PartialDerivativeFunction =
+		[](const std::vector<float>& varAngles, int varIndex, IKData* dataPtr)->float {
+		return 2 * (varAngles[varIndex] - dataPtr->baseAngles[varIndex]);
+	};
+
+	
 
 	// termino 3 (acercar los valores actuales a los del frame anterior)
 	std::function<float(const std::vector<float>&, IKData*)> term3Function =
@@ -198,14 +182,14 @@ namespace Mona {
 		FunctionTerm<IKData> term1(term1Function, term1PartialDerivativeFunction);
 		FunctionTerm<IKData> term2(term2Function, term2PartialDerivativeFunction);
 		FunctionTerm<IKData> term3(term3Function, term3PartialDerivativeFunction);
-		auto terms = std::vector<FunctionTerm<IKData>>({ term2 });
+		auto terms = std::vector<FunctionTerm<IKData>>({ term1,term2, term3 });
 		m_gradientDescent = GradientDescent<IKData>(terms, 0, &m_ikData, postDescentStepCustomBehaviour);
 		m_ikData.descentRate = 1.0f;
 		m_ikData.maxIterations = 500;
 		m_ikData.targetAngleDelta = 1 / pow(10, 3);
-		//m_gradientDescent.setTermWeight(0, 0.25f);
 		m_gradientDescent.setTermWeight(0, 1.0f / (pow(10, 2) * m_ikRig->getRigHeight()));
-		//m_gradientDescent.setTermWeight(2, 0.15f);
+		m_gradientDescent.setTermWeight(1, 0.02f);		
+		m_gradientDescent.setTermWeight(2, 0.02f);
 		setIKChains(m_ikChains);
 	}
 

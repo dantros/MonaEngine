@@ -25,29 +25,6 @@ namespace Mona{
         // dimension de los puntos
         int m_dimension = 0;
         float m_tEpsilon;
-		glm::vec<D, float> getRightHandVelocity(float t) {
-			MONA_ASSERT(inTRange(t), "LIC: t must be a value between {0} and {1}.", m_tValues[0], m_tValues.back());
-			if (m_tValues.back() <= t && t - m_tValues.back() <= m_tEpsilon) { return glm::vec<D, float>(0); }
-
-			// si estamos en el entorno de un punto
-			if (abs(m_tValues.back() - t) <= m_tEpsilon) {
-				return (m_curvePoints[m_tValues.size() - 1] - m_curvePoints[m_tValues.size()-2]) / 
-                    (m_tValues[m_tValues.size() - 1] - m_tValues[m_tValues.size() - 2]);
-			}
-			for (int i = 0; i < m_tValues.size() - 1; i++) {
-				if (abs(m_tValues[i] - t) <= m_tEpsilon) {
-                    return (m_curvePoints[i + 1] - m_curvePoints[i]) / (m_tValues[i + 1] - m_tValues[i]);
-				}
-			}
-
-			// si no
-			for (int i = 0; i < m_tValues.size() - 1; i++) {
-				if (m_tValues[i] <= t && t <= m_tValues[i + 1]) {
-					return (m_curvePoints[i + 1] - m_curvePoints[i]) / (m_tValues[i + 1] - m_tValues[i]);
-				}
-			}
-			return glm::vec<D, float>(0);;
-		}
 
         bool tValuesAreValid() {
 			for (int i = 1; i < m_tValues.size(); i++) {
@@ -114,31 +91,6 @@ namespace Mona{
             m_dimension = D;
         }
 
-        glm::vec<D, float> getVelocity(float t, bool rightHandVelocity = false) {
-            if (rightHandVelocity) {
-                return getRightHandVelocity(t);
-            }
-            MONA_ASSERT(inTRange(t), "LIC: t must be a value between {0} and {1}.", m_tValues[0], m_tValues.back());
-            if (t <= m_tValues[0] && abs(m_tValues[0] - t) <= m_tEpsilon) { return glm::vec<D, float>(0); }
-            // si estamos en el entorno de un punto
-			if (abs(t - m_tValues[0]) <= m_tEpsilon) {
-				return (m_curvePoints[1] - m_curvePoints[0]) / (m_tValues[1] - m_tValues[0]);
-			}
-            for (int i = 1; i < m_tValues.size(); i++) {
-                if (abs(m_tValues[i] - t) <= m_tEpsilon) {
-                    return (m_curvePoints[i] - m_curvePoints[i - 1]) / (m_tValues[i] - m_tValues[i - 1]);
-                }
-            }
-
-            // si no
-            for (int i = 0; i < m_tValues.size() - 1; i++) {
-                if (m_tValues[i] <= t && t <= m_tValues[i + 1]) {
-                    return (m_curvePoints[i + 1] - m_curvePoints[i]) / (m_tValues[i + 1] - m_tValues[i]);
-                }                
-            }
-            return glm::vec<D, float>(0);
-        }
-
         glm::vec<D, float> getPointVelocity(int pointIndex, bool rightHandVelocity = false) {
             MONA_ASSERT(0 <= pointIndex && pointIndex < m_curvePoints.size(), "LIC: input index must be within bounds");
             if (!rightHandVelocity) {
@@ -157,7 +109,7 @@ namespace Mona{
 
         glm::vec<D, float> getPointAcceleration(int pointIndex) {
             MONA_ASSERT(0 < pointIndex && pointIndex < m_tValues.size() - 1, "LIC: pointIndex must be an inner point.");
-            return (getVelocity(getTValue(pointIndex + 1)) - getVelocity(getTValue(pointIndex))) / (getTValue(pointIndex + 1) - getTValue(pointIndex));
+            return (getPointVelocity(pointIndex + 1) - getPointVelocity(pointIndex)) / (getTValue(pointIndex + 1) - getTValue(pointIndex));
         }
 
         glm::vec<D, float> evalCurve(float t) {
@@ -234,15 +186,9 @@ namespace Mona{
             sampleTValues.reserve(m_tValues.size());
             std::vector<glm::vec<D, float>> samplePoints;
             samplePoints.reserve(m_tValues.size());
-            int startInd = 0;
-            for (int i = 0; i < m_tValues.size() - 1; i++) {
-                if (m_tValues[i] <= minT  && minT < m_tValues[i + 1]) {
-                    sampleTValues.push_back(minT);
-                    samplePoints.push_back(evalCurve(minT));
-                    startInd = i + 1;
-                    break;
-                }
-            }
+            int startInd = getClosestPointIndex(minT) + 1;
+            sampleTValues.push_back(minT);
+            samplePoints.push_back(evalCurve(minT));
             for (int i = startInd; i < m_tValues.size(); i++) {
                 if (m_tEpsilon*2 < maxT - m_tValues[i]) {
                     if (m_tEpsilon*2 < m_tValues[i] - minT) {
@@ -394,7 +340,7 @@ namespace Mona{
             glm::vec<D, float> modifiedPoint = extraPoint;
 			if (tDiff <= 2 * epsilon) {
 				funcUtils::epsilonAdjustment_add(tDiff, 3 * epsilon);
-                glm::vec<D, float> transitionVel = curve.getVelocity(curve.getTRange()[1]);
+                glm::vec<D, float> transitionVel = curve.getPointVelocity(curve.getNumberOfPoints()-1);
                 modifiedPoint = curve.m_curvePoints.back() + transitionVel * tDiff;
 			}
             float extraPointTValue = curve.getTRange()[1] + tDiff;

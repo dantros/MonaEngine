@@ -50,7 +50,7 @@ namespace Mona{
             for (int j = 0; j < D; j++) {
                 if (varPCoord[i * D + j] <= dataPtr->minValues[i * D + j]) {
                     varPCoord[i * D + j] = dataPtr->minValues[i * D + j];
-                    argsRawDelta[i * D + j] *= 0.5;
+                    argsRawDelta[i * D + j] *= 0.1;
                 }
                 newPos[j] = varPCoord[i * D + j];
             }
@@ -66,7 +66,6 @@ namespace Mona{
 
     void TrajectoryGenerator::init() {
         FunctionTerm<TGData> term1(term1Function, term1PartialDerivativeFunction);
-        //FunctionTerm<TGData> term2(term2Function, term2PartialDerivativeFunction);
         m_gradientDescent = GradientDescent<TGData>({ term1 }, 0, &m_tgData, postDescentStepCustomBehaviour);
         m_tgData.descentRate = 1 / pow(10, 3);
         m_tgData.maxIterations = 600;
@@ -159,7 +158,7 @@ namespace Mona{
         }
         
         float targetDistance = glm::distance(baseCurve.getStart(), baseCurve.getEnd());
-		float supportHeightStart = initialPos[2];
+        float supportHeightStart = trData->getSupportHeight(initialFrame);
 		float supportHeightEnd = trData->getSupportHeight(finalFrame);
         std::vector<glm::vec3> strideData = calcStrideData(supportHeightStart, supportHeightEnd,
             initialPos, targetDistance, targetXYDirection, 8, transformManager, staticMeshManager);
@@ -170,21 +169,6 @@ namespace Mona{
         }
         glm::vec3 finalPos = strideData.back();
         baseCurve.fitEnds(initialPos, finalPos);
-
-        // DEBUG
-        float repCountOffset_d = config->getNextFrameIndex() == 0 ? 1 : 0;
-        float transitionTime_d = config->getReproductionTime(config->getNextFrameIndex(), repCountOffset_d);
-        int currSubTrID_d = trData->getTargetTrajectory().getSubTrajectoryID();
-        int newSubTrID_d = originalTrajectory.getSubTrajectoryID();
-        if (currSubTrID_d == newSubTrID_d) {
-            trData->setTargetTrajectory(LIC<3>::transition(trData->getTargetTrajectory().getEECurve(),
-                baseCurve, transitionTime_d), trType, newSubTrID_d);
-        }
-        else {
-            trData->setTargetTrajectory(baseCurve, trType, newSubTrID_d);
-        }
-        return;
-        // DEBUG
 
         // setear los minimos de altura y aplicar el descenso de gradiente
         m_tgData.pointIndexes.clear();
@@ -221,7 +205,6 @@ namespace Mona{
         }
 
         m_tgData.minValues = std::vector<float>(m_tgData.pointIndexes.size() * 3, std::numeric_limits<float>::lowest());
-        std::vector<int> assignedTGDataPointIndexes;
         for (int i = 0; i < curvePointIndex_stridePointIndex.size(); i++) {
             int curvePointIndex = curvePointIndex_stridePointIndex[i].first;
             int tgDataIndex = -1;
@@ -234,38 +217,7 @@ namespace Mona{
             if (tgDataIndex != -1) {
                 int stridePointIndex = curvePointIndex_stridePointIndex[i].second;
                 m_tgData.minValues[tgDataIndex * 3 + 2] = strideData[stridePointIndex][2];
-                assignedTGDataPointIndexes.push_back(tgDataIndex);
             }                  
-        }
-        if (assignedTGDataPointIndexes[0] != 0) {
-            m_tgData.minValues[2] = strideData[0][2];
-            assignedTGDataPointIndexes.insert(assignedTGDataPointIndexes.begin(), 0);
-        }
-        if (assignedTGDataPointIndexes.back() != m_tgData.pointIndexes.size()-1) {
-            m_tgData.minValues.back() = strideData.back()[2];
-            assignedTGDataPointIndexes.push_back(m_tgData.pointIndexes.size() - 1);
-        }
-
-        
-        for (int i = 0; i < m_tgData.pointIndexes.size(); i++) {
-            int minLerpIndex = -1;
-            int maxLerpIndex = -1;
-            float minVal;
-            float maxVal;
-            int currIndex = i;
-            for (int j = 0; j < assignedTGDataPointIndexes.size()-1; j++) {
-                if (assignedTGDataPointIndexes[j] < currIndex && currIndex < assignedTGDataPointIndexes[j + 1]) {
-                    minLerpIndex = assignedTGDataPointIndexes[j];
-                    maxLerpIndex = assignedTGDataPointIndexes[j + 1];
-                    minVal = m_tgData.minValues[minLerpIndex * 3 + 2];
-                    maxVal = m_tgData.minValues[maxLerpIndex * 3 + 2];
-                    break;
-                }
-            }
-            if (minLerpIndex != -1) {
-                m_tgData.minValues[currIndex * 3 + 2] = funcUtils::lerp(minVal, maxVal, funcUtils::getFraction(minLerpIndex, maxLerpIndex, currIndex));
-            }
-
         }
 
         // valores iniciales y curva base
@@ -406,15 +358,6 @@ namespace Mona{
 
             // correccion de posicion y orientacion
             hipTrCurve.translate(-hipTrCurve.getStart());
-            // escalamos la curva de acuerdo a las trayectorias de los ee
-            float baseEEOriginalXYDist = glm::length(glm::vec2(baseEEOriginalCurve.getEnd() - baseEEOriginalCurve.getStart()));
-            float baseEETargetXYDist = glm::length(glm::vec2(baseEETargetCurve.getEnd() - baseEETargetCurve.getStart()));
-            float eeXYDistRatio = baseEETargetXYDist / baseEEOriginalXYDist;
-            float hipNewXYDist = glm::length(glm::vec2(hipTrCurve.getEnd() - hipTrCurve.getStart()));
-            float hipXYDistRatio = hipNewXYDist / hipOriginalXYDistance;
-            float eeHipXYDistRatio = eeXYDistRatio / hipXYDistRatio;
-            glm::vec3 scalingVec(eeHipXYDistRatio, eeHipXYDistRatio, 1);
-            hipTrCurve.scale(scalingVec);
             glm::fquat xyRot = glm::angleAxis(m_ikRig->getRotationAngle(), m_ikRig->getUpVector());
             hipTrCurve.rotate(xyRot);            
             hipTrCurve.translate(initialTrans);            

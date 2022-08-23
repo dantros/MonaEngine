@@ -106,10 +106,7 @@ namespace Mona {
 		int frameNum = animationClip->m_animationTracks[0].rotationTimeStamps.size();
 
 		// minima distancia entre posiciones de un frame a otro para considerarlo un movimiento
-		float minDistance = m_ikRig.m_rigHeight*m_ikRig.m_rigScale / 1000;
-
-
-		
+		float minDistance = m_ikRig.m_rigHeight*m_ikRig.m_rigScale / 1000;		
 
 		// Guardamos las trayectorias originales de los ee y definimos sus frames de soporte
 		std::vector<float> rotTimeStamps = animationClip->m_animationTracks[0].rotationTimeStamps;
@@ -320,7 +317,7 @@ namespace Mona {
 	}
 
 
-	FrameIndex lastUpdatedFrame = -1;
+	std::vector<FrameIndex> last2UpdatedFrames = { -1,-1 };
 	void IKRigController::updateAnimation(AnimationIndex animIndex) {
 		IKRigConfig& config = m_ikRig.m_animationConfigs[animIndex];
 		if (config.m_onNewFrame) {
@@ -336,16 +333,18 @@ namespace Mona {
 					anim->SetRotation(calculatedRotations[i].second, 0, calculatedRotations[i].first);
 				}
 				// si el current frame no fue actualizado, le asignamos el valor calculado para next frame
-				if (lastUpdatedFrame != currFrame) {
+				if (last2UpdatedFrames[0] != currFrame && last2UpdatedFrames[1] != currFrame) {
 					anim->SetRotation(calculatedRotations[i].second, currFrame, calculatedRotations[i].first);
 				}
 			}
+			last2UpdatedFrames[0] = nextFrame;
 			if (nextFrame == config.getFrameNum() - 1) {
-				lastUpdatedFrame = 0;
+				last2UpdatedFrames[1] = 0;
 			}
 			else {
-				lastUpdatedFrame = nextFrame;
+				last2UpdatedFrames[1] = -1;
 			}
+			
 		}
 		
 	}

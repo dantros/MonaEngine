@@ -133,7 +133,7 @@ public:
 		rigData.hipJointName = "Hips";
 		m_ikNavHandle = world.AddComponent<Mona::IKNavigationComponent>(*this, rigData);
 		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_walkingAnimation);
-		m_skeletalMesh->GetAnimationController().SetPlayRate(0.2f);
+		m_skeletalMesh->GetAnimationController().SetPlayRate(0.5f);
 
 	}
 

@@ -122,12 +122,13 @@ namespace Mona {
 		for (int i = 0; i < m_ikRig.getTopology().size(); i++) { glblTransforms[i] = glm::identity<glm::mat4>(); }
 		std::vector<glm::vec3> previousPositions(m_ikRig.getTopology().size());
 		std::fill(previousPositions.begin(), previousPositions.end(), glm::vec3(std::numeric_limits<float>::lowest()));
-		for (int i = 0; i < chainNum; i++) {
+		for (ChainIndex i = 0; i < chainNum; i++) {
+			ChainIndex opposite = m_ikRig.getIKChain(i)->getOpposite();
 			supportFramesPerChain[i] = std::vector<bool>(frameNum);
 			glblPositionsPerChain[i] = std::vector<glm::vec3>(frameNum);
-			currentConfig->m_eeTrajectoryData[i].init(currentConfig);
+			currentConfig->m_eeTrajectoryData[i].init(currentConfig, &currentConfig->m_eeTrajectoryData[opposite]);
 		}
-		for (int i = 0; i < frameNum; i++) {
+		for (FrameIndex i = 0; i < frameNum; i++) {
 			// calculo de las transformaciones
 			float timeStamp = rotTimeStamps[i];
 			while (currentConfig->getAnimationDuration() <= timeStamp) { timeStamp -= 0.000001; }

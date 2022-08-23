@@ -4,11 +4,10 @@
 namespace Mona{
 
 
-EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int subTrajectoryID, LIC<3> altCurve) {
+EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int subTrajectoryID) {
         m_curve = trajectory;
         m_trajectoryType = trajectoryType;
         m_subTrajectoryID = subTrajectoryID;
-		m_altCurve = altCurve;
     }
 
     glm::fquat HipGlobalTrajectoryData::getTargetRotation(float reproductionTime) {
@@ -67,12 +66,13 @@ EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int
 		return EETrajectory();
 	}
 
-    void  EEGlobalTrajectoryData::init(IKRigConfig* config) {
+    void  EEGlobalTrajectoryData::init(IKRigConfig* config, EEGlobalTrajectoryData* oppositeTrData) {
 		int frameNum = config->getFrameNum();
         m_savedPositions = std::vector<glm::vec3>(frameNum);
 		m_savedDataValid = std::vector<bool>(frameNum, false);
         m_supportHeights = std::vector<float>(frameNum);
 		m_config = config;
+		m_oppositeTrajectoryData = oppositeTrData;
     }
 
     EETrajectory EEGlobalTrajectoryData::getSubTrajectoryByID(int subTrajectoryID) {
@@ -96,6 +96,10 @@ EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int
 			extendedCurve = LIC<3>::connect(extendedCurve, additionalCurve);
 		}
 		return extendedCurve.sample(animationTime, animationTime + duration);
+	}
+
+	EEGlobalTrajectoryData* EEGlobalTrajectoryData::getOppositeTrajectoryData() {
+		return m_oppositeTrajectoryData;
 	}
 
 

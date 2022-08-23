@@ -57,22 +57,13 @@ namespace Mona{
         friend class EETrajectoryData;
         friend class TrajectoryGenerator;
         LIC<3> m_curve;
-        LIC<3> m_altCurve;
         TrajectoryType m_trajectoryType;
-        // Indice del punto de la curva que tiene el tiempo en el que ocurre la
-        // de maxima altura de la cadera
-        float m_hipMaxAltitudeTime = std::numeric_limits<float>::lowest();
         int m_subTrajectoryID = -1;
     public:
         EETrajectory() = default;
-        EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int subTrajectoryID = -1, LIC<3> altCurve=LIC<3>());
+        EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int subTrajectoryID = -1);
         bool isDynamic() { return m_trajectoryType == TrajectoryType::DYNAMIC; }
         LIC<3>& getEECurve() { return m_curve; }
-        LIC<3>& getAltCurve() { return m_altCurve; }
-        float getHipMaxAltitudeTime() {
-            MONA_ASSERT(m_hipMaxAltitudeTime != std::numeric_limits<float>::lowest(), "EETrajectory: Accessing unitialized value.");
-            return m_hipMaxAltitudeTime;
-        }
         int getSubTrajectoryID() {
 			return m_subTrajectoryID;
         }
@@ -91,6 +82,7 @@ namespace Mona{
         std::vector<glm::vec3> m_savedPositions;
         std::vector<bool> m_savedDataValid;
         IKRigConfig* m_config;
+        EEGlobalTrajectoryData* m_oppositeTrajectoryData;
     public:
         LIC<3> sampleExtendedSubTrajectory(float animationTime, float duration);
         EETrajectory getSubTrajectory(float animationTime);
@@ -100,9 +92,10 @@ namespace Mona{
         bool isSavedDataValid(FrameIndex frame) { return m_savedDataValid[frame]; }
         float getSupportHeight(FrameIndex frame) { return m_supportHeights[frame]; }
         EETrajectory& getTargetTrajectory() { return m_targetTrajectory; }
-        void setTargetTrajectory(LIC<3> curve, TrajectoryType trajectoryType, int subTrajectoryID, LIC<3> altCurve = LIC<3>()) { 
-            m_targetTrajectory = EETrajectory(curve, trajectoryType, subTrajectoryID, altCurve); }
-        void init(IKRigConfig* config);
+        void setTargetTrajectory(LIC<3> curve, TrajectoryType trajectoryType, int subTrajectoryID) { 
+            m_targetTrajectory = EETrajectory(curve, trajectoryType, subTrajectoryID); }
+        void init(IKRigConfig* config, EEGlobalTrajectoryData* opposite);
+        EEGlobalTrajectoryData* getOppositeTrajectoryData();
     };
     
 }

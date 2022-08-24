@@ -84,13 +84,33 @@ namespace Mona{
 			JointIndex eeIndex = m_ikRig->getIKChain(i)->getEndEffector();
 			generateEETrajectory(i, config, transformManager, staticMeshManager);
 		}
+        // si una trayectoria es fija, las demas tambien deberan serlo
+        if (config->getAnimationType() == AnimationType::MOVING) {
+            std::vector<bool> fixedTrajectories;
+            for (ChainIndex i = 0; i < m_ikRig->getChainNum(); i++) {
+                fixedTrajectories.push_back(config->getEETrajectoryData(i)->isTargetFixed());
+            }
+            if (funcUtils::conditionVector_OR(fixedTrajectories)) {
+                FrameIndex currentFrame = config->getCurrentFrameIndex();
+                float currentRepTime = config->getReproductionTime(currentFrame);
+                for (ChainIndex i = 0; i < m_ikRig->getChainNum(); i++) {
+                    EEGlobalTrajectoryData* trData = config->getEETrajectoryData(i);
+                    float currSupportHeight = trData->getSupportHeight(currentFrame);
+                    glm::vec3 currentPos = trData->getSavedPosition(currentFrame);
+                    int trID = trData->getTargetTrajectory().getSubTrajectoryID();
+                    generateFixedTrajectory(glm::vec2(currentPos), { currentRepTime, currentRepTime + config->getAnimationDuration() }, trID,
+                        currSupportHeight, i, config, transformManager, staticMeshManager);
+                }
+            }
+        
+        }
 
 		// queda setear la trayectoria de la cadera
 		generateHipTrajectory(config, transformManager, staticMeshManager);
 	}
 
     void TrajectoryGenerator::generateFixedTrajectory(glm::vec2 basePos,
-        glm::vec2 timeRange, float supportHeight,
+        glm::vec2 timeRange, int baseCurveID, float supportHeight,
         ChainIndex ikChain, IKRigConfig* config,
         ComponentManager<TransformComponent>& transformManager,
         ComponentManager<StaticMeshComponent>& staticMeshManager) {
@@ -98,7 +118,8 @@ namespace Mona{
         float calcHeight = m_environmentData.getTerrainHeight(glm::vec2(basePos), transformManager, staticMeshManager);
         glm::vec3 fixedPos(basePos, calcHeight + supportHeight);
         LIC<3> fixedCurve({ fixedPos, fixedPos }, { timeRange[0], timeRange[1] });
-        trData->setTargetTrajectory(fixedCurve, TrajectoryType::STATIC, -2);
+        trData->setTargetTrajectory(fixedCurve, TrajectoryType::STATIC, baseCurveID);
+        trData->m_fixedTarget = true;
     }
 
 	void TrajectoryGenerator::generateEETrajectory(ChainIndex ikChain, IKRigConfig* config,
@@ -113,7 +134,7 @@ namespace Mona{
         float currSupportHeight = trData->getSupportHeight(currentFrame);
         glm::vec3 currentPos = trData->getSavedPosition(currentFrame);
 		if (config->getAnimationType() == AnimationType::IDLE) {
-            generateFixedTrajectory(glm::vec2(currentPos), { currentRepTime, currentRepTime + config->getAnimationDuration() },
+            generateFixedTrajectory(glm::vec2(currentPos), { currentRepTime, currentRepTime + config->getAnimationDuration() }, 0,
                 currSupportHeight ,ikChain, config, transformManager, staticMeshManager);
 			return;
 		}
@@ -135,7 +156,7 @@ namespace Mona{
         baseCurve.offsetTValues(currentRepTime);
 
 		if (glm::length(baseCurve.getEnd() - baseCurve.getStart()) == 0) {
-			generateFixedTrajectory(glm::vec2(currentPos), { baseCurve.getTRange()[0], baseCurve.getTRange()[1] },
+			generateFixedTrajectory(glm::vec2(currentPos), { baseCurve.getTRange()[0], baseCurve.getTRange()[1] }, originalTrajectory.getSubTrajectoryID(),
 				currSupportHeight, ikChain, config, transformManager, staticMeshManager);
 			return;
 		}
@@ -163,7 +184,7 @@ namespace Mona{
         std::vector<glm::vec3> strideData = calcStrideData(supportHeightStart, supportHeightEnd,
             initialPos, targetDistance, targetXYDirection, 8, transformManager, staticMeshManager);
         if (strideData.size() == 0) { // si no es posible avanzar por la elevacion del terreno
-			generateFixedTrajectory(glm::vec2(currentPos), { baseCurve.getTRange()[0], baseCurve.getTRange()[1] },
+			generateFixedTrajectory(glm::vec2(currentPos), { baseCurve.getTRange()[0], baseCurve.getTRange()[1] }, originalTrajectory.getSubTrajectoryID(),
 				currSupportHeight, ikChain, config, transformManager, staticMeshManager);
             return;
         }
@@ -205,6 +226,7 @@ namespace Mona{
         }
 
         m_tgData.minValues = std::vector<float>(m_tgData.pointIndexes.size() * 3, std::numeric_limits<float>::lowest());
+        std::vector<int> assignedTGDataPointIndexes;
         for (int i = 0; i < curvePointIndex_stridePointIndex.size(); i++) {
             int curvePointIndex = curvePointIndex_stridePointIndex[i].first;
             int tgDataIndex = -1;
@@ -217,7 +239,38 @@ namespace Mona{
             if (tgDataIndex != -1) {
                 int stridePointIndex = curvePointIndex_stridePointIndex[i].second;
                 m_tgData.minValues[tgDataIndex * 3 + 2] = strideData[stridePointIndex][2];
-            }                  
+                assignedTGDataPointIndexes.push_back(tgDataIndex);
+            }
+        }
+        if (assignedTGDataPointIndexes[0] != 0) {
+            m_tgData.minValues[2] = strideData[0][2];
+            assignedTGDataPointIndexes.insert(assignedTGDataPointIndexes.begin(), 0);
+        }
+        if (assignedTGDataPointIndexes.back() != m_tgData.pointIndexes.size() - 1) {
+            m_tgData.minValues.back() = strideData.back()[2];
+            assignedTGDataPointIndexes.push_back(m_tgData.pointIndexes.size() - 1);
+        }
+
+
+        for (int i = 0; i < m_tgData.pointIndexes.size(); i++) {
+            int minLerpIndex = -1;
+            int maxLerpIndex = -1;
+            float minVal;
+            float maxVal;
+            int currIndex = i;
+            for (int j = 0; j < assignedTGDataPointIndexes.size() - 1; j++) {
+                if (assignedTGDataPointIndexes[j] < currIndex && currIndex < assignedTGDataPointIndexes[j + 1]) {
+                    minLerpIndex = assignedTGDataPointIndexes[j];
+                    maxLerpIndex = assignedTGDataPointIndexes[j + 1];
+                    minVal = m_tgData.minValues[minLerpIndex * 3 + 2];
+                    maxVal = m_tgData.minValues[maxLerpIndex * 3 + 2];
+                    break;
+                }
+            }
+            if (minLerpIndex != -1) {
+                m_tgData.minValues[currIndex * 3 + 2] = funcUtils::lerp(minVal, maxVal, funcUtils::getFraction(minLerpIndex, maxLerpIndex, currIndex));
+            }
+
         }
 
         // valores iniciales y curva base
@@ -245,6 +298,7 @@ namespace Mona{
         else {
             trData->setTargetTrajectory(baseCurve, trType, newSubTrID);
         }
+        trData->m_fixedTarget = false;
 
 	}
 	
@@ -253,18 +307,14 @@ namespace Mona{
         ComponentManager<TransformComponent>& transformManager,
         ComponentManager<StaticMeshComponent>& staticMeshManager) {
 
-        bool fixedTrajectories = false;
-        FrameIndex currentFrame = config->getCurrentFrameIndex();
+        std::vector<bool> fixedTrajectories;
         for (ChainIndex i = 0; i < m_ikRig->getChainNum(); i++) {
-            if (config->getEETrajectoryData(i)->getTargetTrajectory().getSubTrajectoryID() == -2) { 
-                fixedTrajectories = true;
-                break;
-            }
+            fixedTrajectories.push_back(config->getEETrajectoryData(i)->isTargetFixed());
         }
 
         HipGlobalTrajectoryData* hipTrData = config->getHipTrajectoryData();
-        
-        if (fixedTrajectories) {
+        FrameIndex currentFrame = config->getCurrentFrameIndex();
+        if (funcUtils::conditionVector_OR(fixedTrajectories)) {
             float initialTime_rep = config->getReproductionTime(currentFrame);
             float currFrameTime_extendedAnim = config->getAnimationTime(currentFrame);
             float nextFrameTime_extendedAnim = config->getAnimationTime(config->getNextFrameIndex());
@@ -278,10 +328,13 @@ namespace Mona{
             glm::vec3 initialTrans = hipTrData->getSavedTranslation(currentFrame);
             // chequear si hay info de posicion valida previa
             if (!(hipTrData->isSavedDataValid(currentFrame) && hipTrData->getTargetTranslations().inTRange(initialTime_rep))) {
+                std::pair<EEGlobalTrajectoryData*, EEGlobalTrajectoryData*> trDataPair;
+                trDataPair.first = config->getEETrajectoryData(0);
+                trDataPair.second = trDataPair.first->getOppositeTrajectoryData();
                 glm::vec2 basePoint(initialTrans);
-				/*initialTrans = glm::vec3(basePoint, calcHipAdjustedHeight(basePoint, trDataPair,
+				initialTrans = glm::vec3(basePoint, calcHipAdjustedHeight(trDataPair,
                     initialTime_rep, config->getAnimationTime(currentFrame), config,
-					transformManager, staticMeshManager));*/
+					transformManager, staticMeshManager));
             }
             LIC<1> newHipRotAngles({ glm::vec1(initialRotAngle), glm::vec1(initialRotAngle) }, { initialTime_rep, initialTime_rep + config->getAnimationDuration() });
             LIC<3> newHipRotAxes({ initialRotAxis, initialRotAxis }, { initialTime_rep, initialTime_rep + config->getAnimationDuration() });
@@ -534,21 +587,26 @@ namespace Mona{
 
     void TrajectoryGenerator::buildEETrajectories(IKRigConfig* config, 
         std::vector<std::vector<bool>> supportFramesPerChain, 
-        std::vector<std::vector<glm::vec3>> globalPositionsPerChain) {
+        std::vector<std::vector<glm::vec3>> globalPositionsPerChain,
+        std::vector<ChainIndex> oppositePerChain) {
         int chainNum = supportFramesPerChain.size();
         int frameNum = config->getFrameNum();
 		std::vector<int> connectedCurveIndexes(chainNum, -1);
 		std::vector<bool> continueTrajectory(chainNum, false);
+        for (ChainIndex i = 0; i < chainNum; i++) {
+            config->m_eeTrajectoryData[i].init(config, &config->m_eeTrajectoryData[oppositePerChain[i]]);
+        }
 		for (int i = 0; i < chainNum; i++) {
 			std::vector<EETrajectory> subTrajectories;
-			bool allStatic = funcUtils::conditionVector_AND(supportFramesPerChain[i]);
-			if (allStatic) {
+			if (config->getAnimationType() == AnimationType::IDLE) {
 				glm::vec3 staticPos = globalPositionsPerChain[i][0];
 				LIC<3> staticTr({ staticPos, staticPos }, { config->getAnimationTime(0), config->getAnimationTime(frameNum - 1) });
 				subTrajectories.push_back(EETrajectory(staticTr, TrajectoryType::STATIC, 0));
-				for (int j = 0; j < frameNum; j++) { config->m_eeTrajectoryData[i].m_supportHeights[j] = globalPositionsPerChain[i][j][2]; }
+				for (int j = 0; j < frameNum; j++) { config->m_eeTrajectoryData[i].m_supportHeights[j] = globalPositionsPerChain[i][0][2]; }
 			}
 			else {
+                bool allStatic = funcUtils::conditionVector_AND(supportFramesPerChain[i]);
+                MONA_ASSERT(!allStatic, "TrajectoryGenerator: A moving animation must have at least one dynamic trajectory per chain.");
 				// encontrar primer punto de interes (dinamica luego de uno estatico)
 				FrameIndex curveStartFrame = -1;
 				for (int j = 1; j < frameNum; j++) {
@@ -557,7 +615,7 @@ namespace Mona{
 						break;
 					}
 				}
-				MONA_ASSERT(curveStartFrame != -1, "IKRigController: There must be at least one support frame per ee trajectory.");
+				MONA_ASSERT(curveStartFrame != -1, "TrajectoryGenerator: There must be at least one support frame per ee trajectory.");
 				std::vector<std::pair<int, int>> shInterpolationLimits;
 				float supportHeight;
 				int j = curveStartFrame;

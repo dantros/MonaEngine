@@ -132,8 +132,8 @@ public:
 		rigData.rightLeg.endEffectorName = "RightFoot";
 		rigData.hipJointName = "Hips";
 		m_ikNavHandle = world.AddComponent<Mona::IKNavigationComponent>(*this, rigData);
-		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_walkingAnimation);
-		m_skeletalMesh->GetAnimationController().SetPlayRate(0.5f);
+		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_walkingAnimation, Mona::AnimationType::IDLE);
+		m_skeletalMesh->GetAnimationController().SetPlayRate(0.6f);
 
 	}
 

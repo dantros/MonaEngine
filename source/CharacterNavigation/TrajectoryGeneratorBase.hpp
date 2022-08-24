@@ -83,6 +83,7 @@ namespace Mona{
         std::vector<bool> m_savedDataValid;
         IKRigConfig* m_config;
         EEGlobalTrajectoryData* m_oppositeTrajectoryData;
+        bool m_fixedTarget = false;
     public:
         LIC<3> sampleExtendedSubTrajectory(float animationTime, float duration);
         EETrajectory getSubTrajectory(float animationTime);
@@ -96,6 +97,7 @@ namespace Mona{
             m_targetTrajectory = EETrajectory(curve, trajectoryType, subTrajectoryID); }
         void init(IKRigConfig* config, EEGlobalTrajectoryData* opposite);
         EEGlobalTrajectoryData* getOppositeTrajectoryData();
+        bool isTargetFixed() { return m_fixedTarget; }
     };
     
 }

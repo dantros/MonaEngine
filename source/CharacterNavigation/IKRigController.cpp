@@ -27,7 +27,7 @@ namespace Mona {
 		m_ikRig.m_trajectoryGenerator.m_environmentData.validateTerrains(staticMeshManager);
 	}
 
-	void IKRigController::addAnimation(std::shared_ptr<AnimationClip> animationClip) {
+	void IKRigController::addAnimation(std::shared_ptr<AnimationClip> animationClip, AnimationType animationType) {
 		// la animacion debe tener globalmente vector front={0,1,0} y up={0,0,1}
 		if (animationClip->GetSkeleton() != m_ikRig.m_skeleton) {
 			MONA_LOG_ERROR("IKRigController: Input animation does not correspond to base skeleton.");
@@ -96,7 +96,7 @@ namespace Mona {
 
 		// Para este paso las rotaciones deben estar descomprimidas
 		AnimationIndex newIndex = m_ikRig.m_animationConfigs.size();
-		m_ikRig.m_animationConfigs.push_back(IKRigConfig(animationClip, newIndex, &m_ikRig.m_forwardKinematics));
+		m_ikRig.m_animationConfigs.push_back(IKRigConfig(animationClip, animationType, newIndex, &m_ikRig.m_forwardKinematics));
 		IKRigConfig* currentConfig = m_ikRig.getAnimationConfig(newIndex);
 		currentConfig->m_eeTrajectoryData = std::vector<EEGlobalTrajectoryData>(m_ikRig.m_ikChains.size());
 
@@ -120,10 +120,8 @@ namespace Mona {
 		std::vector<glm::vec3> previousPositions(m_ikRig.getTopology().size());
 		std::fill(previousPositions.begin(), previousPositions.end(), glm::vec3(std::numeric_limits<float>::lowest()));
 		for (ChainIndex i = 0; i < chainNum; i++) {
-			ChainIndex opposite = m_ikRig.getIKChain(i)->getOpposite();
 			supportFramesPerChain[i] = std::vector<bool>(frameNum);
 			glblPositionsPerChain[i] = std::vector<glm::vec3>(frameNum);
-			currentConfig->m_eeTrajectoryData[i].init(currentConfig, &currentConfig->m_eeTrajectoryData[opposite]);
 		}
 		for (FrameIndex i = 0; i < frameNum; i++) {
 			// calculo de las transformaciones
@@ -199,7 +197,12 @@ namespace Mona {
 		}
 
 		// dividimos cada trayectoria global (por ee) en sub trayectorias dinamicas y estaticas.
-		TrajectoryGenerator::buildEETrajectories(currentConfig, supportFramesPerChain, glblPositionsPerChain);
+		std::vector<ChainIndex> oppositePerChain;
+		for (ChainIndex i = 0; i < chainNum; i++) {
+			ChainIndex opposite = m_ikRig.getIKChain(i)->getOpposite();
+			oppositePerChain.push_back(opposite);
+		}
+		TrajectoryGenerator::buildEETrajectories(currentConfig, supportFramesPerChain, glblPositionsPerChain, oppositePerChain);
 
 		// Se remueve el movimiento de las caderas y se setea la rotacion basal
 		glm::vec3 baseScale; glm::quat baseRotation; glm::vec3 baseTranslation; glm::vec3 baseSkew; glm::vec4 basePerspective;

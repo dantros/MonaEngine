@@ -386,18 +386,6 @@ namespace Mona{
             }			
 			translate(-getStart() + newStart);
 		}
-
-		void debugPrintTValues() {
-            std::cout << "tValues: " << std::endl;
-            std::cout << funcUtils::vecToString(m_tValues) << std::endl;
-		}
-
-
-		void debugPrintCurvePoints() {
-            MONA_ASSERT(m_dimension == 3, "LIC: only available for dim 3 LICs.");
-			glmUtils::printColoredStdVector(m_curvePoints);
-
-		}
     };
     
 }

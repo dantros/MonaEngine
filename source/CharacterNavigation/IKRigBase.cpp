@@ -5,8 +5,10 @@
 
 namespace Mona{
 
-	IKRigConfig::IKRigConfig(std::shared_ptr<AnimationClip> animation, AnimationIndex animationIndex, ForwardKinematics* forwardKinematics) {
+	IKRigConfig::IKRigConfig(std::shared_ptr<AnimationClip> animation, AnimationType animationType, 
+		AnimationIndex animationIndex, ForwardKinematics* forwardKinematics) {
 		m_animationClip = animation;
+		m_animationType = animationType;
 		std::vector<JointIndex>const& topology = m_animationClip->GetSkeleton()->m_parentIndices;
 		std::vector<JointIndex> trackJointIndices = m_animationClip->m_trackJointIndices;
 		std::sort(trackJointIndices.begin(), trackJointIndices.end());

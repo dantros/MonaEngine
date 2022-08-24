@@ -83,7 +83,8 @@ namespace Mona {
         //
         AnimationType m_animationType;
     public:
-        IKRigConfig(std::shared_ptr<AnimationClip> animation, AnimationIndex animIndex, ForwardKinematics* fk);
+        IKRigConfig(std::shared_ptr<AnimationClip> animation, AnimationType animationType, 
+            AnimationIndex animIndex, ForwardKinematics* fk);
         const std::vector<JointRotation>& getBaseJointRotations(FrameIndex frame) const { return m_baseJointRotations[frame]; }
         std::vector<JointRotation>* getDynamicJointRotations(FrameIndex frame) { return &(m_dynamicJointRotations[frame]); }
         const std::vector<glm::vec3>& getJointScales() const { return m_jointScales; }

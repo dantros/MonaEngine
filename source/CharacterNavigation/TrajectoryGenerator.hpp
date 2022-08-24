@@ -39,7 +39,7 @@ namespace Mona{
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
         void generateFixedTrajectory(glm::vec2 basePos,
-            glm::vec2 timeRange, float supportHeight,
+            glm::vec2 timeRange, int baseCurveID, float supportHeight,
             ChainIndex ikChain, IKRigConfig* config,
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
@@ -63,7 +63,8 @@ namespace Mona{
 		static void buildHipTrajectory(IKRigConfig* config, std::vector<glm::mat4> const& hipGlobalTransforms, float minDistance, float floorZ);
 		static void buildEETrajectories(IKRigConfig* config,
 			std::vector<std::vector<bool>> supportFramesPerChain,
-			std::vector<std::vector<glm::vec3>> globalPositionsPerChain);
+			std::vector<std::vector<glm::vec3>> globalPositionsPerChain,
+            std::vector<ChainIndex> oppositePerChain);
     public:
         TrajectoryGenerator(IKRig* ikRig);
         TrajectoryGenerator() = default;

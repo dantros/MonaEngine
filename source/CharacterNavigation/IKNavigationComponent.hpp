@@ -22,8 +22,8 @@ namespace Mona {
 				}
 				m_rigData = rigData;
 			}
-			void AddAnimation(std::shared_ptr<AnimationClip> animationClip) {
-				m_ikRigController.addAnimation(animationClip);
+			void AddAnimation(std::shared_ptr<AnimationClip> animationClip, AnimationType animationType = AnimationType::MOVING) {
+				m_ikRigController.addAnimation(animationClip, animationType);
 			}
 
 			void DrawTargetCurves() {

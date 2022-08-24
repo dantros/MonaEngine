@@ -23,7 +23,6 @@ namespace Mona {
 		
 		// construccion de las cadenas principales
 		m_ikChains = { buildIKChain(rigData.leftLeg, "leftLeg"), buildIKChain(rigData.rightLeg, "rightLeg") };
-		//buildIKChain(rigData.leftFoot, "leftFoot"), buildIKChain(rigData.rightFoot, "rightFoot") };
 		// seteo de cadenas opuestas
 		m_ikChains[0].m_opposite = 1;
 		m_ikChains[1].m_opposite = 0;

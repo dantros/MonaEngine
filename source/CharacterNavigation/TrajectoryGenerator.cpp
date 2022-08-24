@@ -85,7 +85,7 @@ namespace Mona{
 			generateEETrajectory(i, config, transformManager, staticMeshManager);
 		}
         // si una trayectoria es fija, las demas tambien deberan serlo
-        if (config->getAnimationType() == AnimationType::MOVING) {
+        if (config->getAnimationType() == AnimationType::WALKING) {
             std::vector<bool> fixedTrajectories;
             for (ChainIndex i = 0; i < m_ikRig->getChainNum(); i++) {
                 fixedTrajectories.push_back(config->getEETrajectoryData(i)->isTargetFixed());
@@ -134,7 +134,8 @@ namespace Mona{
         float currSupportHeight = trData->getSupportHeight(currentFrame);
         glm::vec3 currentPos = trData->getSavedPosition(currentFrame);
 		if (config->getAnimationType() == AnimationType::IDLE) {
-            generateFixedTrajectory(glm::vec2(currentPos), { currentRepTime, currentRepTime + config->getAnimationDuration() }, 0,
+            int subTrID = trData->m_originalSubTrajectories[0].m_subTrajectoryID;
+            generateFixedTrajectory(glm::vec2(currentPos), { currentRepTime, currentRepTime + config->getAnimationDuration() }, subTrID,
                 currSupportHeight ,ikChain, config, transformManager, staticMeshManager);
 			return;
 		}
@@ -291,7 +292,7 @@ namespace Mona{
         float transitionTime = config->getReproductionTime(config->getNextFrameIndex(), repCountOffset);
         int currSubTrID = trData->getTargetTrajectory().getSubTrajectoryID();
         int newSubTrID = originalTrajectory.getSubTrajectoryID();
-        if (currSubTrID == newSubTrID) {
+        if (currSubTrID == newSubTrID && trData->getTargetTrajectory().getEECurve().inTRange(transitionTime)) {
             trData->setTargetTrajectory(LIC<3>::transition(trData->getTargetTrajectory().getEECurve(),
                 baseCurve, transitionTime), trType, newSubTrID);
         }
@@ -422,9 +423,7 @@ namespace Mona{
                     config, transformManager, staticMeshManager);
                 glm::vec3 adjustedPoint(glm::vec2(hipTrCurve.evalCurve(tVal_rep)), adjustedZ);
                 hipTrCurve.setCurvePoint(i, adjustedPoint);
-            }
-
-            
+            }          
             
 
 			float repCountOffset = config->getNextFrameIndex() == 0 ? 1 : 0;
@@ -515,7 +514,9 @@ namespace Mona{
 
         
 		HipGlobalTrajectoryData* hipTrData = config->getHipTrajectoryData();
-		LIC<3> hipTrCurve = hipTrData->sampleOriginalTranslations(originalCurvesTime_extendedAnim,	originalCurvesTime_extendedAnim + config->getAnimationDuration());
+        float avgFrameDuration = config->getAnimationDuration() / config->getFrameNum();
+		LIC<3> hipTrCurve = hipTrData->sampleOriginalTranslations(originalCurvesTime_extendedAnim,	
+            originalCurvesTime_extendedAnim + avgFrameDuration);
         float hipOriginalZ = hipTrCurve.evalCurve(originalCurvesTime_extendedAnim)[2];
 
         // distancias originales de ee's con cadera
@@ -593,6 +594,7 @@ namespace Mona{
         int frameNum = config->getFrameNum();
 		std::vector<int> connectedCurveIndexes(chainNum, -1);
 		std::vector<bool> continueTrajectory(chainNum, false);
+        int subTrajectoryID = 0;
         for (ChainIndex i = 0; i < chainNum; i++) {
             config->m_eeTrajectoryData[i].init(config, &(config->m_eeTrajectoryData[oppositePerChain[i]]));
         }
@@ -734,7 +736,8 @@ namespace Mona{
 			// asignamos las sub trayectorias a la cadena correspondiente
 			config->m_eeTrajectoryData[i].m_originalSubTrajectories = subTrajectories;
 			for (int j = 0; j < subTrajectories.size(); j++) {
-				config->m_eeTrajectoryData[i].m_originalSubTrajectories[j].m_subTrajectoryID = j;
+				config->m_eeTrajectoryData[i].m_originalSubTrajectories[j].m_subTrajectoryID = subTrajectoryID;
+                subTrajectoryID += 1;
 			}
 		}
     }

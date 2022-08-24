@@ -22,7 +22,7 @@ namespace Mona {
 				}
 				m_rigData = rigData;
 			}
-			void AddAnimation(std::shared_ptr<AnimationClip> animationClip, AnimationType animationType = AnimationType::MOVING) {
+			void AddAnimation(std::shared_ptr<AnimationClip> animationClip, AnimationType animationType = AnimationType::WALKING) {
 				m_ikRigController.addAnimation(animationClip, animationType);
 			}
 

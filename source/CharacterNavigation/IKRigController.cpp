@@ -335,26 +335,35 @@ namespace Mona {
 		
 	}
 
-	void IKRigController::updateIKRigConfigTime(float animationTimeStep, AnimationIndex animIndex) {
+	void IKRigController::updateIKRigConfigTime(float animationTimeStep, AnimationIndex animIndex, AnimationController& animController) {
 		IKRigConfig& config = m_ikRig.m_animationConfigs[animIndex];
 		float avgFrameDuration = config.getAnimationDuration() / config.getFrameNum();
 		if (avgFrameDuration*2 < animationTimeStep) {
 			MONA_LOG_ERROR("IKRigController: Framerate is too low for IK system to work properly on animation with name --{0}--.",
 				config.m_animationClip->GetAnimationName());
 		}
-		auto anim = config.m_animationClip;
-		float samplingTime = anim->GetSamplingTime(m_reproductionTime, true);
-		config.m_currentReproductionTime = m_reproductionTime;
+		std::shared_ptr<AnimationClip> anim = config.m_animationClip;
+		float prevSamplingTime = anim->GetSamplingTime(m_reproductionTime - animationTimeStep, true);
+		float samplingTimeOffset = 0.0f;
+		if (animController.m_animationClipPtr == anim) {
+			samplingTimeOffset = animController.m_sampleTime - prevSamplingTime;
+		}
+		else if (animController.m_crossfadeTarget.GetAnimationClip() == anim) {
+			samplingTimeOffset = animController.m_crossfadeTarget.m_sampleTime - prevSamplingTime;
+		}		
+		config.m_currentReproductionTime = m_reproductionTime + samplingTimeOffset;
+		config.m_reproductionCount = config.m_currentReproductionTime / config.getAnimationDuration();
+		float adjustedSamplingTime = anim->GetSamplingTime(config.m_currentReproductionTime, true);
 		for (int i = 0; i < config.m_timeStamps.size(); i++) {
 			float nextTimeStamp = i < config.m_timeStamps.size()-1 ? config.m_timeStamps[i + 1] : config.getAnimationDuration();
-			if (config.m_timeStamps[i] <= samplingTime && samplingTime < nextTimeStamp) {
+			if (config.m_timeStamps[i] <= adjustedSamplingTime && adjustedSamplingTime < nextTimeStamp) {
 				config.m_onNewFrame = config.m_currentFrameIndex != i;
 				config.m_currentFrameIndex = i;
 				config.m_nextFrameIndex = (i + 1) % (config.m_timeStamps.size());
 				break;
 			}
 		}
-		config.m_reproductionCount = m_reproductionTime / config.getAnimationDuration();
+		
 	}
 
 	void IKRigController::clearConfig(IKRigConfig& config) {
@@ -378,7 +387,7 @@ namespace Mona {
 		float animTimeStep = timeStep * animController.GetPlayRate();
 		m_reproductionTime += animTimeStep;
 		for (AnimationIndex i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {
-			updateIKRigConfigTime(animTimeStep, i);
+			updateIKRigConfigTime(animTimeStep, i, animController);
 		}
 		updateMovementDirection(animTimeStep);
 		for (AnimationIndex i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {

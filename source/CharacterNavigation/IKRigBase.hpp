@@ -37,10 +37,8 @@ namespace Mona {
 
     enum class  AnimationType {
         IDLE,
-        MOVING
+        WALKING
     };
-
-    
     class IKRigConfig {
         friend class IKRig;
         friend class IKRigController;
@@ -80,7 +78,7 @@ namespace Mona {
         bool m_onNewFrame = true;
         // Numero de veces que la animacion se ha reproducido
         int m_reproductionCount = 0;
-        //
+        // Tipo de la animacion
         AnimationType m_animationType;
     public:
         IKRigConfig(std::shared_ptr<AnimationClip> animation, AnimationType animationType, 
@@ -89,11 +87,11 @@ namespace Mona {
         std::vector<JointRotation>* getDynamicJointRotations(FrameIndex frame) { return &(m_dynamicJointRotations[frame]); }
         const std::vector<glm::vec3>& getJointScales() const { return m_jointScales; }
         const std::vector<glm::vec3>& getJointPositions() const { return m_jointPositions; }
-        float getReproductionTime(float animationTime, int repCountOffset = 0);
+        float getReproductionTime(float extendedAnimationTime, int repCountOffset = 0);
         float getReproductionTime(FrameIndex frame, int repCountOffset = 0);
         float getAnimationTime(FrameIndex frame);
         float getAnimationTime(float reproductionTime);
-        FrameIndex getFrame(float animationTime);
+        FrameIndex getFrame(float extendedAnimationTime);
         float getAnimationDuration();
         int getFrameNum() { return m_timeStamps.size(); }
         int getReproductionCount() const { return m_reproductionCount; }
@@ -158,8 +156,6 @@ namespace Mona {
     public:
         ChainEnds leftLeg;
         ChainEnds rightLeg;
-        ChainEnds leftFoot;
-        ChainEnds rightFoot;
         std::string hipJointName;
         void setJointData(std::string jointName, float minAngle, float maxAngle);
         JointData getJointData(std::string jointName);

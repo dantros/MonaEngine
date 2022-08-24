@@ -92,7 +92,7 @@ public:
 			Mona::BlendType blendType = m_walkingAnimation == animController.GetCurrentAnimation() ? Mona::BlendType::KeepSynchronize : Mona::BlendType::Smooth;
 			animController.FadeTo(m_walkingAnimation, blendType, m_fadeTime, 0.0f);
 		}
-		else {
+		else if(input.IsKeyPressed(MONA_KEY_DOWN)){
 			animController.FadeTo(m_idleAnimation, Mona::BlendType::Smooth, m_fadeTime, 0.0f);
 		}
 		
@@ -140,7 +140,7 @@ public:
 		rigData.rightLeg.endEffectorName = "RightFoot";
 		rigData.hipJointName = "Hips";
 		m_ikNavHandle = world.AddComponent<Mona::IKNavigationComponent>(*this, rigData);
-		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_walkingAnimation, Mona::AnimationType::MOVING);
+		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_walkingAnimation, Mona::AnimationType::WALKING);
 		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_idleAnimation, Mona::AnimationType::IDLE);
 		m_skeletalMesh->GetAnimationController().SetPlayRate(0.3f);
 

@@ -48,7 +48,7 @@ namespace Mona {
         friend class TrajectoryGenerator;
     private:
         // Indica si la animacion asociada esta activa
-        bool m_active = true;
+        bool m_active = false;
         // Clip de animacion asociado a esta configuracion
         std::shared_ptr<AnimationClip> m_animationClip;
         // Indices de las articulaciones presentes en la animacion. Ordenados de acuerdo a la toplogia.

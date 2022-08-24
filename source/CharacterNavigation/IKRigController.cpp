@@ -236,85 +236,68 @@ namespace Mona {
 		HipGlobalTrajectoryData* hipTrData = config.getHipTrajectoryData();
 		FrameIndex currentFrame = config.getCurrentFrameIndex();
 		EEGlobalTrajectoryData* trData;
-		if (config.isActive()) {
-			if (config.m_onNewFrame) { // se realiza al llegar a un frame de la animacion
-			// guardado de posiciones globales ee y cadera
-				std::vector<JointIndex> endEffectors;
-				for (ChainIndex i = 0; i < m_ikRig.getChainNum(); i++) {
-					endEffectors.push_back(m_ikRig.m_ikChains[i].getEndEffector());
-				}
-				glm::mat4 baseTransform = transformManager.GetComponentPointer(m_ikRig.getTransformHandle())->GetModelMatrix();
-				std::vector<glm::mat4> globalTransforms = config.getEEListCustomSpaceTransforms(endEffectors, baseTransform, currentFrame, true);
-				for (ChainIndex i = 0; i < m_ikRig.getChainNum(); i++) {
-					trData = config.getEETrajectoryData(i);
-					JointIndex ee = endEffectors[i];
-					trData->m_savedPositions[currentFrame] = globalTransforms[ee] * glm::vec4(0, 0, 0, 1);
-					trData->m_savedDataValid[currentFrame] = true;
-					// para compensar el poco espacio entre en ultimo y el primer frame
-					if (currentFrame == config.getFrameNum() - 2) {
-						trData->m_savedDataValid[0] = true;
-						trData->m_savedPositions[0] = globalTransforms[ee] * glm::vec4(0, 0, 0, 1);
-					}
-				}
-				glm::mat4 hipTransform = globalTransforms[m_ikRig.m_hipJoint];
-				glm::vec3 hipScale; glm::fquat hipRot; glm::vec3 hipTrans; glm::vec3 hipSkew; glm::vec4 hipPers;
-				glm::decompose(hipTransform, hipScale, hipRot, hipTrans, hipSkew, hipPers);
-				hipTrData->m_savedTranslations[currentFrame] = hipTrans;
-				hipTrData->m_savedDataValid[currentFrame] = true;
+		if (config.m_onNewFrame) { // se realiza al llegar a un frame de la animacion
+		// guardado de posiciones globales ee y cadera
+			std::vector<JointIndex> endEffectors;
+			for (ChainIndex i = 0; i < m_ikRig.getChainNum(); i++) {
+				endEffectors.push_back(m_ikRig.m_ikChains[i].getEndEffector());
+			}
+			glm::mat4 baseTransform = transformManager.GetComponentPointer(m_ikRig.getTransformHandle())->GetModelMatrix();
+			std::vector<glm::mat4> globalTransforms = config.getEEListCustomSpaceTransforms(endEffectors, baseTransform, currentFrame, true);
+			for (ChainIndex i = 0; i < m_ikRig.getChainNum(); i++) {
+				trData = config.getEETrajectoryData(i);
+				JointIndex ee = endEffectors[i];
+				trData->m_savedPositions[currentFrame] = globalTransforms[ee] * glm::vec4(0, 0, 0, 1);
+				trData->m_savedDataValid[currentFrame] = true;
 				// para compensar el poco espacio entre en ultimo y el primer frame
 				if (currentFrame == config.getFrameNum() - 2) {
-					hipTrData->m_savedTranslations[0] = hipTrans;
-					hipTrData->m_savedDataValid[0] = true;
+					trData->m_savedDataValid[0] = true;
+					trData->m_savedPositions[0] = globalTransforms[ee] * glm::vec4(0, 0, 0, 1);
 				}
-
-				// recalcular trayectorias de ee y caderas
-				m_ikRig.calculateTrajectories(animIndex, transformManager, staticMeshManager);
-
-				// asignar objetivos a ee's
-				int repOffset_next = config.getCurrentFrameIndex() < config.getFrameNum() - 1 ? 0 : 1;
-				float targetTimeNext = config.getReproductionTime(config.getNextFrameIndex(), repOffset_next);
-				float targetTimeCurr = config.getReproductionTime(config.getCurrentFrameIndex());
-				float deltaT = targetTimeNext - targetTimeCurr;
-
-				glm::mat4 nextGlblTransform = glmUtils::translationToMat4(hipTrData->getTargetTranslation(targetTimeNext)) *
-					glmUtils::rotationToMat4(glm::angleAxis(m_ikRig.m_rotationAngle + m_ikRig.m_angularSpeed*deltaT, m_ikRig.getUpVector())) *
-					glmUtils::scaleToMat4(glm::vec3(m_ikRig.m_rigScale));
-				glm::mat4 toModelSpace = glm::inverse(nextGlblTransform);
-				for (ChainIndex i = 0; i < m_ikRig.getChainNum(); i++) {
-					IKChain* ikChain = m_ikRig.getIKChain(i);
-					trData = config.getEETrajectoryData(i);
-					glm::vec3 eeTarget = toModelSpace *glm::vec4(trData->getTargetTrajectory().getEECurve().evalCurve(targetTimeNext), 1);
-					ikChain->setCurrentEETarget(eeTarget);
-				}
-				// asignar info de rotacion a la cadera en la animacion
-				config.m_animationClip->SetRotation(hipTrData->getTargetRotation(targetTimeCurr),
-					config.getCurrentFrameIndex(), m_ikRig.m_hipJoint);
-				config.m_animationClip->SetRotation(hipTrData->getTargetRotation(targetTimeNext),
-					config.getNextFrameIndex(), m_ikRig.m_hipJoint);
 			}
-			// setear transformacion global (traslacion y direccion de movimiento)
+			glm::mat4 hipTransform = globalTransforms[m_ikRig.m_hipJoint];
+			glm::vec3 hipScale; glm::fquat hipRot; glm::vec3 hipTrans; glm::vec3 hipSkew; glm::vec4 hipPers;
+			glm::decompose(hipTransform, hipScale, hipRot, hipTrans, hipSkew, hipPers);
+			hipTrData->m_savedTranslations[currentFrame] = hipTrans;
+			hipTrData->m_savedDataValid[currentFrame] = true;
+			// para compensar el poco espacio entre en ultimo y el primer frame
+			if (currentFrame == config.getFrameNum() - 2) {
+				hipTrData->m_savedTranslations[0] = hipTrans;
+				hipTrData->m_savedDataValid[0] = true;
+			}
+
+			// recalcular trayectorias de ee y caderas
+			m_ikRig.calculateTrajectories(animIndex, transformManager, staticMeshManager);
+
+			// asignar objetivos a ee's
+			int repOffset_next = config.getCurrentFrameIndex() < config.getFrameNum() - 1 ? 0 : 1;
+			float targetTimeNext = config.getReproductionTime(config.getNextFrameIndex(), repOffset_next);
+			float targetTimeCurr = config.getReproductionTime(config.getCurrentFrameIndex());
+			float deltaT = targetTimeNext - targetTimeCurr;
+
+			glm::mat4 nextGlblTransform = glmUtils::translationToMat4(hipTrData->getTargetTranslation(targetTimeNext)) *
+				glmUtils::rotationToMat4(glm::angleAxis(m_ikRig.m_rotationAngle + m_ikRig.m_angularSpeed*deltaT, m_ikRig.getUpVector())) *
+				glmUtils::scaleToMat4(glm::vec3(m_ikRig.m_rigScale));
+			glm::mat4 toModelSpace = glm::inverse(nextGlblTransform);
+			for (ChainIndex i = 0; i < m_ikRig.getChainNum(); i++) {
+				IKChain* ikChain = m_ikRig.getIKChain(i);
+				trData = config.getEETrajectoryData(i);
+				glm::vec3 eeTarget = toModelSpace *glm::vec4(trData->getTargetTrajectory().getEECurve().evalCurve(targetTimeNext), 1);
+				ikChain->setCurrentEETarget(eeTarget);
+			}
+			// asignar info de rotacion a la cadera en la animacion
+			config.m_animationClip->SetRotation(hipTrData->getTargetRotation(targetTimeCurr),
+				config.getCurrentFrameIndex(), m_ikRig.m_hipJoint);
+			config.m_animationClip->SetRotation(hipTrData->getTargetRotation(targetTimeNext),
+				config.getNextFrameIndex(), m_ikRig.m_hipJoint);
+		}
+		// setear transformacion global (traslacion y direccion de movimiento)
 			// nueva rotacion
-			glm::fquat updatedRotation = glm::angleAxis(m_ikRig.m_rotationAngle, m_ikRig.getUpVector());
-			transformManager.GetComponentPointer(m_ikRig.getTransformHandle())->SetRotation(updatedRotation);
+		glm::fquat updatedRotation = glm::angleAxis(m_ikRig.m_rotationAngle, m_ikRig.getUpVector());
+		transformManager.GetComponentPointer(m_ikRig.getTransformHandle())->SetRotation(updatedRotation);
+		if (hipTrData->getTargetTranslations().inTRange(config.getCurrentReproductionTime())) {
 			glm::vec3 glblTr = hipTrData->getTargetTranslation(config.getCurrentReproductionTime());
 			transformManager.GetComponentPointer(m_ikRig.getTransformHandle())->SetTranslation(glblTr);
-		}
-		else {
-			if (config.m_onNewFrame) {
-				for (ChainIndex i = 0; i < m_ikRig.getChainNum(); i++) {
-					trData = config.getEETrajectoryData(i);
-					trData->m_savedDataValid[currentFrame] = false;
-					// para compensar el poco espacio entre en ultimo y el primer frame
-					if (currentFrame == config.getFrameNum() - 2) {
-						trData->m_savedDataValid[0] = false;
-					}
-				}
-				hipTrData->m_savedDataValid[currentFrame] = false;
-				// para compensar el poco espacio entre en ultimo y el primer frame
-				if (currentFrame == config.getFrameNum() - 2) {
-					hipTrData->m_savedDataValid[0] = false;
-				}
-			}
 		}
 		
 	}
@@ -363,7 +346,7 @@ namespace Mona {
 		float samplingTime = anim->GetSamplingTime(m_reproductionTime, true);
 		config.m_currentReproductionTime = m_reproductionTime;
 		for (int i = 0; i < config.m_timeStamps.size(); i++) {
-			float nextTimeStamp = i < config.m_timeStamps.size() ? config.m_timeStamps[i + 1] : config.getAnimationDuration();
+			float nextTimeStamp = i < config.m_timeStamps.size()-1 ? config.m_timeStamps[i + 1] : config.getAnimationDuration();
 			if (config.m_timeStamps[i] <= samplingTime && samplingTime < nextTimeStamp) {
 				config.m_onNewFrame = config.m_currentFrameIndex != i;
 				config.m_currentFrameIndex = i;
@@ -374,18 +357,44 @@ namespace Mona {
 		config.m_reproductionCount = m_reproductionTime / config.getAnimationDuration();
 	}
 
+	void IKRigController::clearConfig(IKRigConfig& config) {
+		for (int i = 0; i < config.m_eeTrajectoryData.size(); i++) {
+			EEGlobalTrajectoryData* trData = config.getEETrajectoryData(i);
+			trData->m_savedDataValid = std::vector<bool>(trData->m_savedDataValid.size(), false);
+			trData->m_targetTrajectory.m_curve = LIC<3>();
+			trData->m_targetTrajectory.m_subTrajectoryID = -1;
+		}
+		HipGlobalTrajectoryData* hipTrData = config.getHipTrajectoryData();
+		hipTrData->m_savedDataValid = std::vector<bool>(hipTrData->m_savedDataValid.size(), false);
+		hipTrData->m_targetTranslations = LIC<3>();
+		hipTrData->m_targetRotationAngles = LIC<1>();
+		hipTrData->m_targetRotationAxes = LIC<3>();
+	}
+
 	void IKRigController::updateIKRig(float timeStep, ComponentManager<TransformComponent>& transformManager,
 		ComponentManager<StaticMeshComponent>& staticMeshManager, ComponentManager<SkeletalMeshComponent>& skeletalMeshManager) {
 		validateTerrains(staticMeshManager);
-		float animTimeStep = timeStep * skeletalMeshManager.GetComponentPointer(m_skeletalMeshHandle)->GetAnimationController().GetPlayRate();
+		AnimationController& animController = skeletalMeshManager.GetComponentPointer(m_skeletalMeshHandle)->GetAnimationController();
+		float animTimeStep = timeStep * animController.GetPlayRate();
 		m_reproductionTime += animTimeStep;
 		for (AnimationIndex i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {
 			updateIKRigConfigTime(animTimeStep, i);
 		}
 		updateMovementDirection(animTimeStep);
 		for (AnimationIndex i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {
-			updateTrajectories(i, transformManager, staticMeshManager);
+			IKRigConfig& config = m_ikRig.m_animationConfigs[i];
+			if (animController.m_animationClipPtr == config.m_animationClip ||
+				animController.m_crossfadeTarget.GetAnimationClip() == config.m_animationClip) {
+				config.m_active = true;
+			}
+			else {
+				config.m_active = false;
+				clearConfig(config);
+			}
+		}
+		for (AnimationIndex i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {
 			if (m_ikRig.m_animationConfigs[i].isActive()) {
+				updateTrajectories(i, transformManager, staticMeshManager);
 				updateAnimation(i);
 			}
 		}

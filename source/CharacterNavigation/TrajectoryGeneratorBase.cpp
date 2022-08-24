@@ -11,10 +11,14 @@ EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int
     }
 
     glm::fquat HipGlobalTrajectoryData::getTargetRotation(float reproductionTime) {
+		MONA_ASSERT(m_targetRotationAngles.inTRange(reproductionTime),
+			"HipGlobalTrajectoryData: no target data is available for input time");
         return glm::angleAxis(m_targetRotationAngles.evalCurve(reproductionTime)[0], m_targetRotationAxes.evalCurve(reproductionTime));
     }
 
     glm::vec3 HipGlobalTrajectoryData::getTargetTranslation(float reproductionTime) {
+		MONA_ASSERT(m_targetTranslations.inTRange(reproductionTime), 
+			"HipGlobalTrajectoryData: no target data is available for input time");
         return m_targetTranslations.evalCurve(reproductionTime);
     }
 

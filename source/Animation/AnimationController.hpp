@@ -8,6 +8,7 @@
 namespace Mona {
 	class AnimationClip;
 	class AnimationController {
+		friend class IKRigController;
 		friend class AnimationSystem;
 		friend class World;
 	public:

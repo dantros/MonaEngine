@@ -86,10 +86,17 @@ public:
 		UpdateAnimationState();
 		auto& input = world.GetInput();
 		auto& window = world.GetWindow();
+		auto& animController = m_skeletalMesh->GetAnimationController();
 		if (input.IsKeyPressed(MONA_KEY_UP))
 		{
+			Mona::BlendType blendType = m_walkingAnimation == animController.GetCurrentAnimation() ? Mona::BlendType::KeepSynchronize : Mona::BlendType::Smooth;
+			animController.FadeTo(m_walkingAnimation, blendType, m_fadeTime, 0.0f);
 		}
-		else if (input.IsKeyPressed(MONA_KEY_RIGHT))
+		else {
+			animController.FadeTo(m_idleAnimation, Mona::BlendType::Smooth, m_fadeTime, 0.0f);
+		}
+		
+		if (input.IsKeyPressed(MONA_KEY_RIGHT))
 		{
 			m_ikNavHandle->SetAngularSpeed(-m_angularSpeed);
 		}
@@ -122,8 +129,9 @@ public:
 		auto& animationManager = Mona::AnimationClipManager::GetInstance();
 		auto skeleton = skeletonManager.LoadSkeleton(Mona::SourcePath("Assets/Models/akai_e_espiritu.fbx"));
 		auto skinnedMesh = meshManager.LoadSkinnedMesh(skeleton, Mona::SourcePath("Assets/Models/akai_e_espiritu.fbx"), true);
+		m_idleAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/female/idle.fbx"), skeleton, true);
 		m_walkingAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/female/walking.fbx"), skeleton, false);
-		m_skeletalMesh = world.AddComponent<Mona::SkeletalMeshComponent>(*this, skinnedMesh, m_walkingAnimation, materialPtr);
+		m_skeletalMesh = world.AddComponent<Mona::SkeletalMeshComponent>(*this, skinnedMesh, m_idleAnimation, materialPtr);
 
 		Mona::RigData rigData;
 		rigData.leftLeg.baseJointName = "LeftUpLeg";
@@ -132,8 +140,9 @@ public:
 		rigData.rightLeg.endEffectorName = "RightFoot";
 		rigData.hipJointName = "Hips";
 		m_ikNavHandle = world.AddComponent<Mona::IKNavigationComponent>(*this, rigData);
-		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_walkingAnimation, Mona::AnimationType::IDLE);
-		m_skeletalMesh->GetAnimationController().SetPlayRate(0.6f);
+		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_walkingAnimation, Mona::AnimationType::MOVING);
+		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_idleAnimation, Mona::AnimationType::IDLE);
+		m_skeletalMesh->GetAnimationController().SetPlayRate(0.3f);
 
 	}
 
@@ -143,11 +152,13 @@ public:
 	}
 private:
 	float m_angularSpeed = 0.8f;
+	float m_fadeTime = 0.5f;
 	bool m_prevIsPress = false;
 	Mona::TransformHandle m_transform;
 	Mona::SkeletalMeshHandle m_skeletalMesh;
 	Mona::IKNavigationHandle m_ikNavHandle;
 	std::shared_ptr<Mona::AnimationClip> m_walkingAnimation;
+	std::shared_ptr<Mona::AnimationClip> m_idleAnimation;
 	Mona::SubscriptionHandle m_debugGUISubcription;
 
 };

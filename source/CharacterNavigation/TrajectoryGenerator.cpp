@@ -594,7 +594,7 @@ namespace Mona{
 		std::vector<int> connectedCurveIndexes(chainNum, -1);
 		std::vector<bool> continueTrajectory(chainNum, false);
         for (ChainIndex i = 0; i < chainNum; i++) {
-            config->m_eeTrajectoryData[i].init(config, &config->m_eeTrajectoryData[oppositePerChain[i]]);
+            config->m_eeTrajectoryData[i].init(config, &(config->m_eeTrajectoryData[oppositePerChain[i]]));
         }
 		for (int i = 0; i < chainNum; i++) {
 			std::vector<EETrajectory> subTrajectories;

@@ -5,6 +5,8 @@
 #include "IKRigBase.hpp"
 #include "Kinematics.hpp"
 
+#define MAX_EXPECTED_NUMBER_OF_ANIMATIONS_PER_IKRIG 20
+
 namespace Mona{
     
     typedef int AnimationIndex;

@@ -165,8 +165,8 @@ namespace Mona{
         glm::vec3 initialPos = trData->getSavedPosition(initialFrame);
         float initialRepTime = baseCurve.getTValue(0);
 		
-		glm::vec3 originalDirection = glm::normalize(baseCurve.getEnd() - baseCurve.getStart());
-		glm::vec2 targetXYDirection = glm::normalize(glm::rotate(glm::vec2(originalDirection), m_ikRig->getRotationAngle()));
+		glm::vec2 originalXYDirection = glm::normalize(glm::vec2(baseCurve.getEnd() - baseCurve.getStart()));
+		glm::vec2 targetXYDirection = glm::rotate(glm::vec2(originalXYDirection), m_ikRig->getRotationAngle());
 		
         // chequear si hay info de posicion valida previa
         if (!(trData->isSavedDataValid(initialFrame) && trData->getTargetTrajectory().getEECurve().inTRange(initialRepTime))) {

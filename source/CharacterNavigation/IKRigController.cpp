@@ -250,9 +250,9 @@ namespace Mona {
 				trData->m_savedPositions[currentFrame] = globalTransforms[ee] * glm::vec4(0, 0, 0, 1);
 				trData->m_savedDataValid[currentFrame] = true;
 				// para compensar el poco espacio entre en ultimo y el primer frame
-				if (currentFrame == config.getFrameNum() - 2) {
-					trData->m_savedDataValid[0] = true;
-					trData->m_savedPositions[0] = globalTransforms[ee] * glm::vec4(0, 0, 0, 1);
+				if (currentFrame == 0) {
+					trData->m_savedDataValid.back() = true;
+					trData->m_savedPositions.back() = globalTransforms[ee] * glm::vec4(0, 0, 0, 1);
 				}
 			}
 			glm::mat4 hipTransform = globalTransforms[m_ikRig.m_hipJoint];
@@ -261,9 +261,9 @@ namespace Mona {
 			hipTrData->m_savedTranslations[currentFrame] = hipTrans;
 			hipTrData->m_savedDataValid[currentFrame] = true;
 			// para compensar el poco espacio entre en ultimo y el primer frame
-			if (currentFrame == config.getFrameNum() - 2) {
-				hipTrData->m_savedTranslations[0] = hipTrans;
-				hipTrData->m_savedDataValid[0] = true;
+			if (currentFrame == 0) {
+				hipTrData->m_savedTranslations.back() = hipTrans;
+				hipTrData->m_savedDataValid.back() = true;
 			}
 
 			// recalcular trayectorias de ee y caderas

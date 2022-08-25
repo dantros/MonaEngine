@@ -355,7 +355,7 @@ namespace Mona{
 			// rotarla para que quede en linea con las pos inicial y final
 			glm::fquat targetRotation = glm::identity<glm::fquat>();
 			glm::vec3 originalDirection = glm::normalize(getEnd() - getStart());
-            float epsilon = 0.0001;
+            float epsilon = 0.02f;
             float dotPr = glm::dot(originalDirection, targetDirection);
             if (abs(dotPr - 1) <=epsilon) {
                 targetRotation = angleAxis(0.0f, upVector);

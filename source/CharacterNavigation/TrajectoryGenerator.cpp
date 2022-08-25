@@ -112,6 +112,7 @@ namespace Mona{
 		
         // chequear si hay info de posicion valida previa
 		bool startingPosValid = true;
+		float strideLength = glm::distance(baseCurve.getStart(), baseCurve.getEnd());
         if (!(trData->isSavedDataValid(initialFrame) && trData->getTargetTrajectory().getEECurve().inTRange(initialRepTime))) {
             float referenceTime = config->getReproductionTime(currentFrame);
             glm::vec3 sampledCurveReferencePoint = baseCurve.evalCurve(referenceTime);
@@ -121,13 +122,11 @@ namespace Mona{
             startingPosValid = calcStrideStartingPoint(supportHeightStart, currEEXYPoint, xyDistanceToStart,
                 targetXYDirection, initialPos, transformManager, staticMeshManager);
         }
-        
-        float targetDistance = glm::distance(baseCurve.getStart(), baseCurve.getEnd());
         float supportHeightStart = trData->getSupportHeight(initialFrame);
 		float supportHeightEnd = trData->getSupportHeight(finalFrame);
 		glm::vec3 finalPos;
 		bool endingPosValid = calcStrideFinalPoint(supportHeightStart, supportHeightEnd,
-            initialPos, targetDistance, targetXYDirection, finalPos, transformManager, staticMeshManager);
+            initialPos, strideLength, targetXYDirection, finalPos, transformManager, staticMeshManager);
         if (!startingPosValid || !endingPosValid) { // si no es posible avanzar por la elevacion del terreno
 			generateFixedTrajectory(glm::vec2(currentPos), { baseCurve.getTRange()[0], baseCurve.getTRange()[1] }, originalTrajectory.getSubTrajectoryID(),
 				currSupportHeight, ikChain, config, transformManager, staticMeshManager);
@@ -303,7 +302,7 @@ namespace Mona{
 	}
     
 	bool TrajectoryGenerator::calcStrideFinalPoint(float supportHeightStart, float supportHeightEnd,
-		glm::vec3 startingPoint, float targetDistance,
+		glm::vec3 startingPoint, float targetDistance, 
 		glm::vec2 targetDirection, glm::vec3& outStrideFinalPoint,
 		ComponentManager<TransformComponent>& transformManager,
 		ComponentManager<StaticMeshComponent>& staticMeshManager) {

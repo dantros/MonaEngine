@@ -27,6 +27,7 @@ namespace Mona {
 		void updateIKRigConfigTime(float animationTimeStep, AnimationIndex animIndex, AnimationController& animController);
 		void updateTrajectories(AnimationIndex animIndex, ComponentManager<TransformComponent>& transformManager,
 			ComponentManager<StaticMeshComponent>& staticMeshManager);
+		void updateGlobalTransform(ComponentManager<TransformComponent>& transformManager);
 		void updateAnimation(AnimationIndex animIndex);
 		void updateIKRig(float timeStep, ComponentManager<TransformComponent>& transformManager,
 			ComponentManager<StaticMeshComponent>& staticMeshManager, ComponentManager<SkeletalMeshComponent>& skeletalMeshManager);

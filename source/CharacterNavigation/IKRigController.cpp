@@ -292,15 +292,31 @@ namespace Mona {
 				ikChain->setCurrentEETarget(eeTarget);
 			}
 		}
+		
+		
+	}
+
+	void IKRigController::updateGlobalTransform(ComponentManager<TransformComponent>& transformManager) {
 		// setear transformacion global (traslacion y direccion de movimiento)
-			// nueva rotacion
 		glm::fquat updatedRotation = glm::angleAxis(m_ikRig.m_rotationAngle, m_ikRig.getUpVector());
 		transformManager.GetComponentPointer(m_ikRig.getTransformHandle())->SetRotation(updatedRotation);
-		if (hipTrData->getTargetPositions().inTRange(config.getCurrentReproductionTime())) {
-			glm::vec3 glblTr = hipTrData->getTargetPositions().evalCurve(config.getCurrentReproductionTime());
-			transformManager.GetComponentPointer(m_ikRig.getTransformHandle())->SetTranslation(glblTr);
-		}
 		
+		glm::vec3 newGlobalPosition(0);
+		int activeConfigs = 0;
+		for (AnimationIndex i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {
+			IKRigConfig& config = m_ikRig.m_animationConfigs[i];
+			if (config.isActive()) {
+				HipGlobalTrajectoryData* hipTrData = config.getHipTrajectoryData();
+				if (hipTrData->getTargetPositions().inTRange(config.getCurrentReproductionTime())) {
+					newGlobalPosition += hipTrData->getTargetPositions().evalCurve(config.getCurrentReproductionTime());
+					activeConfigs += 1;
+				}
+			}
+		}
+		if (0 < activeConfigs) {
+			newGlobalPosition /= activeConfigs;
+			transformManager.GetComponentPointer(m_ikRig.getTransformHandle())->SetTranslation(newGlobalPosition);
+		}
 	}
 
 
@@ -407,7 +423,12 @@ namespace Mona {
 		}
 		for (AnimationIndex i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {
 			if (m_ikRig.m_animationConfigs[i].isActive()) {
-				updateTrajectories(i, transformManager, staticMeshManager);
+				updateTrajectories(i, transformManager, staticMeshManager);			
+			}
+		}
+		updateGlobalTransform(transformManager);
+		for (AnimationIndex i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {
+			if (m_ikRig.m_animationConfigs[i].isActive()) {
 				updateAnimation(i);
 			}
 		}

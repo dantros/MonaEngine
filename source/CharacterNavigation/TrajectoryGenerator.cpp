@@ -219,8 +219,6 @@ namespace Mona{
 
 
             LIC<3> hipPosCurve = hipTrData->sampleOriginalPositions(tInfLimitExtendedAnim, tSupLimitExtendedAnim);
-
-			LIC<3> DEBUGCURVE = hipPosCurve;
             
             glm::vec3 hipTrOriginalDirection = glm::normalize(hipPosCurve.getEnd() - hipPosCurve.getStart());
 
@@ -279,7 +277,7 @@ namespace Mona{
 		glm::vec2 targetDirection, glm::vec3& outStrideStartPoint,
 		ComponentManager<TransformComponent>& transformManager,
 		ComponentManager<StaticMeshComponent>& staticMeshManager) {
-		int stepNum = 10;
+		int stepNum = 20;
 		std::vector<glm::vec3> collectedPoints;
 		collectedPoints.reserve(stepNum);
 		for (int i = 1; i <= stepNum; i++) {
@@ -296,11 +294,12 @@ namespace Mona{
 			float distDiff = std::abs(glm::distance(floorReferencePoint, collectedPoints[i]) - targetDistance);
 			if (distDiff < minDistDiff) {
 				minDistDiff = distDiff;
-				selectedStartPoint = collectedPoints[i] + supportHeightStart;
+				selectedStartPoint = collectedPoints[i];
 			}
 		}
+		selectedStartPoint[2] += supportHeightStart;
 		outStrideStartPoint = selectedStartPoint;
-		return minDistDiff < targetDistance *m_strideErrorTolerance;
+		return true;
 	}
     
 	bool TrajectoryGenerator::calcStrideFinalPoint(float supportHeightStart, float supportHeightEnd,
@@ -308,7 +307,7 @@ namespace Mona{
 		glm::vec2 targetDirection, glm::vec3& outStrideFinalPoint,
 		ComponentManager<TransformComponent>& transformManager,
 		ComponentManager<StaticMeshComponent>& staticMeshManager) {
-		int stepNum = 10;
+		int stepNum = 20;
 		std::vector<glm::vec3> collectedPoints;
 		collectedPoints.reserve(stepNum);
 		for (int i = 1; i <= stepNum; i++) {
@@ -329,7 +328,7 @@ namespace Mona{
 			}
 		}
 		outStrideFinalPoint = selectedFinalPoint;
-		return minDistDiff < targetDistance *m_strideErrorTolerance;
+		return true;
 	}
 
 

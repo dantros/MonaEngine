@@ -322,27 +322,19 @@ namespace Mona{
             if (nextFrameTime_extendedAnim < currFrameTime_extendedAnim) {
                 nextFrameTime_extendedAnim += config->getAnimationDuration();
             }
-			LIC<1> hipRotAnglCurve = hipTrData->sampleOriginalRotationAngles(currFrameTime_extendedAnim, nextFrameTime_extendedAnim);
-			LIC<3> hipRotAxCurve = hipTrData->sampleOriginalRotationAxes(currFrameTime_extendedAnim, nextFrameTime_extendedAnim);
-            float initialRotAngle = hipRotAnglCurve.getStart()[0];
-            glm::vec3 initialRotAxis = hipRotAxCurve.getStart();
-            glm::vec3 initialTrans = hipTrData->getSavedTranslation(currentFrame);
+            glm::vec3 initialPos = hipTrData->getSavedPosition(currentFrame);
             // chequear si hay info de posicion valida previa
-            if (!(hipTrData->isSavedDataValid(currentFrame) && hipTrData->getTargetTranslations().inTRange(initialTime_rep))) {
+            if (!(hipTrData->isSavedDataValid(currentFrame) && hipTrData->getTargetPositions().inTRange(initialTime_rep))) {
                 std::pair<EEGlobalTrajectoryData*, EEGlobalTrajectoryData*> trDataPair;
                 trDataPair.first = config->getEETrajectoryData(0);
                 trDataPair.second = trDataPair.first->getOppositeTrajectoryData();
-                glm::vec2 basePoint(initialTrans);
-				initialTrans = glm::vec3(basePoint, calcHipAdjustedHeight(trDataPair,
+                glm::vec2 basePoint(initialPos);
+				initialPos = glm::vec3(basePoint, calcHipAdjustedHeight(trDataPair,
                     initialTime_rep, config->getAnimationTime(currentFrame), config,
 					transformManager, staticMeshManager));
             }
-            LIC<1> newHipRotAngles({ glm::vec1(initialRotAngle), glm::vec1(initialRotAngle) }, { initialTime_rep, initialTime_rep + config->getAnimationDuration() });
-            LIC<3> newHipRotAxes({ initialRotAxis, initialRotAxis }, { initialTime_rep, initialTime_rep + config->getAnimationDuration() });
-            LIC<3> newHipTrans({ initialTrans, initialTrans }, { initialTime_rep, initialTime_rep + config->getAnimationDuration() });
-            hipTrData->setTargetRotationAngles(newHipRotAngles);
-            hipTrData->setTargetRotationAxes(newHipRotAxes);
-            hipTrData->setTargetTranslations(newHipTrans);
+            LIC<3> newHipPositions({ initialPos, initialPos }, { initialTime_rep, initialTime_rep + config->getAnimationDuration() });
+            hipTrData->setTargetPositions(newHipPositions);
         }
         else {
             HipGlobalTrajectoryData* hipTrData = config->getHipTrajectoryData();
@@ -378,65 +370,55 @@ namespace Mona{
             while (tSupLimitExtendedAnim < tCurrExtendedAnim) { tCurrExtendedAnim -= config->getAnimationDuration(); }
 
 
-            LIC<3> hipTrCurve = hipTrData->sampleOriginalTranslations(tInfLimitExtendedAnim, tSupLimitExtendedAnim);
-            LIC<1> hipRotAnglCurve = hipTrData->sampleOriginalRotationAngles(tInfLimitExtendedAnim, tSupLimitExtendedAnim);
-            LIC<3> hipRotAxCurve = hipTrData->sampleOriginalRotationAxes(tInfLimitExtendedAnim, tSupLimitExtendedAnim);
+            LIC<3> hipPosCurve = hipTrData->sampleOriginalPositions(tInfLimitExtendedAnim, tSupLimitExtendedAnim);
             
-            glm::vec3 hipTrOriginalDirection = glm::normalize(hipTrCurve.getEnd() - hipTrCurve.getStart());
+            glm::vec3 hipTrOriginalDirection = glm::normalize(hipPosCurve.getEnd() - hipPosCurve.getStart());
 
-            float hipOriginalXYDistance = glm::length(glm::vec2(hipTrCurve.getEnd() - hipTrCurve.getStart()));
+            float hipOriginalXYDistance = glm::length(glm::vec2(hipPosCurve.getEnd() - hipPosCurve.getStart()));
 
             FrameIndex initialFrame = config->getFrame(tInfLimitExtendedAnim);
             // calculo del punto inicial de la trayectoria
-			float initialRotAngle = hipRotAnglCurve.getStart()[0];
-			glm::vec3 initialRotAxis = hipRotAxCurve.getStart();
-            glm::vec3 initialTrans;
+            glm::vec3 initialPos;
             // chequear si hay info de posicion valida previa
-            if (hipTrData->isSavedDataValid(initialFrame) && hipTrData->getTargetTranslations().inTRange(tInfLimitRep)) {
-				initialTrans = hipTrData->getSavedTranslation(initialFrame);
+            if (hipTrData->isSavedDataValid(initialFrame) && hipTrData->getTargetPositions().inTRange(tInfLimitRep)) {
+				initialPos = hipTrData->getSavedPosition(initialFrame);
             }
             else {
-                glm::vec2 hipXYReferencePoint = hipTrCurve.evalCurve(tCurrExtendedAnim);
-                float targetXYDistance = glm::distance(glm::vec2(hipTrCurve.getStart()), hipXYReferencePoint);
-                glm::vec2 currXYHipPos = hipTrData->getSavedTranslation(currentFrame);
+                glm::vec2 hipXYReferencePoint = hipPosCurve.evalCurve(tCurrExtendedAnim);
+                float targetXYDistance = glm::distance(glm::vec2(hipPosCurve.getStart()), hipXYReferencePoint);
+                glm::vec2 currXYHipPos = hipTrData->getSavedPosition(currentFrame);
                 glm::vec2 targetDirection = glm::rotate(glm::vec2(hipTrOriginalDirection), m_ikRig->getRotationAngle());
                 glm::vec2 targetXYPos = currXYHipPos - targetDirection * targetXYDistance;
-				initialTrans = glm::vec3(glm::vec2(targetXYPos),
+				initialPos = glm::vec3(glm::vec2(targetXYPos),
 					calcHipAdjustedHeight(trDataPair, tInfLimitRep, tInfLimitExtendedAnim, config, transformManager, staticMeshManager));
             }        
            
 			// ajuste a tiempo de reproduccion
-			hipTrCurve.offsetTValues(-tInfLimitExtendedAnim + tInfLimitRep);
-			hipRotAnglCurve.offsetTValues(-tInfLimitExtendedAnim + tInfLimitRep);
-			hipRotAxCurve.offsetTValues(-tInfLimitExtendedAnim + tInfLimitRep);
+			hipPosCurve.offsetTValues(-tInfLimitExtendedAnim + tInfLimitRep);
 
             // correccion de posicion y orientacion
-            hipTrCurve.translate(-hipTrCurve.getStart());
+            hipPosCurve.translate(-hipPosCurve.getStart());
             glm::fquat xyRot = glm::angleAxis(m_ikRig->getRotationAngle(), m_ikRig->getUpVector());
-            hipTrCurve.rotate(xyRot);            
-            hipTrCurve.translate(initialTrans);            
+            hipPosCurve.rotate(xyRot);            
+            hipPosCurve.translate(initialPos);            
 
             // ajustamos la altura de los puntos de la curva tomando en cuenta las trayectorias de los ee 
-            for (int i = 1; i < hipTrCurve.getNumberOfPoints(); i++) {
-                float tVal_rep = hipTrCurve.getTValue(i);
+            for (int i = 1; i < hipPosCurve.getNumberOfPoints(); i++) {
+                float tVal_rep = hipPosCurve.getTValue(i);
                 float adjustedZ = calcHipAdjustedHeight(trDataPair, tVal_rep, tVal_rep - tInfLimitRep + tInfLimitExtendedAnim, 
                     config, transformManager, staticMeshManager);
-                glm::vec3 adjustedPoint(glm::vec2(hipTrCurve.evalCurve(tVal_rep)), adjustedZ);
-                hipTrCurve.setCurvePoint(i, adjustedPoint);
+                glm::vec3 adjustedPoint(glm::vec2(hipPosCurve.evalCurve(tVal_rep)), adjustedZ);
+                hipPosCurve.setCurvePoint(i, adjustedPoint);
             }          
             
 
 			float repCountOffset = config->getNextFrameIndex() == 0 ? 1 : 0;
 			float transitionTime = config->getReproductionTime(config->getNextFrameIndex(), repCountOffset);
-            if (hipTrData->getTargetTranslations().inTRange(transitionTime)) {
-                hipTrData->setTargetTranslations(LIC<3>::transition(hipTrData->getTargetTranslations(), hipTrCurve, transitionTime));
-                hipTrData->setTargetRotationAngles(LIC<1>::transition(hipTrData->getTargetRotationAngles(), hipRotAnglCurve, transitionTime));
-                hipTrData->setTargetRotationAxes(LIC<3>::transition(hipTrData->getTargetRotationAxes(), hipRotAxCurve, transitionTime));
+            if (hipTrData->getTargetPositions().inTRange(transitionTime)) {
+                hipTrData->setTargetPositions(LIC<3>::transition(hipTrData->getTargetPositions(), hipPosCurve, transitionTime));
             }
             else {
-                hipTrData->setTargetRotationAngles(hipRotAnglCurve);
-                hipTrData->setTargetRotationAxes(hipRotAxCurve);
-                hipTrData->setTargetTranslations(hipTrCurve);
+                hipTrData->setTargetPositions(hipPosCurve);
             }
         }
     }
@@ -515,7 +497,7 @@ namespace Mona{
         
 		HipGlobalTrajectoryData* hipTrData = config->getHipTrajectoryData();
         float avgFrameDuration = config->getAnimationDuration() / config->getFrameNum();
-		LIC<3> hipTrCurve = hipTrData->sampleOriginalTranslations(originalCurvesTime_extendedAnim,	
+		LIC<3> hipTrCurve = hipTrData->sampleOriginalPositions(originalCurvesTime_extendedAnim,	
             originalCurvesTime_extendedAnim + avgFrameDuration);
         float hipOriginalZ = hipTrCurve.evalCurve(originalCurvesTime_extendedAnim)[2];
 
@@ -552,38 +534,9 @@ namespace Mona{
 	}
 
 
-    void TrajectoryGenerator::buildHipTrajectory(IKRigConfig* config, std::vector<glm::mat4> const& hipGlobalTransforms, float minDistance, float floorZ) {
-        int frameNum = config->getFrameNum();
-        std::shared_ptr<AnimationClip> anim = config->m_animationClip;
-		std::vector<float> hipTimeStamps;
-		hipTimeStamps.reserve(frameNum);
-		std::vector<glm::vec3> hipRotAxes;
-		hipRotAxes.reserve(frameNum);
-		std::vector<glm::vec1> hipRotAngles;
-		hipRotAngles.reserve(frameNum);
-		std::vector<glm::vec3> hipTranslations;
-		hipTranslations.reserve(frameNum);
-		glm::vec3 previousHipPosition(std::numeric_limits<float>::lowest());
-		glm::vec3 hipScale; glm::quat hipRotation; glm::vec3 hipTranslation; glm::vec3 hipSkew; glm::vec4 hipPerspective;
-		for (int i = 0; i < frameNum; i++) {
-			float timeStamp = config->getAnimationTime(i);
-            glm::mat4 hipTransform = hipGlobalTransforms[i];
-			glm::vec3 hipPosition = hipTransform * glm::vec4(0, 0, 0, 1);
-			if (minDistance <= glm::distance(hipPosition, previousHipPosition) || i == (frameNum - 1)) { // el valor del ultimo frame se guarda si o si
-				glm::decompose(hipTransform, hipScale, hipRotation, hipTranslation, hipSkew, hipPerspective);
-				hipRotAngles.push_back(glm::vec1(glm::angle(hipRotation)));
-				hipRotAxes.push_back(glm::axis(hipRotation));
-				hipTranslation[2] -= floorZ;
-				hipTranslations.push_back(hipTranslation);
-				hipTimeStamps.push_back(timeStamp);
-			}
-			previousHipPosition = hipPosition;
-		}
-
-		config->m_hipTrajectoryData.init(config);
-		config->m_hipTrajectoryData.m_originalRotationAngles = LIC<1>(hipRotAngles, hipTimeStamps);
-		config->m_hipTrajectoryData.m_originalRotationAxes = LIC<3>(hipRotAxes, hipTimeStamps);
-		config->m_hipTrajectoryData.m_originalTranslations = LIC<3>(hipTranslations, hipTimeStamps);
+    void TrajectoryGenerator::buildHipTrajectory(IKRigConfig* config, std::vector<glm::vec3> const& hipGlobalPositions) {
+        config->m_hipTrajectoryData.init(config);
+		config->m_hipTrajectoryData.m_originalPositions = LIC<3>(hipGlobalPositions, config->m_timeStamps);
     }
 
     void TrajectoryGenerator::buildEETrajectories(IKRigConfig* config, 

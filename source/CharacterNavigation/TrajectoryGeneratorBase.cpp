@@ -10,22 +10,9 @@ EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int
         m_subTrajectoryID = subTrajectoryID;
     }
 
-    glm::fquat HipGlobalTrajectoryData::getTargetRotation(float reproductionTime) {
-		MONA_ASSERT(m_targetRotationAngles.inTRange(reproductionTime),
-			"HipGlobalTrajectoryData: no target data is available for input time");
-        return glm::angleAxis(m_targetRotationAngles.evalCurve(reproductionTime)[0], m_targetRotationAxes.evalCurve(reproductionTime));
-    }
-
-    glm::vec3 HipGlobalTrajectoryData::getTargetTranslation(float reproductionTime) {
-		MONA_ASSERT(m_targetTranslations.inTRange(reproductionTime), 
-			"HipGlobalTrajectoryData: no target data is available for input time");
-        return m_targetTranslations.evalCurve(reproductionTime);
-    }
-
-
     void HipGlobalTrajectoryData::init(IKRigConfig* config) {
 		int frameNum = config->getFrameNum();
-        m_savedTranslations = std::vector<glm::vec3>(frameNum);
+        m_savedPositions = std::vector<glm::vec3>(frameNum);
 		m_savedDataValid = std::vector<bool>(frameNum, false);
         m_config = config;
     }
@@ -43,14 +30,8 @@ EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int
 		return extendedCurve.sample(initialExtendedAnimTime, finalExtendedAnimTime);
 	}
 
-    LIC<1> HipGlobalTrajectoryData::sampleOriginalRotationAngles(float initialExtendedAnimTime, float finalExtendedAnimTime) {
-		return sampleOriginaCurve(initialExtendedAnimTime, finalExtendedAnimTime, m_originalRotationAngles);
-    }
-    LIC<3> HipGlobalTrajectoryData::sampleOriginalRotationAxes(float initialExtendedAnimTime, float finalExtendedAnimTime) {
-		return sampleOriginaCurve(initialExtendedAnimTime, finalExtendedAnimTime, m_originalRotationAxes);
-    }
-    LIC<3> HipGlobalTrajectoryData::sampleOriginalTranslations(float initialExtendedAnimTime, float finalExtendedAnimTime) {
-		return sampleOriginaCurve(initialExtendedAnimTime, finalExtendedAnimTime, m_originalTranslations);
+    LIC<3> HipGlobalTrajectoryData::sampleOriginalPositions(float initialExtendedAnimTime, float finalExtendedAnimTime) {
+		return sampleOriginaCurve(initialExtendedAnimTime, finalExtendedAnimTime, m_originalPositions);
     }
 
 	EETrajectory EEGlobalTrajectoryData::getSubTrajectory(float animationTime) {

@@ -20,35 +20,21 @@ namespace Mona{
         friend class IKRigController;
         friend class DebugDrawingSystem_ikNav;
         friend class TrajectoryGenerator;
-        // Angulos de rotacion originales
-        LIC<1> m_originalRotationAngles;
-        // Ejes de rotacion originales
-        LIC<3> m_originalRotationAxes;
         // Traslaciones originales
-        LIC<3> m_originalTranslations;
-        LIC<1> m_targetRotationAngles;
-        LIC<3> m_targetRotationAxes;
-        LIC<3> m_targetTranslations;
-        std::vector<glm::vec3> m_savedTranslations;
+        LIC<3> m_originalPositions;
+        LIC<3> m_targetPositions;
+        std::vector<glm::vec3> m_savedPositions;
         std::vector<bool> m_savedDataValid;
         IKRigConfig* m_config;
 		template <int D>
         LIC<D> sampleOriginaCurve(float initialExtendedAnimTime, float finalExtendedAnimTime,
             LIC<D>& originalCurve);
     public:
-        LIC<1> sampleOriginalRotationAngles(float initialExtendedAnimTime, float finalExtendedAnimTime);
-        LIC<3> sampleOriginalRotationAxes(float initialExtendedAnimTime, float finalExtendedAnimTime);
-        LIC<3> sampleOriginalTranslations(float initialExtendedAnimTime, float finalExtendedAnimTime);
-        glm::vec3 getSavedTranslation(FrameIndex frame) { return m_savedTranslations[frame]; }
+        LIC<3> sampleOriginalPositions(float initialExtendedAnimTime, float finalExtendedAnimTime);
+        glm::vec3 getSavedPosition(FrameIndex frame) { return m_savedPositions[frame]; }
         bool isSavedDataValid(FrameIndex frame) { return m_savedDataValid[frame]; }
-        LIC<1> getTargetRotationAngles() { return m_targetRotationAngles; }
-        LIC<3> getTargetRotationAxes() { return m_targetRotationAxes; }
-        LIC<3> getTargetTranslations() { return m_targetTranslations; }
-        glm::fquat getTargetRotation(float reproductionTime);
-        glm::vec3 getTargetTranslation(float reproductionTime);
-        void setTargetRotationAngles(LIC<1> targetRotationAngles) { m_targetRotationAngles = targetRotationAngles; }
-        void setTargetRotationAxes(LIC<3> targetRotationAxes) { m_targetRotationAxes = targetRotationAxes; }
-        void setTargetTranslations(LIC<3> targetTranslations) { m_targetTranslations = targetTranslations; }
+        LIC<3> getTargetPositions() { return m_targetPositions; }
+        void setTargetPositions(LIC<3> targetPositions) { m_targetPositions = targetPositions; }
         void init(IKRigConfig* config);
     };
 

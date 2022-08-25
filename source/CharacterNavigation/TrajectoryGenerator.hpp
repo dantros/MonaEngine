@@ -60,7 +60,7 @@ namespace Mona{
             glm::vec2 targetDirection, int stepNum,
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
-		static void buildHipTrajectory(IKRigConfig* config, std::vector<glm::mat4> const& hipGlobalTransforms, float minDistance, float floorZ);
+		static void buildHipTrajectory(IKRigConfig* config, std::vector<glm::vec3> const& hipGlobalPositions);
 		static void buildEETrajectories(IKRigConfig* config,
 			std::vector<std::vector<bool>> supportFramesPerChain,
 			std::vector<std::vector<glm::vec3>> globalPositionsPerChain,

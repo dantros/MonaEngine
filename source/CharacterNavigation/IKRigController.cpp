@@ -114,7 +114,7 @@ namespace Mona {
 		std::vector<std::vector<glm::vec3>> glblPositionsPerChain(chainNum);
 		std::vector<glm::vec3> glblPositions(m_ikRig.getTopology().size());
 		std::vector<glm::mat4> glblTransforms(m_ikRig.getTopology().size());
-		std::vector<glm::mat4> hipGlblTransforms;
+		std::vector<glm::vec3> hipGlblPositions;
 		float floorZ = std::numeric_limits<float>::max(); // altura del piso para la animacion
 		for (int i = 0; i < m_ikRig.getTopology().size(); i++) { glblTransforms[i] = glm::identity<glm::mat4>(); }
 		std::vector<glm::vec3> previousPositions(m_ikRig.getTopology().size());
@@ -135,12 +135,12 @@ namespace Mona {
 					glmUtils::rotationToMat4(animationClip->GetRotation(timeStamp, jIndex, true)) *
 					glmUtils::scaleToMat4(animationClip->GetScale(timeStamp, jIndex, true));
 			}
-			hipGlblTransforms.push_back(glblTransforms[m_ikRig.m_hipJoint]);
 
 			// calculo de las posiciones
 			for (int j = 0; j < glblPositions.size(); j++) {
 				glblPositions[j] = glblTransforms[j] * glm::vec4(0, 0, 0, 1);
 			}
+			hipGlblPositions.push_back(glblPositions[m_ikRig.m_hipJoint]);
 			for (ChainIndex j = 0; j < chainNum; j++) {
 				int eeIndex = m_ikRig.m_ikChains[j].getEndEffector();
 				bool isSupportFrame = glm::distance(glblPositions[eeIndex], previousPositions[eeIndex]) <= minDistance*15;
@@ -156,14 +156,17 @@ namespace Mona {
 			previousPositions = glblPositions;
 		}
 		// ajuste de las alturas con el suelo
-		for (int i = 0; i < chainNum; i++) {
-			for (int j = 0; j < frameNum; j++) {
+		for (ChainIndex i = 0; i < chainNum; i++) {
+			for (FrameIndex j = 0; j < frameNum; j++) {
 				glblPositionsPerChain[i][j][2] -= floorZ;
 			}
 		}
+		for (FrameIndex i = 0; i < frameNum; i++) {
+			hipGlblPositions[i][2] -= floorZ;
+		}
 
 		// Guardamos la informacion de traslacion y rotacion de la cadera, antes de eliminarla
-		TrajectoryGenerator::buildHipTrajectory(currentConfig, hipGlblTransforms, minDistance, floorZ);
+		TrajectoryGenerator::buildHipTrajectory(currentConfig, hipGlblPositions);
 		
 		// si hay un frame que no es de soporte entre dos frames que si lo son, se setea como de soporte
 		// si el penultimo es de soporte, tambien se setea el ultimo como de soporte
@@ -204,14 +207,17 @@ namespace Mona {
 		}
 		TrajectoryGenerator::buildEETrajectories(currentConfig, supportFramesPerChain, glblPositionsPerChain, oppositePerChain);
 
-		// Se remueve el movimiento de las caderas y se setea la rotacion basal
+		// Se remueve el movimiento de las caderas y se aplica la rotacion basal
 		glm::vec3 baseScale; glm::quat baseRotation; glm::vec3 baseTranslation; glm::vec3 baseSkew; glm::vec4 basePerspective;
 		glm::decompose(m_baseGlobalTransform, baseScale, baseRotation, baseTranslation, baseSkew, basePerspective);
 		animationClip->RemoveJointTranslation(m_ikRig.m_hipJoint);
+		int hipTrackIndex = animationClip->GetTrackIndex(m_ikRig.m_hipJoint);
 		for (FrameIndex i = 0; i < currentConfig->getFrameNum(); i++) {
-			currentConfig->m_baseJointRotations[i][m_ikRig.m_hipJoint] = JointRotation(baseRotation);
-			currentConfig->m_dynamicJointRotations[i][m_ikRig.m_hipJoint] = JointRotation(baseRotation);
-			animationClip->SetRotation(baseRotation, i, m_ikRig.m_hipJoint);
+			glm::fquat origRotation = animationClip->m_animationTracks[hipTrackIndex].rotations[i];
+			glm::fquat updatedRotation = baseRotation * origRotation;
+			currentConfig->m_baseJointRotations[i][m_ikRig.m_hipJoint] = JointRotation(updatedRotation);
+			currentConfig->m_dynamicJointRotations[i][m_ikRig.m_hipJoint] = JointRotation(updatedRotation);			
+			animationClip->SetRotation(updatedRotation, i, m_ikRig.m_hipJoint);
 		}
 		currentConfig->m_jointPositions[m_ikRig.m_hipJoint] = glm::vec3(0);
 	}
@@ -258,11 +264,11 @@ namespace Mona {
 			glm::mat4 hipTransform = globalTransforms[m_ikRig.m_hipJoint];
 			glm::vec3 hipScale; glm::fquat hipRot; glm::vec3 hipTrans; glm::vec3 hipSkew; glm::vec4 hipPers;
 			glm::decompose(hipTransform, hipScale, hipRot, hipTrans, hipSkew, hipPers);
-			hipTrData->m_savedTranslations[currentFrame] = hipTrans;
+			hipTrData->m_savedPositions[currentFrame] = hipTrans;
 			hipTrData->m_savedDataValid[currentFrame] = true;
 			// para compensar el poco espacio entre en ultimo y el primer frame
 			if (currentFrame == 0) {
-				hipTrData->m_savedTranslations.back() = hipTrans;
+				hipTrData->m_savedPositions.back() = hipTrans;
 				hipTrData->m_savedDataValid.back() = true;
 			}
 
@@ -275,7 +281,7 @@ namespace Mona {
 			float targetTimeCurr = config.getReproductionTime(config.getCurrentFrameIndex());
 			float deltaT = targetTimeNext - targetTimeCurr;
 
-			glm::mat4 nextGlblTransform = glmUtils::translationToMat4(hipTrData->getTargetTranslation(targetTimeNext)) *
+			glm::mat4 nextGlblTransform = glmUtils::translationToMat4(hipTrData->getTargetPositions().evalCurve(targetTimeNext)) *
 				glmUtils::rotationToMat4(glm::angleAxis(m_ikRig.m_rotationAngle + m_ikRig.m_angularSpeed*deltaT, m_ikRig.getUpVector())) *
 				glmUtils::scaleToMat4(glm::vec3(m_ikRig.m_rigScale));
 			glm::mat4 toModelSpace = glm::inverse(nextGlblTransform);
@@ -285,18 +291,13 @@ namespace Mona {
 				glm::vec3 eeTarget = toModelSpace *glm::vec4(trData->getTargetTrajectory().getEECurve().evalCurve(targetTimeNext), 1);
 				ikChain->setCurrentEETarget(eeTarget);
 			}
-			// asignar info de rotacion a la cadera en la animacion
-			config.m_animationClip->SetRotation(hipTrData->getTargetRotation(targetTimeCurr),
-				config.getCurrentFrameIndex(), m_ikRig.m_hipJoint);
-			config.m_animationClip->SetRotation(hipTrData->getTargetRotation(targetTimeNext),
-				config.getNextFrameIndex(), m_ikRig.m_hipJoint);
 		}
 		// setear transformacion global (traslacion y direccion de movimiento)
 			// nueva rotacion
 		glm::fquat updatedRotation = glm::angleAxis(m_ikRig.m_rotationAngle, m_ikRig.getUpVector());
 		transformManager.GetComponentPointer(m_ikRig.getTransformHandle())->SetRotation(updatedRotation);
-		if (hipTrData->getTargetTranslations().inTRange(config.getCurrentReproductionTime())) {
-			glm::vec3 glblTr = hipTrData->getTargetTranslation(config.getCurrentReproductionTime());
+		if (hipTrData->getTargetPositions().inTRange(config.getCurrentReproductionTime())) {
+			glm::vec3 glblTr = hipTrData->getTargetPositions().evalCurve(config.getCurrentReproductionTime());
 			transformManager.GetComponentPointer(m_ikRig.getTransformHandle())->SetTranslation(glblTr);
 		}
 		
@@ -375,9 +376,7 @@ namespace Mona {
 		}
 		HipGlobalTrajectoryData* hipTrData = config.getHipTrajectoryData();
 		hipTrData->m_savedDataValid = std::vector<bool>(hipTrData->m_savedDataValid.size(), false);
-		hipTrData->m_targetTranslations = LIC<3>();
-		hipTrData->m_targetRotationAngles = LIC<1>();
-		hipTrData->m_targetRotationAxes = LIC<3>();
+		hipTrData->m_targetPositions = LIC<3>();
 	}
 
 	void IKRigController::updateIKRig(float timeStep, ComponentManager<TransformComponent>& transformManager,

@@ -150,7 +150,7 @@ namespace Mona {
 				}
 				if (m_ikNavDebugDrawPtr->m_drawHipTargetCurve && currConfig.isActive()) {
 					glm::vec3 color = m_ikNavDebugDrawPtr->m_hipCurveColor;
-					LIC<3>& hipTargetCurve = currConfig.getHipTrajectoryData()->m_targetTranslations;
+					LIC<3>& hipTargetCurve = currConfig.getHipTrajectoryData()->m_targetPositions;
 					int pointNum = hipTargetCurve.getNumberOfPoints();
 					if (0 < pointNum) {
 						std::vector<dd::DrawVertex> lines(pointNum);

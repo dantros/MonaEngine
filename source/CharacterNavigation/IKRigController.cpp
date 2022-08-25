@@ -351,8 +351,13 @@ namespace Mona {
 		}
 		else if (animController.m_crossfadeTarget.GetAnimationClip() == anim) {
 			samplingTimeOffset = animController.m_crossfadeTarget.m_sampleTime - prevSamplingTime;
-		}		
-		config.m_currentReproductionTime = m_reproductionTime + samplingTimeOffset;
+		}
+		if (samplingTimeOffset < 0) {
+			samplingTimeOffset += config.getAnimationDuration();
+		}
+		
+		float adjustedReproductionTime = m_reproductionTime + samplingTimeOffset;
+		config.m_currentReproductionTime = adjustedReproductionTime;
 		config.m_reproductionCount = config.m_currentReproductionTime / config.getAnimationDuration();
 		float adjustedSamplingTime = anim->GetSamplingTime(config.m_currentReproductionTime, true);
 		for (int i = 0; i < config.m_timeStamps.size(); i++) {

@@ -288,7 +288,7 @@ namespace Mona{
         m_gradientDescent.setArgNum(initialArgs.size());
         m_gradientDescent.computeArgsMin(m_tgData.descentRate, m_tgData.maxIterations, m_tgData.targetPosDelta, initialArgs);
 
-        float repCountOffset = config->getNextFrameIndex() == 0 ? 1 : 0;
+        int repCountOffset = config->getNextFrameIndex() == 0 ? 1 : 0;
         float transitionTime = config->getReproductionTime(config->getNextFrameIndex(), repCountOffset);
         int currSubTrID = trData->getTargetTrajectory().getSubTrajectoryID();
         int newSubTrID = originalTrajectory.getSubTrajectoryID();
@@ -300,7 +300,6 @@ namespace Mona{
             trData->setTargetTrajectory(baseCurve, trType, newSubTrID);
         }
         trData->m_fixedTarget = false;
-
 	}
 	
 
@@ -412,7 +411,7 @@ namespace Mona{
             }          
             
 
-			float repCountOffset = config->getNextFrameIndex() == 0 ? 1 : 0;
+			int repCountOffset = config->getNextFrameIndex() == 0 ? 1 : 0;
 			float transitionTime = config->getReproductionTime(config->getNextFrameIndex(), repCountOffset);
             if (hipTrData->getTargetPositions().inTRange(transitionTime)) {
                 hipTrData->setTargetPositions(LIC<3>::transition(hipTrData->getTargetPositions(), hipPosCurve, transitionTime));

@@ -157,16 +157,6 @@ namespace Mona {
 
 	std::function<void(std::vector<float>&, IKData*, std::vector<float>&,int)>  postDescentStepCustomBehaviour =
 		[](std::vector<float>& args, IKData* dataPtr, std::vector<float>& argsRawDelta, int varIndex_progressive)->void {
-		// aplicar restricciones de movimiento
-		/*if (args[varIndex_progressive] <= dataPtr->motionRanges[varIndex_progressive][0]) {
-			args[varIndex_progressive] = dataPtr->motionRanges[varIndex_progressive][0];
-			argsRawDelta[varIndex_progressive] *= 0.5;
-		}
-		else if (dataPtr->motionRanges[varIndex_progressive][1] <= args[varIndex_progressive]) {
-			args[varIndex_progressive] = dataPtr->motionRanges[varIndex_progressive][1];
-			argsRawDelta[varIndex_progressive] *= 0.5;
-		}*/
-
 		// setear nuevos angulos
 		std::vector<JointRotation>* configRot = dataPtr->rigConfig->getDynamicJointRotations(dataPtr->targetFrame);
 		int jIndex = dataPtr->jointIndexes[varIndex_progressive];
@@ -216,11 +206,6 @@ namespace Mona {
 		}
 		funcUtils::sortUnique(jointIndexes);
 		m_ikData.jointIndexes = jointIndexes;
-		m_ikData.motionRanges = std::vector<glm::vec2>(m_ikData.jointIndexes.size());
-		for (int j = 0; j < m_ikData.jointIndexes.size(); j++) {
-			JointIndex jInd = m_ikData.jointIndexes[j];
-			m_ikData.motionRanges[j] = m_ikRig->getMotionRange(jInd);
-		}
 		m_gradientDescent.setArgNum(m_ikData.jointIndexes.size());
 		m_ikData.rotationAxes.resize(m_ikData.jointIndexes.size());
 		m_ikData.baseAngles.resize(m_ikData.jointIndexes.size());

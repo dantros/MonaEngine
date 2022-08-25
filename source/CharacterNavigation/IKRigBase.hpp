@@ -114,13 +114,6 @@ namespace Mona {
         bool hasJoint(JointIndex joint);
         bool isActive() { return m_active; }
     };
-
-    struct JointData {
-        // Minimo angulo de rotacion de la articulacion (grados)
-        float minAngle = -90;
-        // Maximo angulo de rotacion de la articulacion (grados)
-        float maxAngle = 90;
-    };
     struct ChainEnds {
         // Nombre de la articulacion base de la cadena
         std::string baseJointName;
@@ -149,16 +142,13 @@ namespace Mona {
         void setCurrentEETarget(glm::vec3 currentEETarget) { m_currentEETarget = currentEETarget; }
         ChainIndex getOpposite() { return m_opposite; }
     };
+
     struct RigData {
         friend class IKRig;
-    private:
-        std::unordered_map<std::string, JointData> jointData;
     public:
         ChainEnds leftLeg;
         ChainEnds rightLeg;
         std::string hipJointName;
-        void setJointData(std::string jointName, float minAngle, float maxAngle);
-        JointData getJointData(std::string jointName);
         bool isValid();
     };
 

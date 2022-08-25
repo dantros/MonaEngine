@@ -115,22 +115,6 @@ namespace Mona{
 		return false;
 	}
 
-	void RigData::setJointData(std::string jointName, float minAngle, float maxAngle) {
-		if (jointName == "") {
-			MONA_LOG_ERROR("RigData: jointName cannot be empty string.");
-			return;
-		}
-		if (minAngle <= maxAngle) {
-			MONA_LOG_ERROR("RigData: maxAngle must be equal or greater than minAngle.");
-			return;
-		}
-		jointData[jointName].minAngle = minAngle;
-		jointData[jointName].maxAngle = maxAngle;
-	}
-
-	JointData RigData::getJointData(std::string jointName) {
-		return JointData(jointData[jointName]);
-	}
 
 	bool RigData::isValid() {
 		if (leftLeg.baseJointName.empty() || leftLeg.endEffectorName.empty() || rightLeg.baseJointName.empty() || rightLeg.endEffectorName.empty()) {

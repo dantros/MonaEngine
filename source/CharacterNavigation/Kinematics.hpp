@@ -43,7 +43,6 @@ namespace Mona {
 		std::vector<IKChain*> ikChains;
 		// other data
 		IKRigConfig* rigConfig;
-		std::vector<glm::vec2> motionRanges;
 		std::vector<float> previousAngles;
 		float descentRate;
 		float targetAngleDelta;

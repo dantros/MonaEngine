@@ -149,7 +149,6 @@ namespace Mona {
         ChainEnds leftLeg;
         ChainEnds rightLeg;
         std::string hipJointName;
-        bool isValid();
     };
 
 }

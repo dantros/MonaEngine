@@ -91,7 +91,7 @@ namespace Mona{
             m_dimension = D;
         }
 
-        glm::vec<D, float> getPointVelocity(int pointIndex, bool rightHandVelocity = false) {
+        glm::vec<D, float> getPointVelocity(int pointIndex, bool rightHandVelocity = false)  const {
             MONA_ASSERT(0 <= pointIndex && pointIndex < m_curvePoints.size(), "LIC: input index must be within bounds");
             if (!rightHandVelocity) {
                 if (pointIndex == 0) {
@@ -107,14 +107,14 @@ namespace Mona{
             }        
         }
 
-        glm::vec<D, float> getPointAcceleration(int pointIndex) {
+        glm::vec<D, float> getPointAcceleration(int pointIndex)  const{
             MONA_ASSERT(0 < pointIndex && pointIndex < m_tValues.size() - 1, "LIC: pointIndex must be an inner point.");
             return (getPointVelocity(pointIndex + 1) - getPointVelocity(pointIndex)) / (getTValue(pointIndex + 1) - getTValue(pointIndex));
         }
 
-        glm::vec<D, float> evalCurve(float t) {
+        glm::vec<D, float> evalCurve(float t)  const {
             MONA_ASSERT(inTRange(t), "LIC: t must be a value between {0} and {1}.", m_tValues[0], m_tValues.back());
-            // si estamos en el entorno de uno punto
+            // si estamos en el entorno de un punto
             for (int i = 0; i < m_tValues.size(); i++) {
                 if (abs(t - m_tValues[i]) <= m_tEpsilon) {
                     return m_curvePoints[i];
@@ -263,14 +263,16 @@ namespace Mona{
             std::vector<glm::vec<D, float>> transitionCurvePoints;
             transitionCurvePoints.reserve(curve1.m_curvePoints.size() + curve2.m_curvePoints.size());
             for (int i = 0; i < curve1.m_tValues.size(); i++) {
-                if (curve1.m_tValues[i] < transitionT || abs(curve1.m_tValues[i]-transitionT)<=2*epsilon) {
+                if (curve1.m_tValues[i] < transitionT && 2*epsilon < abs(curve1.m_tValues[i]-transitionT)) {
                     transitionTValues.push_back(curve1.m_tValues[i]);
                     transitionCurvePoints.push_back(curve1.m_curvePoints[i]);
                 }
                 else { break; }
             }
+            transitionTValues.push_back(transitionT);
+            transitionCurvePoints.push_back(curve2.evalCurve(transitionT));
             for (int i = 0; i < curve2.m_tValues.size(); i++) {
-                if (transitionT <= curve2.m_tValues[i] && 2*epsilon < curve2.m_tValues[i] - transitionTValues.back()) {
+                if (transitionT < curve2.m_tValues[i] && 2*epsilon < abs(curve2.m_tValues[i] - transitionT)) {
                     transitionTValues.push_back(curve2.m_tValues[i]);
                     transitionCurvePoints.push_back(curve2.m_curvePoints[i]);
                 }

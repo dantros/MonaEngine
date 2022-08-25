@@ -13,18 +13,6 @@ namespace Mona{
     typedef int AnimationIndex;
     typedef int FrameIndex;
 
-    struct TGData {
-        float alphaValue;
-        float betaValue;
-        LIC<3>* varCurve;
-        LIC<3> baseCurve;
-        std::vector<int> pointIndexes;
-        std::vector<float> minValues; // tamano D*pointIndexes.size()
-        float descentRate;
-        float targetPosDelta;
-        int maxIterations;
-    };
-
     class IKRig;
     class IKRigConfig;
     class TrajectoryGenerator {
@@ -33,8 +21,7 @@ namespace Mona{
     private:
         IKRig* m_ikRig;
         EnvironmentData m_environmentData;
-        GradientDescent<TGData> m_gradientDescent;
-        TGData m_tgData;
+        float m_strideErrorTolerance = 1.0f;
         void generateEETrajectory(ChainIndex ikChain, IKRigConfig* config,
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
@@ -51,13 +38,13 @@ namespace Mona{
             float originalCurvesTime_extendedAnim, IKRigConfig* config,
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
-        glm::vec3 calcStrideStartingPoint(float supportHeight, glm::vec2 xyReferencePoint, float targetDistance, 
-            glm::vec2 targetDirection, int stepNum,
+        bool calcStrideStartingPoint(float supportHeightStart, glm::vec2 xyReferencePoint, float targetDistance, 
+            glm::vec2 targetDirection, glm::vec3& outStrideStartPoint,
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
-        std::vector<glm::vec3> calcStrideData(float supportHeightStart, float supportHeightEnd, 
+        bool calcStrideFinalPoint(float supportHeightStart, float supportHeightEnd,
             glm::vec3 startingPoint, float targetDistance,
-            glm::vec2 targetDirection, int stepNum,
+            glm::vec2 targetDirection, glm::vec3& outStrideFinalPoint,
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
 		static void buildHipTrajectory(IKRigConfig* config, std::vector<glm::vec3> const& hipGlobalPositions);
@@ -68,7 +55,6 @@ namespace Mona{
     public:
         TrajectoryGenerator(IKRig* ikRig);
         TrajectoryGenerator() = default;
-        void init();
         void generateNewTrajectories(AnimationIndex animIndex,
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);

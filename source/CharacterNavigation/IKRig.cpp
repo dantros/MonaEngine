@@ -51,7 +51,6 @@ namespace Mona {
 		m_inverseKinematics.init();
 		m_forwardKinematics = ForwardKinematics(this);
 		m_trajectoryGenerator = TrajectoryGenerator(this);
-		m_trajectoryGenerator.init();
 		m_animationConfigs.reserve(MAX_EXPECTED_NUMBER_OF_ANIMATIONS_PER_IKRIG);
 	}
 

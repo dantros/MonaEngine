@@ -16,10 +16,6 @@ namespace Mona {
 			static constexpr std::string_view componentName = "IKNavigationComponent";
 			static constexpr uint8_t componentIndex = GetComponentIndex(EComponentType::IKNavigationComponent);
 			IKNavigationComponent(RigData& rigData) {
-				if (!rigData.isValid()) {
-					MONA_LOG_ERROR("IKNavigationComponent: input rigData was not valid.");
-					return;
-				}
 				m_rigData = rigData;
 			}
 			void AddAnimation(std::shared_ptr<AnimationClip> animationClip, AnimationType animationType = AnimationType::WALKING) {

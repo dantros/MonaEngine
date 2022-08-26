@@ -51,7 +51,7 @@ namespace Mona {
         }
 
         template <int D>
-        inline bool areApproxEqual(glm::vec<D, float> vec1, glm::vec<D, float> vec2, float epsilon= 0.000001) {
+        inline bool areApproxEqual(glm::vec<D, float> vec1, glm::vec<D, float> vec2, float epsilon= 0.0001) {
             for (int i = 0; i < D; i++) {
                 if (glm::epsilonNotEqual(vec1[i], vec2[i], epsilon)) {
                     return false;

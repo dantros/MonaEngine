@@ -357,13 +357,11 @@ namespace Mona{
 			// rotarla para que quede en linea con las pos inicial y final
 			glm::fquat targetRotation = glm::identity<glm::fquat>();
 			glm::vec3 originalDirection = glm::normalize(getEnd() - getStart());
-            float epsilon = 0.02f;
+            float epsilon = 0.05f;
             float dotPr = glm::dot(originalDirection, targetDirection);
-            if (abs(dotPr - 1) <=epsilon) {
-                targetRotation = angleAxis(0.0f, upVector);
-            }
-            else if (abs(dotPr + 1) <= epsilon) {
-                targetRotation = angleAxis((float)std::numbers::pi, upVector);
+            if (abs(dotPr - 1) <=epsilon || abs(dotPr + 1) <= epsilon) {
+                float rotAngle = glm::orientedAngle(originalDirection, targetDirection, upVector);
+                targetRotation = angleAxis(rotAngle, upVector);
             }
             else {
 				glm::vec3 crossVec = glm::cross(originalDirection, targetDirection);

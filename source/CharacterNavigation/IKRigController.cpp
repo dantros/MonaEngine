@@ -29,10 +29,8 @@ namespace Mona {
 
 	void IKRigController::addAnimation(std::shared_ptr<AnimationClip> animationClip, AnimationType animationType) {
 		// la animacion debe tener globalmente vector front={0,1,0} y up={0,0,1}
-		if (animationClip->GetSkeleton() != m_ikRig.m_skeleton) {
-			MONA_LOG_ERROR("IKRigController: Input animation does not correspond to base skeleton.");
-			return;
-		}
+		MONA_ASSERT(animationClip->GetSkeleton() == m_ikRig.m_skeleton,
+			"IKRigController: Input animation does not correspond to base skeleton.");
 		for (int i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {
 			if (m_ikRig.m_animationConfigs[i].m_animationClip->GetAnimationName() == animationClip->GetAnimationName()) {
 				MONA_LOG_WARNING("IKRigController: Animation {0} for model {1} had already been added",
@@ -40,15 +38,12 @@ namespace Mona {
 				return;
 			}
 		}
-		if (animationClip->GetTrackIndex(m_ikRig.m_hipJoint) == -1) {
-			MONA_LOG_ERROR("IKRigController: Hip joint must be present in input animationClip.");
-		}
+		MONA_ASSERT(animationClip->GetTrackIndex(m_ikRig.m_hipJoint) != -1, "IKRigController: Hip joint must be present in input animationClip.");
 		for (int i = 0; i < m_ikRig.m_ikChains.size(); i++) {
 			JointIndex eeIndex = m_ikRig.m_ikChains[i].getEndEffector();
-			if (animationClip->GetTrackIndex(eeIndex) == -1) {
-				MONA_LOG_ERROR("IKRigController: Set end effector {0} must be present in input animationClip.",
-					m_ikRig.getJointNames()[eeIndex]);
-			}
+			MONA_ASSERT(animationClip->GetTrackIndex(eeIndex) != -1,
+				"IKRigController: Set end effector {0} must be present in input animationClip.",
+				m_ikRig.getJointNames()[eeIndex]);
 		}
 		
 		// Chequar si los escalamientos y traslaciones son constantes por joint.
@@ -59,16 +54,12 @@ namespace Mona {
 			glm::vec3 basePosition = track.positions[0];
 			glm::vec3 baseScale = track.scales[0];
 			for (int j = 1; j < track.positions.size(); j++) {
-				if (!glmUtils::areApproxEqual(track.positions[j], basePosition) && jIndex!=m_ikRig.m_hipJoint) {
-					MONA_LOG_ERROR("IKRigController: Animation must have fixed translations per joint.");
-					return;
-				}
+				MONA_ASSERT(glmUtils::areApproxEqual(track.positions[j], basePosition) || jIndex == m_ikRig.m_hipJoint,
+					"IKRigController: Jointa other than the hip must have fixed translations.");
 			}
 			for (int j = 1; j < track.scales.size(); j++) {
-				if (!glmUtils::areApproxEqual(track.scales[j], baseScale)) {
-					MONA_LOG_ERROR("IKRigController: Animation must have fixed scales per joint.");
-					return;
-				}
+				MONA_ASSERT(glmUtils::areApproxEqual(track.scales[j], baseScale),
+					"IKRigController: Animation must have fixed scales per joint.");
 			}
 		}
 
@@ -77,16 +68,12 @@ namespace Mona {
 			int trackIndex = animationClip->GetTrackIndex(parent);
 			auto track = animationClip->m_animationTracks[trackIndex];
 			for (int j = 0; j < track.rotations.size(); j++) {
-				if (track.rotations[j] != glm::identity<glm::fquat>()) {
-					MONA_LOG_ERROR("IKRigController: Joints above the hip in the hierarchy cannot have rotations.");
-					return;
-				}
+				MONA_ASSERT(track.rotations[j] == glm::identity<glm::fquat>(),
+					"IKRigController: Joints above the hip in the hierarchy cannot have rotations.");
 			}
 			for (int j = 0; j < track.positions.size(); j++) {
-				if (track.positions[j] != glm::vec3(0)) {
-					MONA_LOG_ERROR("IKRigController: Joints above the hip in the hierarchy cannot have translations.");
-					return;
-				}
+				MONA_ASSERT(track.positions[j] == glm::vec3(0),
+					"IKRigController: Joints above the hip in the hierarchy cannot have translations.");
 			}
 		}
 
@@ -143,7 +130,7 @@ namespace Mona {
 			hipGlblPositions.push_back(glblPositions[m_ikRig.m_hipJoint]);
 			for (ChainIndex j = 0; j < chainNum; j++) {
 				int eeIndex = m_ikRig.m_ikChains[j].getEndEffector();
-				bool isSupportFrame = glm::distance(glblPositions[eeIndex], previousPositions[eeIndex]) <= minDistance*15;
+				bool isSupportFrame = glm::distance(glblPositions[eeIndex], previousPositions[eeIndex]) <= minDistance*40;
 				supportFramesPerChain[j][i] = isSupportFrame;
 				glblPositionsPerChain[j][i] = glm::vec4(glblPositions[eeIndex], 1);
 			}

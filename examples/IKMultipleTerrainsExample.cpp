@@ -110,8 +110,9 @@ public:
 		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
 		m_transform->SetTranslation({ 0, 0, 0 });
 		m_transform->SetScale({ 0.05,0.05,0.05 });
+		m_transform->Rotate(glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-90.f));
 		m_transform->Rotate(glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(180.f));
-		m_transform->Rotate(glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(90.f));
+		
 		auto materialPtr = std::static_pointer_cast<Mona::DiffuseTexturedMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseTextured, true));
 		auto& textureManager = Mona::TextureManager::GetInstance();
 		auto diffuseTexture = textureManager.LoadTexture(Mona::SourcePath("Assets/Models/akai/akai_diffuse.png"));
@@ -121,11 +122,11 @@ public:
 		auto& meshManager = Mona::MeshManager::GetInstance();
 		auto& skeletonManager = Mona::SkeletonManager::GetInstance();
 		auto& animationManager = Mona::AnimationClipManager::GetInstance();
-		auto skeleton = skeletonManager.LoadSkeleton(Mona::SourcePath("Assets/Models/PrisonerBStyperek.fbx"));
-		auto skinnedMesh = meshManager.LoadSkinnedMesh(skeleton, Mona::SourcePath("Assets/Models/PrisonerBStyperek.fbx"), true);
+		auto skeleton = skeletonManager.LoadSkeleton(Mona::SourcePath("Assets/Models/ely.fbx"));
+		auto skinnedMesh = meshManager.LoadSkinnedMesh(skeleton, Mona::SourcePath("Assets/Models/ely.fbx"), true);
 
-		m_idleAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/PrisonerBStyperek/idle.fbx"), skeleton, true);
-		m_walkingAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/PrisonerBStyperek/sexyWalk.fbx"), skeleton, false);
+		m_idleAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/ely/idle.fbx"), skeleton, true);
+		m_walkingAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/ely/walking.fbx"), skeleton, false);
 
 		m_skeletalMesh = world.AddComponent<Mona::SkeletalMeshComponent>(*this, skinnedMesh, m_idleAnimation, materialPtr);
 

@@ -22,6 +22,8 @@ namespace Mona {
 			HeightMap() = default;
 			HeightMap(const glm::vec2& bottomLeft, const glm::vec2& topRight, float (*heightFunc)(float, float));
 			bool withinBoundaries(float x, float y);
+			glm::vec2 getMinXY() { return glm::vec2( m_minX, m_minY ); }
+			glm::vec2 getMaxXY() { return glm::vec2(m_maxX, m_maxY); }
 			float getHeight(float x, float y);
 			bool isValid() { return m_isValid; }
 	};

@@ -25,6 +25,13 @@ namespace Mona{
         }
     }
 
+    bool EnvironmentData::withinGlobalBoundaries(glm::vec2 xyPoint, HeightMap* heightMap, glm::mat4 globalTerrainTransform) {
+        glm::vec2 globalMin = globalTerrainTransform * glm::vec4(heightMap->getMinXY(), 0, 1);
+        glm::vec2 globalMax = globalTerrainTransform * glm::vec4(heightMap->getMaxXY(), 0, 1);
+        return globalMin[0] <= xyPoint[0] && xyPoint[0] <= globalMax[0] &&
+            globalMin[1] <= xyPoint[1] && xyPoint[1] <= globalMax[1];
+    }
+
     float EnvironmentData::getTerrainHeight(glm::vec2 xyPoint, ComponentManager<TransformComponent>& transformManager,
         ComponentManager<StaticMeshComponent>& staticMeshManager) {
         float maxHeight = std::numeric_limits<float>::lowest();
@@ -38,14 +45,20 @@ namespace Mona{
             const StaticMeshComponent* staticMesh = staticMeshManager.GetComponentPointer(m_terrains[i].m_meshHandle);
             HeightMap* heigtMap = staticMesh->GetHeightMap();
             TransformComponent* staticMeshTransform = transformManager.GetComponentPointer(m_terrains[i].m_transformHandle);
+            MONA_ASSERT(staticMeshTransform->GetLocalRotation() == glm::identity<glm::fquat>(), "EnvironmentData: Terrains cannot be rotated.");
+            glm::mat4 glblTransform = staticMeshTransform->GetModelMatrix();
 
-            // TODO
-            // encontrar una linea perpendicular al plano xy de la malla y buscar su
-            // interseccion con el plano xy global
-            // encontrar el up vector adecuado para usar en el espacio local de la malla
+            if (withinGlobalBoundaries(xyPoint, heigtMap, glblTransform)) {
+                // transformar punto a espacio local del terreno
 
-            float result = heigtMap->getHeight(xyPoint[0], xyPoint[1]);
-            if (result > maxHeight) { maxHeight = result; }
+                glm::vec3 localPoint = glm::inverse(glblTransform) * glm::vec4(xyPoint, 0, 1);
+                float localHeight = heigtMap->getHeight(localPoint[0], localPoint[1]);
+                localPoint[2] = localHeight;
+                glm::vec4 glblPoint = glblTransform * glm::vec4(localPoint, 1);
+                float result = glblPoint[2];
+                if (result > maxHeight) { maxHeight = result; }
+            }           
+            
         }
         return maxHeight;
     }

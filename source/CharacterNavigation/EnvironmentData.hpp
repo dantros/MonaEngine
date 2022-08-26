@@ -19,6 +19,7 @@ namespace Mona {
 	class EnvironmentData {
 		private:
 			std::vector<Terrain> m_terrains;
+			bool withinGlobalBoundaries(glm::vec2 xyPoint, HeightMap* heightMap, glm::mat4 globalTerrainTransform);
 		public:
 			EnvironmentData() = default;
 			float getTerrainHeight(glm::vec2 xyPoint, ComponentManager<TransformComponent>& transformManager,

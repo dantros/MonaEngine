@@ -22,26 +22,98 @@ void AddDirectionalLight(Mona::World& world, const glm::vec3& axis, float angle,
 
 }
 
-Mona::GameObjectHandle<Mona::GameObject> AddTerrain(Mona::World& world) {
+Mona::GameObjectHandle<Mona::GameObject> AddTerrain1(Mona::World& world) {
 	auto terrain = world.CreateGameObject<Mona::GameObject>();
 	auto& meshManager = Mona::MeshManager::GetInstance();
 	auto materialPtr = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseFlat));
-	materialPtr->SetDiffuseColor(glm::vec3(0.03, 0.1f, 0.17f));
+	materialPtr->SetDiffuseColor(glm::vec3(0.3, 0.1f, 0.1f));
 	auto transform = world.AddComponent<Mona::TransformComponent>(terrain);
-	glm::vec2 minXY(-100, -100);
-	glm::vec2 maxXY(100, 100);
+	transform->SetTranslation(glm::vec3(0, 0, 0));
+	glm::vec2 minXY(-50, -50);
+	glm::vec2 maxXY(50, 50);
 	int numInnerVerticesWidth = 100;
 	int numInnerVerticesHeight = 100;
 	auto heighFunc = [](float x, float y) -> float {
 		float result = 0;
 		int funcNum = 100;
-		glm::vec2 minXY(-100, -100);
-		glm::vec2 maxXY(100, 100);
+		glm::vec2 minXY(-50, -50);
+		glm::vec2 maxXY(50, 50);
 		float minHeight = -15;
-		float maxHeight = 70;
+		float maxHeight = 60;
 		float minSigma = 3;
 		float maxSigma = 20;
 		std::srand(5);
+		for (int i = 0; i < funcNum; i++) {
+			float randMax = RAND_MAX;
+			result += gaussian(x, y, Mona::funcUtils::lerp(minHeight, maxHeight, std::rand() / randMax),
+				Mona::funcUtils::lerp(minSigma, maxSigma, std::rand() / randMax),
+				{ Mona::funcUtils::lerp(minXY[0], maxXY[0], std::rand() / randMax),
+				Mona::funcUtils::lerp(minXY[1], maxXY[1], std::rand() / randMax) });
+		}
+		return result;
+	};
+
+	world.AddComponent<Mona::StaticMeshComponent>(terrain, meshManager.GenerateTerrain(minXY, maxXY, numInnerVerticesWidth,
+		numInnerVerticesHeight, heighFunc), materialPtr);
+	return terrain;
+}
+Mona::GameObjectHandle<Mona::GameObject> AddTerrain2(Mona::World& world) {
+	auto terrain = world.CreateGameObject<Mona::GameObject>();
+	auto& meshManager = Mona::MeshManager::GetInstance();
+	auto materialPtr = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseFlat));
+	materialPtr->SetDiffuseColor(glm::vec3(0.03, 0.1f, 0.17f));
+	auto transform = world.AddComponent<Mona::TransformComponent>(terrain);
+	transform->SetTranslation(glm::vec3(0, 90, 1));
+	glm::vec2 minXY(-50, -50);
+	glm::vec2 maxXY(50, 50);
+	int numInnerVerticesWidth = 100;
+	int numInnerVerticesHeight = 100;
+	auto heighFunc = [](float x, float y) -> float {
+		float result = 0;
+		int funcNum = 200;
+		glm::vec2 minXY(-50, -50);
+		glm::vec2 maxXY(50, 50);
+		float minHeight = -20;
+		float maxHeight = 55;
+		float minSigma = 3;
+		float maxSigma = 20;
+		std::srand(10);
+		for (int i = 0; i < funcNum; i++) {
+			float randMax = RAND_MAX;
+			result += gaussian(x, y, Mona::funcUtils::lerp(minHeight, maxHeight, std::rand() / randMax),
+				Mona::funcUtils::lerp(minSigma, maxSigma, std::rand() / randMax),
+				{ Mona::funcUtils::lerp(minXY[0], maxXY[0], std::rand() / randMax),
+				Mona::funcUtils::lerp(minXY[1], maxXY[1], std::rand() / randMax) });
+		}
+		return result;
+	};
+
+	world.AddComponent<Mona::StaticMeshComponent>(terrain, meshManager.GenerateTerrain(minXY, maxXY, numInnerVerticesWidth,
+		numInnerVerticesHeight, heighFunc), materialPtr);
+	return terrain;
+}
+Mona::GameObjectHandle<Mona::GameObject> AddTerrain3(Mona::World& world) {
+	auto terrain = world.CreateGameObject<Mona::GameObject>();
+	auto& meshManager = Mona::MeshManager::GetInstance();
+	auto materialPtr = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseFlat));
+	materialPtr->SetDiffuseColor(glm::vec3(0.05, 0.15f, 0.1f));
+	auto transform = world.AddComponent<Mona::TransformComponent>(terrain);
+	transform->SetScale(glm::vec3(2, 2.5, 2));
+	transform->SetTranslation(glm::vec3(90, 0, -1));	
+	glm::vec2 minXY(-50, -50);
+	glm::vec2 maxXY(50, 50);
+	int numInnerVerticesWidth = 50;
+	int numInnerVerticesHeight = 50;
+	auto heighFunc = [](float x, float y) -> float {
+		float result = 0;
+		int funcNum = 100;
+		glm::vec2 minXY(-50, -50);
+		glm::vec2 maxXY(50, 50);
+		float minHeight = -25;
+		float maxHeight = 45;
+		float minSigma = 5;
+		float maxSigma = 15;
+		std::srand(20);
 		for (int i = 0; i < funcNum; i++) {
 			float randMax = RAND_MAX;
 			result += gaussian(x, y, Mona::funcUtils::lerp(minHeight, maxHeight, std::rand() / randMax),
@@ -168,8 +240,12 @@ public:
 		AddDirectionalLight(world, glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-130.0f), 2);
 		AddDirectionalLight(world, glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(-30.0f), 6);
 		auto character = world.CreateGameObject<IKRigCharacter>();
-		auto terrainObject = AddTerrain(world);
-		world.GetComponentHandle<Mona::IKNavigationComponent>(character)->AddTerrain(terrainObject);
+		auto terrainObject1 = AddTerrain1(world);
+		world.GetComponentHandle<Mona::IKNavigationComponent>(character)->AddTerrain(terrainObject1);
+		auto terrainObject2 = AddTerrain2(world);
+		world.GetComponentHandle<Mona::IKNavigationComponent>(character)->AddTerrain(terrainObject2);
+		auto terrainObject3 = AddTerrain3(world);
+		world.GetComponentHandle<Mona::IKNavigationComponent>(character)->AddTerrain(terrainObject3);
 	}
 
 	virtual void UserShutDown(Mona::World& world) noexcept override {

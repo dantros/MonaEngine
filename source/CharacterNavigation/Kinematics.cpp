@@ -103,6 +103,9 @@ namespace Mona {
 			glm::mat4 Tvar = glmUtils::rotationToMat4(TvarQuat);
 			glm::mat4 dTvar = rotationMatrixDerivative_dAngle(varAngles[varIndex], dataPtr->rotationAxes[varIndex]);
 			glm::vec4 eeT = glm::vec4(affectedChains[c]->getCurrentEETarget(), 1);
+			// relajamos un poco el criterio de cercania para los ejes horizontales,
+			// nos importa mas el ajuste de la altura
+			// TODO
 			glm::vec4 eePosCurr_d = forwardModelSpaceTransforms[joints.back()] * glm::vec4(0, 0, 0, 1);
 			for (int k = 0; k <= 3; k++) {
 				float mult1 = 0;

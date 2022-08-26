@@ -35,9 +35,9 @@ namespace Mona {
 		std::shared_ptr<Skeleton> GetSkeleton() const {
 			return m_skeletonPtr;
 		}
-		void RotateRoot(glm::fquat rotation);
-		void ScaleRoot(glm::vec3 scale);
-		void TranslateRoot(glm::vec3 translation);
+		void Rotate(glm::fquat rotation);
+		void Scale(float scale);
+		void Translate(glm::vec3 translation);
 	private:
 		void SetSkeleton(std::shared_ptr<Skeleton> skeletonPtr);
 		AnimationClip(const std::string& filePath,

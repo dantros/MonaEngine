@@ -329,19 +329,25 @@ namespace Mona {
 	}
 
 
-	void AnimationClip::RotateRoot(glm::fquat rotation) {
+	void AnimationClip::Rotate(glm::fquat rotation) {
 		AnimationTrack& rootTrack = m_animationTracks[GetTrackIndex(0)];
 		for (int i = 0; i < rootTrack.rotations.size(); i++) {
 			rootTrack.rotations[i] = rotation * rootTrack.rotations[i];
 		}
+		for (int i = 0; i < rootTrack.positions.size(); i++) {
+			rootTrack.positions[i] = rotation * rootTrack.positions[i];
+		}
 	}
-	void AnimationClip::ScaleRoot(glm::vec3 scale) {
+	void AnimationClip::Scale(float scale) {
 		AnimationTrack& rootTrack = m_animationTracks[GetTrackIndex(0)];
 		for (int i = 0; i < rootTrack.scales.size(); i++) {
 			rootTrack.scales[i] = scale * rootTrack.scales[i];
 		}
+		for (int i = 0; i < rootTrack.positions.size(); i++) {
+			rootTrack.positions[i] = scale * rootTrack.positions[i];
+		}
 	}
-	void AnimationClip::TranslateRoot(glm::vec3 translation) {
+	void AnimationClip::Translate(glm::vec3 translation) {
 		AnimationTrack& rootTrack = m_animationTracks[GetTrackIndex(0)];
 		for (int i = 0; i < rootTrack.positions.size(); i++) {
 			rootTrack.positions[i] = translation + rootTrack.positions[i];

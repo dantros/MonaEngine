@@ -176,8 +176,8 @@ namespace Mona {
 		m_gradientDescent = GradientDescent<IKData>(terms, 0, &m_ikData, postDescentStepCustomBehaviour);
 		m_ikData.descentRate = 1.0f;
 		m_ikData.maxIterations = 500;
-		m_ikData.targetAngleDelta = 1 / pow(10, 3);
-		m_gradientDescent.setTermWeight(0, 1.0f / (pow(10, 3) * m_ikRig->getRigHeight()));
+		m_ikData.targetAngleDelta = 1 / pow(10, 4);
+		m_gradientDescent.setTermWeight(0, 1.0f / ( 1.5f * pow(10, 2) * m_ikRig->getRigHeight()));
 		m_gradientDescent.setTermWeight(1, 0.02f);		
 		m_gradientDescent.setTermWeight(2, 0.02f);
 		setIKChains(m_ikChains);

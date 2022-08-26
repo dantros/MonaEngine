@@ -244,7 +244,7 @@ public:
 		world.SetMainCamera(world.GetComponentHandle<Mona::CameraComponent>(m_camera));
 		AddDirectionalLight(world, glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-130.0f), 2);
 		AddDirectionalLight(world, glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(-30.0f), 6);
-		auto character = world.CreateGameObject<IKRigCharacter>("ely", glm::vec3(0,0,0));
+		auto character = world.CreateGameObject<IKRigCharacter>("prisoner", glm::vec3(0,0,0));
 		auto terrainObject1 = AddTerrain1(world);
 		world.GetComponentHandle<Mona::IKNavigationComponent>(character)->AddTerrain(terrainObject1);
 		auto terrainObject2 = AddTerrain2(world);

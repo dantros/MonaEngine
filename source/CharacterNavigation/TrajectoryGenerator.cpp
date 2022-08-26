@@ -110,29 +110,34 @@ namespace Mona{
 		glm::vec3 initialPos = trData->getSavedPosition(initialFrame);
 		float initialRepTime = baseCurve.getTValue(0);
 
-		glm::vec2 xyHipEEOriginalDiff = hipPosCurve.getEnd() - baseCurve.getEnd();
-		glm::vec2 hipCurrDir = glm::rotate(m_ikRig->getFrontVector(), m_ikRig->getRotationAngle());
-		glm::vec2 hipCurrXYPos = hipTrData->getSavedPosition(currentFrame);
-		glm::vec2 hipTrEndPredictedXYPos = hipCurrXYPos  + hipCurrDir * (glm::distance(glm::vec2(hipPosCurve.evalCurve(currentAnimTime)),
-			glm::vec2(hipPosCurve.getEnd())));
-		glm::vec2 targetEEPos = hipTrEndPredictedXYPos - xyHipEEOriginalDiff;
-		//glm::vec2 targetXYDirection = glm::normalize(targetEEPos - glm::vec2(currentPos));
-		
-		glm::vec2 originalXYDirection = glm::normalize(glm::vec2(baseCurve.getEnd() - baseCurve.getStart()));
-		glm::vec2 targetXYDirection = glm::rotate(glm::vec2(originalXYDirection), m_ikRig->getRotationAngle());
-
         // chequear si hay info de posicion valida previa
 		bool startingPosValid = true;
 		float strideLength = glm::distance(baseCurve.getStart(), baseCurve.getEnd());
         if (!(trData->isSavedDataValid(initialFrame) && trData->getTargetTrajectory().getEECurve().inTRange(initialRepTime))) {
+			glm::vec2 originalXYDirection = glm::normalize(glm::vec2(baseCurve.getEnd() - baseCurve.getStart()));
+			glm::vec2 baseTargetXYDirection = glm::rotate(glm::vec2(originalXYDirection), m_ikRig->getRotationAngle());
             float referenceTime = config->getReproductionTime(currentFrame);
             glm::vec3 sampledCurveReferencePoint = baseCurve.evalCurve(referenceTime);
             float xyDistanceToStart = glm::distance(glm::vec2(baseCurve.getStart()), glm::vec2(sampledCurveReferencePoint));
             glm::vec2 currEEXYPoint = glm::vec2(currentPos);
 			float supportHeightStart = trData->getSupportHeight(initialFrame);
             startingPosValid = calcStrideStartingPoint(supportHeightStart, currEEXYPoint, xyDistanceToStart,
-                targetXYDirection, initialPos, transformManager, staticMeshManager);
+                baseTargetXYDirection, initialPos, transformManager, staticMeshManager);
         }
+
+		// se calcula una direccion para el ee que logre mantener la relacion posicional con la cadera
+		glm::vec2 xyHipEEOriginalDiff = hipPosCurve.getEnd() - baseCurve.getEnd();
+		glm::vec2 xyHipEEUpdatedDiff = glm::rotate(xyHipEEOriginalDiff, m_ikRig->getRotationAngle());
+		glm::vec2 hipCurrDir = glm::rotate(m_ikRig->getFrontVector(), m_ikRig->getRotationAngle());
+		glm::vec2 hipCurrXYPos = hipTrData->getSavedPosition(currentFrame);
+		if (hipTrData->getTargetPositions().inTRange(currentRepTime)) {
+			hipCurrXYPos = hipTrData->getTargetPositions().evalCurve(currentRepTime);
+		}
+		glm::vec2 hipTrEndPredictedXYPos = hipCurrXYPos + hipCurrDir * (glm::distance(glm::vec2(hipPosCurve.evalCurve(currentAnimTime)),
+			glm::vec2(hipPosCurve.getEnd())));
+		glm::vec2 targetEEPos = hipTrEndPredictedXYPos - xyHipEEUpdatedDiff;
+		glm::vec2 targetXYDirection = glm::normalize(targetEEPos - glm::vec2(initialPos));
+
         float supportHeightStart = trData->getSupportHeight(initialFrame);
 		float supportHeightEnd = trData->getSupportHeight(finalFrame);
 		glm::vec3 finalPos;

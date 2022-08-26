@@ -26,19 +26,20 @@ Mona::GameObjectHandle<Mona::GameObject> AddTerrain(Mona::World& world) {
 	auto terrain = world.CreateGameObject<Mona::GameObject>();
 	auto& meshManager = Mona::MeshManager::GetInstance();
 	auto materialPtr = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseFlat));
-	materialPtr->SetDiffuseColor(glm::vec3(0.03, 0.1f, 0.17f));
+	materialPtr->SetDiffuseColor(glm::vec3(0.3, 0.1f, 0.1f));
 	auto transform = world.AddComponent<Mona::TransformComponent>(terrain);
-	glm::vec2 minXY(-100, -100);
-	glm::vec2 maxXY(100, 100);
+	transform->SetTranslation(glm::vec3(0, 0, 0));
+	glm::vec2 minXY(-50, -50);
+	glm::vec2 maxXY(50, 50);
 	int numInnerVerticesWidth = 100;
 	int numInnerVerticesHeight = 100;
 	auto heighFunc = [](float x, float y) -> float {
 		float result = 0;
 		int funcNum = 100;
-		glm::vec2 minXY(-100, -100);
-		glm::vec2 maxXY(100, 100);
+		glm::vec2 minXY(-50, -50);
+		glm::vec2 maxXY(50, 50);
 		float minHeight = -15;
-		float maxHeight = 70;
+		float maxHeight = 60;
 		float minSigma = 3;
 		float maxSigma = 20;
 		std::srand(5);
@@ -60,7 +61,6 @@ Mona::GameObjectHandle<Mona::GameObject> AddTerrain(Mona::World& world) {
 class IKRigCharacter : public Mona::GameObject
 {
 private:
-
 	void UpdateMovement(Mona::World& world) {
 		auto& input = world.GetInput();
 		if (input.IsMouseButtonPressed(MONA_MOUSE_BUTTON_1) && !m_prevIsPress) {
@@ -79,6 +79,10 @@ private:
 
 	}
 public:
+	IKRigCharacter(std::string characterName, glm::vec3 startingPosition) {
+		m_characterName = characterName;
+		m_startingPosition = startingPosition;
+	}
 	virtual void UserUpdate(Mona::World& world, float timeStep) noexcept {
 		UpdateAnimationState();
 		auto& input = world.GetInput();
@@ -108,43 +112,46 @@ public:
 	virtual void UserStartUp(Mona::World& world) noexcept {
 
 		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
-		m_transform->SetTranslation({ 0, 0, 0 });
+		m_transform->SetTranslation(m_startingPosition);
 		m_transform->SetScale({ 0.05,0.05,0.05 });
+		m_transform->Rotate(glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-90.f));
 		m_transform->Rotate(glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(180.f));
-		m_transform->Rotate(glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(90.f));
+
 		auto materialPtr = std::static_pointer_cast<Mona::DiffuseTexturedMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseTextured, true));
 		auto& textureManager = Mona::TextureManager::GetInstance();
-		auto diffuseTexture = textureManager.LoadTexture(Mona::SourcePath("Assets/Models/akai/akai_diffuse.png"));
+		auto diffuseTexture = textureManager.LoadTexture(Mona::SourcePath("Assets/Models/" +  m_characterName +"/diffuse.png"));
 		materialPtr->SetMaterialTint(glm::vec3(0.1f));
 		materialPtr->SetDiffuseTexture(diffuseTexture);
 
 		auto& meshManager = Mona::MeshManager::GetInstance();
 		auto& skeletonManager = Mona::SkeletonManager::GetInstance();
 		auto& animationManager = Mona::AnimationClipManager::GetInstance();
-		auto skeleton = skeletonManager.LoadSkeleton(Mona::SourcePath("Assets/Models/akai_e_espiritu.fbx"));
-		auto skinnedMesh = meshManager.LoadSkinnedMesh(skeleton, Mona::SourcePath("Assets/Models/akai_e_espiritu.fbx"), true);
+		auto skeleton = skeletonManager.LoadSkeleton(Mona::SourcePath("Assets/Models/" + m_characterName + ".fbx"));
+		auto skinnedMesh = meshManager.LoadSkinnedMesh(skeleton, Mona::SourcePath("Assets/Models/" + m_characterName + ".fbx"), true);
 
-		m_idleAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/female/idle.fbx"), skeleton, true);
-		m_walkingAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/female/walking.fbx"), skeleton, false);
+		m_idleAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/" + m_characterName + "/idle.fbx"), skeleton, true);
+		m_walkingAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/" + m_characterName + "/walking.fbx"), skeleton, false);
 
 		m_skeletalMesh = world.AddComponent<Mona::SkeletalMeshComponent>(*this, skinnedMesh, m_idleAnimation, materialPtr);
 
 		Mona::RigData rigData;
-		rigData.leftLeg.baseJointName = "LeftUpLeg";
-		rigData.leftLeg.endEffectorName = "LeftFoot";
-		rigData.rightLeg.baseJointName = "RightUpLeg";
-		rigData.rightLeg.endEffectorName = "RightFoot";
-		rigData.hipJointName = "Hips";
+		rigData.leftLeg.baseJointName = "mixamorig:LeftUpLeg";
+		rigData.leftLeg.endEffectorName = "mixamorig:LeftFoot";
+		rigData.rightLeg.baseJointName = "mixamorig:RightUpLeg";
+		rigData.rightLeg.endEffectorName = "mixamorig:RightFoot";
+		rigData.hipJointName = "mixamorig:Hips";
 		m_ikNavHandle = world.AddComponent<Mona::IKNavigationComponent>(*this, rigData);
 		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_walkingAnimation, Mona::AnimationType::WALKING);
 		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_idleAnimation, Mona::AnimationType::IDLE);
-		m_skeletalMesh->GetAnimationController().SetPlayRate(0.5f);
+		m_skeletalMesh->GetAnimationController().SetPlayRate(0.3f);
 
 	}
 private:
 	float m_angularSpeed = 0.8f;
 	float m_fadeTime = 0.5f;
 	bool m_prevIsPress = false;
+	std::string m_characterName;
+	glm::vec3 m_startingPosition;
 	Mona::TransformHandle m_transform;
 	Mona::SkeletalMeshHandle m_skeletalMesh;
 	Mona::IKNavigationHandle m_ikNavHandle;
@@ -166,9 +173,11 @@ public:
 		world.SetMainCamera(world.GetComponentHandle<Mona::CameraComponent>(m_camera));
 		AddDirectionalLight(world, glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-130.0f), 2);
 		AddDirectionalLight(world, glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(-30.0f), 6);
-		auto character = world.CreateGameObject<IKRigCharacter>();
-		auto terrainObject = AddTerrain(world);
-		world.GetComponentHandle<Mona::IKNavigationComponent>(character)->AddTerrain(terrainObject);
+		auto terrainObject1 = AddTerrain(world);
+		auto character1 = world.CreateGameObject<IKRigCharacter>("ely",glm::vec3(0,0,0));
+		world.GetComponentHandle<Mona::IKNavigationComponent>(character1)->AddTerrain(terrainObject1);
+		auto character2 = world.CreateGameObject<IKRigCharacter>("maria", glm::vec3(-20, -5, 0));
+		world.GetComponentHandle<Mona::IKNavigationComponent>(character2)->AddTerrain(terrainObject1);
 	}
 
 	virtual void UserShutDown(Mona::World& world) noexcept override {

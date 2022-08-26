@@ -69,34 +69,37 @@ namespace Mona{
 		ComponentManager<StaticMeshComponent>& staticMeshManager) {
 		EEGlobalTrajectoryData* trData = config->getEETrajectoryData(ikChain);
 		FrameIndex currentFrame = config->getCurrentFrameIndex();
-        FrameIndex nextFrame = config->getNextFrameIndex();
+		FrameIndex nextFrame = config->getNextFrameIndex();
 		float currentAnimTime = config->getAnimationTime(currentFrame);
-        float nextAnimTime = config->getAnimationTime(nextFrame);
+		float nextAnimTime = config->getAnimationTime(nextFrame);
 		float currentRepTime = config->getReproductionTime(currentFrame);
-        float currSupportHeight = trData->getSupportHeight(currentFrame);
-        glm::vec3 currentPos = trData->getSavedPosition(currentFrame);
+		float currSupportHeight = trData->getSupportHeight(currentFrame);
+		glm::vec3 currentPos = trData->getSavedPosition(currentFrame);
 		if (config->getAnimationType() == AnimationType::IDLE) {
-            int subTrID = trData->m_originalSubTrajectories[0].m_subTrajectoryID;
-            generateFixedTrajectory(glm::vec2(currentPos), { currentRepTime, currentRepTime + config->getAnimationDuration() }, subTrID,
-                currSupportHeight ,ikChain, config, transformManager, staticMeshManager);
+			int subTrID = trData->m_originalSubTrajectories[0].m_subTrajectoryID;
+			generateFixedTrajectory(glm::vec2(currentPos), { currentRepTime, currentRepTime + config->getAnimationDuration() }, subTrID,
+				currSupportHeight, ikChain, config, transformManager, staticMeshManager);
 			return;
 		}
 		EETrajectory originalTrajectory = trData->getSubTrajectory(currentAnimTime);
-        TrajectoryType trType;
+		TrajectoryType trType;
 		if (originalTrajectory.isDynamic()) {
-            trType = TrajectoryType::DYNAMIC;
+			trType = TrajectoryType::DYNAMIC;
 		}
 		else {
 			trType = TrajectoryType::STATIC;
 		}
-        LIC<3>& baseCurve = originalTrajectory.getEECurve();
+		LIC<3>& baseCurve = originalTrajectory.getEECurve();
 
-        FrameIndex initialFrame = config->getFrame(baseCurve.getTRange()[0]);
-        FrameIndex finalFrame = config->getFrame(baseCurve.getTRange()[1]);
+		FrameIndex initialFrame = config->getFrame(baseCurve.getTRange()[0]);
+		FrameIndex finalFrame = config->getFrame(baseCurve.getTRange()[1]);
 
-        // llevar a reproduction time
-        baseCurve.offsetTValues(-currentAnimTime);
-        baseCurve.offsetTValues(currentRepTime);
+		HipGlobalTrajectoryData* hipTrData = config->getHipTrajectoryData();
+		LIC<3> hipPosCurve = hipTrData->sampleOriginalPositions(baseCurve.getTRange()[0], baseCurve.getTRange()[1]);
+
+		// llevar a reproduction time
+		baseCurve.offsetTValues(-currentAnimTime);
+		baseCurve.offsetTValues(currentRepTime);
 
 		if (glm::length(baseCurve.getEnd() - baseCurve.getStart()) == 0) {
 			generateFixedTrajectory(glm::vec2(currentPos), { baseCurve.getTRange()[0], baseCurve.getTRange()[1] }, originalTrajectory.getSubTrajectoryID(),
@@ -104,12 +107,20 @@ namespace Mona{
 			return;
 		}
 
-        glm::vec3 initialPos = trData->getSavedPosition(initialFrame);
-        float initialRepTime = baseCurve.getTValue(0);
+		glm::vec3 initialPos = trData->getSavedPosition(initialFrame);
+		float initialRepTime = baseCurve.getTValue(0);
+
+		glm::vec2 xyHipEEOriginalDiff = hipPosCurve.getEnd() - baseCurve.getEnd();
+		glm::vec2 hipCurrDir = glm::rotate(m_ikRig->getFrontVector(), m_ikRig->getRotationAngle());
+		glm::vec2 hipCurrXYPos = hipTrData->getSavedPosition(currentFrame);
+		glm::vec2 hipTrEndPredictedXYPos = hipCurrXYPos  + hipCurrDir * (glm::distance(glm::vec2(hipPosCurve.evalCurve(currentAnimTime)),
+			glm::vec2(hipPosCurve.getEnd())));
+		glm::vec2 targetEEPos = hipTrEndPredictedXYPos - xyHipEEOriginalDiff;
+		//glm::vec2 targetXYDirection = glm::normalize(targetEEPos - glm::vec2(currentPos));
 		
 		glm::vec2 originalXYDirection = glm::normalize(glm::vec2(baseCurve.getEnd() - baseCurve.getStart()));
 		glm::vec2 targetXYDirection = glm::rotate(glm::vec2(originalXYDirection), m_ikRig->getRotationAngle());
-		
+
         // chequear si hay info de posicion valida previa
 		bool startingPosValid = true;
 		float strideLength = glm::distance(baseCurve.getStart(), baseCurve.getEnd());

@@ -103,9 +103,6 @@ namespace Mona {
 			glm::mat4 Tvar = glmUtils::rotationToMat4(TvarQuat);
 			glm::mat4 dTvar = rotationMatrixDerivative_dAngle(varAngles[varIndex], dataPtr->rotationAxes[varIndex]);
 			glm::vec4 eeT = glm::vec4(affectedChains[c]->getCurrentEETarget(), 1);
-			// relajamos un poco el criterio de cercania para los ejes horizontales,
-			// nos importa mas el ajuste de la altura
-			// TODO
 			glm::vec4 eePosCurr_d = forwardModelSpaceTransforms[joints.back()] * glm::vec4(0, 0, 0, 1);
 			for (int k = 0; k <= 3; k++) {
 				float mult1 = 0;
@@ -180,9 +177,9 @@ namespace Mona {
 		m_ikData.descentRate = 1.0f;
 		m_ikData.maxIterations = 500;
 		m_ikData.targetAngleDelta = 1 / pow(10, 4);
-		m_gradientDescent.setTermWeight(0, 1.0f / ( 1.5f * pow(10, 2) * m_ikRig->getRigHeight()));
+		m_gradientDescent.setTermWeight(0, 1.0f / (pow(10, 2) * m_ikRig->getRigHeight()));
 		m_gradientDescent.setTermWeight(1, 0.02f);		
-		m_gradientDescent.setTermWeight(2, 0.02f);
+		m_gradientDescent.setTermWeight(2, 0.03f);
 		setIKChains(m_ikChains);
 	}
 

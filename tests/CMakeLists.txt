@@ -10,4 +10,3 @@ function(Add_Test TARGETNAME FILENAME)
 
 endfunction(Add_Test)
 
-Add_Test(test_ikNav test_ikNav.cpp)

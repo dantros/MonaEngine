@@ -13,5 +13,8 @@ Add_Example(Example0_MinimalSetup MinimalSetup.cpp)
 Add_Example(Example1_WindowInputOperations WindowInputExample.cpp)
 Add_Example(Example2_Breakout Breakout.cpp)
 Add_Example(Example3_AnimationAudio AnimationAudioExample.cpp)
+Add_Example(Example4_IKSimple IKSimpleExample.cpp)
+Add_Example(Example5_IKMultipleTerrains IKMultipleTerrainsExample.cpp)
+Add_Example(Example6_IKMultipleCharacters IKMultipleCharactersExample.cpp)
 
 

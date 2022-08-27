@@ -41,7 +41,8 @@ namespace Mona{
             glm::vec2 targetDirection, glm::vec3& outStrideStartPoint,
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
-        bool calcStrideFinalPoint(float supportHeightStart, float supportHeightEnd,
+        bool calcStrideFinalPoint(EEGlobalTrajectoryData* baseTrajectoryData, int baseTrajecotryID,
+            IKRigConfig* config,
             glm::vec3 startingPoint, float targetDistance,
             glm::vec2 targetDirection, glm::vec3& outStrideFinalPoint,
             ComponentManager<TransformComponent>& transformManager,

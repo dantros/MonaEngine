@@ -111,7 +111,6 @@ namespace Mona{
 		float initialRepTime = baseCurve.getTValue(0);
 
         // chequear si hay info de posicion valida previa
-		bool startingPosValid = true;
 		float strideLength = glm::distance(baseCurve.getStart(), baseCurve.getEnd());
         if (!(trData->isSavedDataValid(initialFrame) && trData->getTargetTrajectory().getEECurve().inTRange(initialRepTime))) {
 			glm::vec2 originalXYDirection = glm::normalize(glm::vec2(baseCurve.getEnd() - baseCurve.getStart()));
@@ -121,7 +120,7 @@ namespace Mona{
             float xyDistanceToStart = glm::distance(glm::vec2(baseCurve.getStart()), glm::vec2(sampledCurveReferencePoint));
             glm::vec2 currEEXYPoint = glm::vec2(currentPos);
 			float supportHeightStart = trData->getSupportHeight(initialFrame);
-            startingPosValid = calcStrideStartingPoint(supportHeightStart, currEEXYPoint, xyDistanceToStart,
+            calcStrideStartingPoint(supportHeightStart, currEEXYPoint, xyDistanceToStart,
                 baseTargetXYDirection, initialPos, transformManager, staticMeshManager);
         }
 
@@ -138,12 +137,10 @@ namespace Mona{
 		glm::vec2 targetEEPos = hipTrEndPredictedXYPos - xyHipEEUpdatedDiff;
 		glm::vec2 targetXYDirection = glm::normalize(targetEEPos - glm::vec2(initialPos));
 
-        float supportHeightStart = trData->getSupportHeight(initialFrame);
-		float supportHeightEnd = trData->getSupportHeight(finalFrame);
 		glm::vec3 finalPos;
-		bool endingPosValid = calcStrideFinalPoint(supportHeightStart, supportHeightEnd,
+		bool endingPosValid = calcStrideFinalPoint(trData, originalTrajectory.getSubTrajectoryID(), config,
             initialPos, strideLength, targetXYDirection, finalPos, transformManager, staticMeshManager);
-        if (!startingPosValid || !endingPosValid) { // si no es posible avanzar por la elevacion del terreno
+        if (!endingPosValid) { // si no es posible avanzar por la elevacion del terreno
 			generateFixedTrajectory(glm::vec2(currentPos), { baseCurve.getTRange()[0], baseCurve.getTRange()[1] }, originalTrajectory.getSubTrajectoryID(),
 				currSupportHeight, ikChain, config, transformManager, staticMeshManager);
             return;
@@ -317,12 +314,16 @@ namespace Mona{
 		return true;
 	}
     
-	bool TrajectoryGenerator::calcStrideFinalPoint(float supportHeightStart, float supportHeightEnd,
+	bool TrajectoryGenerator::calcStrideFinalPoint(EEGlobalTrajectoryData* baseTrajectoryData, int baseTrajecotryID,
+		IKRigConfig* config,
 		glm::vec3 startingPoint, float targetDistance, 
 		glm::vec2 targetDirection, glm::vec3& outStrideFinalPoint,
 		ComponentManager<TransformComponent>& transformManager,
 		ComponentManager<StaticMeshComponent>& staticMeshManager) {
 		int stepNum = 20;
+		EETrajectory baseEETr = baseTrajectoryData->getSubTrajectoryByID(baseTrajecotryID);
+		float supportHeightStart = baseEETr.getEECurve().getStart()[2];
+		float supportHeightEnd = baseEETr.getEECurve().getEnd()[2];
 		std::vector<glm::vec3> collectedPoints;
 		collectedPoints.reserve(stepNum);
 		for (int i = 1; i <= stepNum; i++) {
@@ -331,8 +332,6 @@ namespace Mona{
 			float calcHeight = supportHeight + m_environmentData.getTerrainHeight(testPoint, transformManager, staticMeshManager);
 			collectedPoints.push_back(glm::vec3(testPoint, calcHeight));
 		}
-		// validacion de los puntos
-		float epsilon = targetDistance * 0.005;
 		float minDistDiff = std::numeric_limits<float>::max();
 		glm::vec3 selectedFinalPoint(std::numeric_limits<float>::max());
 		for (int i = 0; i < collectedPoints.size(); i++) {
@@ -343,7 +342,19 @@ namespace Mona{
 			}
 		}
 		outStrideFinalPoint = selectedFinalPoint;
+		// validacion del punto escogido
+		if (baseEETr.isDynamic()) {
+			LIC<3> oppositeEECurve = baseTrajectoryData->getOppositeTrajectoryData()->getTargetTrajectory().getEECurve();
+			if (oppositeEECurve.inTRange(config->getCurrentReproductionTime())) {
+				float currentOppositeZ = oppositeEECurve.evalCurve(config->getCurrentReproductionTime())[2];
+				float candidateEEZ = selectedFinalPoint[2];
+				float glblLegLenght = m_ikRig->getRigHeight()*m_ikRig->getRigScale() / 2;
+				return abs(currentOppositeZ - candidateEEZ) < glblLegLenght * 0.45f;
+			}
+		}
+		
 		return true;
+		
 	}
 
 

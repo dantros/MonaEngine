@@ -190,7 +190,7 @@ public:
 
 		auto materialPtr = std::static_pointer_cast<Mona::DiffuseTexturedMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseTextured, true));
 		auto& textureManager = Mona::TextureManager::GetInstance();
-		auto diffuseTexture = textureManager.LoadTexture(Mona::SourcePath("Assets/Models/" + m_characterName + "/diffuse.png"));
+		auto diffuseTexture = textureManager.LoadTexture(Mona::SourcePath("Assets/Textures/" + m_characterName + "/diffuse.png"));
 		materialPtr->SetMaterialTint(glm::vec3(0.1f));
 		materialPtr->SetDiffuseTexture(diffuseTexture);
 

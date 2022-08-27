@@ -11,8 +11,8 @@ set(THIRD_PARTY_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/glad
 						"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/bullet3-2.88/src"
 						"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/openal-soft/include"
 						"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/dr_wav"
-						"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/assimp-5.2.4/include"
-						"${CMAKE_CURRENT_BINARY_DIR}/thirdParty/assimp-5.2.4/include"
+						"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/assimp-5.1.6/include"
+						"${CMAKE_CURRENT_BINARY_DIR}/thirdParty/assimp-5.1.6/include"
 						"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/stb"
 						"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/console-color"
 						"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/debug-draw")

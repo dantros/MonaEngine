@@ -381,6 +381,8 @@ namespace Mona {
 			trData->m_savedDataValid = std::vector<bool>(trData->m_savedDataValid.size(), false);
 			trData->m_targetTrajectory.m_curve = LIC<3>();
 			trData->m_targetTrajectory.m_subTrajectoryID = -1;
+			trData->m_fixedTarget = false;
+			trData->m_baseFixedTrajectoryID = -1;
 		}
 		HipGlobalTrajectoryData* hipTrData = config.getHipTrajectoryData();
 		hipTrData->m_savedDataValid = std::vector<bool>(hipTrData->m_savedDataValid.size(), false);

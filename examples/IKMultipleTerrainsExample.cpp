@@ -214,7 +214,7 @@ public:
 		m_ikNavHandle = world.AddComponent<Mona::IKNavigationComponent>(*this, rigData);
 		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_walkingAnimation, Mona::AnimationType::WALKING);
 		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_idleAnimation, Mona::AnimationType::IDLE);
-		m_skeletalMesh->GetAnimationController().SetPlayRate(0.3f);
+		m_skeletalMesh->GetAnimationController().SetPlayRate(0.7f);
 
 	}
 private:

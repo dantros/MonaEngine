@@ -21,6 +21,7 @@ namespace Mona{
     private:
         IKRig* m_ikRig;
         EnvironmentData m_environmentData;
+        bool m_validateStride;
         void generateEETrajectory(ChainIndex ikChain, IKRigConfig* config,
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
@@ -41,7 +42,7 @@ namespace Mona{
             glm::vec2 targetDirection, glm::vec3& outStrideStartPoint,
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
-        bool calcStrideFinalPoint(EEGlobalTrajectoryData* baseTrajectoryData, int baseTrajecotryID,
+        bool calcStrideFinalPoint(EEGlobalTrajectoryData* baseTrajectoryData, int baseTrajecoryID,
             IKRigConfig* config,
             glm::vec3 startingPoint, float targetDistance,
             glm::vec2 targetDirection, glm::vec3& outStrideFinalPoint,

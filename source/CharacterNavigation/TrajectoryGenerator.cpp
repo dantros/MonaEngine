@@ -13,6 +13,7 @@ namespace Mona{
 
     TrajectoryGenerator::TrajectoryGenerator(IKRig* ikRig) {
         m_ikRig = ikRig;
+		m_validateStride = false;
     }
 
 	void TrajectoryGenerator::generateNewTrajectories(AnimationIndex animIndex,
@@ -26,23 +27,22 @@ namespace Mona{
 			JointIndex eeIndex = m_ikRig->getIKChain(i)->getEndEffector();
 			generateEETrajectory(i, config, transformManager, staticMeshManager);
 		}
-        // si una trayectoria es fija, las demas tambien deberan serlo
+        // si una trayectoria es dinamica es fija, su opuesta tambien debera serlo
         if (config->getAnimationType() == AnimationType::WALKING) {
-            std::vector<bool> fixedTrajectories;
+			FrameIndex currentFrame = config->getCurrentFrameIndex();
+			float currentRepTime = config->getReproductionTime(currentFrame);
             for (ChainIndex i = 0; i < m_ikRig->getChainNum(); i++) {
-                fixedTrajectories.push_back(config->getEETrajectoryData(i)->isTargetFixed());
-            }
-            if (funcUtils::conditionVector_OR(fixedTrajectories)) {
-                FrameIndex currentFrame = config->getCurrentFrameIndex();
-                float currentRepTime = config->getReproductionTime(currentFrame);
-                for (ChainIndex i = 0; i < m_ikRig->getChainNum(); i++) {
-                    EEGlobalTrajectoryData* trData = config->getEETrajectoryData(i);
-                    float currSupportHeight = trData->getSupportHeight(currentFrame);
-                    glm::vec3 currentPos = trData->getSavedPosition(currentFrame);
-                    int trID = trData->getTargetTrajectory().getSubTrajectoryID();
-                    generateFixedTrajectory(glm::vec2(currentPos), { currentRepTime, currentRepTime + config->getAnimationDuration() }, trID,
-                        currSupportHeight, i, config, transformManager, staticMeshManager);
-                }
+				EEGlobalTrajectoryData* trData = config->getEETrajectoryData(i);
+				if (trData->isTargetFixed() && trData->getTargetTrajectory().isDynamic()) {					
+					EEGlobalTrajectoryData* oppositeTrData = trData->getOppositeTrajectoryData();
+					if (!oppositeTrData->isTargetFixed()) {
+						float oppositeCurrSupportHeight = oppositeTrData->getSupportHeight(currentFrame);
+						glm::vec3 oppositeCurrentPos = oppositeTrData->getSavedPosition(currentFrame);
+						int oppositeTrID = oppositeTrData->getTargetTrajectory().getSubTrajectoryID();
+						generateFixedTrajectory(glm::vec2(oppositeCurrentPos), { currentRepTime, currentRepTime + config->getAnimationDuration() },
+							oppositeTrID, oppositeCurrSupportHeight, i, config, transformManager, staticMeshManager);
+					}					
+				}
             }
         
         }
@@ -61,6 +61,9 @@ namespace Mona{
         glm::vec3 fixedPos(basePos, calcHeight + supportHeight);
         LIC<3> fixedCurve({ fixedPos, fixedPos }, { timeRange[0], timeRange[1] });
         trData->setTargetTrajectory(fixedCurve, TrajectoryType::STATIC, baseCurveID);
+		if (!trData->m_fixedTarget) {
+			trData->m_baseFixedTrajectoryID = baseCurveID;
+		}
         trData->m_fixedTarget = true;
     }
 
@@ -160,6 +163,7 @@ namespace Mona{
             trData->setTargetTrajectory(baseCurve, trType, newSubTrID);
         }
         trData->m_fixedTarget = false;
+		trData->m_baseFixedTrajectoryID = -1;
 		
 	}
 	
@@ -314,14 +318,14 @@ namespace Mona{
 		return true;
 	}
     
-	bool TrajectoryGenerator::calcStrideFinalPoint(EEGlobalTrajectoryData* baseTrajectoryData, int baseTrajecotryID,
+	bool TrajectoryGenerator::calcStrideFinalPoint(EEGlobalTrajectoryData* baseTrajectoryData, int baseTrajecoryID,
 		IKRigConfig* config,
 		glm::vec3 startingPoint, float targetDistance, 
 		glm::vec2 targetDirection, glm::vec3& outStrideFinalPoint,
 		ComponentManager<TransformComponent>& transformManager,
 		ComponentManager<StaticMeshComponent>& staticMeshManager) {
 		int stepNum = 20;
-		EETrajectory baseEETr = baseTrajectoryData->getSubTrajectoryByID(baseTrajecotryID);
+		EETrajectory baseEETr = baseTrajectoryData->getSubTrajectoryByID(baseTrajecoryID);
 		float supportHeightStart = baseEETr.getEECurve().getStart()[2];
 		float supportHeightEnd = baseEETr.getEECurve().getEnd()[2];
 		std::vector<glm::vec3> collectedPoints;
@@ -343,15 +347,29 @@ namespace Mona{
 		}
 		outStrideFinalPoint = selectedFinalPoint;
 		// validacion del punto escogido
-		if (baseEETr.isDynamic()) {
-			LIC<3> oppositeEECurve = baseTrajectoryData->getOppositeTrajectoryData()->getTargetTrajectory().getEECurve();
-			if (oppositeEECurve.inTRange(config->getCurrentReproductionTime())) {
-				float currentOppositeZ = oppositeEECurve.evalCurve(config->getCurrentReproductionTime())[2];
-				float candidateEEZ = selectedFinalPoint[2];
-				float glblLegLenght = m_ikRig->getRigHeight()*m_ikRig->getRigScale() / 2;
-				return abs(currentOppositeZ - candidateEEZ) < glblLegLenght * 0.45f;
+		if (m_validateStride) {
+			if (baseEETr.isDynamic()) {
+				LIC<3> oppositeEECurve = baseTrajectoryData->getOppositeTrajectoryData()->getTargetTrajectory().getEECurve();
+				// si la trayectoria ya es fija pero la curva base es distinta
+				if (baseTrajecoryID != baseTrajectoryData->m_baseFixedTrajectoryID && baseTrajectoryData->m_fixedTarget) {
+					return false;
+				}
+				FrameIndex currentFrame = config->getCurrentFrameIndex();
+				float currentRepTime = config->getReproductionTime(currentFrame);
+				if (oppositeEECurve.inTRange(currentRepTime)) {
+					float currentOppositeZ = oppositeEECurve.evalCurve(currentRepTime)[2];
+					float candidateEEZ = selectedFinalPoint[2];
+					float glblLegLenght = m_ikRig->getRigHeight() * m_ikRig->getRigScale() / 2;
+					return abs(currentOppositeZ - candidateEEZ) < glblLegLenght * 0.7f;
+				}
 			}
-		}
+			else {
+				// si la trayectoria es fija pero la curva base es estatica
+				if (baseTrajectoryData->m_fixedTarget) {
+					return false;
+				}
+			}
+		}	
 		
 		return true;
 		

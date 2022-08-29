@@ -28,7 +28,7 @@ namespace Mona{
 			generateEETrajectory(i, config, transformManager, staticMeshManager);
 		}
         // si una trayectoria es dinamica es fija, su opuesta tambien debera serlo
-        if (config->getAnimationType() == AnimationType::WALKING) {
+        if (config->getAnimationType() == AnimationType::WALKING && config->isMovementFixed()) {
 			FrameIndex currentFrame = config->getCurrentFrameIndex();
 			float currentRepTime = config->getReproductionTime(currentFrame);
             for (ChainIndex i = 0; i < m_ikRig->getChainNum(); i++) {
@@ -44,8 +44,10 @@ namespace Mona{
 					}					
 				}
             }
-        
         }
+		if (!config->isMovementFixed()) {
+			config->m_fixedMovementFrame = -1;
+		}
 
 		// queda setear la trayectoria de la cadera
 		generateHipTrajectory(config, transformManager, staticMeshManager);
@@ -65,6 +67,14 @@ namespace Mona{
 			trData->m_baseFixedTrajectoryID = baseCurveID;
 		}
         trData->m_fixedTarget = true;
+		if (config->getAnimationType()==AnimationType::WALKING) {
+			if (config->m_fixedMovementFrame == -1) {
+				config->m_fixedMovementFrame = config->getCurrentFrameIndex();
+			}
+		}
+		else {
+			config->m_fixedMovementFrame = config->getCurrentFrameIndex();
+		}
     }
 
 	void TrajectoryGenerator::generateEETrajectory(ChainIndex ikChain, IKRigConfig* config,
@@ -163,8 +173,7 @@ namespace Mona{
             trData->setTargetTrajectory(baseCurve, trType, newSubTrID);
         }
         trData->m_fixedTarget = false;
-		trData->m_baseFixedTrajectoryID = -1;
-		
+		trData->m_baseFixedTrajectoryID = -1;		
 	}
 	
 
@@ -172,14 +181,9 @@ namespace Mona{
         ComponentManager<TransformComponent>& transformManager,
         ComponentManager<StaticMeshComponent>& staticMeshManager) {
 
-        std::vector<bool> fixedTrajectories;
-        for (ChainIndex i = 0; i < m_ikRig->getChainNum(); i++) {
-            fixedTrajectories.push_back(config->getEETrajectoryData(i)->isTargetFixed());
-        }
-
         HipGlobalTrajectoryData* hipTrData = config->getHipTrajectoryData();
         FrameIndex currentFrame = config->getCurrentFrameIndex();
-        if (funcUtils::conditionVector_OR(fixedTrajectories)) {
+        if (config->isMovementFixed()) {
             float initialTime_rep = config->getReproductionTime(currentFrame);
             float currFrameTime_extendedAnim = config->getAnimationTime(currentFrame);
             float nextFrameTime_extendedAnim = config->getAnimationTime(config->getNextFrameIndex());
@@ -347,31 +351,32 @@ namespace Mona{
 		}
 		outStrideFinalPoint = selectedFinalPoint;
 		// validacion del punto escogido
+		bool valid = true;
 		if (m_validateStride) {
 			if (baseEETr.isDynamic()) {
 				LIC<3> oppositeEECurve = baseTrajectoryData->getOppositeTrajectoryData()->getTargetTrajectory().getEECurve();
 				// si la trayectoria ya es fija pero la curva base es distinta
 				if (baseTrajecoryID != baseTrajectoryData->m_baseFixedTrajectoryID && baseTrajectoryData->m_fixedTarget) {
-					return false;
+					valid = false;
 				}
-				FrameIndex currentFrame = config->getCurrentFrameIndex();
-				float currentRepTime = config->getReproductionTime(currentFrame);
-				if (oppositeEECurve.inTRange(currentRepTime)) {
-					float currentOppositeZ = oppositeEECurve.evalCurve(currentRepTime)[2];
-					float candidateEEZ = selectedFinalPoint[2];
-					float glblLegLenght = m_ikRig->getRigHeight() * m_ikRig->getRigScale() / 2;
-					return abs(currentOppositeZ - candidateEEZ) < glblLegLenght * 0.7f;
+				else{
+					FrameIndex currentFrame = config->getCurrentFrameIndex();
+					float currentRepTime = config->getReproductionTime(currentFrame);
+					if (oppositeEECurve.inTRange(currentRepTime)) {
+						float currentOppositeZ = oppositeEECurve.evalCurve(currentRepTime)[2];
+						float candidateEEZ = selectedFinalPoint[2];
+						float glblLegLenght = m_ikRig->getRigHeight() * m_ikRig->getRigScale() / 2;
+						valid = abs(currentOppositeZ - candidateEEZ) < glblLegLenght * 0.5f;
+					}
 				}
+				
 			}
 			else {
 				// si la trayectoria es fija pero la curva base es estatica
-				if (baseTrajectoryData->m_fixedTarget) {
-					return false;
-				}
+				valid = !baseTrajectoryData->m_fixedTarget;
 			}
 		}	
-		
-		return true;
+		return valid;
 		
 	}
 

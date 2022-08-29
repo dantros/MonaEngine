@@ -80,6 +80,7 @@ namespace Mona {
         int m_reproductionCount = 0;
         // Tipo de la animacion
         AnimationType m_animationType;
+        FrameIndex m_fixedMovementFrame = -1;
     public:
         IKRigConfig(std::shared_ptr<AnimationClip> animation, AnimationType animationType, 
             AnimationIndex animIndex, ForwardKinematics* fk);
@@ -113,6 +114,8 @@ namespace Mona {
         std::vector<JointIndex>const& getJointIndices() { return m_jointIndices; }
         bool hasJoint(JointIndex joint);
         bool isActive() { return m_active; }
+        bool isMovementFixed();
+        FrameIndex getFixedMovementFrame() { return m_fixedMovementFrame; }
     };
     struct ChainEnds {
         // Nombre de la articulacion base de la cadena

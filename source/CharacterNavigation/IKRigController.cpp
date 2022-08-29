@@ -387,6 +387,7 @@ namespace Mona {
 		HipGlobalTrajectoryData* hipTrData = config.getHipTrajectoryData();
 		hipTrData->m_savedDataValid = std::vector<bool>(hipTrData->m_savedDataValid.size(), false);
 		hipTrData->m_targetPositions = LIC<3>();
+		config.m_fixedMovementFrame = -1;
 	}
 
 	void IKRigController::updateIKRig(float timeStep, ComponentManager<TransformComponent>& transformManager,
@@ -417,7 +418,8 @@ namespace Mona {
 		}
 		updateGlobalTransform(transformManager);
 		for (AnimationIndex i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {
-			if (m_ikRig.m_animationConfigs[i].isActive()) {
+			IKRigConfig& config = m_ikRig.m_animationConfigs[i];
+			if (config.isActive()) {
 				updateAnimation(i);
 			}
 		}

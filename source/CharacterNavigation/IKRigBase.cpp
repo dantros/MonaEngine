@@ -115,6 +115,15 @@ namespace Mona{
 		return false;
 	}
 
+	bool IKRigConfig::isMovementFixed() {
+		for (int i = 0; i < m_eeTrajectoryData.size(); i++) {
+			if (m_eeTrajectoryData[i].isTargetFixed()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	JointRotation::JointRotation() {
 		setRotation(glm::identity<glm::fquat>());
 	}

@@ -61,13 +61,14 @@ EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int
     }
 
     EETrajectory EEGlobalTrajectoryData::getSubTrajectoryByID(int subTrajectoryID) {
+		int foundTrIndex = -1;
         for (int i = 0; i < m_originalSubTrajectories.size(); i++) {
             if (m_originalSubTrajectories[i].getSubTrajectoryID() == subTrajectoryID) {
-                return m_originalSubTrajectories[i];
+				foundTrIndex = i;
             }
         }
-        MONA_LOG_ERROR("EEGlobalTrajectoryData: A sub trajectory with id {0} was not found.", subTrajectoryID);
-        return EETrajectory();
+        MONA_ASSERT(foundTrIndex != -1, "EEGlobalTrajectoryData: A sub trajectory with id {0} was not found.", subTrajectoryID);
+        return m_originalSubTrajectories[foundTrIndex];
     }
 
 	LIC<3> EEGlobalTrajectoryData::sampleExtendedSubTrajectory(float animationTime, float duration) {

@@ -39,21 +39,26 @@ namespace Mona{
 		else {
 			m_ikRig->fixAnimation(config->m_animIndex, config->m_fixedMovementFrame);
 		}
-        // si una trayectoria es dinamica es fija, su opuesta tambien debera serlo
+        // si una trayectoria es dinamica es fija las demas tambien debera serlo
         if (config->isMovementFixed()) {
 			FrameIndex currentFrame = config->getCurrentFrameIndex();
 			float currentRepTime = config->getReproductionTime(currentFrame);
             for (ChainIndex i = 0; i < m_ikRig->getChainNum(); i++) {
 				EEGlobalTrajectoryData* trData = config->getEETrajectoryData(i);
-				if (trData->isTargetFixed() && trData->getTargetTrajectory().isDynamic()) {					
+				if (trData->getTargetTrajectory().isDynamic()) {
+					if (!trData->isTargetFixed()) {
+						glm::vec3 currentPos = trData->getSavedPosition(currentFrame);
+						int trID = trData->getTargetTrajectory().getSubTrajectoryID();
+						float currSupportHeight = trData->getSupportHeight(config->m_fixedMovementFrame);
+						generateFixedTrajectory(glm::vec2(currentPos), { currentRepTime, currentRepTime + config->getAnimationDuration() },
+							trID, currSupportHeight, trData, transformManager, staticMeshManager);
+					}
 					EEGlobalTrajectoryData* oppositeTrData = trData->getOppositeTrajectoryData();
-					if (!oppositeTrData->isTargetFixed()) {
-						float oppositeCurrSupportHeight = oppositeTrData->getSupportHeight(config->m_fixedMovementFrame);
-						glm::vec3 oppositeCurrentPos = oppositeTrData->getSavedPosition(currentFrame);
-						int oppositeTrID = oppositeTrData->getTargetTrajectory().getSubTrajectoryID();
-						generateFixedTrajectory(glm::vec2(oppositeCurrentPos), { currentRepTime, currentRepTime + config->getAnimationDuration() },
-							oppositeTrID, oppositeCurrSupportHeight, i, config, transformManager, staticMeshManager);
-					}					
+					float oppositeCurrSupportHeight = oppositeTrData->getSupportHeight(config->m_fixedMovementFrame);
+					glm::vec3 oppositeCurrentPos = oppositeTrData->getSavedPosition(currentFrame);
+					int oppositeTrID = oppositeTrData->getTargetTrajectory().getSubTrajectoryID();
+					generateFixedTrajectory(glm::vec2(oppositeCurrentPos), { currentRepTime, currentRepTime + config->getAnimationDuration() },
+						oppositeTrID, oppositeCurrSupportHeight, oppositeTrData, transformManager, staticMeshManager);
 				}
             }
         }
@@ -63,18 +68,14 @@ namespace Mona{
 	}
 
     void TrajectoryGenerator::generateFixedTrajectory(glm::vec2 basePos,
-        glm::vec2 timeRange, int baseCurveID, float supportHeight,
-        ChainIndex ikChain, IKRigConfig* config,
+        glm::vec2 timeRange, int baseCurveID, float supportHeight,	EEGlobalTrajectoryData* trData,
         ComponentManager<TransformComponent>& transformManager,
         ComponentManager<StaticMeshComponent>& staticMeshManager) {
-        EEGlobalTrajectoryData* trData = config->getEETrajectoryData(ikChain);
+		IKRigConfig* config = trData->m_config;
         float calcHeight = m_environmentData.getTerrainHeight(glm::vec2(basePos), transformManager, staticMeshManager);
         glm::vec3 fixedPos(basePos, calcHeight + supportHeight);
         LIC<3> fixedCurve({ fixedPos, fixedPos }, { timeRange[0], timeRange[1] });
-        trData->setTargetTrajectory(fixedCurve, TrajectoryType::STATIC, baseCurveID);
-		if (!trData->m_fixedTarget) {
-			trData->m_baseFixedTrajectoryID = baseCurveID;
-		}
+        trData->setTargetTrajectory(fixedCurve, trData->getSubTrajectoryByID(baseCurveID).m_trajectoryType, baseCurveID);
         trData->m_fixedTarget = true;
 		if (config->getAnimationType()==AnimationType::WALKING) {
 			if (config->m_fixedMovementFrame == -1) {
@@ -100,7 +101,7 @@ namespace Mona{
 		if (config->getAnimationType() == AnimationType::IDLE) {
 			int subTrID = trData->m_originalSubTrajectories[0].m_subTrajectoryID;
 			generateFixedTrajectory(glm::vec2(currentPos), { currentRepTime, currentRepTime + config->getAnimationDuration() }, subTrID,
-				currSupportHeight, ikChain, config, transformManager, staticMeshManager);
+				currSupportHeight, trData, transformManager, staticMeshManager);
 			return;
 		}
 		EETrajectory originalTrajectory = trData->getSubTrajectory(currentAnimTime);
@@ -125,7 +126,7 @@ namespace Mona{
 
 		if (glm::length(baseCurve.getEnd() - baseCurve.getStart()) == 0) {
 			generateFixedTrajectory(glm::vec2(currentPos), { baseCurve.getTRange()[0], baseCurve.getTRange()[1] }, originalTrajectory.getSubTrajectoryID(),
-				currSupportHeight, ikChain, config, transformManager, staticMeshManager);
+				currSupportHeight, trData, transformManager, staticMeshManager);
 			return;
 		}
 
@@ -165,7 +166,7 @@ namespace Mona{
         if (!endingPosValid) { // si no es posible avanzar por la elevacion del terreno
 			float fixedSupportHeight = config->m_fixedMovementFrame == -1 ? currSupportHeight : trData->getSupportHeight(config->m_fixedMovementFrame);
 			generateFixedTrajectory(glm::vec2(currentPos), { baseCurve.getTRange()[0], baseCurve.getTRange()[1] }, originalTrajectory.getSubTrajectoryID(),
-				currSupportHeight, ikChain, config, transformManager, staticMeshManager);
+				currSupportHeight, trData, transformManager, staticMeshManager);
             return;
         }
         baseCurve.fitEnds(initialPos, finalPos);
@@ -183,7 +184,6 @@ namespace Mona{
             trData->setTargetTrajectory(baseCurve, trType, newSubTrID);
         }
         trData->m_fixedTarget = false;
-		trData->m_baseFixedTrajectoryID = -1;		
 	}
 	
 
@@ -365,8 +365,8 @@ namespace Mona{
 		if (m_validateStride) {
 			if (baseEETr.isDynamic()) {
 				LIC<3> oppositeEECurve = baseTrajectoryData->getOppositeTrajectoryData()->getTargetTrajectory().getEECurve();
-				// si la trayectoria ya es fija pero la curva base es distinta
-				if (baseTrajecoryID != baseTrajectoryData->m_baseFixedTrajectoryID && baseTrajectoryData->m_fixedTarget) {
+				// si la trayectoria ya es fija pero el frame es distinto
+				if (baseTrajectoryData->m_fixedTarget && config->getCurrentFrameIndex() != config->getFixedMovementFrame()) {
 					valid = false;
 				}
 				else{
@@ -382,8 +382,8 @@ namespace Mona{
 				
 			}
 			else {
-				// si la trayectoria es fija pero la curva base es estatica
-				valid = !baseTrajectoryData->m_fixedTarget;
+				// las trayectorias estaticas se calculan siempre
+				valid = true;
 			}
 		}	
 		return valid;

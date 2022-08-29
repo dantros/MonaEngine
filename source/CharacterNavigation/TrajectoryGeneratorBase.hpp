@@ -70,7 +70,6 @@ namespace Mona{
         IKRigConfig* m_config;
         EEGlobalTrajectoryData* m_oppositeTrajectoryData;
         bool m_fixedTarget = false;
-        int m_baseFixedTrajectoryID = -1;
     public:
         LIC<3> sampleExtendedSubTrajectory(float animationTime, float duration);
         EETrajectory getSubTrajectory(float animationTime);

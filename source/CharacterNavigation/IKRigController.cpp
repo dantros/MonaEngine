@@ -382,7 +382,6 @@ namespace Mona {
 			trData->m_targetTrajectory.m_curve = LIC<3>();
 			trData->m_targetTrajectory.m_subTrajectoryID = -1;
 			trData->m_fixedTarget = false;
-			trData->m_baseFixedTrajectoryID = -1;
 		}
 		HipGlobalTrajectoryData* hipTrData = config.getHipTrajectoryData();
 		hipTrData->m_savedDataValid = std::vector<bool>(hipTrData->m_savedDataValid.size(), false);
@@ -420,9 +419,10 @@ namespace Mona {
 		for (AnimationIndex i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {
 			IKRigConfig& config = m_ikRig.m_animationConfigs[i];
 			if (config.isActive()) {
-				if (config.getAnimationType() == AnimationType::WALKING &&
-					!config.isMovementFixed()) {
-					updateAnimation(i);
+				if (config.getAnimationType() == AnimationType::WALKING) {
+					if (!config.isMovementFixed()) {
+						updateAnimation(i);
+					}					
 				}
 				else if (config.getAnimationType() == AnimationType::IDLE) {
 					updateAnimation(i);

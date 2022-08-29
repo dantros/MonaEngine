@@ -27,8 +27,7 @@ namespace Mona{
             ComponentManager<StaticMeshComponent>& staticMeshManager);
         void generateFixedTrajectory(glm::vec2 basePos,
             glm::vec2 timeRange, int baseCurveID, float supportHeight,
-            ChainIndex ikChain, IKRigConfig* config,
-            ComponentManager<TransformComponent>& transformManager,
+            EEGlobalTrajectoryData* trData, ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
         void generateHipTrajectory(IKRigConfig* config,
             ComponentManager<TransformComponent>& transformManager,

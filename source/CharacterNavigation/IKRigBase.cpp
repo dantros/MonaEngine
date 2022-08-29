@@ -124,6 +124,15 @@ namespace Mona{
 		return false;
 	}
 
+	void IKRigConfig::clear() {
+		for (int i = 0; i < m_eeTrajectoryData.size(); i++) {
+			m_eeTrajectoryData[i].clear();
+		}
+		m_hipTrajectoryData.clear();
+		m_fixedMovementFrame = -1;
+		m_dynamicJointRotations = m_baseJointRotations;
+	}
+
 	JointRotation::JointRotation() {
 		setRotation(glm::identity<glm::fquat>());
 	}

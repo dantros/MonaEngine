@@ -34,6 +34,11 @@ EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int
 		return sampleOriginaCurve(initialExtendedAnimTime, finalExtendedAnimTime, m_originalPositions);
     }
 
+	void HipGlobalTrajectoryData::clear() {
+		m_savedDataValid = std::vector<bool>(m_savedDataValid.size(), false);
+		m_targetPositions = LIC<3>();
+	}
+
 	EETrajectory EEGlobalTrajectoryData::getSubTrajectory(float animationTime) {
 		FrameIndex currFrame = m_config->getFrame(animationTime);
 		float nextAnimationTime = m_config->getAnimationTime((currFrame + 1) % m_config->getFrameNum());
@@ -86,6 +91,13 @@ EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int
 
 	EEGlobalTrajectoryData* EEGlobalTrajectoryData::getOppositeTrajectoryData() {
 		return m_oppositeTrajectoryData;
+	}
+
+	void EEGlobalTrajectoryData::clear() {
+		m_savedDataValid = std::vector<bool>(m_savedDataValid.size(), false);
+		m_targetTrajectory.m_curve = LIC<3>();
+		m_targetTrajectory.m_subTrajectoryID = -1;
+		m_fixedTarget = false;
 	}
 
 

@@ -36,7 +36,7 @@ namespace Mona{
             InnerComponentHandle getTransformHandle() { return m_transformHandle; }
             void init();
             void fixAnimation(AnimationIndex animIndex, FrameIndex fixedFrame);
-            void unfixAnimation(AnimationIndex animIndex);
+            void resetAnimation(AnimationIndex animIndex);
         private:
             // Informacion de configuracion del IKRig por cada animacion
             std::vector<IKRigConfig> m_animationConfigs;

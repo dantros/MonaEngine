@@ -116,6 +116,7 @@ namespace Mona {
         bool isActive() { return m_active; }
         bool isMovementFixed();
         FrameIndex getFixedMovementFrame() { return m_fixedMovementFrame; }
+        void clear();
     };
     struct ChainEnds {
         // Nombre de la articulacion base de la cadena

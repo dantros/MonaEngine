@@ -376,17 +376,8 @@ namespace Mona {
 	}
 
 	void IKRigController::clearConfig(IKRigConfig& config) {
-		for (int i = 0; i < config.m_eeTrajectoryData.size(); i++) {
-			EEGlobalTrajectoryData* trData = config.getEETrajectoryData(i);
-			trData->m_savedDataValid = std::vector<bool>(trData->m_savedDataValid.size(), false);
-			trData->m_targetTrajectory.m_curve = LIC<3>();
-			trData->m_targetTrajectory.m_subTrajectoryID = -1;
-			trData->m_fixedTarget = false;
-		}
-		HipGlobalTrajectoryData* hipTrData = config.getHipTrajectoryData();
-		hipTrData->m_savedDataValid = std::vector<bool>(hipTrData->m_savedDataValid.size(), false);
-		hipTrData->m_targetPositions = LIC<3>();
-		config.m_fixedMovementFrame = -1;
+		config.clear();
+		m_ikRig.resetAnimation(config.m_animIndex);
 	}
 
 	void IKRigController::updateIKRig(float timeStep, ComponentManager<TransformComponent>& transformManager,

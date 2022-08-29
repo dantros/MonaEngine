@@ -114,7 +114,7 @@ namespace Mona {
 			hipTrack.rotations[i] = hipTrack.rotations[fixedFrame];
 		}
 	}
-	void IKRig::unfixAnimation(AnimationIndex animIndex) {
+	void IKRig::resetAnimation(AnimationIndex animIndex) {
 		IKRigConfig& config = m_animationConfigs[animIndex];
 		std::shared_ptr<AnimationClip> anim = config.m_animationClip;
 		for (ChainIndex i = 0; i < m_ikChains.size(); i++) {

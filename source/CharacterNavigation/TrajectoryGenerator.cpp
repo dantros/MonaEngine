@@ -13,7 +13,7 @@ namespace Mona{
 
     TrajectoryGenerator::TrajectoryGenerator(IKRig* ikRig) {
         m_ikRig = ikRig;
-		m_validateStride = false;
+		m_validateStride = true;
     }
 
 	void TrajectoryGenerator::generateNewTrajectories(AnimationIndex animIndex,
@@ -33,7 +33,7 @@ namespace Mona{
 		if (!config->isMovementFixed()) {
 			config->m_fixedMovementFrame = -1;
 			if (prevSavedFixedFrame != -1) {
-				m_ikRig->unfixAnimation(config->m_animIndex);
+				m_ikRig->resetAnimation(config->m_animIndex);
 			}
 		}
 		else {

@@ -27,8 +27,20 @@ namespace Mona{
 			JointIndex eeIndex = m_ikRig->getIKChain(i)->getEndEffector();
 			generateEETrajectory(i, config, transformManager, staticMeshManager);
 		}
+
+		// fijamos o desfijamos la animacion si es necesario
+		FrameIndex prevSavedFixedFrame = config->m_fixedMovementFrame;
+		if (!config->isMovementFixed()) {
+			config->m_fixedMovementFrame = -1;
+			if (prevSavedFixedFrame != -1) {
+				m_ikRig->unfixAnimation(config->m_animIndex);
+			}
+		}
+		else {
+			m_ikRig->fixAnimation(config->m_animIndex, config->m_fixedMovementFrame);
+		}
         // si una trayectoria es dinamica es fija, su opuesta tambien debera serlo
-        if (config->getAnimationType() == AnimationType::WALKING && config->isMovementFixed()) {
+        if (config->isMovementFixed()) {
 			FrameIndex currentFrame = config->getCurrentFrameIndex();
 			float currentRepTime = config->getReproductionTime(currentFrame);
             for (ChainIndex i = 0; i < m_ikRig->getChainNum(); i++) {
@@ -36,7 +48,7 @@ namespace Mona{
 				if (trData->isTargetFixed() && trData->getTargetTrajectory().isDynamic()) {					
 					EEGlobalTrajectoryData* oppositeTrData = trData->getOppositeTrajectoryData();
 					if (!oppositeTrData->isTargetFixed()) {
-						float oppositeCurrSupportHeight = oppositeTrData->getSupportHeight(currentFrame);
+						float oppositeCurrSupportHeight = oppositeTrData->getSupportHeight(config->m_fixedMovementFrame);
 						glm::vec3 oppositeCurrentPos = oppositeTrData->getSavedPosition(currentFrame);
 						int oppositeTrID = oppositeTrData->getTargetTrajectory().getSubTrajectoryID();
 						generateFixedTrajectory(glm::vec2(oppositeCurrentPos), { currentRepTime, currentRepTime + config->getAnimationDuration() },
@@ -45,9 +57,6 @@ namespace Mona{
 				}
             }
         }
-		if (!config->isMovementFixed()) {
-			config->m_fixedMovementFrame = -1;
-		}
 
 		// queda setear la trayectoria de la cadera
 		generateHipTrajectory(config, transformManager, staticMeshManager);
@@ -154,6 +163,7 @@ namespace Mona{
 		bool endingPosValid = calcStrideFinalPoint(trData, originalTrajectory.getSubTrajectoryID(), config,
             initialPos, strideLength, targetXYDirection, finalPos, transformManager, staticMeshManager);
         if (!endingPosValid) { // si no es posible avanzar por la elevacion del terreno
+			float fixedSupportHeight = config->m_fixedMovementFrame == -1 ? currSupportHeight : trData->getSupportHeight(config->m_fixedMovementFrame);
 			generateFixedTrajectory(glm::vec2(currentPos), { baseCurve.getTRange()[0], baseCurve.getTRange()[1] }, originalTrajectory.getSubTrajectoryID(),
 				currSupportHeight, ikChain, config, transformManager, staticMeshManager);
             return;

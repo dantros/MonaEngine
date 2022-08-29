@@ -2,6 +2,7 @@
 #include "../Core/Log.hpp"
 #include "../Core/FuncUtils.hpp"
 #include "../Animation/Skeleton.hpp"
+#include "../Animation/AnimationClip.hpp"
 
 
 namespace Mona {
@@ -93,6 +94,46 @@ namespace Mona {
 	void IKRig::calculateTrajectories(AnimationIndex animIndex, ComponentManager<TransformComponent>& transformManager,
 		ComponentManager<StaticMeshComponent>& staticMeshManager) {
 		m_trajectoryGenerator.generateNewTrajectories(animIndex, transformManager, staticMeshManager);
+	}
+
+	void IKRig::fixAnimation(AnimationIndex animIndex, FrameIndex fixedFrame) {
+		IKRigConfig& config = m_animationConfigs[animIndex];
+		std::shared_ptr<AnimationClip> anim = config.m_animationClip;
+		for (ChainIndex i = 0; i < m_ikChains.size(); i++) {
+			IKChain& ikChain = m_ikChains[i];
+			for (int j = 0; j < ikChain.m_joints.size(); j++) {
+				JointIndex jIndex = ikChain.m_joints[j];
+				auto& track = anim->m_animationTracks[anim->GetTrackIndex(jIndex)];
+				for (FrameIndex k = 0; k < config.getFrameNum(); k++) {
+					track.rotations[k] = track.rotations[fixedFrame];
+				}
+			}
+		}
+		auto& hipTrack = anim->m_animationTracks[anim->GetTrackIndex(m_hipJoint)];
+		for (FrameIndex i = 0; i < config.getFrameNum(); i++) {
+			hipTrack.rotations[i] = hipTrack.rotations[fixedFrame];
+		}
+	}
+	void IKRig::unfixAnimation(AnimationIndex animIndex) {
+		IKRigConfig& config = m_animationConfigs[animIndex];
+		std::shared_ptr<AnimationClip> anim = config.m_animationClip;
+		for (ChainIndex i = 0; i < m_ikChains.size(); i++) {
+			IKChain& ikChain = m_ikChains[i];
+			for (int j = 0; j < ikChain.m_joints.size(); j++) {
+				JointIndex jIndex = ikChain.m_joints[j];
+				auto& track = anim->m_animationTracks[anim->GetTrackIndex(jIndex)];
+				for (FrameIndex k = 0; k < config.getFrameNum(); k++) {
+					std::vector<JointRotation>const& baseRotations = config.getBaseJointRotations(k);
+					track.rotations[k] = baseRotations[jIndex].getQuatRotation();
+				}
+			}
+		}
+		auto& hipTrack = anim->m_animationTracks[anim->GetTrackIndex(m_hipJoint)];
+		for (FrameIndex i = 0; i < config.getFrameNum(); i++) {
+			std::vector<JointRotation>const& baseRotations = config.getBaseJointRotations(i);
+			hipTrack.rotations[i] = baseRotations[m_hipJoint].getQuatRotation();
+		}
+
 	}
 
 

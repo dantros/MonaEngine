@@ -13,6 +13,7 @@ namespace Mona {
 	public:
 		friend class AnimationClipManager;
 		friend class IKRigConfig;
+		friend class IKRig;
 		friend class IKRigController;
 		friend class TrajectoryGenerator;
 		typedef int JointIndex;

@@ -420,7 +420,13 @@ namespace Mona {
 		for (AnimationIndex i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {
 			IKRigConfig& config = m_ikRig.m_animationConfigs[i];
 			if (config.isActive()) {
-				updateAnimation(i);
+				if (config.getAnimationType() == AnimationType::WALKING &&
+					!config.isMovementFixed()) {
+					updateAnimation(i);
+				}
+				else if (config.getAnimationType() == AnimationType::IDLE) {
+					updateAnimation(i);
+				}				
 			}
 		}
 

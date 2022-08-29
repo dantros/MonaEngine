@@ -355,7 +355,7 @@ namespace Mona {
 		else if (animController.m_crossfadeTarget.GetAnimationClip() == anim) {
 			samplingTimeOffset = animController.m_crossfadeTarget.m_sampleTime - prevSamplingTime;
 		}
-		if (samplingTimeOffset < 0) {
+		if (samplingTimeOffset < avgFrameDuration/10.0f) {
 			samplingTimeOffset += config.getAnimationDuration();
 		}
 		

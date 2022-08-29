@@ -365,21 +365,19 @@ namespace Mona{
 		if (m_validateStride) {
 			if (baseEETr.isDynamic()) {
 				LIC<3> oppositeEECurve = baseTrajectoryData->getOppositeTrajectoryData()->getTargetTrajectory().getEECurve();
-				// si la trayectoria ya es fija pero el frame es distinto
-				if (baseTrajectoryData->m_fixedTarget && config->getCurrentFrameIndex() != config->getFixedMovementFrame()) {
+				FrameIndex currentFrame = config->getCurrentFrameIndex();
+				float currentRepTime = config->getReproductionTime(currentFrame);
+				bool oppositeDataAvailable = oppositeEECurve.inTRange(currentRepTime);
+				if (oppositeDataAvailable && (baseTrajectoryData->m_fixedTarget && config->getCurrentFrameIndex() == config->getFixedMovementFrame()
+					|| !baseTrajectoryData->m_fixedTarget)) {
+					float currentOppositeZ = oppositeEECurve.evalCurve(currentRepTime)[2];
+					float candidateEEZ = selectedFinalPoint[2];
+					float glblLegLenght = m_ikRig->getRigHeight() * m_ikRig->getRigScale() / 2;
+					valid = abs(currentOppositeZ - candidateEEZ) < glblLegLenght * 0.65f;
+				}
+				else if (baseTrajectoryData->m_fixedTarget) {
 					valid = false;
-				}
-				else{
-					FrameIndex currentFrame = config->getCurrentFrameIndex();
-					float currentRepTime = config->getReproductionTime(currentFrame);
-					if (oppositeEECurve.inTRange(currentRepTime)) {
-						float currentOppositeZ = oppositeEECurve.evalCurve(currentRepTime)[2];
-						float candidateEEZ = selectedFinalPoint[2];
-						float glblLegLenght = m_ikRig->getRigHeight() * m_ikRig->getRigScale() / 2;
-						valid = abs(currentOppositeZ - candidateEEZ) < glblLegLenght * 0.5f;
-					}
-				}
-				
+				}			
 			}
 			else {
 				// las trayectorias estaticas se calculan siempre

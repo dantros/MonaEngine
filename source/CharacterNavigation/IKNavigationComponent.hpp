@@ -22,8 +22,8 @@ namespace Mona {
 				m_ikRigController.addAnimation(animationClip, animationType);
 			}
 
-			void DrawTargetCurves() {
-
+			void SetStrideValidation(bool validateStrides) {
+				m_ikRigController.m_ikRig.m_trajectoryGenerator.m_validateStride = validateStrides;
 			}
 
 			int RemoveAnimation(std::shared_ptr<AnimationClip> animationClip) {

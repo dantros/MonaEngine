@@ -60,17 +60,6 @@ Mona::GameObjectHandle<Mona::GameObject> AddTerrain(Mona::World& world) {
 class IKRigCharacter : public Mona::GameObject
 {
 private:
-	void UpdateMovement(Mona::World& world) {
-		auto& input = world.GetInput();
-		if (input.IsMouseButtonPressed(MONA_MOUSE_BUTTON_1) && !m_prevIsPress) {
-			auto mousePos = input.GetMousePosition();
-
-		}
-		else if (m_prevIsPress && !input.IsMouseButtonPressed(MONA_MOUSE_BUTTON_1)) {
-			m_prevIsPress = false;
-		}
-
-	}
 
 	void UpdateAnimationState() {
 		auto& animController = m_skeletalMesh->GetAnimationController();
@@ -107,8 +96,13 @@ public:
 		else {
 			m_ikNavHandle->SetAngularSpeed(0);
 		}
+
+		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->SetStrideValidation(m_validateStrides);
+
 	};
 	virtual void UserStartUp(Mona::World& world) noexcept {
+		auto& eventManager = world.GetEventManager();
+		eventManager.Subscribe(m_debugGUISubcription, this, &IKRigCharacter::OnDebugGUIEvent);
 
 		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
 		m_transform->SetTranslation(m_startingPosition);
@@ -145,10 +139,15 @@ public:
 		m_skeletalMesh->GetAnimationController().SetPlayRate(0.6f);
 
 	}
+	void OnDebugGUIEvent(const Mona::DebugGUIEvent& event) {
+		ImGui::Begin("IK Options:");
+		ImGui::Checkbox("Validate strides", & (m_validateStrides));
+		ImGui::End();
+	}
 private:
 	float m_angularSpeed = 0.8f;
 	float m_fadeTime = 0.5f;
-	bool m_prevIsPress = false;
+	bool m_validateStrides = false;
 	std::string m_characterName;
 	glm::vec3 m_startingPosition;
 	Mona::TransformHandle m_transform;
@@ -156,6 +155,7 @@ private:
 	Mona::IKNavigationHandle m_ikNavHandle;
 	std::shared_ptr<Mona::AnimationClip> m_walkingAnimation;
 	std::shared_ptr<Mona::AnimationClip> m_idleAnimation;
+	Mona::SubscriptionHandle m_debugGUISubcription;
 
 };
 
@@ -171,7 +171,7 @@ public:
 		world.SetAmbientLight(glm::vec3(4.0f));
 		world.SetMainCamera(world.GetComponentHandle<Mona::CameraComponent>(m_camera));
 		AddDirectionalLight(world, glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-130.0f), 2);
-		AddDirectionalLight(world, glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(-30.0f), 6);
+		AddDirectionalLight(world, glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(-30.0f), 8.5f);
 		auto character = world.CreateGameObject<IKRigCharacter>("akai", glm::vec3(0,-10,0));
 		auto terrainObject = AddTerrain(world);
 		world.GetComponentHandle<Mona::IKNavigationComponent>(character)->AddTerrain(terrainObject);

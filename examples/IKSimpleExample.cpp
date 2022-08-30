@@ -34,14 +34,14 @@ Mona::GameObjectHandle<Mona::GameObject> AddTerrain(Mona::World& world) {
 	int numInnerVerticesHeight = 100;
 	auto heighFunc = [](float x, float y) -> float {
 		float result = 0;
-		int funcNum = 100;
+		int funcNum = 200;
 		glm::vec2 minXY(-100, -100);
 		glm::vec2 maxXY(100, 100);
 		float minHeight = -15;
-		float maxHeight = 70;
-		float minSigma = 3;
-		float maxSigma = 20;
-		std::srand(5);
+		float maxHeight = 60;
+		float minSigma = 4;
+		float maxSigma = 25;
+		std::srand(130);
 		for (int i = 0; i < funcNum; i++) {
 			float randMax = RAND_MAX;
 			result += gaussian(x, y, Mona::funcUtils::lerp(minHeight, maxHeight, std::rand() / randMax),
@@ -172,7 +172,7 @@ public:
 		world.SetMainCamera(world.GetComponentHandle<Mona::CameraComponent>(m_camera));
 		AddDirectionalLight(world, glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-130.0f), 2);
 		AddDirectionalLight(world, glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(-30.0f), 6);
-		auto character = world.CreateGameObject<IKRigCharacter>("akai", glm::vec3(0,20,0));
+		auto character = world.CreateGameObject<IKRigCharacter>("akai", glm::vec3(0,-10,0));
 		auto terrainObject = AddTerrain(world);
 		world.GetComponentHandle<Mona::IKNavigationComponent>(character)->AddTerrain(terrainObject);
 	}

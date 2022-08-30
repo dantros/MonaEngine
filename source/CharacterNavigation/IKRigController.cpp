@@ -212,6 +212,7 @@ namespace Mona {
 	AnimationIndex IKRigController::removeAnimation(std::shared_ptr<AnimationClip> animationClip) {
 		for (int i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {
 			if (m_ikRig.m_animationConfigs[i].m_animationClip == animationClip) {
+				m_ikRig.resetAnimation(i);
 				m_ikRig.m_animationConfigs.erase(m_ikRig.m_animationConfigs.begin() + i);
 				return i;
 			}

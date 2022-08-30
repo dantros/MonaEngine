@@ -35,41 +35,6 @@ namespace Mona{
             return true;
         }
 
-		bool correctTValues() {
-			bool needCorrection = !tValuesAreValid();
-			if (!needCorrection) {
-				return true;
-			}
-
-			// correccion de valores
-            // de izquierda a derecha
-			std::vector<int> targetIndexesLeftToRight;
-			for (int i = 1; i < getNumberOfPoints()-1; i++) {
-				if (m_tValues[i] - m_tValues[i - 1] <= 2*m_tEpsilon) {
-					targetIndexesLeftToRight.push_back(i);
-				}
-			}
-			for (int i = targetIndexesLeftToRight.size() - 1; 0 <= i; i--) {
-				int tIndex = targetIndexesLeftToRight[i];
-				m_tValues[tIndex] = (m_tValues[tIndex] + m_tValues[tIndex + 1]) / 2.0f;
-				m_curvePoints[tIndex] = (m_curvePoints[tIndex] + m_curvePoints[tIndex + 1]) / 2.0f;
-			}
-            // de derecha a izquierda
-			std::vector<int> targetIndexesRightToLeft;
-			for (int i = getNumberOfPoints() - 2; 0 <= i; i--) {
-				if (m_tValues[i + 1] - m_tValues[i] <= 2*m_tEpsilon) {
-					targetIndexesLeftToRight.push_back(i);
-				}
-			}
-			for (int i = targetIndexesRightToLeft.size() - 1; 0 <= i; i--) {
-				int tIndex = targetIndexesRightToLeft[i];
-				m_tValues[tIndex] = (m_tValues[tIndex] + m_tValues[tIndex - 1]) / 2.0f;
-				m_curvePoints[tIndex] = (m_curvePoints[tIndex] + m_curvePoints[tIndex - 1]) / 2.0f;
-			}
-
-			// chequeo final
-            return tValuesAreValid();
-		}
     public:
         glm::vec2 getTRange() const { return glm::vec2({ m_tValues[0], m_tValues.back() }); }
         bool inTRange(float t) const { return m_tValues[0]-m_tEpsilon <= t && t <= m_tValues.back()+m_tEpsilon; }
@@ -128,50 +93,6 @@ namespace Mona{
                 }
             }
             return glm::vec<D, float>(0);
-        }
-
-        
-
-        void displacePointT(int pointIndex, int lowIndex, int highIndex, float newT, 
-            bool scalePoints = true, float pointScalingRatio = 1, int maxCorrectionSteps = 3) {
-            MONA_ASSERT(lowIndex < highIndex && 0 <= lowIndex && highIndex < m_tValues.size(), "LIC: low and high index must be within bounds.");
-            MONA_ASSERT(lowIndex <= pointIndex && pointIndex <= highIndex, "LIC: input point index must be within input bounds");
-            float oldT = m_tValues[pointIndex];
-            if (oldT == newT) { return; }
-            if (pointIndex != lowIndex) {
-                MONA_ASSERT(getTValue(lowIndex) < newT,
-                    "LIC: If not the lower end, newT cannot subceed or match original low t bound.");
-                float fractionBelow = funcUtils::getFraction(m_tValues[lowIndex], oldT, newT);
-                for (int i = lowIndex + 1; i <= pointIndex; i++) {
-                    m_tValues[i] = funcUtils::lerp(m_tValues[lowIndex], m_tValues[i], fractionBelow);
-                    if (scalePoints) {
-                        m_curvePoints[i] = funcUtils::lerp(m_curvePoints[lowIndex], m_curvePoints[i], fractionBelow * pointScalingRatio);
-                    }
-                }
-            }
-
-            if (pointIndex != highIndex) {
-                MONA_ASSERT(newT < getTValue(highIndex),
-                    "LIC: If not the higher end, newT cannot exceed or match original high t bound.");
-                float fractionAbove = funcUtils::getFraction(m_tValues[highIndex], oldT, newT);
-                for (int i = pointIndex; i < highIndex; i++) {
-                    if (pointIndex < i || pointIndex == lowIndex) {
-                        m_tValues[i] = funcUtils::lerp(m_tValues[highIndex], m_tValues[i], fractionAbove);
-                        if (scalePoints) {
-                            m_curvePoints[i] = funcUtils::lerp(m_curvePoints[highIndex], m_curvePoints[i], fractionAbove * pointScalingRatio);
-                        }
-                    }
-                }
-            }
-
-            // correccion de valores
-            bool corrected = tValuesAreValid();
-            int correctionSteps = 0;
-            while (!corrected && correctionSteps < maxCorrectionSteps) {
-                corrected = correctTValues();
-                correctionSteps += 1;
-            }
-            MONA_ASSERT(corrected, "LIC: tValues were pushed too close together.");                       
         }
 
         void setCurvePoint(int pointIndex, glm::vec<D, float> newValue) {

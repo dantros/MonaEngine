@@ -175,10 +175,10 @@ namespace Mona {
 		auto terms = std::vector<FunctionTerm<IKData>>({ term1,term2, term3 });
 		m_gradientDescent = GradientDescent<IKData>(terms, 0, &m_ikData, postDescentStepCustomBehaviour);
 		m_ikData.descentRate = 1.0f;
-		m_ikData.maxIterations = 500;
-		m_ikData.targetAngleDelta = 1 / pow(10, 4);
-		m_gradientDescent.setTermWeight(0, 2.0f / (pow(10, 2) * m_ikRig->getRigHeight()));
-		m_gradientDescent.setTermWeight(1, 0.02f);		
+		m_ikData.maxIterations = 600;
+		m_ikData.targetAngleDelta = 1 / pow(10, 3);
+		m_gradientDescent.setTermWeight(0, 1.0f / (pow(10, 2) * m_ikRig->getRigHeight()));
+		m_gradientDescent.setTermWeight(1, 0.01f);		
 		m_gradientDescent.setTermWeight(2, 0.02f);
 		setIKChains(m_ikChains);
 	}
@@ -192,6 +192,7 @@ namespace Mona {
 		m_ikData.ikChains = chainPtrs;
 		std::vector<std::string> ikChainNames(chainPtrs.size());
 		m_ikData.jointIndexes = {};
+		m_ikData.stepsByJoint = {};
 		std::vector<JointIndex> jointIndexes;
 		for (int c = 0; c < chainPtrs.size(); c++) {
 			// se dejan fuera los ee, ya que no cambiar sus angulos de rotacion no afecta su posicion
@@ -203,8 +204,12 @@ namespace Mona {
 					return;
 				}
 			}
+			int jointNum = chainPtrs[c]->getJoints().size()-1;
+			for (int j = jointNum; 1 <= j ; j--) {
+				m_ikData.stepsByJoint.push_back(pow(3, j));
+			}
 		}
-		funcUtils::sortUnique(jointIndexes);
+		funcUtils::removeDuplicates(jointIndexes);
 		m_ikData.jointIndexes = jointIndexes;
 		m_gradientDescent.setArgNum(m_ikData.jointIndexes.size());
 		m_ikData.rotationAxes.resize(m_ikData.jointIndexes.size());
@@ -238,7 +243,7 @@ namespace Mona {
 			(*dynamicRotations_target)[jIndex].setRotationAngle(initialArgs[i]);
 		}
 		std::vector<float> computedAngles = m_gradientDescent.computeArgsMin_progressive(m_ikData.descentRate, 
-			m_ikData.maxIterations, m_ikData.targetAngleDelta, initialArgs, DescentType::SGDM);
+			m_ikData.maxIterations, m_ikData.targetAngleDelta, initialArgs, m_ikData.stepsByJoint);
 		std::vector<std::pair<JointIndex, glm::fquat>> result(computedAngles.size());
 		
 		for (int i = 0; i < m_ikData.jointIndexes.size(); i++) {

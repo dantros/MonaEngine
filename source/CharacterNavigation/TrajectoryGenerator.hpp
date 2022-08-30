@@ -21,7 +21,7 @@ namespace Mona{
     private:
         IKRig* m_ikRig;
         EnvironmentData m_environmentData;
-        bool m_validateStride;
+        bool m_strideValidationEnabled;
         void generateEETrajectory(ChainIndex ikChain, IKRigConfig* config,
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
@@ -58,6 +58,7 @@ namespace Mona{
         void generateNewTrajectories(AnimationIndex animIndex,
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
+        void enableStrideValidation(bool enableStrideValidation) { m_strideValidationEnabled = enableStrideValidation; }
     };
 
     

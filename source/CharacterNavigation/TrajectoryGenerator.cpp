@@ -13,7 +13,7 @@ namespace Mona{
 
     TrajectoryGenerator::TrajectoryGenerator(IKRig* ikRig) {
         m_ikRig = ikRig;
-		m_validateStride = true;
+		m_strideValidationEnabled = true;
     }
 
 	void TrajectoryGenerator::generateNewTrajectories(AnimationIndex animIndex,
@@ -362,7 +362,7 @@ namespace Mona{
 		outStrideFinalPoint = selectedFinalPoint;
 		// validacion del punto escogido
 		bool valid = true;
-		if (m_validateStride) {
+		if (m_strideValidationEnabled) {
 			if (baseEETr.isDynamic()) {
 				LIC<3> oppositeEECurve = baseTrajectoryData->getOppositeTrajectoryData()->getTargetTrajectory().getEECurve();
 				FrameIndex currentFrame = config->getCurrentFrameIndex();

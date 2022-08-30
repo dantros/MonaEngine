@@ -38,9 +38,9 @@ Mona::GameObjectHandle<Mona::GameObject> AddTerrain(Mona::World& world) {
 		glm::vec2 minXY(-100, -100);
 		glm::vec2 maxXY(100, 100);
 		float minHeight = -15;
-		float maxHeight = 60;
-		float minSigma = 4;
-		float maxSigma = 25;
+		float maxHeight = 70;
+		float minSigma = 3;
+		float maxSigma = 20;
 		std::srand(130);
 		for (int i = 0; i < funcNum; i++) {
 			float randMax = RAND_MAX;
@@ -98,6 +98,7 @@ public:
 		}
 
 		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->SetStrideValidation(m_validateStrides);
+		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->EnableIK(m_enableIK);
 
 	};
 	virtual void UserStartUp(Mona::World& world) noexcept {
@@ -140,14 +141,16 @@ public:
 
 	}
 	void OnDebugGUIEvent(const Mona::DebugGUIEvent& event) {
-		ImGui::Begin("IK Options:");
+		ImGui::Begin("IKNav Options:");
 		ImGui::Checkbox("Validate strides", & (m_validateStrides));
+		ImGui::Checkbox("Enable IK", &(m_enableIK));
 		ImGui::End();
 	}
 private:
 	float m_angularSpeed = 0.8f;
 	float m_fadeTime = 0.5f;
 	bool m_validateStrides = false;
+	bool m_enableIK = true;
 	std::string m_characterName;
 	glm::vec3 m_startingPosition;
 	Mona::TransformHandle m_transform;

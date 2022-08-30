@@ -16,6 +16,7 @@ namespace Mona {
 		InnerComponentHandle m_skeletalMeshHandle;
 		glm::mat4 m_baseGlobalTransform;
 		float m_reproductionTime = 0;
+		bool m_ikEnabled = true;
 	public:
 		IKRigController() = default;
 		IKRigController(std::shared_ptr<Skeleton> skeleton, RigData rigData, InnerComponentHandle transformHandle,
@@ -33,6 +34,7 @@ namespace Mona {
 			ComponentManager<StaticMeshComponent>& staticMeshManager, ComponentManager<SkeletalMeshComponent>& skeletalMeshManager);
 		void updateMovementDirection(float timeStep);
 		void clearConfig(IKRigConfig& config);
+		void enableIK(bool enableIK);
 		void init();
 	};
 

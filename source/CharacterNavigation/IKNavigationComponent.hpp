@@ -23,7 +23,11 @@ namespace Mona {
 			}
 
 			void SetStrideValidation(bool validateStrides) {
-				m_ikRigController.m_ikRig.m_trajectoryGenerator.m_validateStride = validateStrides;
+				m_ikRigController.m_ikRig.m_trajectoryGenerator.enableStrideValidation(validateStrides);
+			}
+
+			void EnableIK(bool enableIK) {
+				m_ikRigController.enableIK(enableIK);
 			}
 
 			int RemoveAnimation(std::shared_ptr<AnimationClip> animationClip) {

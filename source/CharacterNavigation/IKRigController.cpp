@@ -130,7 +130,7 @@ namespace Mona {
 			hipGlblPositions.push_back(glblPositions[m_ikRig.m_hipJoint]);
 			for (ChainIndex j = 0; j < chainNum; j++) {
 				int eeIndex = m_ikRig.m_ikChains[j].getEndEffector();
-				bool isSupportFrame = glm::distance(glblPositions[eeIndex], previousPositions[eeIndex]) <= minDistance*40;
+				bool isSupportFrame = glm::distance(glblPositions[eeIndex], previousPositions[eeIndex]) <= minDistance*30;
 				supportFramesPerChain[j][i] = isSupportFrame;
 				glblPositionsPerChain[j][i] = glm::vec4(glblPositions[eeIndex], 1);
 			}
@@ -343,7 +343,7 @@ namespace Mona {
 	void IKRigController::updateIKRigConfigTime(float animationTimeStep, AnimationIndex animIndex, AnimationController& animController) {
 		IKRigConfig& config = m_ikRig.m_animationConfigs[animIndex];
 		float avgFrameDuration = config.getAnimationDuration() / config.getFrameNum();
-		if (avgFrameDuration*2 < animationTimeStep) {
+		if (avgFrameDuration*1.5f < animationTimeStep) {
 			MONA_LOG_ERROR("IKRigController: Framerate is too low for IK system to work properly on animation with name --{0}--.",
 				config.m_animationClip->GetAnimationName());
 		}
@@ -408,25 +408,36 @@ namespace Mona {
 			}
 		}
 		updateGlobalTransform(transformManager);
-		for (AnimationIndex i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {
-			IKRigConfig& config = m_ikRig.m_animationConfigs[i];
-			if (config.isActive()) {
-				if (config.getAnimationType() == AnimationType::WALKING) {
-					if (!config.isMovementFixed()) {
+		if (m_ikEnabled) {
+			for (AnimationIndex i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {
+				IKRigConfig& config = m_ikRig.m_animationConfigs[i];
+				if (config.isActive()) {
+					if (config.getAnimationType() == AnimationType::WALKING) {
+						if (!config.isMovementFixed()) {
+							updateAnimation(i);
+						}
+					}
+					else if (config.getAnimationType() == AnimationType::IDLE) {
 						updateAnimation(i);
-					}					
+					}
 				}
-				else if (config.getAnimationType() == AnimationType::IDLE) {
-					updateAnimation(i);
-				}				
 			}
-		}
+		}		
 
 		for (AnimationIndex i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {
 			IKRigConfig& config = m_ikRig.m_animationConfigs[i];
 			config.m_onNewFrame = false;
 		}
 
+	}
+
+	void IKRigController::enableIK(bool enableIK) {
+		if (!enableIK) {
+			for (AnimationIndex i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {
+				m_ikRig.resetAnimation(i);
+			}
+		}
+		m_ikEnabled = enableIK;		
 	}
 
 

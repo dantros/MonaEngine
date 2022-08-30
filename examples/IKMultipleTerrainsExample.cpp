@@ -170,6 +170,7 @@ public:
 		}
 
 		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->SetStrideValidation(m_validateStrides);
+		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->EnableIK(m_enableIK);
 
 	};
 	virtual void UserStartUp(Mona::World& world) noexcept {
@@ -208,18 +209,20 @@ public:
 		m_ikNavHandle = world.AddComponent<Mona::IKNavigationComponent>(*this, rigData);
 		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_walkingAnimation, Mona::AnimationType::WALKING);
 		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_idleAnimation, Mona::AnimationType::IDLE);
-		m_skeletalMesh->GetAnimationController().SetPlayRate(0.6f);
+		m_skeletalMesh->GetAnimationController().SetPlayRate(0.5f);
 
 	}
 	void OnDebugGUIEvent(const Mona::DebugGUIEvent& event) {
-		ImGui::Begin("IK Options:");
+		ImGui::Begin("IKNav Options:");
 		ImGui::Checkbox("Validate strides", &(m_validateStrides));
+		ImGui::Checkbox("Enable IK", &(m_enableIK));
 		ImGui::End();
 	}
 private:
 	float m_angularSpeed = 0.8f;
 	float m_fadeTime = 0.5f;
 	bool m_validateStrides = false;
+	bool m_enableIK = true;
 	std::string m_characterName;
 	glm::vec3 m_startingPosition;
 	Mona::TransformHandle m_transform;
@@ -228,7 +231,6 @@ private:
 	std::shared_ptr<Mona::AnimationClip> m_walkingAnimation;
 	std::shared_ptr<Mona::AnimationClip> m_idleAnimation;
 	Mona::SubscriptionHandle m_debugGUISubcription;
-
 };
 
 class IKNav : public Mona::Application

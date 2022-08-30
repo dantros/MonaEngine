@@ -38,6 +38,19 @@ namespace Mona {
         }
 
         template < typename T>
+        inline void removeDuplicates(std::vector<T>& vecOfElements)
+        {
+
+            std::vector<T> uniqueElements = vecOfElements;
+            sortUnique(uniqueElements);
+            for (int i = 0; i < uniqueElements.size(); i++) {
+                while (1 < std::count(vecOfElements.begin(), vecOfElements.end(), uniqueElements[i])) {
+                    vecOfElements.erase(vecOfElements.begin() + findIndex(vecOfElements, uniqueElements[i]));
+                }
+            }
+        }
+
+        template < typename T>
         inline int findIndexSubArray(const std::vector<T>& vecOfElements, const T& element, int indexStart, int indexEnd)
         {
             if (indexStart < 0 || indexStart >= vecOfElements.size() || indexEnd < 0 || indexEnd >= vecOfElements.size()) {

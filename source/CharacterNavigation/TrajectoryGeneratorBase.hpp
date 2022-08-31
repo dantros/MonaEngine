@@ -24,7 +24,7 @@ namespace Mona{
         LIC<3> m_originalPositions;
         LIC<3> m_targetPositions;
         std::vector<glm::vec3> m_savedPositions;
-        std::vector<bool> m_savedDataValid;
+        bool m_motionInitialized = false;
         IKRigConfig* m_config;
 		template <int D>
         LIC<D> sampleOriginaCurve(float initialExtendedAnimTime, float finalExtendedAnimTime,
@@ -32,7 +32,7 @@ namespace Mona{
     public:
         LIC<3> sampleOriginalPositions(float initialExtendedAnimTime, float finalExtendedAnimTime);
         glm::vec3 getSavedPosition(FrameIndex frame) { return m_savedPositions[frame]; }
-        bool isSavedDataValid(FrameIndex frame) { return m_savedDataValid[frame]; }
+        bool motionInitialized() { return m_motionInitialized; }
         LIC<3> getTargetPositions() { return m_targetPositions; }
         void setTargetPositions(LIC<3> targetPositions) { m_targetPositions = targetPositions; }
         void init(IKRigConfig* config);
@@ -68,7 +68,7 @@ namespace Mona{
         std::vector<float> m_supportHeights;
         // Posiciones guardadas calculadas para frames previos con IK
         std::vector<glm::vec3> m_savedPositions;
-        std::vector<bool> m_savedDataValid;
+        bool m_motionInitialized = false;
         IKRigConfig* m_config;
         EEGlobalTrajectoryData* m_oppositeTrajectoryData;
         bool m_fixedTarget = false;
@@ -78,7 +78,7 @@ namespace Mona{
         EETrajectory getSubTrajectoryByID(int subTrajectoryID);
         int getSubTrajectoryNum() { return m_originalSubTrajectories.size(); }
         glm::vec3 getSavedPosition(FrameIndex frame) { return m_savedPositions[frame]; }
-        bool isSavedDataValid(FrameIndex frame) { return m_savedDataValid[frame]; }
+        bool motionInitialized() { return m_motionInitialized; }
         float getSupportHeight(FrameIndex frame) { return m_supportHeights[frame]; }
         EETrajectory& getTargetTrajectory() { return m_targetTrajectory; }
         void setTargetTrajectory(LIC<3> curve, TrajectoryType trajectoryType, int subTrajectoryID) { 

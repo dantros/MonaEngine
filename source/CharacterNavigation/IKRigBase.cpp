@@ -94,6 +94,13 @@ namespace Mona{
 	FrameIndex IKRigConfig::getFrame(float extendedAnimationTime) {
 		// llevar el tiempo al rango correcto
 		extendedAnimationTime = adjustAnimationTime(extendedAnimationTime);
+		// si esta en torno a un frame
+		float epsilon = (getFrameNum() / getAnimationDuration()) / 1000;
+		for (FrameIndex i = 0; i < m_timeStamps.size(); i++) {
+			if (abs(extendedAnimationTime - m_timeStamps[i]) < epsilon) {
+				return i;
+			}
+		}
 		for (FrameIndex i = 0; i < m_timeStamps.size()-1; i++) {
 			if (m_timeStamps[i] <= extendedAnimationTime && extendedAnimationTime < m_timeStamps[i + 1]) {
 				return i;

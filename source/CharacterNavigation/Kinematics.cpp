@@ -179,7 +179,7 @@ namespace Mona {
 		m_ikData.targetAngleDelta = 1 / pow(10, 3);
 		m_gradientDescent.setTermWeight(0, 1.0f / (pow(10, 2) * m_ikRig->getRigHeight()));
 		m_gradientDescent.setTermWeight(1, 0.01f);		
-		m_gradientDescent.setTermWeight(2, 0.02f);
+		m_gradientDescent.setTermWeight(2, 0.015f);
 		setIKChains(m_ikChains);
 	}
 
@@ -230,7 +230,10 @@ namespace Mona {
 		for (int i = 0; i < m_ikData.jointIndexes.size(); i++) {
 			m_ikData.previousAngles[i] = (*dynamicRotations_prev)[m_ikData.jointIndexes[i]].getRotationAngle();
 		}
-		std::vector<float> initialArgs = m_ikData.previousAngles;
+		std::vector<float> initialArgs(m_ikData.previousAngles.size());
+		for (int i = 0; i < m_ikData.previousAngles.size(); i++) {
+			initialArgs[i] = m_ikData.previousAngles[i] * 0.8f;
+		}
 
 		for (int i = 0; i < m_ikData.jointIndexes.size(); i++) {
 			m_ikData.rotationAxes[i] = baseRotations_target[m_ikData.jointIndexes[i]].getRotationAxis();

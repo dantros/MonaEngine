@@ -135,7 +135,7 @@ namespace Mona{
 
         // chequear si hay info de posicion valida previa
 		float strideLength = glm::distance(baseCurve.getStart(), baseCurve.getEnd());
-        if (!(trData->isSavedDataValid(initialFrame) && trData->getTargetTrajectory().getEECurve().inTRange(initialRepTime))) {
+        if (!trData->motionInitialized()) {
 			glm::vec2 originalXYDirection = glm::normalize(glm::vec2(baseCurve.getEnd() - baseCurve.getStart()));
 			glm::vec2 baseTargetXYDirection = glm::rotate(glm::vec2(originalXYDirection), m_ikRig->getRotationAngle());
             float referenceTime = config->getReproductionTime(currentFrame);
@@ -202,7 +202,7 @@ namespace Mona{
             }
             glm::vec3 initialPos = hipTrData->getSavedPosition(currentFrame);
             // chequear si hay info de posicion valida previa
-            if (!(hipTrData->isSavedDataValid(currentFrame) && hipTrData->getTargetPositions().inTRange(initialTime_rep))) {
+            if (!hipTrData->motionInitialized()) {
                 std::pair<EEGlobalTrajectoryData*, EEGlobalTrajectoryData*> trDataPair;
                 trDataPair.first = config->getEETrajectoryData(0);
                 trDataPair.second = trDataPair.first->getOppositeTrajectoryData();
@@ -258,7 +258,7 @@ namespace Mona{
             // calculo del punto inicial de la trayectoria
             glm::vec3 initialPos;
             // chequear si hay info de posicion valida previa
-            if (hipTrData->isSavedDataValid(initialFrame) && hipTrData->getTargetPositions().inTRange(tInfLimitRep)) {
+            if (hipTrData->motionInitialized()) {
 				initialPos = hipTrData->getSavedPosition(initialFrame);
             }
             else {

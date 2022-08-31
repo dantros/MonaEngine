@@ -13,7 +13,6 @@ EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int
     void HipGlobalTrajectoryData::init(IKRigConfig* config) {
 		int frameNum = config->getFrameNum();
         m_savedPositions = std::vector<glm::vec3>(frameNum);
-		m_savedDataValid = std::vector<bool>(frameNum, false);
         m_config = config;
     }
 
@@ -35,8 +34,8 @@ EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int
     }
 
 	void HipGlobalTrajectoryData::clear() {
-		m_savedDataValid = std::vector<bool>(m_savedDataValid.size(), false);
 		m_targetPositions = LIC<3>();
+		m_motionInitialized = false;
 	}
 
 	EETrajectory EEGlobalTrajectoryData::getSubTrajectory(float animationTime) {
@@ -59,7 +58,6 @@ EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int
     void  EEGlobalTrajectoryData::init(IKRigConfig* config, EEGlobalTrajectoryData* oppositeTrData) {
 		int frameNum = config->getFrameNum();
         m_savedPositions = std::vector<glm::vec3>(frameNum);
-		m_savedDataValid = std::vector<bool>(frameNum, false);
         m_supportHeights = std::vector<float>(frameNum);
 		m_config = config;
 		m_oppositeTrajectoryData = oppositeTrData;
@@ -94,10 +92,10 @@ EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int
 	}
 
 	void EEGlobalTrajectoryData::clear() {
-		m_savedDataValid = std::vector<bool>(m_savedDataValid.size(), false);
 		m_targetTrajectory.m_curve = LIC<3>();
 		m_targetTrajectory.m_subTrajectoryID = -1;
 		m_fixedTarget = false;
+		m_motionInitialized = false;
 	}
 
 

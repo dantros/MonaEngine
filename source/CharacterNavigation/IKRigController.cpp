@@ -92,8 +92,7 @@ namespace Mona {
 		// numero de rotaciones por joint con la animaciond descomprimida
 		int frameNum = animationClip->m_animationTracks[0].rotationTimeStamps.size();
 
-		// minima distancia entre posiciones de un frame a otro para considerarlo un movimiento
-		float minDistance = m_ikRig.m_rigHeight*m_ikRig.m_rigScale / 1000;		
+			
 
 		// Guardamos las trayectorias originales de los ee y definimos sus frames de soporte
 		std::vector<float> rotTimeStamps = animationClip->m_animationTracks[0].rotationTimeStamps;
@@ -128,9 +127,11 @@ namespace Mona {
 				glblPositions[j] = glblTransforms[j] * glm::vec4(0, 0, 0, 1);
 			}
 			hipGlblPositions.push_back(glblPositions[m_ikRig.m_hipJoint]);
+			// distancia base entre puntos para identificacion de puntos de soporte
+			float minDistance = m_ikRig.m_rigHeight * m_ikRig.m_rigScale / 1000;
 			for (ChainIndex j = 0; j < chainNum; j++) {
 				int eeIndex = m_ikRig.m_ikChains[j].getEndEffector();
-				bool isSupportFrame = glm::distance(glblPositions[eeIndex], previousPositions[eeIndex]) <= minDistance*30;
+				bool isSupportFrame = glm::distance(glblPositions[eeIndex], previousPositions[eeIndex]) <= minDistance*15;
 				supportFramesPerChain[j][i] = isSupportFrame;
 				glblPositionsPerChain[j][i] = glm::vec4(glblPositions[eeIndex], 1);
 			}
@@ -242,10 +243,8 @@ namespace Mona {
 				trData = config.getEETrajectoryData(i);
 				JointIndex ee = endEffectors[i];
 				trData->m_savedPositions[currentFrame] = globalTransforms[ee] * glm::vec4(0, 0, 0, 1);
-				trData->m_savedDataValid[currentFrame] = true;
 				// para compensar el poco espacio entre en ultimo y el primer frame
 				if (currentFrame == 0) {
-					trData->m_savedDataValid.back() = true;
 					trData->m_savedPositions.back() = globalTransforms[ee] * glm::vec4(0, 0, 0, 1);
 				}
 			}
@@ -253,15 +252,40 @@ namespace Mona {
 			glm::vec3 hipScale; glm::fquat hipRot; glm::vec3 hipTrans; glm::vec3 hipSkew; glm::vec4 hipPers;
 			glm::decompose(hipTransform, hipScale, hipRot, hipTrans, hipSkew, hipPers);
 			hipTrData->m_savedPositions[currentFrame] = hipTrans;
-			hipTrData->m_savedDataValid[currentFrame] = true;
 			// para compensar el poco espacio entre en ultimo y el primer frame
 			if (currentFrame == 0) {
 				hipTrData->m_savedPositions.back() = hipTrans;
-				hipTrData->m_savedDataValid.back() = true;
 			}
 
 			// recalcular trayectorias de ee y caderas
 			m_ikRig.calculateTrajectories(animIndex, transformManager, staticMeshManager);
+
+			// ya que no hay info de posicion guardada al comenzar el movimiento, se rellena con la curva objetivo
+			if (!config.isMovementFixed()) {
+				for (ChainIndex i = 0; i < m_ikRig.getChainNum(); i++) {
+					trData = config.getEETrajectoryData(i);
+					if (!trData->m_motionInitialized) {
+						LIC<3> targetCurve = trData->getTargetTrajectory().getEECurve();
+						targetCurve.offsetTValues(-config.getCurrentReproductionTime());
+						targetCurve.offsetTValues(config.getAnimationTime(config.getCurrentReproductionTime()));
+						for (int j = 0; j < targetCurve.getNumberOfPoints(); j++) {
+							FrameIndex frame = config.getFrame(targetCurve.getTValue(j));
+							trData->m_savedPositions[frame] = targetCurve.getCurvePoint(j);
+						}
+						trData->m_motionInitialized = true;
+					}
+				}
+				if (!hipTrData->m_motionInitialized) {
+					LIC<3> targetCurve = hipTrData->getTargetPositions();
+					targetCurve.offsetTValues(-config.getCurrentReproductionTime());
+					targetCurve.offsetTValues(config.getAnimationTime(config.getCurrentReproductionTime()));
+					for (int j = 0; j < targetCurve.getNumberOfPoints(); j++) {
+						FrameIndex frame = config.getFrame(targetCurve.getTValue(j));
+						hipTrData->m_savedPositions[frame] = targetCurve.getCurvePoint(j);
+					}
+					hipTrData->m_motionInitialized = true;
+				}
+			}			
 
 			// asignar objetivos a ee's
 			int repOffset_next = config.getCurrentFrameIndex() < config.getFrameNum() - 1 ? 0 : 1;

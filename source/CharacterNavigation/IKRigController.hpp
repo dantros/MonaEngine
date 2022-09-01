@@ -17,6 +17,7 @@ namespace Mona {
 		glm::mat4 m_baseGlobalTransform;
 		float m_reproductionTime = 0;
 		bool m_ikEnabled = true;
+		bool m_transitioning = false;
 	public:
 		IKRigController() = default;
 		IKRigController(std::shared_ptr<Skeleton> skeleton, RigData rigData, InnerComponentHandle transformHandle,

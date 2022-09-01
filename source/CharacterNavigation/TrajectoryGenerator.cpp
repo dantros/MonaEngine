@@ -47,7 +47,7 @@ namespace Mona{
 				EEGlobalTrajectoryData* trData = config->getEETrajectoryData(i);
 				if (trData->getTargetTrajectory().isDynamic()) {
 					if (!trData->isTargetFixed()) {
-						glm::vec3 currentPos = trData->getSavedPosition(currentFrame);
+						glm::vec3 currentPos = trData->getSavedPosition(currentRepTime);
 						int trID = trData->getTargetTrajectory().getSubTrajectoryID();
 						float currSupportHeight = trData->getSupportHeight(config->m_fixedMovementFrame);
 						generateFixedTrajectory(glm::vec2(currentPos), { currentRepTime, currentRepTime + config->getAnimationDuration() },
@@ -55,7 +55,7 @@ namespace Mona{
 					}
 					EEGlobalTrajectoryData* oppositeTrData = trData->getOppositeTrajectoryData();
 					float oppositeCurrSupportHeight = oppositeTrData->getSupportHeight(config->m_fixedMovementFrame);
-					glm::vec3 oppositeCurrentPos = oppositeTrData->getSavedPosition(currentFrame);
+					glm::vec3 oppositeCurrentPos = oppositeTrData->getSavedPosition(currentRepTime);
 					int oppositeTrID = oppositeTrData->getTargetTrajectory().getSubTrajectoryID();
 					generateFixedTrajectory(glm::vec2(oppositeCurrentPos), { currentRepTime, currentRepTime + config->getAnimationDuration() },
 						oppositeTrID, oppositeCurrSupportHeight, oppositeTrData, transformManager, staticMeshManager);
@@ -97,7 +97,7 @@ namespace Mona{
 		float nextAnimTime = config->getAnimationTime(nextFrame);
 		float currentRepTime = config->getReproductionTime(currentFrame);
 		float currSupportHeight = trData->getSupportHeight(currentFrame);
-		glm::vec3 currentPos = trData->getSavedPosition(currentFrame);
+		glm::vec3 currentPos = trData->getSavedPosition(currentRepTime);
 		if (config->getAnimationType() == AnimationType::IDLE) {
 			int subTrID = trData->m_originalSubTrajectories[0].m_subTrajectoryID;
 			generateFixedTrajectory(glm::vec2(currentPos), { currentRepTime, currentRepTime + config->getAnimationDuration() }, subTrID,
@@ -130,7 +130,7 @@ namespace Mona{
 			return;
 		}
 
-		glm::vec3 initialPos = trData->getSavedPosition(initialFrame);
+		glm::vec3 initialPos = trData->getSavedPosition(baseCurve.getTRange()[0]);
 		float initialRepTime = baseCurve.getTValue(0);
 
         // chequear si hay info de posicion valida previa
@@ -151,7 +151,7 @@ namespace Mona{
 		glm::vec2 xyHipEEOriginalDiff = hipPosCurve.getEnd() - baseCurve.getEnd();
 		glm::vec2 xyHipEEUpdatedDiff = glm::rotate(xyHipEEOriginalDiff, m_ikRig->getRotationAngle());
 		glm::vec2 hipCurrDir = glm::rotate(m_ikRig->getFrontVector(), m_ikRig->getRotationAngle());
-		glm::vec2 hipCurrXYPos = hipTrData->getSavedPosition(currentFrame);
+		glm::vec2 hipCurrXYPos = hipTrData->getSavedPosition(currentRepTime);
 		if (hipTrData->getTargetPositions().inTRange(currentRepTime)) {
 			hipCurrXYPos = hipTrData->getTargetPositions().evalCurve(currentRepTime);
 		}
@@ -193,6 +193,7 @@ namespace Mona{
 
         HipGlobalTrajectoryData* hipTrData = config->getHipTrajectoryData();
         FrameIndex currentFrame = config->getCurrentFrameIndex();
+		float currentRepTime = config->getReproductionTime(currentFrame);
         if (config->isMovementFixed()) {
             float initialTime_rep = config->getReproductionTime(currentFrame);
             float currFrameTime_extendedAnim = config->getAnimationTime(currentFrame);
@@ -200,7 +201,7 @@ namespace Mona{
             if (nextFrameTime_extendedAnim < currFrameTime_extendedAnim) {
                 nextFrameTime_extendedAnim += config->getAnimationDuration();
             }
-            glm::vec3 initialPos = hipTrData->getSavedPosition(currentFrame);
+            glm::vec3 initialPos = hipTrData->getSavedPosition(initialTime_rep);
             // chequear si hay info de posicion valida previa
             if (!hipTrData->motionInitialized()) {
                 std::pair<EEGlobalTrajectoryData*, EEGlobalTrajectoryData*> trDataPair;
@@ -259,12 +260,12 @@ namespace Mona{
             glm::vec3 initialPos;
             // chequear si hay info de posicion valida previa
             if (hipTrData->motionInitialized()) {
-				initialPos = hipTrData->getSavedPosition(initialFrame);
+				initialPos = hipTrData->getSavedPosition(tInfLimitRep);
             }
             else {
                 glm::vec2 hipXYReferencePoint = hipPosCurve.evalCurve(tCurrExtendedAnim);
                 float targetXYDistance = glm::distance(glm::vec2(hipPosCurve.getStart()), hipXYReferencePoint);
-                glm::vec2 currXYHipPos = hipTrData->getSavedPosition(currentFrame);
+                glm::vec2 currXYHipPos = hipTrData->getSavedPosition(currentRepTime);
                 glm::vec2 targetDirection = glm::rotate(glm::vec2(hipTrOriginalDirection), m_ikRig->getRotationAngle());
                 glm::vec2 targetXYPos = currXYHipPos - targetDirection * targetXYDistance;
 				initialPos = glm::vec3(glm::vec2(targetXYPos),

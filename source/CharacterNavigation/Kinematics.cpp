@@ -205,8 +205,8 @@ namespace Mona {
 				}
 			}
 			int jointNum = chainPtrs[c]->getJoints().size()-1;
-			for (int j = jointNum; 1 <= j ; j--) {
-				m_ikData.stepsByJoint.push_back(pow(3, j));
+			for (int j = jointNum-1; 0 <= j ; j--) {
+				m_ikData.stepsByJoint.push_back(pow(2, j));
 			}
 		}
 		funcUtils::removeDuplicates(jointIndexes);

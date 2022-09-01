@@ -100,6 +100,32 @@ namespace Mona{
             m_curvePoints[pointIndex] = newValue;
         }
 
+        void insertPoint(glm::vec<D, float> point, float tValue) {
+            // si ya hay un punto en un tValue similar retornamos
+            for (int i = 0; i < m_tValues.size(); i++) {
+                if (abs(m_tValues[i] - tValue) < 2 * m_tEpsilon) {
+                    return;
+                }
+            }
+            if (tValue < m_tValues[0]) {
+                m_tValues.insert(m_tValues.begin(), tValue);
+                m_curvePoints.insert(m_curvePoints.begin(), point);
+            }
+            else if (m_tValues.back() < tValue) {
+                m_tValues.push_back(tValue);
+                m_curvePoints.push_back(point);
+            }
+            else {
+                for (int i = 0; i < m_tValues.size()-1; i++) {
+                    if (m_tValues[i] < tValue && tValue < m_tValues[i + 1]) {
+                        m_tValues.insert(m_tValues.begin() + i + 1, tValue);
+                        m_curvePoints.insert(m_curvePoints.begin() + i + 1, point);
+                        return;
+                    }
+                }
+            }
+        }
+
         LIC<D> sample(float minT, float maxT) {
             MONA_ASSERT(m_tEpsilon*2 <= maxT - minT, "LIC: maxT must be greater than minT by at least 2*tEpsilon.");
             MONA_ASSERT(inTRange(minT) && inTRange(maxT), "LIC: Both minT and maxT must be in t range.");
@@ -110,19 +136,25 @@ namespace Mona{
             int startInd = getClosestPointIndex(minT) + 1;
             sampleTValues.push_back(minT);
             samplePoints.push_back(evalCurve(minT));
-            for (int i = startInd; i < m_tValues.size(); i++) {
-                if (m_tEpsilon*2 < maxT - m_tValues[i]) {
-                    if (m_tEpsilon*2 < m_tValues[i] - minT) {
-						sampleTValues.push_back(m_tValues[i]);
-						samplePoints.push_back(m_curvePoints[i]);
-                    }					
-                }
-                else {
-					sampleTValues.push_back(maxT);
-					samplePoints.push_back(evalCurve(maxT));
-					break;
-                }
+            if (startInd == m_tValues.size()) {
+                sampleTValues.push_back(maxT);
+                samplePoints.push_back(evalCurve(maxT));
             }
+            else {
+                for (int i = startInd; i < m_tValues.size(); i++) {
+                    if (m_tEpsilon * 2 < maxT - m_tValues[i]) {
+                        if (m_tEpsilon * 2 < m_tValues[i] - minT) {
+                            sampleTValues.push_back(m_tValues[i]);
+                            samplePoints.push_back(m_curvePoints[i]);
+                        }
+                    }
+                    else {
+                        sampleTValues.push_back(maxT);
+                        samplePoints.push_back(evalCurve(maxT));
+                        break;
+                    }
+                }
+            }            
             if (samplePoints.size() == 0 || samplePoints.size() == 1) {
                 samplePoints = { evalCurve(minT), evalCurve(maxT) };
                 sampleTValues = { minT, maxT };
@@ -219,16 +251,16 @@ namespace Mona{
 
 
         int getClosestPointIndex(float tValue) const {
-            if (tValue < m_tValues[0]) {
-                return 0;
-            }
-            for (int i = 1; i < m_tValues.size() - 1; i++) {
-                if (m_tValues[i] <= tValue && tValue <= m_tValues[i + 1]) {
-                    if (abs(m_tValues[i + 1] - tValue) <= abs(tValue - m_tValues[i])) { return i + 1; }
-                    else { return i; }
+            float minDist = std::numeric_limits<float>::max();
+            int selectedIndex = 0;
+            for (int i = 0; i < m_tValues.size(); i++) {
+                float currDist = abs(m_tValues[i] - tValue);
+                if (currDist < minDist) {
+                    minDist = currDist;
+                    selectedIndex = i;
                 }
             }
-            return m_tValues.size() - 1;
+            return selectedIndex;
         }
 
         static LIC<D> connect(LIC<D> curve1, LIC<D> curve2, bool connectAtFront=true) {

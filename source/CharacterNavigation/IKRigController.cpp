@@ -230,6 +230,8 @@ namespace Mona {
 		IKRigConfig& config = m_ikRig.m_animationConfigs[animIndex];
 		HipGlobalTrajectoryData* hipTrData = config.getHipTrajectoryData();
 		FrameIndex currentFrame = config.getCurrentFrameIndex();
+		float currentRepTime = config.getReproductionTime(currentFrame);
+		float avgFrameDuration = config.getAnimationDuration() / config.getFrameNum();
 		EEGlobalTrajectoryData* trData;
 		if (config.m_onNewFrame) { // se realiza al llegar a un frame de la animacion
 		// guardado de posiciones globales ee y cadera
@@ -242,19 +244,45 @@ namespace Mona {
 			for (ChainIndex i = 0; i < m_ikRig.getChainNum(); i++) {
 				trData = config.getEETrajectoryData(i);
 				JointIndex ee = endEffectors[i];
-				trData->m_savedPositions[currentFrame] = globalTransforms[ee] * glm::vec4(0, 0, 0, 1);
-				// para compensar el poco espacio entre en ultimo y el primer frame
-				if (currentFrame == 0) {
-					trData->m_savedPositions.back() = globalTransforms[ee] * glm::vec4(0, 0, 0, 1);
+				glm::vec3 eePos = globalTransforms[ee] * glm::vec4(0, 0, 0, 1);
+				// si no hay posiciones guardadas
+				if (trData->m_savedPositions.getNumberOfPoints() == 0 || m_transitioning) {
+					trData->m_savedPositions = LIC<3>({ eePos, eePos }, { currentRepTime - config.getAnimationDuration(), currentRepTime });
+					trData->m_motionInitialized = false;
+				}
+				else {
+					trData->m_savedPositions.insertPoint(eePos, currentRepTime);
+					// recorte de las posiciones guardadas
+					for (int j = trData->m_savedPositions.getNumberOfPoints() - 1; 0 <= j; j--) {
+						float tVal = trData->m_savedPositions.getTValue(j);
+						float minVal = trData->m_savedPositions.getTRange()[1] - config.getAnimationDuration() * 2;
+						if (tVal < minVal) {
+							trData->m_savedPositions = trData->m_savedPositions.sample(tVal, trData->m_savedPositions.getTRange()[1]);
+							break;
+						}
+					}
 				}
 			}
 			glm::mat4 hipTransform = globalTransforms[m_ikRig.m_hipJoint];
 			glm::vec3 hipScale; glm::fquat hipRot; glm::vec3 hipTrans; glm::vec3 hipSkew; glm::vec4 hipPers;
 			glm::decompose(hipTransform, hipScale, hipRot, hipTrans, hipSkew, hipPers);
-			hipTrData->m_savedPositions[currentFrame] = hipTrans;
-			// para compensar el poco espacio entre en ultimo y el primer frame
-			if (currentFrame == 0) {
-				hipTrData->m_savedPositions.back() = hipTrans;
+			
+			// si no hay posiciones guardadas
+			if (hipTrData->m_savedPositions.getNumberOfPoints() == 0 || m_transitioning) {
+				hipTrData->m_savedPositions = LIC<3>({ hipTrans, hipTrans },{ currentRepTime - config.getAnimationDuration(), currentRepTime });
+				hipTrData->m_motionInitialized = false;
+			}
+			else {
+				hipTrData->m_savedPositions.insertPoint(hipTrans, currentRepTime);
+				// recorte de las posiciones guardadas
+				for (int j = hipTrData->m_savedPositions.getNumberOfPoints() - 1; 0 <= j; j--) {
+					float tVal = hipTrData->m_savedPositions.getTValue(j);
+					float minVal = hipTrData->m_savedPositions.getTRange()[1] - config.getAnimationDuration() * 2;
+					if (tVal < minVal) {
+						hipTrData->m_savedPositions = hipTrData->m_savedPositions.sample(tVal,	hipTrData->m_savedPositions.getTRange()[1]);
+						break;
+					}
+				}
 			}
 
 			// recalcular trayectorias de ee y caderas
@@ -266,22 +294,20 @@ namespace Mona {
 					trData = config.getEETrajectoryData(i);
 					if (!trData->m_motionInitialized) {
 						LIC<3> targetCurve = trData->getTargetTrajectory().getEECurve();
-						targetCurve.offsetTValues(-config.getCurrentReproductionTime());
-						targetCurve.offsetTValues(config.getAnimationTime(config.getCurrentReproductionTime()));
 						for (int j = 0; j < targetCurve.getNumberOfPoints(); j++) {
-							FrameIndex frame = config.getFrame(targetCurve.getTValue(j));
-							trData->m_savedPositions[frame] = targetCurve.getCurvePoint(j);
+							if (targetCurve.getTValue(j) < currentRepTime - avgFrameDuration) {
+								trData->m_savedPositions.insertPoint(targetCurve.getCurvePoint(j), targetCurve.getTValue(j));
+							}
 						}
 						trData->m_motionInitialized = true;
 					}
 				}
 				if (!hipTrData->m_motionInitialized) {
 					LIC<3> targetCurve = hipTrData->getTargetPositions();
-					targetCurve.offsetTValues(-config.getCurrentReproductionTime());
-					targetCurve.offsetTValues(config.getAnimationTime(config.getCurrentReproductionTime()));
 					for (int j = 0; j < targetCurve.getNumberOfPoints(); j++) {
-						FrameIndex frame = config.getFrame(targetCurve.getTValue(j));
-						hipTrData->m_savedPositions[frame] = targetCurve.getCurvePoint(j);
+						if (targetCurve.getTValue(j) < currentRepTime - avgFrameDuration) {
+							hipTrData->m_savedPositions.insertPoint(targetCurve.getCurvePoint(j), targetCurve.getTValue(j));
+						}
 					}
 					hipTrData->m_motionInitialized = true;
 				}
@@ -367,10 +393,6 @@ namespace Mona {
 	void IKRigController::updateIKRigConfigTime(float animationTimeStep, AnimationIndex animIndex, AnimationController& animController) {
 		IKRigConfig& config = m_ikRig.m_animationConfigs[animIndex];
 		float avgFrameDuration = config.getAnimationDuration() / config.getFrameNum();
-		if (avgFrameDuration*1.5f < animationTimeStep) {
-			MONA_LOG_ERROR("IKRigController: Framerate is too low for IK system to work properly on animation with name --{0}--.",
-				config.m_animationClip->GetAnimationName());
-		}
 		std::shared_ptr<AnimationClip> anim = config.m_animationClip;
 		float prevSamplingTime = anim->GetSamplingTime(m_reproductionTime - animationTimeStep, true);
 		float samplingTimeOffset = 0.0f;
@@ -415,17 +437,20 @@ namespace Mona {
 			updateIKRigConfigTime(animTimeStep, i, animController);
 		}
 		updateMovementDirection(animTimeStep);
+		int activeAnimations = 0;
 		for (AnimationIndex i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {
 			IKRigConfig& config = m_ikRig.m_animationConfigs[i];
 			if (animController.m_animationClipPtr == config.m_animationClip ||
 				animController.m_crossfadeTarget.GetAnimationClip() == config.m_animationClip) {
 				config.m_active = true;
+				activeAnimations += 1;
 			}
 			else {
 				config.m_active = false;
 				clearConfig(config);
 			}
 		}
+		m_transitioning = activeAnimations == 2;
 		for (AnimationIndex i = 0; i < m_ikRig.m_animationConfigs.size(); i++) {
 			if (m_ikRig.m_animationConfigs[i].isActive()) {
 				updateTrajectories(i, transformManager, staticMeshManager);			

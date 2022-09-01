@@ -23,7 +23,7 @@ namespace Mona{
         // Traslaciones originales
         LIC<3> m_originalPositions;
         LIC<3> m_targetPositions;
-        std::vector<glm::vec3> m_savedPositions;
+        LIC<3> m_savedPositions;
         bool m_motionInitialized = false;
         IKRigConfig* m_config;
 		template <int D>
@@ -31,7 +31,7 @@ namespace Mona{
             LIC<D>& originalCurve);
     public:
         LIC<3> sampleOriginalPositions(float initialExtendedAnimTime, float finalExtendedAnimTime);
-        glm::vec3 getSavedPosition(FrameIndex frame) { return m_savedPositions[frame]; }
+        glm::vec3 getSavedPosition(float reproductionTime) { return m_savedPositions.evalCurve(reproductionTime); }
         bool motionInitialized() { return m_motionInitialized; }
         LIC<3> getTargetPositions() { return m_targetPositions; }
         void setTargetPositions(LIC<3> targetPositions) { m_targetPositions = targetPositions; }
@@ -67,7 +67,7 @@ namespace Mona{
         // Altura base en cada frame, considerando los valores en los frames de soporte
         std::vector<float> m_supportHeights;
         // Posiciones guardadas calculadas para frames previos con IK
-        std::vector<glm::vec3> m_savedPositions;
+        LIC<3> m_savedPositions;
         bool m_motionInitialized = false;
         IKRigConfig* m_config;
         EEGlobalTrajectoryData* m_oppositeTrajectoryData;
@@ -77,7 +77,7 @@ namespace Mona{
         EETrajectory getSubTrajectory(float animationTime);
         EETrajectory getSubTrajectoryByID(int subTrajectoryID);
         int getSubTrajectoryNum() { return m_originalSubTrajectories.size(); }
-        glm::vec3 getSavedPosition(FrameIndex frame) { return m_savedPositions[frame]; }
+        glm::vec3 getSavedPosition(float reproductionTime) { return m_savedPositions.evalCurve(reproductionTime); }
         bool motionInitialized() { return m_motionInitialized; }
         float getSupportHeight(FrameIndex frame) { return m_supportHeights[frame]; }
         EETrajectory& getTargetTrajectory() { return m_targetTrajectory; }

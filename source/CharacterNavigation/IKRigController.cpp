@@ -77,6 +77,10 @@ namespace Mona {
 			}
 		}
 
+		// Transformacion base
+		glm::vec3 baseScale; glm::quat baseRotation; glm::vec3 baseTranslation; glm::vec3 baseSkew; glm::vec4 basePerspective;
+		glm::decompose(m_baseGlobalTransform, baseScale, baseRotation, baseTranslation, baseSkew, basePerspective);
+
 		// Descomprimimos las rotaciones de la animacion, repitiendo valores para que todas las articulaciones 
 		// tengan el mismo numero de rotaciones
 		animationClip->DecompressRotations();
@@ -86,6 +90,10 @@ namespace Mona {
 		m_ikRig.m_animationConfigs.push_back(IKRigConfig(animationClip, animationType, newIndex, &m_ikRig.m_forwardKinematics));
 		IKRigConfig* currentConfig = m_ikRig.getAnimationConfig(newIndex);
 		currentConfig->m_eeTrajectoryData = std::vector<EEGlobalTrajectoryData>(m_ikRig.m_ikChains.size());
+
+		for (ChainIndex i = 0; i < m_ikRig.getChainNum(); i++) {
+			checkLegRotationAxes(currentConfig, i, baseRotation);
+		}
 
 		int chainNum = m_ikRig.getChainNum();
 
@@ -196,8 +204,6 @@ namespace Mona {
 		TrajectoryGenerator::buildEETrajectories(currentConfig, supportFramesPerChain, glblPositionsPerChain, oppositePerChain);
 
 		// Se remueve el movimiento de las caderas y se aplica la rotacion basal
-		glm::vec3 baseScale; glm::quat baseRotation; glm::vec3 baseTranslation; glm::vec3 baseSkew; glm::vec4 basePerspective;
-		glm::decompose(m_baseGlobalTransform, baseScale, baseRotation, baseTranslation, baseSkew, basePerspective);
 		animationClip->RemoveJointTranslation(m_ikRig.m_hipJoint);
 		int hipTrackIndex = animationClip->GetTrackIndex(m_ikRig.m_hipJoint);
 		for (FrameIndex i = 0; i < currentConfig->getFrameNum(); i++) {
@@ -487,6 +493,41 @@ namespace Mona {
 			}
 		}
 		m_ikEnabled = enableIK;		
+	}
+
+
+	void IKRigController::checkLegRotationAxes(IKRigConfig* config, ChainIndex legChainIndex, glm::fquat baseRotation) {
+		std::shared_ptr<AnimationClip> anim = config->m_animationClip;
+		std::vector<JointIndex>const& topology = m_ikRig.getTopology();
+		IKChain chain = m_ikRig.m_ikChains[legChainIndex];
+		for (int i = 0; i < chain.getJoints().size()-1; i++) {
+			std::vector<glm::fquat> globalRotations;
+			JointIndex jIndex = chain.getJoints()[i];
+			for (FrameIndex j = 0; j < config->getFrameNum(); j++) {
+				glm::fquat globalRotation = anim->m_animationTracks[anim->GetTrackIndex(jIndex)].rotations[j];
+				JointIndex parent = topology[jIndex];
+				while (parent != -1) {
+					globalRotation = anim->m_animationTracks[anim->GetTrackIndex(parent)].rotations[j] * globalRotation;
+					parent = topology[parent];
+				}
+				globalRotation = baseRotation * globalRotation;
+				globalRotations.push_back(globalRotation);
+			}
+
+			// buscamos el eje de rotacion global principal
+			glm::vec3 meanRotationAxis(0);
+			for (FrameIndex j = 0; j < config->getFrameNum(); j++) {
+				meanRotationAxis += glm::axis(globalRotations[j]);
+			
+			}
+			meanRotationAxis /= config->getFrameNum();
+			
+			MONA_ASSERT(0.8f < abs(meanRotationAxis[0]), "IKRigController: Leg joints must have an x main rotation axis globally.");
+			MONA_ASSERT(abs(meanRotationAxis[1]) < 0.3f, "IKRigController: Leg joints must have an x main rotation axis globally.");
+			MONA_ASSERT(abs(meanRotationAxis[2]) < 0.3f, "IKRigController: Leg joints must have an x main rotation axis globally.");
+
+		}
+
 	}
 
 

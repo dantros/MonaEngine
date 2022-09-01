@@ -169,6 +169,18 @@ namespace Mona {
 			}
 			value -= epsilon;
 		}
+
+        template < typename T>
+        inline int getSign(T val) {
+            if (val == 0) {
+                return 1;
+            }
+            float sign = val / (float)abs(val);
+            if (sign < 0) {
+                return -1;
+            }
+            return  1;
+        }
 	}
     
 }

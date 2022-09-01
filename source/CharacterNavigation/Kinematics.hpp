@@ -40,6 +40,7 @@ namespace Mona {
 		// variables data
 		std::vector<JointIndex> jointIndexes;
 		std::vector<glm::vec3> rotationAxes;
+		std::vector<glm::vec2> motionRanges;
 		std::vector<IKChain*> ikChains;
 		// other data
 		IKRigConfig* rigConfig;

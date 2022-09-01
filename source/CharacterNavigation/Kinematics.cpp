@@ -157,6 +157,16 @@ namespace Mona {
 
 	std::function<void(std::vector<float>&, IKData*, std::vector<float>&,int)>  postDescentStepCustomBehaviour =
 		[](std::vector<float>& args, IKData* dataPtr, std::vector<float>& argsRawDelta, int varIndex_progressive)->void {
+		// aplicar restricciones de movimiento
+		if (args[varIndex_progressive] <= dataPtr->motionRanges[varIndex_progressive][0]) {
+			args[varIndex_progressive] = dataPtr->motionRanges[varIndex_progressive][0];
+			argsRawDelta[varIndex_progressive] *= 0.5f;
+		}
+		else if (dataPtr->motionRanges[varIndex_progressive][1] <= args[varIndex_progressive]) {
+			args[varIndex_progressive] = dataPtr->motionRanges[varIndex_progressive][1];
+			argsRawDelta[varIndex_progressive] *= 0.5f;
+		}
+
 		// setear nuevos angulos
 		std::vector<JointRotation>* configRot = dataPtr->rigConfig->getDynamicJointRotations(dataPtr->targetFrame);
 		int jIndex = dataPtr->jointIndexes[varIndex_progressive];
@@ -211,6 +221,11 @@ namespace Mona {
 		}
 		funcUtils::removeDuplicates(jointIndexes);
 		m_ikData.jointIndexes = jointIndexes;
+		m_ikData.motionRanges = std::vector<glm::vec2>(m_ikData.jointIndexes.size());
+		for (int j = 0; j < m_ikData.jointIndexes.size(); j++) {
+			JointIndex jInd = m_ikData.jointIndexes[j];
+			m_ikData.motionRanges[j] = m_ikRig->getMotionRange(jInd);
+		}
 		m_gradientDescent.setArgNum(m_ikData.jointIndexes.size());
 		m_ikData.rotationAxes.resize(m_ikData.jointIndexes.size());
 		m_ikData.baseAngles.resize(m_ikData.jointIndexes.size());
@@ -224,6 +239,21 @@ namespace Mona {
 		FrameIndex previousFrame = 0 < targetFrame ? targetFrame - 1 : m_ikData.rigConfig->getFrameNum()-1;
 
 		std::vector<JointRotation>const& baseRotations_target = m_ikData.rigConfig->getBaseJointRotations(targetFrame);
+
+		// DEBUG
+		std::vector<float> rotationAngles6;
+		std::vector<glm::vec3> rotationAxes6;
+		std::vector<float> rotationAngles7;
+		std::vector<glm::vec3> rotationAxes7;
+		for (int i = 0; i < m_ikData.rigConfig->getFrameNum(); i++) {
+			std::vector<JointRotation>const& baseRot = m_ikData.rigConfig->getBaseJointRotations(i);
+			rotationAngles6.push_back(baseRot[6].getRotationAngle());
+			rotationAxes6.push_back(baseRot[6].getRotationAxis());
+			rotationAngles7.push_back(baseRot[7].getRotationAngle());
+			rotationAxes7.push_back(baseRot[7].getRotationAxis());
+		}
+		// DEBUG
+
 		std::vector<JointRotation>* dynamicRotations_prev = m_ikData.rigConfig->getDynamicJointRotations(previousFrame);
 		// recuperamos los angulos previamente usados de la animacion
 		m_ikData.previousAngles.resize(m_ikData.jointIndexes.size());

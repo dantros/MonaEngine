@@ -28,6 +28,24 @@ namespace Mona {
 		m_ikChains[0].m_opposite = 1;
 		m_ikChains[1].m_opposite = 0;
 
+		// chequear que opuestos no compartan joints
+		for (int i = 0; i < m_ikChains.size(); i++) {
+			IKChain chain = m_ikChains[i];
+			for (int j = 0; j < chain.m_joints.size(); j++) {
+				MONA_ASSERT(funcUtils::findIndex(m_ikChains[chain.m_opposite].m_joints, chain.m_joints[j]) == -1,
+					"IKRig: Opposite chain joints cannot overlap.");
+				MONA_ASSERT(chain.m_joints[j] != m_hipJoint, "IKRig: Leg chains cannot contain the hip joint.");
+			}
+		}
+
+		// setear constraints
+		m_motionRanges = std::vector<glm::vec2>(jointNum, glm::vec2(glm::radians(270.0f), glm::radians(270.0f)));
+		/*for (JointIndex i = 0; i < jointNum; i++) {
+			MotionRange currData = rigData.motionRanges[jointNames[i]];
+			m_motionRanges[i][0] = glm::radians(currData.minAngle);
+			m_motionRanges[i][1] = glm::radians(currData.maxAngle);
+		}*/
+
 		// setear el la altura del rig
 		IKChain& leftLegChain = m_ikChains[0];
 		std::vector<glm::vec3> positions(jointNum);
@@ -133,7 +151,6 @@ namespace Mona {
 			std::vector<JointRotation>const& baseRotations = config.getBaseJointRotations(i);
 			hipTrack.rotations[i] = baseRotations[m_hipJoint].getQuatRotation();
 		}
-
 	}
 
 

@@ -108,8 +108,9 @@ public:
 		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
 		m_transform->SetTranslation(m_startingPosition);
 		m_transform->SetScale({ 0.05,0.05,0.05 });
-		m_transform->Rotate(glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-90.f));
-		m_transform->Rotate(glm::vec3(0.0f, 0.0f, 1.0f), glm::radians(180.f));
+		glm::fquat rotation = glm::angleAxis(glm::radians(90.f), glm::vec3(1.0f, 0.0f, 0.0f));
+		rotation = glm::angleAxis(glm::radians(180.f), glm::vec3(0.0f, 0.0f, 1.0f)) * rotation;
+		m_transform->SetRotation(rotation);
 
 		auto materialPtr = std::static_pointer_cast<Mona::DiffuseTexturedMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseTextured, true));
 		auto& textureManager = Mona::TextureManager::GetInstance();

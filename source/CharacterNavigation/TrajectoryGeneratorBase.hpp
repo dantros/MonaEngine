@@ -3,6 +3,8 @@
 #define TRAJECTORYGENERATORBASE_HPP
 
 #include "ParametricCurves.hpp"
+#include "GradientDescent.hpp"
+#include "EnvironmentData.hpp"
 
 namespace Mona{
 
@@ -87,6 +89,28 @@ namespace Mona{
         EEGlobalTrajectoryData* getOppositeTrajectoryData();
         bool isTargetFixed() { return m_fixedTarget; }
         void clear();
+    };
+
+
+    struct TGData {
+        LIC<3>* varCurve;
+        LIC<3> baseCurve;
+        std::vector<int> pointIndexes;
+        std::vector<float> minValues; // tamano D*pointIndexes.size()
+        float descentRate;
+        float targetPosDelta;
+        int maxIterations;
+    };
+    class StrideCorrector {
+        GradientDescent<TGData> m_gradientDescent;
+        TGData m_tgData;
+    public:
+        StrideCorrector() = default;
+        void init();
+        void correctStride(LIC<3>& baseCurve, EnvironmentData& environmentData,
+            ComponentManager<TransformComponent>& transformManager,
+            ComponentManager<StaticMeshComponent>& staticMeshManager);
+
     };
     
 }

@@ -14,7 +14,12 @@ namespace Mona{
     TrajectoryGenerator::TrajectoryGenerator(IKRig* ikRig) {
         m_ikRig = ikRig;
 		m_strideValidationEnabled = true;
+		m_strideCorrectionEnabled = false;
     }
+
+	void TrajectoryGenerator::init() {
+		m_strideCorrector.init();
+	}
 
 	void TrajectoryGenerator::generateNewTrajectories(AnimationIndex animIndex,
 		ComponentManager<TransformComponent>& transformManager,
@@ -170,6 +175,10 @@ namespace Mona{
             return;
         }
         baseCurve.fitEnds(initialPos, finalPos);
+
+		if (m_strideCorrectionEnabled && originalTrajectory.isDynamic() && !trData->isTargetFixed()) {
+			m_strideCorrector.correctStride(baseCurve, m_environmentData, transformManager, staticMeshManager);
+		}
 
         int repCountOffset = config->getNextFrameIndex() == 0 ? 1 : 0;
         float transitionTime = config->getReproductionTime(config->getNextFrameIndex(), repCountOffset);

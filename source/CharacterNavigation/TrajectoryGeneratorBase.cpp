@@ -99,4 +99,98 @@ EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int
 	}
 
 
+	// primer termino: acercar los modulos de las velocidades
+	std::function<float(const std::vector<float>&, TGData*)> term1Function =
+		[](const std::vector<float>& varPCoord, TGData* dataPtr)->float {
+		float result = 0;
+		for (int i = 0; i < dataPtr->pointIndexes.size(); i++) {
+			int pIndex = dataPtr->pointIndexes[i];
+			result += glm::distance2(dataPtr->varCurve->getPointVelocity(pIndex), dataPtr->baseCurve.getPointVelocity(pIndex));
+			result += glm::distance2(dataPtr->varCurve->getPointVelocity(pIndex, true), dataPtr->baseCurve.getPointVelocity(pIndex, true));
+		}
+		return result;
+	};
+
+	std::function<float(const std::vector<float>&, int, TGData*)> term1PartialDerivativeFunction =
+		[](const std::vector<float>& varPCoord, int varIndex, TGData* dataPtr)->float {
+		int D = 3;
+		int pIndex = dataPtr->pointIndexes[varIndex / D];
+		int coordIndex = varIndex % D;
+		float t_kPrev = dataPtr->varCurve->getTValue(pIndex - 1);
+		float t_kCurr = dataPtr->varCurve->getTValue(pIndex);
+		float t_kNext = dataPtr->varCurve->getTValue(pIndex + 1);
+		glm::vec3 lVel = dataPtr->varCurve->getPointVelocity(pIndex);
+		glm::vec3 rVel = dataPtr->varCurve->getPointVelocity(pIndex, true);
+		glm::vec3 baseLVel = dataPtr->baseCurve.getPointVelocity(pIndex);
+		glm::vec3 baseRVel = dataPtr->baseCurve.getPointVelocity(pIndex, true);
+		float result = 0;
+		result += 2 * (lVel[coordIndex] - baseLVel[coordIndex]) * (1 / (t_kCurr - t_kPrev));
+		result += 2 * (rVel[coordIndex] - baseRVel[coordIndex]) * (-1 / (t_kNext - t_kCurr));
+		return result;
+	};
+
+	std::function<void(std::vector<float>&, TGData*, std::vector<float>&, int)>  postDescentStepCustomBehaviour =
+		[](std::vector<float>& varPCoord, TGData* dataPtr, std::vector<float>& argsRawDelta, int varIndex_progressive)->void {
+		glm::vec3 newPos;
+		int D = 3;
+		for (int i = 0; i < dataPtr->pointIndexes.size(); i++) {
+			for (int j = 0; j < D; j++) {
+				if (varPCoord[i * D + j] <= dataPtr->minValues[i * D + j]) {
+					varPCoord[i * D + j] = dataPtr->minValues[i * D + j];
+					argsRawDelta[i * D + j] *= 0.1;
+				}
+				newPos[j] = varPCoord[i * D + j];
+			}
+			int pIndex = dataPtr->pointIndexes[i];
+			dataPtr->varCurve->setCurvePoint(pIndex, newPos);
+		}
+	};
+
+
+	void StrideCorrector::init() {
+		FunctionTerm<TGData> term1(term1Function, term1PartialDerivativeFunction);
+		m_gradientDescent = GradientDescent<TGData>({ term1 }, 0, &m_tgData, postDescentStepCustomBehaviour);
+		m_tgData.descentRate = 1 / pow(10, 3);
+		m_tgData.maxIterations = 600;
+		m_tgData.targetPosDelta = 1 / pow(10, 6);
+		m_gradientDescent.setTermWeight(0, 1.0f);
+	}
+
+	void StrideCorrector::correctStride(LIC<3>& baseCurve, EnvironmentData& environmentData,
+		ComponentManager<TransformComponent>& transformManager,
+		ComponentManager<StaticMeshComponent>& staticMeshManager) {
+		if (baseCurve.getNumberOfPoints() == 2) {
+			return;
+		}
+		float startSupportHeight = baseCurve.getStart()[2];
+		float endSupportHeight = baseCurve.getEnd()[2];
+		m_tgData.pointIndexes.clear();
+		m_tgData.minValues.clear();
+		for (int i = 1; i < baseCurve.getNumberOfPoints() - 1; i++) {
+			m_tgData.pointIndexes.push_back(i);
+			glm::vec3 currPoint = baseCurve.getCurvePoint(i);
+			float fraction = funcUtils::getFraction(0, baseCurve.getNumberOfPoints() - 1, i);
+			float currSupportHeight = funcUtils::lerp(startSupportHeight, endSupportHeight, fraction);
+			float minZ = environmentData.getTerrainHeight(glm::vec2(currPoint), transformManager, staticMeshManager) + currSupportHeight;
+			m_tgData.minValues.push_back(std::numeric_limits<float>::lowest());
+			m_tgData.minValues.push_back(std::numeric_limits<float>::lowest());
+			m_tgData.minValues.push_back(minZ);
+		}
+
+		// valores iniciales y curva base
+		std::vector<float> initialArgs(m_tgData.pointIndexes.size() * 3);
+		for (int i = 0; i < m_tgData.pointIndexes.size(); i++) {
+			int pIndex = m_tgData.pointIndexes[i];
+			for (int j = 0; j < 3; j++) {
+				initialArgs[i * 3 + j] = baseCurve.getCurvePoint(pIndex)[j];
+			}
+		}
+		m_tgData.baseCurve = baseCurve;
+		m_tgData.varCurve = &baseCurve;
+
+		m_gradientDescent.setArgNum(initialArgs.size());
+		m_gradientDescent.computeArgsMin(m_tgData.descentRate, m_tgData.maxIterations, m_tgData.targetPosDelta, initialArgs);
+	}
+
+
 }

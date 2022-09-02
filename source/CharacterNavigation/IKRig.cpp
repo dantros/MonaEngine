@@ -39,7 +39,7 @@ namespace Mona {
 		}
 
 		// setear constraints
-		m_motionRanges = std::vector<glm::vec2>(jointNum, glm::vec2(glm::radians(270.0f), glm::radians(270.0f)));
+		m_motionRanges = std::vector<glm::vec2>(jointNum, glm::vec2(glm::radians(-3270.0f), glm::radians(6270.0f)));
 		/*for (JointIndex i = 0; i < jointNum; i++) {
 			MotionRange currData = rigData.motionRanges[jointNames[i]];
 			m_motionRanges[i][0] = glm::radians(currData.minAngle);
@@ -70,6 +70,7 @@ namespace Mona {
 		m_inverseKinematics.init();
 		m_forwardKinematics = ForwardKinematics(this);
 		m_trajectoryGenerator = TrajectoryGenerator(this);
+		m_trajectoryGenerator.init();
 		m_animationConfigs.reserve(MAX_EXPECTED_NUMBER_OF_ANIMATIONS_PER_IKRIG);
 	}
 

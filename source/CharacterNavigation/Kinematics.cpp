@@ -190,6 +190,11 @@ namespace Mona {
 		m_gradientDescent.setTermWeight(0, 1.0f / (pow(10, 2) * m_ikRig->getRigHeight()));
 		m_gradientDescent.setTermWeight(1, 0.015f);		
 		m_gradientDescent.setTermWeight(2, 0.015f);
+		// DEBUG
+		/*m_gradientDescent.setTermWeight(0, 0);
+		m_gradientDescent.setTermWeight(1, 0);
+		m_gradientDescent.setTermWeight(2, 0);*/
+		// DEBUG
 		setIKChains(m_ikChains);
 	}
 
@@ -239,21 +244,6 @@ namespace Mona {
 		FrameIndex previousFrame = 0 < targetFrame ? targetFrame - 1 : m_ikData.rigConfig->getFrameNum()-1;
 
 		std::vector<JointRotation>const& baseRotations_target = m_ikData.rigConfig->getBaseJointRotations(targetFrame);
-
-		// DEBUG
-		std::vector<float> rotationAngles6;
-		std::vector<glm::vec3> rotationAxes6;
-		std::vector<float> rotationAngles7;
-		std::vector<glm::vec3> rotationAxes7;
-		for (int i = 0; i < m_ikData.rigConfig->getFrameNum(); i++) {
-			std::vector<JointRotation>const& baseRot = m_ikData.rigConfig->getBaseJointRotations(i);
-			rotationAngles6.push_back(baseRot[6].getRotationAngle());
-			rotationAxes6.push_back(baseRot[6].getRotationAxis());
-			rotationAngles7.push_back(baseRot[7].getRotationAngle());
-			rotationAxes7.push_back(baseRot[7].getRotationAxis());
-		}
-		// DEBUG
-
 		std::vector<JointRotation>* dynamicRotations_prev = m_ikData.rigConfig->getDynamicJointRotations(previousFrame);
 		// recuperamos los angulos previamente usados de la animacion
 		m_ikData.previousAngles.resize(m_ikData.jointIndexes.size());

@@ -2,9 +2,6 @@
 #ifndef TRAJECTORYGENERATOR_HPP
 #define TRAJECTORYGENERATOR_HPP
 
-#include "EnvironmentData.hpp"
-#include "GradientDescent.hpp"
-#include "ParametricCurves.hpp"
 #include "TrajectoryGeneratorBase.hpp"
 
 namespace Mona{
@@ -21,7 +18,9 @@ namespace Mona{
     private:
         IKRig* m_ikRig;
         EnvironmentData m_environmentData;
+        StrideCorrector m_strideCorrector;
         bool m_strideValidationEnabled;
+        bool m_strideCorrectionEnabled;
         void generateEETrajectory(ChainIndex ikChain, IKRigConfig* config,
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
@@ -55,6 +54,7 @@ namespace Mona{
     public:
         TrajectoryGenerator(IKRig* ikRig);
         TrajectoryGenerator() = default;
+        void init();
         void generateNewTrajectories(AnimationIndex animIndex,
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);

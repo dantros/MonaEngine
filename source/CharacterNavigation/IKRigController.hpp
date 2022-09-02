@@ -18,7 +18,7 @@ namespace Mona {
 		float m_reproductionTime = 0;
 		bool m_ikEnabled = true;
 		bool m_transitioning = false;
-		void checkLegRotationAxes(IKRigConfig* config, ChainIndex legChainIndex, glm::fquat baseRotation);
+		void checkLegsRotationAxes(IKRigConfig* config, glm::fquat baseRotation);
 	public:
 		IKRigController() = default;
 		IKRigController(std::shared_ptr<Skeleton> skeleton, RigData rigData, InnerComponentHandle transformHandle,

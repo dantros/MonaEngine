@@ -127,7 +127,7 @@ public:
 		m_idleAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/" + m_characterName + "/idle.fbx"), skeleton, true);
 		m_walkingAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/" + m_characterName + "/walking.fbx"), skeleton, false);
 
-		m_skeletalMesh = world.AddComponent<Mona::SkeletalMeshComponent>(*this, skinnedMesh, m_idleAnimation, materialPtr);
+		m_skeletalMesh = world.AddComponent<Mona::SkeletalMeshComponent>(*this, skinnedMesh, m_walkingAnimation, materialPtr);
 
 		Mona::RigData rigData;
 		rigData.leftLeg.baseJointName = "mixamorig:LeftUpLeg";
@@ -138,7 +138,7 @@ public:
 		m_ikNavHandle = world.AddComponent<Mona::IKNavigationComponent>(*this, rigData);
 		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_walkingAnimation, Mona::AnimationType::WALKING);
 		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_idleAnimation, Mona::AnimationType::IDLE);
-		m_skeletalMesh->GetAnimationController().SetPlayRate(0.6f);
+		m_skeletalMesh->GetAnimationController().SetPlayRate(0.3f);
 
 	}
 	void OnDebugGUIEvent(const Mona::DebugGUIEvent& event) {

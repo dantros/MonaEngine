@@ -42,6 +42,7 @@ namespace Mona {
     class IKRigConfig {
         friend class IKRig;
         friend class IKRigController;
+        friend class AnimationValidator;
         friend class DebugDrawingSystem_ikNav;
         friend class TrajectoryGenerator;
     private:
@@ -96,7 +97,6 @@ namespace Mona {
         float getAnimationDuration();
         int getFrameNum() { return m_timeStamps.size(); }
         int getReproductionCount() const { return m_reproductionCount; }
-        std::vector<JointRotation>* getDynamicJointRotationsPtr() { return &(m_dynamicJointRotations[m_nextFrameIndex]);  }
         float getCurrentReproductionTime() const { return m_currentReproductionTime; }
         FrameIndex getNextFrameIndex() const { return m_nextFrameIndex; }
         FrameIndex getCurrentFrameIndex() const { return m_currentFrameIndex; }

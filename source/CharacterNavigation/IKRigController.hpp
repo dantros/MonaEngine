@@ -3,6 +3,7 @@
 #define IKRIGCONTROLLER_HPP
 
 #include "IKRig.hpp"
+#include "AnimationValidator.hpp"
 #include "../World/ComponentManager.hpp"
 #include "../Animation/SkeletalMeshComponent.hpp"
 
@@ -15,10 +16,10 @@ namespace Mona {
 		IKRig m_ikRig;
 		InnerComponentHandle m_skeletalMeshHandle;
 		glm::mat4 m_baseGlobalTransform;
+		AnimationValidator m_animationValidator;
 		float m_reproductionTime = 0;
 		bool m_ikEnabled = true;
 		bool m_transitioning = false;
-		void checkLegsRotationAxes(IKRigConfig* config, glm::fquat baseRotation);
 	public:
 		IKRigController() = default;
 		IKRigController(std::shared_ptr<Skeleton> skeleton, RigData rigData, InnerComponentHandle transformHandle,

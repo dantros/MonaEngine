@@ -151,6 +151,7 @@ namespace Mona{
 		m_rotationAxis = glm::axis(m_quatRotation);
 	}
 	void JointRotation::setRotation(float rotationAngle, glm::vec3 rotationAxis) {
+		rotationAxis = glm::normalize(rotationAxis);
 		m_quatRotation = glm::angleAxis(rotationAngle, rotationAxis);
 		m_rotationAngle = rotationAngle;
 		m_rotationAxis = rotationAxis;
@@ -162,6 +163,7 @@ namespace Mona{
 	}
 
 	void JointRotation::setRotationAxis(glm::vec3 rotationAxis) {
+		rotationAxis = glm::normalize(rotationAxis);
 		m_quatRotation = glm::angleAxis(m_rotationAngle, rotationAxis);
 		m_rotationAxis = rotationAxis;
 	}
@@ -182,5 +184,5 @@ namespace Mona{
 	MotionRange RigData::getJointMotionRange(std::string jointName) {
 		return motionRanges[jointName];
 	}
-    
+
 }

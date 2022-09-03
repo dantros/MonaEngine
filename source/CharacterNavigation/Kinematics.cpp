@@ -173,9 +173,8 @@ namespace Mona {
 		(*configRot)[jIndex].setRotationAngle(args[varIndex_progressive]);
 	};
 
-	InverseKinematics::InverseKinematics(IKRig* ikRig, std::vector<ChainIndex> ikChains) {
+	InverseKinematics::InverseKinematics(IKRig* ikRig) {
 		m_ikRig = ikRig;
-		m_ikChains = ikChains;
 	}
 
 	void InverseKinematics::init() {
@@ -195,30 +194,21 @@ namespace Mona {
 		m_gradientDescent.setTermWeight(1, 0);
 		m_gradientDescent.setTermWeight(2, 0);*/
 		// DEBUG
-		setIKChains(m_ikChains);
+		setIKChains();
 	}
 
-	void InverseKinematics::setIKChains(std::vector<ChainIndex> ikChains) {
-		m_ikChains = ikChains;
-		std::vector<IKChain*> chainPtrs(ikChains.size());
-		for (int i = 0; i < ikChains.size(); i++) {
-			chainPtrs[i] = m_ikRig->getIKChain(ikChains[i]);
+	void InverseKinematics::setIKChains() {
+		std::vector<IKChain*> chainPtrs(m_ikRig->getChainNum());
+		for (int i = 0; i < m_ikRig->getChainNum(); i++) {
+			chainPtrs[i] = m_ikRig->getIKChain(i);
 		}
 		m_ikData.ikChains = chainPtrs;
-		std::vector<std::string> ikChainNames(chainPtrs.size());
 		m_ikData.jointIndexes = {};
 		m_ikData.stepsByJoint = {};
 		std::vector<JointIndex> jointIndexes;
 		for (int c = 0; c < chainPtrs.size(); c++) {
-			// se dejan fuera los ee, ya que no cambiar sus angulos de rotacion no afecta su posicion
+			// se dejan fuera los ee, ya que cambiar sus angulos de rotacion no afecta su posicion
 			jointIndexes.insert(jointIndexes.end(), chainPtrs[c]->getJoints().begin(), chainPtrs[c]->getJoints().end()-1);
-			ikChainNames[c] = chainPtrs[c]->getName();
-			for (int i = 0; i < c; i++) {
-				if (ikChainNames[i] == ikChainNames[c]) {
-					MONA_LOG_ERROR("InverseKinematics: chain names must all be different.");
-					return;
-				}
-			}
 			int jointNum = chainPtrs[c]->getJoints().size()-1;
 			for (int j = jointNum-1; 0 <= j ; j--) {
 				m_ikData.stepsByJoint.push_back(pow(2, j));

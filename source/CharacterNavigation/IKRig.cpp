@@ -28,7 +28,6 @@ namespace Mona {
 		m_ikChains[0].m_opposite = 1;
 		m_ikChains[1].m_opposite = 0;
 
-		// chequear que opuestos no compartan joints
 		for (int i = 0; i < m_ikChains.size(); i++) {
 			IKChain chain = m_ikChains[i];
 			for (int j = 0; j < chain.m_joints.size(); j++) {
@@ -39,7 +38,7 @@ namespace Mona {
 		}
 
 		// setear constraints
-		m_motionRanges = std::vector<glm::vec2>(jointNum, glm::vec2(glm::radians(-3270.0f), glm::radians(6270.0f)));
+		m_motionRanges = std::vector<glm::vec2>(jointNum, glm::vec2(glm::radians(45.0f), glm::radians(45.0f)));
 		/*for (JointIndex i = 0; i < jointNum; i++) {
 			MotionRange currData = rigData.motionRanges[jointNames[i]];
 			m_motionRanges[i][0] = glm::radians(currData.minAngle);
@@ -62,11 +61,7 @@ namespace Mona {
 	}
 
 	void IKRig::init() {
-		std::vector<ChainIndex> ikChains;
-		for (ChainIndex i = 0; i < m_ikChains.size(); i++) {
-			ikChains.push_back(i);
-		}
-		m_inverseKinematics = InverseKinematics(this, ikChains);
+		m_inverseKinematics = InverseKinematics(this);
 		m_inverseKinematics.init();
 		m_forwardKinematics = ForwardKinematics(this);
 		m_trajectoryGenerator = TrajectoryGenerator(this);
@@ -154,6 +149,16 @@ namespace Mona {
 		}
 	}
 
+
+	std::vector<JointIndex> IKRig::getJointChildren(JointIndex jointIndex) {
+		std::vector<JointIndex> children = {};
+		for (int i = 0; i < getTopology().size(); i++) {
+			if (getTopology()[i] == jointIndex) {
+				children.push_back(i);
+			}
+		}
+		return children;
+	}
 
 
 }

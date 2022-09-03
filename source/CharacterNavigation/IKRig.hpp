@@ -15,6 +15,7 @@ namespace Mona{
     class Skeleton;
     class IKRig{
         friend class IKRigController;
+        friend class AnimationValidator;
         friend class IKNavigationComponent;
         friend class DebugDrawingSystem_ikNav;
         public:
@@ -68,6 +69,7 @@ namespace Mona{
             void calculateTrajectories(AnimationIndex animIndex,
                 ComponentManager<TransformComponent>& transformManager,
                 ComponentManager<StaticMeshComponent>& staticMeshManager);
+            std::vector<JointIndex> getJointChildren(JointIndex jointIndex);
     };
 
 }

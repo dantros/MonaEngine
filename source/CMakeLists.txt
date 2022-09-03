@@ -1,4 +1,5 @@
 set(MONA_HEADERS
+				CharacterNavigation/AnimationValidator.hpp
 				CharacterNavigation/IKRigBase.hpp
 				CharacterNavigation/IKNavigationSystem.hpp
 				CharacterNavigation/IKNavigationLifetimePolicy.hpp
@@ -86,6 +87,7 @@ set(MONA_HEADERS
 				DebugDrawing/IKNavigationDebugDraw.hpp
 				Utilities/BasicCameraControllers.hpp)
 set(MONA_SOURCES
+				CharacterNavigation/AnimationValidator.cpp
 				CharacterNavigation/IKRigBase.cpp
 				CharacterNavigation/IKNavigationSystem.cpp
 				CharacterNavigation/HeightMap.cpp

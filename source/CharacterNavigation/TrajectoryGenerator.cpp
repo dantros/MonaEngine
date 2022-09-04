@@ -13,7 +13,7 @@ namespace Mona{
 
     TrajectoryGenerator::TrajectoryGenerator(IKRig* ikRig) {
         m_ikRig = ikRig;
-		m_strideValidationEnabled = true;
+		m_strideValidationEnabled = false;
 		m_strideCorrectionEnabled = false;
     }
 
@@ -155,7 +155,7 @@ namespace Mona{
 		// se calcula una direccion para el ee que logre mantener la relacion posicional con la cadera
 		glm::vec2 xyHipEEOriginalDiff = hipPosCurve.getEnd() - baseCurve.getEnd();
 		glm::vec2 xyHipEEUpdatedDiff = glm::rotate(xyHipEEOriginalDiff, m_ikRig->getRotationAngle());
-		glm::vec2 hipCurrDir = glm::rotate(m_ikRig->getFrontVector(), m_ikRig->getRotationAngle());
+		glm::vec2 hipCurrDir = glm::rotate(glm::vec2(m_ikRig->getFrontVector()), m_ikRig->getRotationAngle());
 		glm::vec2 hipCurrXYPos = hipTrData->getSavedPosition(currentRepTime);
 		if (hipTrData->getTargetPositions().inTRange(currentRepTime)) {
 			hipCurrXYPos = hipTrData->getTargetPositions().evalCurve(currentRepTime);

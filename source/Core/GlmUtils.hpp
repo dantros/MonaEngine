@@ -8,6 +8,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include "glm/gtx/vector_angle.hpp"
 #include "Log.hpp"
 #include <ConsoleColor.h>
 #include <numbers>
@@ -106,6 +107,21 @@ namespace Mona {
             }
             std::cout << white <<"]";
             std::cout << std::endl;        
+        }
+
+        inline glm::fquat calcDeltaRotation(glm::vec3 initialDirection, glm::vec3 targetDirection, glm::vec3 baseUpVector) {
+            float epsilon = 0.05f;
+            float dotPr = glm::dot(initialDirection, targetDirection);
+            if (abs(dotPr - 1) <= epsilon || abs(dotPr + 1) <= epsilon) {
+                float rotAngle = glm::orientedAngle(initialDirection, targetDirection, baseUpVector);
+                return glm::angleAxis(rotAngle, baseUpVector);
+            }
+            else {
+                glm::vec3 crossVec = glm::cross(initialDirection, targetDirection);
+                glm::vec3 rotAxis = glm::normalize(crossVec);
+                float rotAngle = glm::orientedAngle(initialDirection, targetDirection, rotAxis);
+                return angleAxis(rotAngle, rotAxis);
+            }
         }
     
     }

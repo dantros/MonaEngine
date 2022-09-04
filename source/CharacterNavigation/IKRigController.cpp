@@ -18,6 +18,9 @@ namespace Mona {
 		m_ikRig.m_rigScale = glblScale[0];
 		// descartamos la rotacion de la transformacion base
 		transformManager->GetComponentPointer(transformHandle)->SetRotation(glm::identity<glm::fquat>());
+
+		m_ikEnabled = true;
+		m_transitioning = false;
 	}
 	void IKRigController::init() {
 		m_ikRig.init();
@@ -27,6 +30,7 @@ namespace Mona {
 	void IKRigController::validateTerrains(ComponentManager<StaticMeshComponent>& staticMeshManager) {
 		m_ikRig.m_trajectoryGenerator.m_environmentData.validateTerrains(staticMeshManager);
 	}
+
 	void IKRigController::addAnimation(std::shared_ptr<AnimationClip> animationClip, AnimationType animationType) {
 		
 		m_animationValidator.checkTransforms(animationClip);
@@ -40,14 +44,16 @@ namespace Mona {
 		animationClip->DecompressRotations();
 
 		// Para este paso las rotaciones deben estar descomprimidas
+		if (animationType == AnimationType::WALKING) {
+			for (int i = 0; i < m_ikRig.getChainNum(); i++) {
+				m_animationValidator.checkLegGlobalRotationAxes(animationClip, m_ikRig.getIKChain(i), baseRotation);
+				//m_animationValidator.correctLegLocalRotationAxes(animationClip, m_ikRig.getIKChain(i));
+			}
+		}		
 		AnimationIndex newIndex = m_ikRig.m_animationConfigs.size();
 		m_ikRig.m_animationConfigs.push_back(IKRigConfig(animationClip, animationType, newIndex, &m_ikRig.m_forwardKinematics));
 		IKRigConfig* currentConfig = m_ikRig.getAnimationConfig(newIndex);
 		currentConfig->m_eeTrajectoryData = std::vector<EEGlobalTrajectoryData>(m_ikRig.m_ikChains.size());
-
-		for (int i = 0; i < m_ikRig.getChainNum(); i++) {
-			m_animationValidator.checkLegGlobalRotationAxes(currentConfig, m_ikRig.getIKChain(i), baseRotation);
-		}
 
 		int chainNum = m_ikRig.getChainNum();
 

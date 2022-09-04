@@ -13,8 +13,8 @@ namespace Mona{
         AnimationValidator() = default;
         AnimationValidator(IKRig* ikRig);
         void checkTransforms(std::shared_ptr<AnimationClip> animationClip);
-        void checkLegGlobalRotationAxes(IKRigConfig* config, IKChain* legChain, glm::fquat baseRotation);
-        void correctLegLocalRotationAxes(IKRigConfig* config, IKChain* legChain);
+        void checkLegGlobalRotationAxes(std::shared_ptr<AnimationClip> animation, IKChain* legChain, glm::fquat baseRotation);
+        void correctLegLocalRotationAxes(std::shared_ptr<AnimationClip> animation, IKChain* legChain);
         void checkLegsRotationAxes_base(IKRigConfig* config);
         void debugRotationAxes(IKRigConfig* config, std::vector<JointIndex> targetJoints);
     };

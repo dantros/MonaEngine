@@ -38,7 +38,7 @@ namespace Mona {
 		}
 
 		// setear constraints
-		m_motionRanges = std::vector<glm::vec2>(jointNum, glm::vec2(glm::radians(45.0f), glm::radians(45.0f)));
+		m_motionRanges = std::vector<glm::vec2>(jointNum, glm::vec2(glm::radians(-4485.0f), glm::radians(4585.0f)));
 		/*for (JointIndex i = 0; i < jointNum; i++) {
 			MotionRange currData = rigData.motionRanges[jointNames[i]];
 			m_motionRanges[i][0] = glm::radians(currData.minAngle);

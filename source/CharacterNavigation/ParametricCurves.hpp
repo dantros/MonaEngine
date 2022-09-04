@@ -307,22 +307,10 @@ namespace Mona{
         void fitStartAndDir(glm::vec3 newStart, glm::vec3 targetDirection, glm::vec3 upVector = {0,0,1}) {
             MONA_ASSERT(m_dimension == 3, "LIC: LIC must have a dimension equal to 3.");
             translate(-getStart());
-			// rotarla para que quede en linea con las pos inicial y final
-			glm::fquat targetRotation = glm::identity<glm::fquat>();
+			// rotarla para que quede en linea con las pos inicial y final			
 			glm::vec3 originalDirection = glm::normalize(getEnd() - getStart());
-            float epsilon = 0.05f;
-            float dotPr = glm::dot(originalDirection, targetDirection);
-            if (abs(dotPr - 1) <=epsilon || abs(dotPr + 1) <= epsilon) {
-                float rotAngle = glm::orientedAngle(originalDirection, targetDirection, upVector);
-                targetRotation = angleAxis(rotAngle, upVector);
-            }
-            else {
-				glm::vec3 crossVec = glm::cross(originalDirection, targetDirection);
-				glm::vec3 rotAxis = glm::normalize(crossVec);
-                float rotAngle = glm::orientedAngle(originalDirection, targetDirection, rotAxis);
-                targetRotation = angleAxis(rotAngle, rotAxis);
-            }
-			rotate(targetRotation);
+            glm::fquat deltaRotation = glmUtils::calcDeltaRotation(originalDirection, targetDirection, upVector);            
+			rotate(deltaRotation);
 			translate(newStart);
 		}
 

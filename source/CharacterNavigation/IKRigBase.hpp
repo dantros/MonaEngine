@@ -160,6 +160,7 @@ namespace Mona {
         ChainEnds leftLeg;
         ChainEnds rightLeg;
         std::string hipJointName;
+        float initialRotationAngle = 0.0f;
         void setJointMotionRange(std::string jointName, float minAngle, float maxAngle);
         MotionRange getJointMotionRange(std::string jointName);
     };

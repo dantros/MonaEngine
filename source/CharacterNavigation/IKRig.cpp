@@ -17,6 +17,8 @@ namespace Mona {
 		std::vector<std::string>const& jointNames = getJointNames();
 		int jointNum = topology.size();
 
+		// angulo de rotacion inicial
+		m_rotationAngle = glm::radians(rigData.initialRotationAngle);
 		// seteo de la cadera
 		JointIndex hipInd = funcUtils::findIndex(jointNames, rigData.hipJointName);
 		MONA_ASSERT(hipInd != -1, "IKRig: Input hip joint name was not a correct joint name.");

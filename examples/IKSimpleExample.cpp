@@ -135,6 +135,7 @@ public:
 		rigData.rightLeg.baseJointName = "mixamorig:RightUpLeg";
 		rigData.rightLeg.endEffectorName = "mixamorig:RightFoot";
 		rigData.hipJointName = "mixamorig:Hips";
+		rigData.initialRotationAngle = 10.0f;
 		m_ikNavHandle = world.AddComponent<Mona::IKNavigationComponent>(*this, rigData);
 		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_walkingAnimation, Mona::AnimationType::WALKING);
 		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_idleAnimation, Mona::AnimationType::IDLE);
@@ -176,7 +177,7 @@ public:
 		world.SetMainCamera(world.GetComponentHandle<Mona::CameraComponent>(m_camera));
 		AddDirectionalLight(world, glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-130.0f), 2);
 		AddDirectionalLight(world, glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(-30.0f), 8.5f);
-		auto character = world.CreateGameObject<IKRigCharacter>("akai", glm::vec3(0,-10,0));
+		auto character = world.CreateGameObject<IKRigCharacter>("akai", glm::vec3(0,10,0));
 		auto terrainObject = AddTerrain(world);
 		world.GetComponentHandle<Mona::IKNavigationComponent>(character)->AddTerrain(terrainObject);
 	}

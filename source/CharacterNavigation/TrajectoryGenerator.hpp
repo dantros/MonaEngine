@@ -59,6 +59,7 @@ namespace Mona{
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
         void enableStrideValidation(bool enableStrideValidation) { m_strideValidationEnabled = enableStrideValidation; }
+        void enableStrideCorrection(bool enableStrideCorrection) { m_strideCorrectionEnabled = enableStrideCorrection; }
     };
 
     

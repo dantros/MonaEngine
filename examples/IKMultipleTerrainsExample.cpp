@@ -169,6 +169,7 @@ public:
 			m_ikNavHandle->SetAngularSpeed(0);
 		}
 
+		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->SetStrideCorrection(m_correctStrides);
 		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->SetStrideValidation(m_validateStrides);
 		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->EnableIK(m_enableIK);
 
@@ -207,6 +208,7 @@ public:
 		rigData.rightLeg.baseJointName = "mixamorig:RightUpLeg";
 		rigData.rightLeg.endEffectorName = "mixamorig:RightFoot";
 		rigData.hipJointName = "mixamorig:Hips";
+		rigData.initialRotationAngle = 10.0f;
 		m_ikNavHandle = world.AddComponent<Mona::IKNavigationComponent>(*this, rigData);
 		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_walkingAnimation, Mona::AnimationType::WALKING);
 		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_idleAnimation, Mona::AnimationType::IDLE);
@@ -216,6 +218,7 @@ public:
 	void OnDebugGUIEvent(const Mona::DebugGUIEvent& event) {
 		ImGui::Begin("IKNav Options:");
 		ImGui::Checkbox("Validate strides", &(m_validateStrides));
+		ImGui::Checkbox("Correct strides", &(m_correctStrides));
 		ImGui::Checkbox("Enable IK", &(m_enableIK));
 		ImGui::End();
 	}
@@ -223,6 +226,7 @@ private:
 	float m_angularSpeed = 0.8f;
 	float m_fadeTime = 0.5f;
 	bool m_validateStrides = false;
+	bool m_correctStrides = true;
 	bool m_enableIK = true;
 	std::string m_characterName;
 	glm::vec3 m_startingPosition;
@@ -232,6 +236,7 @@ private:
 	std::shared_ptr<Mona::AnimationClip> m_walkingAnimation;
 	std::shared_ptr<Mona::AnimationClip> m_idleAnimation;
 	Mona::SubscriptionHandle m_debugGUISubcription;
+
 };
 
 class IKNav : public Mona::Application

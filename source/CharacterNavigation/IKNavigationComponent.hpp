@@ -26,6 +26,10 @@ namespace Mona {
 				m_ikRigController.m_ikRig.m_trajectoryGenerator.enableStrideValidation(validateStrides);
 			}
 
+			void SetStrideCorrection(bool correctStrides) {
+				m_ikRigController.m_ikRig.m_trajectoryGenerator.enableStrideCorrection(correctStrides);
+			}
+
 			void EnableIK(bool enableIK) {
 				m_ikRigController.enableIK(enableIK);
 			}

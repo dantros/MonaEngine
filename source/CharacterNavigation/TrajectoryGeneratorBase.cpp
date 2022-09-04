@@ -156,20 +156,21 @@ EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int
 		m_gradientDescent.setTermWeight(0, 1.0f);
 	}
 
-	void StrideCorrector::correctStride(LIC<3>& baseCurve, EnvironmentData& environmentData,
+	void StrideCorrector::correctStride(LIC<3>& targetCurve, LIC<3>& originalCurve,
+		EnvironmentData& environmentData,
 		ComponentManager<TransformComponent>& transformManager,
 		ComponentManager<StaticMeshComponent>& staticMeshManager) {
-		if (baseCurve.getNumberOfPoints() == 2) {
+		if (targetCurve.getNumberOfPoints() == 2) {
 			return;
 		}
-		float startSupportHeight = baseCurve.getStart()[2];
-		float endSupportHeight = baseCurve.getEnd()[2];
+		float startSupportHeight = originalCurve.getStart()[2];
+		float endSupportHeight = originalCurve.getEnd()[2];
 		m_tgData.pointIndexes.clear();
 		m_tgData.minValues.clear();
-		for (int i = 1; i < baseCurve.getNumberOfPoints() - 1; i++) {
+		for (int i = 1; i < targetCurve.getNumberOfPoints() - 1; i++) {
 			m_tgData.pointIndexes.push_back(i);
-			glm::vec3 currPoint = baseCurve.getCurvePoint(i);
-			float fraction = funcUtils::getFraction(0, baseCurve.getNumberOfPoints() - 1, i);
+			glm::vec3 currPoint = targetCurve.getCurvePoint(i);
+			float fraction = funcUtils::getFraction(0, targetCurve.getNumberOfPoints() - 1, i);
 			float currSupportHeight = funcUtils::lerp(startSupportHeight, endSupportHeight, fraction);
 			float minZ = environmentData.getTerrainHeight(glm::vec2(currPoint), transformManager, staticMeshManager) + currSupportHeight;
 			m_tgData.minValues.push_back(std::numeric_limits<float>::lowest());
@@ -182,11 +183,11 @@ EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int
 		for (int i = 0; i < m_tgData.pointIndexes.size(); i++) {
 			int pIndex = m_tgData.pointIndexes[i];
 			for (int j = 0; j < 3; j++) {
-				initialArgs[i * 3 + j] = baseCurve.getCurvePoint(pIndex)[j];
+				initialArgs[i * 3 + j] = targetCurve.getCurvePoint(pIndex)[j];
 			}
 		}
-		m_tgData.baseCurve = baseCurve;
-		m_tgData.varCurve = &baseCurve;
+		m_tgData.baseCurve = targetCurve;
+		m_tgData.varCurve = &targetCurve;
 
 		m_gradientDescent.setArgNum(initialArgs.size());
 		m_gradientDescent.computeArgsMin(m_tgData.descentRate, m_tgData.maxIterations, m_tgData.targetPosDelta, initialArgs);

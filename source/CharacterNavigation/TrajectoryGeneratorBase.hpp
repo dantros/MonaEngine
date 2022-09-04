@@ -107,7 +107,8 @@ namespace Mona{
     public:
         StrideCorrector() = default;
         void init();
-        void correctStride(LIC<3>& baseCurve, EnvironmentData& environmentData,
+        void correctStride(LIC<3>& targetCurve, LIC<3>& originalCurve, 
+            EnvironmentData& environmentData,
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
 

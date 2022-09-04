@@ -14,7 +14,7 @@ namespace Mona{
     TrajectoryGenerator::TrajectoryGenerator(IKRig* ikRig) {
         m_ikRig = ikRig;
 		m_strideValidationEnabled = false;
-		m_strideCorrectionEnabled = false;
+		m_strideCorrectionEnabled = true;
     }
 
 	void TrajectoryGenerator::init() {
@@ -117,7 +117,7 @@ namespace Mona{
 		else {
 			trType = TrajectoryType::STATIC;
 		}
-		LIC<3>& baseCurve = originalTrajectory.getEECurve();
+		LIC<3> baseCurve = originalTrajectory.getEECurve();
 
 		FrameIndex initialFrame = config->getFrame(baseCurve.getTRange()[0]);
 		FrameIndex finalFrame = config->getFrame(baseCurve.getTRange()[1]);
@@ -177,7 +177,8 @@ namespace Mona{
         baseCurve.fitEnds(initialPos, finalPos);
 
 		if (m_strideCorrectionEnabled && originalTrajectory.isDynamic() && !trData->isTargetFixed()) {
-			m_strideCorrector.correctStride(baseCurve, m_environmentData, transformManager, staticMeshManager);
+			m_strideCorrector.correctStride(baseCurve, originalTrajectory.getEECurve(),
+				m_environmentData, transformManager, staticMeshManager);
 		}
 
         int repCountOffset = config->getNextFrameIndex() == 0 ? 1 : 0;

@@ -189,11 +189,6 @@ namespace Mona {
 		m_gradientDescent.setTermWeight(0, 1.0f / (pow(10, 2) * m_ikRig->getRigHeight()));
 		m_gradientDescent.setTermWeight(1, 0.015f);		
 		m_gradientDescent.setTermWeight(2, 0.015f);
-		// DEBUG
-		/*m_gradientDescent.setTermWeight(0, 0);
-		m_gradientDescent.setTermWeight(1, 0);
-		m_gradientDescent.setTermWeight(2, 0);*/
-		// DEBUG
 		setIKChains();
 	}
 

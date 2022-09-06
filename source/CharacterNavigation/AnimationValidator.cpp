@@ -92,13 +92,17 @@ namespace Mona{
 			meanRotationAxis /= frameNum;
 
 			if (abs(meanRotationAxis[0]) < 0.8f || 0.3f < abs(meanRotationAxis[1]) || 0.3f < abs(meanRotationAxis[2])) {
-				MONA_LOG_WARNING("AnimationValidator: Leg joints should have an x main rotation axis globally.");
+				MONA_LOG_ERROR("AnimationValidator:Joint {} does not have an x main rotation axis globally.", jIndex);
 			}
 
 		}
 	}
 
-	void AnimationValidator::checkLegLocalRotationAxes(std::shared_ptr<AnimationClip> animation, IKChain* legChain) {
+	void AnimationValidator::checkLegLocalRotationAxes(std::shared_ptr<AnimationClip> animation, IKChain* legChain, 
+		glm::vec3 originalUpVector, glm::vec3 originalFrontVector) {
+		glm::fquat deltaRotationUp = glmUtils::calcDeltaRotation(originalUpVector, glm::vec3(0, 0, 1), m_ikRig->getRightVector());
+		glm::fquat deltaRotationFront = glmUtils::calcDeltaRotation(deltaRotationUp * originalFrontVector, glm::vec3(0, 1, 0), m_ikRig->getUpVector());
+		glm::fquat deltaRotation = deltaRotationFront * deltaRotationUp;
 		std::vector<JointIndex>const& topology = m_ikRig->getTopology();
 		int frameNum = animation->m_animationTracks[0].rotations.size();
 		for (int i = 0; i < legChain->getJoints().size() - 1; i++) {
@@ -106,7 +110,9 @@ namespace Mona{
 			JointIndex jIndex = legChain->getJoints()[i];
 			for (FrameIndex j = 0; j < frameNum; j++) {
 				glm::fquat localRotation = animation->m_animationTracks[animation->GetTrackIndex(jIndex)].rotations[j];
-				localRotationAxes.push_back(glm::axis(localRotation));
+				// aplicamos correccion de orientacion
+				glm::vec3 localRotationAxis = deltaRotation * glm::axis(localRotation);
+				localRotationAxes.push_back(localRotationAxis);
 			}
 
 			// buscamos el eje de rotacion global principal
@@ -118,7 +124,7 @@ namespace Mona{
 			meanRotationAxis /= frameNum;
 
 			if (abs(meanRotationAxis[0]) < 0.8f || 0.3f < abs(meanRotationAxis[1]) || 0.3f < abs(meanRotationAxis[2])) {
-				MONA_LOG_WARNING("AnimationValidator: Leg joints should have an x main rotation axis locally.");
+				MONA_LOG_WARNING("AnimationValidator:Joint {}'s local rotation axis does not allow for proper IK rotation control.", jIndex);
 			}
 
 		}

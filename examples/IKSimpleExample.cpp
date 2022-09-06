@@ -153,7 +153,7 @@ public:
 		ImGui::End();
 	}
 private:
-	float m_angularSpeed = 0.8f;
+	float m_angularSpeed = 1.0f;
 	float m_fadeTime = 0.5f;
 	bool m_validateStrides = false;
 	bool m_correctStrides = true;

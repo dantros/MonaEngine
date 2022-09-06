@@ -6,6 +6,7 @@
 #include <sstream>
 #include "Log.hpp"
 #include <iostream>
+#include <numbers>
 
 namespace Mona {
 
@@ -189,6 +190,18 @@ namespace Mona {
                 return -1;
             }
             return  1;
+        }
+
+        inline float normalizeAngle(float angle) {
+            if (std::numbers::pi < angle) {
+                angle = fmod(angle, std::numbers::pi);
+                angle = -std::numbers::pi + angle;
+            }
+            else if (angle <= -std::numbers::pi) {
+                angle = fmod(abs(angle), std::numbers::pi);
+                angle = std::numbers::pi - angle;
+            }
+            return angle;
         }
 	}
     

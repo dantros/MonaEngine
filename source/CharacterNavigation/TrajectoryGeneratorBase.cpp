@@ -137,7 +137,7 @@ EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int
 			for (int j = 0; j < D; j++) {
 				if (varPCoord[i * D + j] <= dataPtr->minValues[i * D + j]) {
 					varPCoord[i * D + j] = dataPtr->minValues[i * D + j];
-					argsRawDelta[i * D + j] *= 0.1;
+					argsRawDelta[i * D + j] *= 0.3f;
 				}
 				newPos[j] = varPCoord[i * D + j];
 			}
@@ -165,6 +165,17 @@ EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int
 		}
 		float startSupportHeight = originalCurve.getStart()[2];
 		float endSupportHeight = originalCurve.getEnd()[2];
+
+		LIC<3> baseCurve = targetCurve;
+
+		// reajuste de altura del final de la curva para corregir posibles errores de posicionamiento
+		// se guarda la curva sin modificar en baseCurve, ya que es importante preservar su forma
+		glm::vec2 xyEndPoint = targetCurve.getEnd();
+		float terrainHeightEndPoint = environmentData.getTerrainHeight(xyEndPoint, transformManager, staticMeshManager);
+		glm::vec3 adjustedEndPoint = glm::vec3(xyEndPoint, terrainHeightEndPoint + endSupportHeight);
+		targetCurve.setCurvePoint(targetCurve.getNumberOfPoints() - 1, adjustedEndPoint);
+
+
 		m_tgData.pointIndexes.clear();
 		m_tgData.minValues.clear();
 		for (int i = 1; i < targetCurve.getNumberOfPoints() - 1; i++) {
@@ -186,7 +197,7 @@ EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int
 				initialArgs[i * 3 + j] = targetCurve.getCurvePoint(pIndex)[j];
 			}
 		}
-		m_tgData.baseCurve = targetCurve;
+		m_tgData.baseCurve = baseCurve;
 		m_tgData.varCurve = &targetCurve;
 
 		m_gradientDescent.setArgNum(initialArgs.size());

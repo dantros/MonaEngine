@@ -174,7 +174,12 @@ namespace Mona{
 				currSupportHeight, trData, transformManager, staticMeshManager);
             return;
         }
-        baseCurve.fitEnds(initialPos, finalPos);
+		glm::vec3 refVector = m_ikRig->getRightVector();
+		float angleEpsilon = glm::radians(0.5f);
+		if (abs(m_ikRig->getRotationAngle()) < angleEpsilon || abs(abs(m_ikRig->getRotationAngle()) - std::numbers::pi) < angleEpsilon) {
+			refVector = m_ikRig->getRightVector();
+		}
+        baseCurve.fitEnds(initialPos, finalPos, refVector);
 
 		if (m_strideCorrectionEnabled && originalTrajectory.isDynamic() && !trData->isTargetFixed()) {
 			m_strideCorrector.correctStride(baseCurve, originalTrajectory.getEECurve(),
@@ -373,8 +378,8 @@ namespace Mona{
 		outStrideFinalPoint = selectedFinalPoint;
 		// validacion del punto escogido
 		bool valid = true;
-		if (m_strideValidationEnabled) {
-			if (baseEETr.isDynamic()) {
+		if (baseEETr.isDynamic()) {
+			if (m_strideValidationEnabled) {
 				LIC<3> oppositeEECurve = baseTrajectoryData->getOppositeTrajectoryData()->getTargetTrajectory().getEECurve();
 				FrameIndex currentFrame = config->getCurrentFrameIndex();
 				float currentRepTime = config->getReproductionTime(currentFrame);
@@ -388,16 +393,15 @@ namespace Mona{
 				}
 				else if (baseTrajectoryData->m_fixedTarget) {
 					valid = false;
-				}			
-			}
-			else {
-				// las trayectorias estaticas se calculan siempre
-				valid = true;
-				if (targetDistance * 0.2f < minDistDiff) {
-					outStrideFinalPoint = startingPoint + glm::vec3(targetDirection, 0) * targetDistance;
 				}
 			}
-		}	
+		}
+		else {
+			// las trayectorias estaticas se calculan siempre
+			if (targetDistance * 0.2f < minDistDiff) {
+				outStrideFinalPoint = startingPoint + glm::vec3(targetDirection, 0) * targetDistance;
+			}
+		}
 		return valid;
 		
 	}

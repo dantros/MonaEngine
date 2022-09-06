@@ -179,6 +179,7 @@ namespace Mona {
 
 	void IKRigController::updateMovementDirection(float timeStep) {
 		m_ikRig.m_rotationAngle += m_ikRig.m_angularSpeed * timeStep;
+		m_ikRig.m_rotationAngle = funcUtils::normalizeAngle(m_ikRig.m_rotationAngle);
 	}
 
 	void IKRigController::updateTrajectories(AnimationIndex animIndex, ComponentManager<TransformComponent>& transformManager,
@@ -318,8 +319,9 @@ namespace Mona {
 	void IKRigController::updateAnimation(AnimationIndex animIndex) {
 		IKRigConfig& config = m_ikRig.m_animationConfigs[animIndex];
 		if (config.m_onNewFrame) {
-			FrameIndex currFrame = config.getCurrentFrameIndex();
+			FrameIndex currentFrame = config.getCurrentFrameIndex();
 			FrameIndex nextFrame = config.getNextFrameIndex();
+			float currentFrameRepTime = config.getReproductionTime(currentFrame);
 			// calcular nuevas rotaciones para la animacion con ik
 			std::vector<std::pair<JointIndex, glm::fquat>> calculatedRotations = m_ikRig.calculateRotations(animIndex, nextFrame);
 			auto anim = config.m_animationClip;
@@ -330,8 +332,8 @@ namespace Mona {
 					anim->SetRotation(calculatedRotations[i].second, 0, calculatedRotations[i].first);
 				}
 				// si el current frame no fue actualizado, le asignamos el valor calculado para next frame
-				if (last2UpdatedFrames[0] != currFrame && last2UpdatedFrames[1] != currFrame) {
-					anim->SetRotation(calculatedRotations[i].second, currFrame, calculatedRotations[i].first);
+				if (last2UpdatedFrames[0] != currentFrame && last2UpdatedFrames[1] != currentFrame) {
+					anim->SetRotation(calculatedRotations[i].second, currentFrame, calculatedRotations[i].first);
 				}
 			}
 			last2UpdatedFrames[0] = nextFrame;

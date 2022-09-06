@@ -304,21 +304,21 @@ namespace Mona{
             return curve;	
 		}
 
-        void fitStartAndDir(glm::vec3 newStart, glm::vec3 targetDirection, glm::vec3 upVector = {0,0,1}) {
+        void fitStartAndDir(glm::vec3 newStart, glm::vec3 targetDirection, glm::vec3 referenceUpVector) {
             MONA_ASSERT(m_dimension == 3, "LIC: LIC must have a dimension equal to 3.");
             translate(-getStart());
 			// rotarla para que quede en linea con las pos inicial y final			
 			glm::vec3 originalDirection = glm::normalize(getEnd() - getStart());
-            glm::fquat deltaRotation = glmUtils::calcDeltaRotation(originalDirection, targetDirection, upVector);            
+            glm::fquat deltaRotation = glmUtils::calcDeltaRotation(originalDirection, targetDirection, referenceUpVector);            
 			rotate(deltaRotation);
 			translate(newStart);
 		}
 
-        void fitEnds(glm::vec3 newStart, glm::vec3 newEnd, glm::vec3 upVector = {0,0,1}) {
+        void fitEnds(glm::vec3 newStart, glm::vec3 newEnd, glm::vec3 referenceUpVector) {
 			MONA_ASSERT(m_dimension == 3, "LIC: LIC must have a dimension equal to 3.");
             if (0 < glm::length(newEnd - newStart)) {
 				glm::vec3 targetDirection = glm::normalize(newEnd - newStart);
-				fitStartAndDir(newStart, targetDirection, upVector);
+				fitStartAndDir(newStart, targetDirection, referenceUpVector);
 
 				// escalarla para que llegue a newEnd
 				float origLength = glm::distance(getStart(), getEnd());

@@ -109,12 +109,12 @@ namespace Mona {
             std::cout << std::endl;        
         }
 
-        inline glm::fquat calcDeltaRotation(glm::vec3 initialDirection, glm::vec3 targetDirection, glm::vec3 baseUpVector) {
-            float epsilon = 0.05f;
+        inline glm::fquat calcDeltaRotation(glm::vec3 initialDirection, glm::vec3 targetDirection, glm::vec3 referenceUpVector) {
+            float epsilon = 0.001f;
             float dotPr = glm::dot(initialDirection, targetDirection);
             if (abs(dotPr - 1) <= epsilon || abs(dotPr + 1) <= epsilon) {
-                float rotAngle = glm::orientedAngle(initialDirection, targetDirection, baseUpVector);
-                return glm::angleAxis(rotAngle, baseUpVector);
+                float rotAngle = glm::orientedAngle(initialDirection, targetDirection, referenceUpVector);
+                return glm::angleAxis(rotAngle, referenceUpVector);
             }
             else {
                 glm::vec3 crossVec = glm::cross(initialDirection, targetDirection);

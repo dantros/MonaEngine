@@ -8,19 +8,17 @@ namespace Mona {
 	
 
 	IKRigController::IKRigController(std::shared_ptr<Skeleton> skeleton, RigData rigData, InnerComponentHandle transformHandle,
-		InnerComponentHandle skeletalMeshHandle, ComponentManager<TransformComponent>* transformManager):
+		InnerComponentHandle skeletalMeshHandle, ComponentManager<TransformComponent>* transformManagerPtr):
 		m_skeletalMeshHandle(skeletalMeshHandle), m_ikRig(skeleton, rigData, transformHandle) {
-		glm::mat4 baseGlobalTransform = transformManager->GetComponentPointer(transformHandle)->GetModelMatrix();
-		glm::vec3 glblScale; glm::quat glblRotation; glm::vec3 glblTranslation;	glm::vec3 glblSkew;	glm::vec4 glblPerspective;
-		glm::decompose(baseGlobalTransform, glblScale, glblRotation, glblTranslation, glblSkew, glblPerspective);
-		MONA_ASSERT(glmUtils::isApproxUniform(glblScale), "Global scale must be uniform");
-		m_baseGlobalTransform = baseGlobalTransform;
-		m_ikRig.m_rigScale = glblScale[0];
-		// descartamos la rotacion de la transformacion base
-		transformManager->GetComponentPointer(transformHandle)->SetRotation(glm::identity<glm::fquat>());
+
+		// seteamos la transformacion base
+		transformManagerPtr->GetComponentPointer(transformHandle)->SetRotation(glm::identity<glm::fquat>());
+		transformManagerPtr->GetComponentPointer(transformHandle)->SetScale(glm::vec3(m_ikRig.m_rigScale));
+		transformManagerPtr->GetComponentPointer(transformHandle)->SetTranslation(m_ikRig.m_initialPosition);
 
 		m_ikEnabled = true;
 		m_transitioning = false;
+
 	}
 	void IKRigController::init() {
 		m_ikRig.init();
@@ -31,36 +29,35 @@ namespace Mona {
 		m_ikRig.m_trajectoryGenerator.m_environmentData.validateTerrains(staticMeshManager);
 	}
 
-	void IKRigController::addAnimation(std::shared_ptr<AnimationClip> animationClip, AnimationType animationType) {
+	void IKRigController::addAnimation(std::shared_ptr<AnimationClip> animationClip, glm::vec3 originalUpVector, 
+		glm::vec3 originalFrontVector, AnimationType animationType, float supportFrameDistanceFactor) {
 		
 		m_animationValidator.checkTransforms(animationClip);
 
 		// Transformacion base
-		glm::vec3 baseScale; glm::quat baseRotation; glm::vec3 baseTranslation; glm::vec3 baseSkew; glm::vec4 basePerspective;
-		glm::decompose(m_baseGlobalTransform, baseScale, baseRotation, baseTranslation, baseSkew, basePerspective);
+		glm::mat4 baseGlobalTransform = glmUtils::translationToMat4(m_ikRig.m_initialPosition)*glmUtils::scaleToMat4(glm::vec3(m_ikRig.m_rigScale));
 
 		// Descomprimimos las rotaciones de la animacion, repitiendo valores para que todas las articulaciones 
 		// tengan el mismo numero de rotaciones
 		animationClip->DecompressRotations();
 
-		// Para este paso las rotaciones deben estar descomprimidas
-		if (animationType == AnimationType::WALKING) {
-			for (int i = 0; i < m_ikRig.getChainNum(); i++) {
-				m_animationValidator.checkLegGlobalRotationAxes(animationClip, m_ikRig.getIKChain(i), baseRotation);
-				//m_animationValidator.correctLegLocalRotationAxes(animationClip, m_ikRig.getIKChain(i));
+		// Para los siguientes pasos las rotaciones deben estar descomprimidas
+
+		m_animationValidator.correctAnimationOrientation(animationClip, originalUpVector, originalFrontVector);
+		for (int i = 0; i < m_ikRig.getChainNum(); i++) {
+			if (animationType == AnimationType::WALKING) {
+				m_animationValidator.checkLegGlobalRotationAxes(animationClip, m_ikRig.getIKChain(i));
+				m_animationValidator.checkLegLocalRotationAxes(animationClip, m_ikRig.getIKChain(i));
+				
 			}
-		}		
+		}
 		AnimationIndex newIndex = m_ikRig.m_animationConfigs.size();
 		m_ikRig.m_animationConfigs.push_back(IKRigConfig(animationClip, animationType, newIndex, &m_ikRig.m_forwardKinematics));
 		IKRigConfig* currentConfig = m_ikRig.getAnimationConfig(newIndex);
 		currentConfig->m_eeTrajectoryData = std::vector<EEGlobalTrajectoryData>(m_ikRig.m_ikChains.size());
-
-		int chainNum = m_ikRig.getChainNum();
-
 		// numero de rotaciones por joint con la animaciond descomprimida
 		int frameNum = animationClip->m_animationTracks[0].rotationTimeStamps.size();
-
-			
+		int chainNum = m_ikRig.getChainNum();		
 
 		// Guardamos las trayectorias originales de los ee y definimos sus frames de soporte
 		std::vector<float> rotTimeStamps = animationClip->m_animationTracks[0].rotationTimeStamps;
@@ -83,7 +80,7 @@ namespace Mona {
 			while (currentConfig->getAnimationDuration() <= timeStamp) { timeStamp -= 0.000001; }
 			for (int j = 0; j < currentConfig->getJointIndices().size(); j++) {
 				JointIndex jIndex = currentConfig->getJointIndices()[j];
-				glm::mat4 baseTransform = j == 0 ? m_baseGlobalTransform : glblTransforms[m_ikRig.getTopology()[jIndex]];
+				glm::mat4 baseTransform = j == 0 ? baseGlobalTransform : glblTransforms[m_ikRig.getTopology()[jIndex]];
 				glblTransforms[jIndex] = baseTransform *
 					glmUtils::translationToMat4(animationClip->GetPosition(timeStamp, jIndex, true)) *
 					glmUtils::rotationToMat4(animationClip->GetRotation(timeStamp, jIndex, true)) *
@@ -96,10 +93,10 @@ namespace Mona {
 			}
 			hipGlblPositions.push_back(glblPositions[m_ikRig.m_hipJoint]);
 			// distancia base entre puntos para identificacion de puntos de soporte
-			float minDistance = m_ikRig.m_rigHeight * m_ikRig.m_rigScale / 1000;
+			float minDistance = 20*(m_ikRig.m_rigHeight * m_ikRig.m_rigScale / 1000);
 			for (ChainIndex j = 0; j < chainNum; j++) {
 				int eeIndex = m_ikRig.m_ikChains[j].getEndEffector();
-				bool isSupportFrame = glm::distance(glblPositions[eeIndex], previousPositions[eeIndex]) <= minDistance*15;
+				bool isSupportFrame = glm::distance(glblPositions[eeIndex], previousPositions[eeIndex]) <= minDistance*supportFrameDistanceFactor;
 				supportFramesPerChain[j][i] = isSupportFrame;
 				glblPositionsPerChain[j][i] = glm::vec4(glblPositions[eeIndex], 1);
 			}
@@ -163,16 +160,9 @@ namespace Mona {
 		}
 		TrajectoryGenerator::buildEETrajectories(currentConfig, supportFramesPerChain, glblPositionsPerChain, oppositePerChain);
 
-		// Se remueve el movimiento de las caderas y se aplica la rotacion basal
+		// Se remueve el movimiento de las caderas
 		animationClip->RemoveJointTranslation(m_ikRig.m_hipJoint);
 		int hipTrackIndex = animationClip->GetTrackIndex(m_ikRig.m_hipJoint);
-		for (FrameIndex i = 0; i < currentConfig->getFrameNum(); i++) {
-			glm::fquat origRotation = animationClip->m_animationTracks[hipTrackIndex].rotations[i];
-			glm::fquat updatedRotation = baseRotation * origRotation;
-			currentConfig->m_baseJointRotations[i][m_ikRig.m_hipJoint] = JointRotation(updatedRotation);
-			currentConfig->m_dynamicJointRotations[i][m_ikRig.m_hipJoint] = JointRotation(updatedRotation);			
-			animationClip->SetRotation(updatedRotation, i, m_ikRig.m_hipJoint);
-		}
 		currentConfig->m_jointPositions[m_ikRig.m_hipJoint] = glm::vec3(0);
 	}
 
@@ -196,7 +186,7 @@ namespace Mona {
 		IKRigConfig& config = m_ikRig.m_animationConfigs[animIndex];
 		HipGlobalTrajectoryData* hipTrData = config.getHipTrajectoryData();
 		FrameIndex currentFrame = config.getCurrentFrameIndex();
-		float currentRepTime = config.getReproductionTime(currentFrame);
+		float currentFrameRepTime = config.getReproductionTime(currentFrame);
 		float avgFrameDuration = config.getAnimationDuration() / config.getFrameNum();
 		EEGlobalTrajectoryData* trData;
 		if (config.m_onNewFrame) { // se realiza al llegar a un frame de la animacion
@@ -213,11 +203,11 @@ namespace Mona {
 				glm::vec3 eePos = globalTransforms[ee] * glm::vec4(0, 0, 0, 1);
 				// si no hay posiciones guardadas
 				if (trData->m_savedPositions.getNumberOfPoints() == 0 || m_transitioning) {
-					trData->m_savedPositions = LIC<3>({ eePos, eePos }, { currentRepTime - config.getAnimationDuration(), currentRepTime });
+					trData->m_savedPositions = LIC<3>({ eePos, eePos }, { currentFrameRepTime - config.getAnimationDuration(), currentFrameRepTime });
 					trData->m_motionInitialized = false;
 				}
 				else {
-					trData->m_savedPositions.insertPoint(eePos, currentRepTime);
+					trData->m_savedPositions.insertPoint(eePos, currentFrameRepTime);
 					// recorte de las posiciones guardadas
 					for (int j = trData->m_savedPositions.getNumberOfPoints() - 1; 0 <= j; j--) {
 						float tVal = trData->m_savedPositions.getTValue(j);
@@ -235,11 +225,11 @@ namespace Mona {
 			
 			// si no hay posiciones guardadas
 			if (hipTrData->m_savedPositions.getNumberOfPoints() == 0 || m_transitioning) {
-				hipTrData->m_savedPositions = LIC<3>({ hipTrans, hipTrans },{ currentRepTime - config.getAnimationDuration(), currentRepTime });
+				hipTrData->m_savedPositions = LIC<3>({ hipTrans, hipTrans },{ currentFrameRepTime - config.getAnimationDuration(), currentFrameRepTime });
 				hipTrData->m_motionInitialized = false;
 			}
 			else {
-				hipTrData->m_savedPositions.insertPoint(hipTrans, currentRepTime);
+				hipTrData->m_savedPositions.insertPoint(hipTrans, currentFrameRepTime);
 				// recorte de las posiciones guardadas
 				for (int j = hipTrData->m_savedPositions.getNumberOfPoints() - 1; 0 <= j; j--) {
 					float tVal = hipTrData->m_savedPositions.getTValue(j);
@@ -261,7 +251,7 @@ namespace Mona {
 					if (!trData->m_motionInitialized) {
 						LIC<3> targetCurve = trData->getTargetTrajectory().getEECurve();
 						for (int j = 0; j < targetCurve.getNumberOfPoints(); j++) {
-							if (targetCurve.getTValue(j) < currentRepTime - avgFrameDuration) {
+							if (targetCurve.getTValue(j) < currentFrameRepTime - avgFrameDuration) {
 								trData->m_savedPositions.insertPoint(targetCurve.getCurvePoint(j), targetCurve.getTValue(j));
 							}
 						}
@@ -271,7 +261,7 @@ namespace Mona {
 				if (!hipTrData->m_motionInitialized) {
 					LIC<3> targetCurve = hipTrData->getTargetPositions();
 					for (int j = 0; j < targetCurve.getNumberOfPoints(); j++) {
-						if (targetCurve.getTValue(j) < currentRepTime - avgFrameDuration) {
+						if (targetCurve.getTValue(j) < currentFrameRepTime - avgFrameDuration) {
 							hipTrData->m_savedPositions.insertPoint(targetCurve.getCurvePoint(j), targetCurve.getTValue(j));
 						}
 					}

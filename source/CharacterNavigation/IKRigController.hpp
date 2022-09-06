@@ -15,7 +15,6 @@ namespace Mona {
 		friend class DebugDrawingSystem_ikNav;
 		IKRig m_ikRig;
 		InnerComponentHandle m_skeletalMeshHandle;
-		glm::mat4 m_baseGlobalTransform;
 		AnimationValidator m_animationValidator;
 		float m_reproductionTime = 0;
 		bool m_ikEnabled;
@@ -23,9 +22,10 @@ namespace Mona {
 	public:
 		IKRigController() = default;
 		IKRigController(std::shared_ptr<Skeleton> skeleton, RigData rigData, InnerComponentHandle transformHandle,
-			InnerComponentHandle skeletalMeshHandle, ComponentManager<TransformComponent>* transformManager);
+			InnerComponentHandle skeletalMeshHandle, ComponentManager<TransformComponent>* transformManagerPtr);
 		void validateTerrains(ComponentManager<StaticMeshComponent>& staticMeshManager);
-		void addAnimation(std::shared_ptr<AnimationClip> animationClip, AnimationType animationType);
+		void addAnimation(std::shared_ptr<AnimationClip> animationClip, glm::vec3 originalUpVector,
+			glm::vec3 originalFrontVector, AnimationType animationType, float supportFrameDistanceFactor);
 		void setAngularSpeed(float angularSpeed) { m_ikRig.setAngularSpeed(angularSpeed); }
 		AnimationIndex removeAnimation(std::shared_ptr<AnimationClip> animationClip);
 		void updateIKRigConfigTime(float animationTimeStep, AnimationIndex animIndex, AnimationController& animController);

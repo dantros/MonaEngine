@@ -18,8 +18,10 @@ namespace Mona {
 			IKNavigationComponent(RigData& rigData) {
 				m_rigData = rigData;
 			}
-			void AddAnimation(std::shared_ptr<AnimationClip> animationClip, AnimationType animationType = AnimationType::WALKING) {
-				m_ikRigController.addAnimation(animationClip, animationType);
+			void AddAnimation(std::shared_ptr<AnimationClip> animationClip, 
+				glm::vec3 originalUpVector, glm::vec3 originalFrontVector,
+				AnimationType animationType = AnimationType::WALKING, float supportFrameDistanceFactor = 1.0f) {
+				m_ikRigController.addAnimation(animationClip, originalUpVector, originalFrontVector, animationType, supportFrameDistanceFactor);
 			}
 
 			void SetStrideValidation(bool validateStrides) {

@@ -60,6 +60,7 @@ namespace Mona{
             float m_rigHeight;
             // Escala global del rig
             float m_rigScale;
+            glm::vec3 m_initialPosition;
             // Arreglo de cadenas IK
             std::vector<IKChain> m_ikChains;
             // Indice de la cadera

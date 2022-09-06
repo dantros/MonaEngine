@@ -109,11 +109,6 @@ public:
 		eventManager.Subscribe(m_debugGUISubcription, this, &IKRigCharacter::OnDebugGUIEvent);
 
 		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
-		m_transform->SetTranslation(m_startingPosition);
-		m_transform->SetScale({ 0.05,0.05,0.05 });
-		glm::fquat rotation = glm::angleAxis(glm::radians(90.f), glm::vec3(1.0f, 0.0f, 0.0f));
-		rotation = glm::angleAxis(glm::radians(180.f), glm::vec3(0.0f, 0.0f, 1.0f)) * rotation;
-		m_transform->SetRotation(rotation);
 
 		auto materialPtr = std::static_pointer_cast<Mona::DiffuseTexturedMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseTextured, true));
 		auto& textureManager = Mona::TextureManager::GetInstance();
@@ -138,10 +133,17 @@ public:
 		rigData.rightLeg.baseJointName = "mixamorig:RightUpLeg";
 		rigData.rightLeg.endEffectorName = "mixamorig:RightFoot";
 		rigData.hipJointName = "mixamorig:Hips";
-		rigData.initialRotationAngle = 10.0f;
+		rigData.initialRotationAngle = 0.0f;
+		rigData.initialPosition = m_startingPosition;
+		rigData.scale = 0.05f;
+
+		glm::vec3 originalUpVector = glm::vec3(0, 1, 0);
+		glm::vec3 originalFrontVector = glm::vec3(0, 0, 1);
 		m_ikNavHandle = world.AddComponent<Mona::IKNavigationComponent>(*this, rigData);
-		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_walkingAnimation, Mona::AnimationType::WALKING);
-		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_idleAnimation, Mona::AnimationType::IDLE);
+		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_walkingAnimation, originalUpVector,
+			originalFrontVector, Mona::AnimationType::WALKING);
+		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_idleAnimation, originalUpVector,
+			originalFrontVector, Mona::AnimationType::IDLE);
 		m_skeletalMesh->GetAnimationController().SetPlayRate(0.5f);
 
 	}

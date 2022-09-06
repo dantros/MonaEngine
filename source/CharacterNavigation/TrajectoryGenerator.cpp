@@ -47,22 +47,22 @@ namespace Mona{
         // si una trayectoria es dinamica es fija las demas tambien debera serlo
         if (config->isMovementFixed()) {
 			FrameIndex currentFrame = config->getCurrentFrameIndex();
-			float currentRepTime = config->getReproductionTime(currentFrame);
+			float currentFrameRepTime = config->getReproductionTime(currentFrame);
             for (ChainIndex i = 0; i < m_ikRig->getChainNum(); i++) {
 				EEGlobalTrajectoryData* trData = config->getEETrajectoryData(i);
 				if (trData->getTargetTrajectory().isDynamic()) {
 					if (!trData->isTargetFixed()) {
-						glm::vec3 currentPos = trData->getSavedPosition(currentRepTime);
+						glm::vec3 currentPos = trData->getSavedPosition(currentFrameRepTime);
 						int trID = trData->getTargetTrajectory().getSubTrajectoryID();
 						float currSupportHeight = trData->getSupportHeight(config->m_fixedMovementFrame);
-						generateFixedTrajectory(glm::vec2(currentPos), { currentRepTime, currentRepTime + config->getAnimationDuration() },
+						generateFixedTrajectory(glm::vec2(currentPos), { currentFrameRepTime, currentFrameRepTime + config->getAnimationDuration() },
 							trID, currSupportHeight, trData, transformManager, staticMeshManager);
 					}
 					EEGlobalTrajectoryData* oppositeTrData = trData->getOppositeTrajectoryData();
 					float oppositeCurrSupportHeight = oppositeTrData->getSupportHeight(config->m_fixedMovementFrame);
-					glm::vec3 oppositeCurrentPos = oppositeTrData->getSavedPosition(currentRepTime);
+					glm::vec3 oppositeCurrentPos = oppositeTrData->getSavedPosition(currentFrameRepTime);
 					int oppositeTrID = oppositeTrData->getTargetTrajectory().getSubTrajectoryID();
-					generateFixedTrajectory(glm::vec2(oppositeCurrentPos), { currentRepTime, currentRepTime + config->getAnimationDuration() },
+					generateFixedTrajectory(glm::vec2(oppositeCurrentPos), { currentFrameRepTime, currentFrameRepTime + config->getAnimationDuration() },
 						oppositeTrID, oppositeCurrSupportHeight, oppositeTrData, transformManager, staticMeshManager);
 				}
             }
@@ -100,12 +100,12 @@ namespace Mona{
 		FrameIndex nextFrame = config->getNextFrameIndex();
 		float currentAnimTime = config->getAnimationTime(currentFrame);
 		float nextAnimTime = config->getAnimationTime(nextFrame);
-		float currentRepTime = config->getReproductionTime(currentFrame);
+		float currentFrameRepTime = config->getReproductionTime(currentFrame);
 		float currSupportHeight = trData->getSupportHeight(currentFrame);
-		glm::vec3 currentPos = trData->getSavedPosition(currentRepTime);
+		glm::vec3 currentPos = trData->getSavedPosition(currentFrameRepTime);
 		if (config->getAnimationType() == AnimationType::IDLE) {
 			int subTrID = trData->m_originalSubTrajectories[0].m_subTrajectoryID;
-			generateFixedTrajectory(glm::vec2(currentPos), { currentRepTime, currentRepTime + config->getAnimationDuration() }, subTrID,
+			generateFixedTrajectory(glm::vec2(currentPos), { currentFrameRepTime, currentFrameRepTime + config->getAnimationDuration() }, subTrID,
 				currSupportHeight, trData, transformManager, staticMeshManager);
 			return;
 		}
@@ -127,7 +127,7 @@ namespace Mona{
 
 		// llevar a reproduction time
 		baseCurve.offsetTValues(-currentAnimTime);
-		baseCurve.offsetTValues(currentRepTime);
+		baseCurve.offsetTValues(currentFrameRepTime);
 
 		if (glm::length(baseCurve.getEnd() - baseCurve.getStart()) == 0) {
 			generateFixedTrajectory(glm::vec2(currentPos), { baseCurve.getTRange()[0], baseCurve.getTRange()[1] }, originalTrajectory.getSubTrajectoryID(),
@@ -156,9 +156,9 @@ namespace Mona{
 		glm::vec2 xyHipEEOriginalDiff = hipPosCurve.getEnd() - baseCurve.getEnd();
 		glm::vec2 xyHipEEUpdatedDiff = glm::rotate(xyHipEEOriginalDiff, m_ikRig->getRotationAngle());
 		glm::vec2 hipCurrDir = glm::rotate(glm::vec2(m_ikRig->getFrontVector()), m_ikRig->getRotationAngle());
-		glm::vec2 hipCurrXYPos = hipTrData->getSavedPosition(currentRepTime);
-		if (hipTrData->getTargetPositions().inTRange(currentRepTime)) {
-			hipCurrXYPos = hipTrData->getTargetPositions().evalCurve(currentRepTime);
+		glm::vec2 hipCurrXYPos = hipTrData->getSavedPosition(currentFrameRepTime);
+		if (hipTrData->getTargetPositions().inTRange(currentFrameRepTime)) {
+			hipCurrXYPos = hipTrData->getTargetPositions().evalCurve(currentFrameRepTime);
 		}
 		glm::vec2 hipTrEndPredictedXYPos = hipCurrXYPos + hipCurrDir * (glm::distance(glm::vec2(hipPosCurve.evalCurve(currentAnimTime)),
 			glm::vec2(hipPosCurve.getEnd())));
@@ -203,7 +203,7 @@ namespace Mona{
 
         HipGlobalTrajectoryData* hipTrData = config->getHipTrajectoryData();
         FrameIndex currentFrame = config->getCurrentFrameIndex();
-		float currentRepTime = config->getReproductionTime(currentFrame);
+		float currentFrameRepTime = config->getReproductionTime(currentFrame);
         if (config->isMovementFixed()) {
             float initialTime_rep = config->getReproductionTime(currentFrame);
             float currFrameTime_extendedAnim = config->getAnimationTime(currentFrame);
@@ -275,7 +275,7 @@ namespace Mona{
             else {
                 glm::vec2 hipXYReferencePoint = hipPosCurve.evalCurve(tCurrExtendedAnim);
                 float targetXYDistance = glm::distance(glm::vec2(hipPosCurve.getStart()), hipXYReferencePoint);
-                glm::vec2 currXYHipPos = hipTrData->getSavedPosition(currentRepTime);
+                glm::vec2 currXYHipPos = hipTrData->getSavedPosition(currentFrameRepTime);
                 glm::vec2 targetDirection = glm::rotate(glm::vec2(hipTrOriginalDirection), m_ikRig->getRotationAngle());
                 glm::vec2 targetXYPos = currXYHipPos - targetDirection * targetXYDistance;
 				initialPos = glm::vec3(glm::vec2(targetXYPos),
@@ -393,7 +393,7 @@ namespace Mona{
 			else {
 				// las trayectorias estaticas se calculan siempre
 				valid = true;
-				if (targetDistance * 0.3f < minDistDiff) {
+				if (targetDistance * 0.2f < minDistDiff) {
 					outStrideFinalPoint = startingPoint + glm::vec3(targetDirection, 0) * targetDistance;
 				}
 			}
@@ -476,7 +476,7 @@ namespace Mona{
 			}
 			else {
                 bool allStatic = funcUtils::conditionVector_AND(supportFramesPerChain[i]);
-                MONA_ASSERT(!allStatic, "TrajectoryGenerator: A moving animation must have at least one dynamic trajectory per chain.");
+                MONA_ASSERT(!allStatic, "TrajectoryGenerator: A walking animation must have at least one dynamic trajectory per chain.");
 				// encontrar primer punto de interes (dinamica luego de uno estatico)
 				FrameIndex curveStartFrame = -1;
 				for (int j = 1; j < frameNum; j++) {

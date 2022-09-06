@@ -22,6 +22,15 @@ namespace Mona {
         }
 
         template < typename T>
+        inline void removeAllOcurrences(std::vector<T>& vecOfElements, const T& element) {
+            int index = findIndex(vecOfElements, element);
+            while (index != -1) {
+                vecOfElements.erase(vecOfElements.begin() + index);
+                index = findIndex(vecOfElements, element);
+            }
+        }
+
+        template < typename T>
         inline void sortUnique(std::vector<T>& vecOfElements, bool sortDescending = false)
         {
             if (vecOfElements.size() == 0) { return; }

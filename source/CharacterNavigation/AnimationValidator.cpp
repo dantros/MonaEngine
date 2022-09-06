@@ -12,7 +12,6 @@ namespace Mona{
         m_ikRig = ikRig;
     }
 
-
     void AnimationValidator::checkTransforms(std::shared_ptr<AnimationClip> animationClip) {
 		// la animacion debe tener globalmente vector front={0,1,0} y up={0,0,1}
 		MONA_ASSERT(animationClip->GetSkeleton() == m_ikRig->m_skeleton,
@@ -67,43 +66,8 @@ namespace Mona{
 
     }
 
-	void AnimationValidator::checkLegsRotationAxes_base(IKRigConfig* config) {
-		std::shared_ptr<AnimationClip> anim = config->m_animationClip;
-		std::vector<JointIndex>const& topology = m_ikRig->getTopology();
-		for (ChainIndex c = 0; c < m_ikRig->getChainNum(); c++) {
-			IKChain chain = m_ikRig->m_ikChains[c];
-			for (int i = 0; i < chain.getJoints().size() - 1; i++) {
-				std::vector<glm::vec3> globalRotationAxes;
-				JointIndex jIndex = chain.getJoints()[i];
-				for (FrameIndex j = 0; j < config->getFrameNum(); j++) {
-					auto baseRotations = config->getBaseJointRotations(j);
-					glm::fquat globalRotation = baseRotations[jIndex].getQuatRotation();
-					JointIndex parent = topology[jIndex];
-					while (parent != -1) {
-						globalRotation = baseRotations[parent].getQuatRotation() * globalRotation;
-						parent = topology[parent];
-					}
-					globalRotationAxes.push_back(glm::axis(globalRotation));
-				}
 
-				// buscamos el eje de rotacion global principal
-				glm::vec3 meanRotationAxis(0);
-				for (FrameIndex j = 0; j < config->getFrameNum(); j++) {
-					meanRotationAxis += globalRotationAxes[j];
-
-				}
-				meanRotationAxis /= config->getFrameNum();
-
-				MONA_ASSERT(0.96f < abs(meanRotationAxis[0]), "AnimationValidator: Leg joints must have an x main rotation axis globally.");
-				MONA_ASSERT(abs(meanRotationAxis[1]) < 0.3f, "AnimationValidator: Leg joints must have an x main rotation axis globally.");
-				MONA_ASSERT(abs(meanRotationAxis[2]) < 0.3f, "AnimationValidator: Leg joints must have an x main rotation axis globally.");
-
-			}
-		}
-	}
-
-
-	void AnimationValidator::checkLegGlobalRotationAxes(std::shared_ptr<AnimationClip> animation, IKChain* legChain, glm::fquat baseRotation) {
+	void AnimationValidator::checkLegGlobalRotationAxes(std::shared_ptr<AnimationClip> animation, IKChain* legChain) {
 		std::vector<JointIndex>const& topology = m_ikRig->getTopology();
 		int frameNum = animation->m_animationTracks[0].rotations.size();
 		for (int i = 0; i < legChain->getJoints().size() - 1; i++) {
@@ -116,7 +80,6 @@ namespace Mona{
 					globalRotation = animation->m_animationTracks[animation->GetTrackIndex(parent)].rotations[j] * globalRotation;
 					parent = topology[parent];
 				}
-				globalRotation = baseRotation * globalRotation;
 				globalRotationAxes.push_back(glm::axis(globalRotation));
 			}
 
@@ -128,81 +91,52 @@ namespace Mona{
 			}
 			meanRotationAxis /= frameNum;
 
-			MONA_ASSERT(0.8f < abs(meanRotationAxis[0]), "AnimationValidator: Leg joints must have an x main rotation axis globally.");
-			MONA_ASSERT(abs(meanRotationAxis[1]) < 0.3f, "AnimationValidator: Leg joints must have an x main rotation axis globally.");
-			MONA_ASSERT(abs(meanRotationAxis[2]) < 0.3f, "AnimationValidator: Leg joints must have an x main rotation axis globally.");
+			if (abs(meanRotationAxis[0]) < 0.8f || 0.3f < abs(meanRotationAxis[1]) || 0.3f < abs(meanRotationAxis[2])) {
+				MONA_LOG_WARNING("AnimationValidator: Leg joints should have an x main rotation axis globally.");
+			}
 
 		}
 	}
 
-
-
-	void AnimationValidator::correctLegLocalRotationAxes(std::shared_ptr<AnimationClip> animation, IKChain* legChain) {
-		// modificamos las traslaciones de las articulaciones importantes para que sean del tipo {0,0,z}
-		// luego modificamos la rotacion de la articulacion padre para tomar en cuenta ese cambio
-		// ajustamos la rotacion/traslacion de la articulacion y sus hermanas para no propagar cambios indeseados
-		for (int i = 1; i < legChain->getJoints().size(); i++) {
-			JointIndex jIndex = legChain->getJoints()[i];
-			JointIndex parent = m_ikRig->getTopology()[jIndex];
-			std::vector<JointIndex> levelJoints = m_ikRig->getJointChildren(parent);
-			AnimationClip::AnimationTrack& jointTrack = animation->m_animationTracks[animation->GetTrackIndex(jIndex)];
-			AnimationClip::AnimationTrack& parentTrack = animation->m_animationTracks[animation->GetTrackIndex(parent)];
-			glm::vec3 currentTranslation = jointTrack.positions[0];
-			glm::vec3 targetTranslation = glm::vec3(0, 0, glm::length(currentTranslation));
-			glm::fquat deltaRotation = glmUtils::calcDeltaRotation(glm::normalize(currentTranslation), glm::normalize(targetTranslation), 
-				m_ikRig->getRightVector());
-			for (int j = 0; j < levelJoints.size(); j++) {
-				AnimationClip::AnimationTrack& levelJointTrack = animation->m_animationTracks[animation->GetTrackIndex(levelJoints[j])];
-				for (int k = 0; k < levelJointTrack.positions.size(); k++) {
-					levelJointTrack.positions[k] = deltaRotation * levelJointTrack.positions[k];
-				}
-				for (int k = 0; k < levelJointTrack.rotations.size(); k++) {
-					levelJointTrack.rotations[k] = deltaRotation * levelJointTrack.rotations[k];
-				}
-			}
-			for (int j = 0; j < parentTrack.rotations.size(); j++) {
-				parentTrack.rotations[j] = parentTrack.rotations[j] * glm::inverse(deltaRotation);				
-			}
-		}
-
-	}
-
-
-	void AnimationValidator::debugRotationAxes(IKRigConfig* config, std::vector<JointIndex> targetJoints) {
-		std::shared_ptr<AnimationClip> anim = config->m_animationClip;
+	void AnimationValidator::checkLegLocalRotationAxes(std::shared_ptr<AnimationClip> animation, IKChain* legChain) {
 		std::vector<JointIndex>const& topology = m_ikRig->getTopology();
-		for (int i = 0; i < targetJoints.size(); i++) {
-			std::vector<glm::vec3> globalRotationAxes;
-			std::vector<float> globalRotationAngles;
+		int frameNum = animation->m_animationTracks[0].rotations.size();
+		for (int i = 0; i < legChain->getJoints().size() - 1; i++) {
 			std::vector<glm::vec3> localRotationAxes;
-			std::vector<float> localRotationAngles;
-			JointIndex jIndex = targetJoints[i];
-			for (FrameIndex j = 0; j < config->getFrameNum(); j++) {
-				auto baseRotations = config->getBaseJointRotations(j);
-				glm::fquat globalRotation = baseRotations[jIndex].getQuatRotation();
-				localRotationAxes.push_back(glm::axis(globalRotation));;
-				localRotationAngles.push_back(glm::angle(globalRotation));
-				JointIndex parent = topology[jIndex];
-				while (parent != -1) {
-					JointRotation parentRot = baseRotations[parent];
-					globalRotation = parentRot.getQuatRotation() * globalRotation;
-					parent = topology[parent];
-				}
-				globalRotationAxes.push_back(glm::axis(globalRotation));
-				globalRotationAngles.push_back(glm::angle(globalRotation));
+			JointIndex jIndex = legChain->getJoints()[i];
+			for (FrameIndex j = 0; j < frameNum; j++) {
+				glm::fquat localRotation = animation->m_animationTracks[animation->GetTrackIndex(jIndex)].rotations[j];
+				localRotationAxes.push_back(glm::axis(localRotation));
 			}
-			std::cout << "JOINT INDEX: " << jIndex << std::endl;
-			std::cout << "local rotation angles: " << std::endl;
-			std::cout << funcUtils::vecToString(localRotationAngles) << std::endl;
-			std::cout << "local rotation axes: " << std::endl;
-			glmUtils::printColoredStdVector(localRotationAxes);
+
 			// buscamos el eje de rotacion global principal
 			glm::vec3 meanRotationAxis(0);
-			for (FrameIndex j = 0; j < config->getFrameNum(); j++) {
-				meanRotationAxis += globalRotationAxes[j];
+			for (FrameIndex j = 0; j < frameNum; j++) {
+				meanRotationAxis += localRotationAxes[j];
 
 			}
-			meanRotationAxis /= config->getFrameNum();
+			meanRotationAxis /= frameNum;
+
+			if (abs(meanRotationAxis[0]) < 0.8f || 0.3f < abs(meanRotationAxis[1]) || 0.3f < abs(meanRotationAxis[2])) {
+				MONA_LOG_WARNING("AnimationValidator: Leg joints should have an x main rotation axis locally.");
+			}
+
+		}
+
+	}
+
+
+	void AnimationValidator::correctAnimationOrientation(std::shared_ptr<AnimationClip> animation, 
+		glm::vec3 originalUpVector, glm::vec3 originalFrontVector) {
+		glm::fquat deltaRotationUp = glmUtils::calcDeltaRotation(originalUpVector, glm::vec3(0, 0, 1), m_ikRig->getRightVector());
+		glm::fquat deltaRotationFront = glmUtils::calcDeltaRotation(deltaRotationUp * originalFrontVector , glm::vec3(0, 1, 0), m_ikRig->getUpVector());
+		glm::fquat deltaRotation = deltaRotationFront * deltaRotationUp;
+		AnimationClip::AnimationTrack& rootTrack = animation->m_animationTracks[animation->GetTrackIndex(0)];
+		for (int i = 0; i < rootTrack.rotations.size(); i++) {
+			rootTrack.rotations[i] = deltaRotation * rootTrack.rotations[i];
+		}	
+		for (int i = 0; i < rootTrack.positions.size(); i++) {
+			rootTrack.positions[i] = deltaRotation * rootTrack.positions[i];
 		}
 
 	}

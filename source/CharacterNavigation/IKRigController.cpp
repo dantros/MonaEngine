@@ -315,33 +315,55 @@ namespace Mona {
 	}
 
 
-	std::vector<FrameIndex> last2UpdatedFrames = { -1,-1 };
 	void IKRigController::updateAnimation(AnimationIndex animIndex) {
 		IKRigConfig& config = m_ikRig.m_animationConfigs[animIndex];
 		if (config.m_onNewFrame) {
 			FrameIndex currentFrame = config.getCurrentFrameIndex();
 			FrameIndex nextFrame = config.getNextFrameIndex();
 			float currentFrameRepTime = config.getReproductionTime(currentFrame);
+
+			int repCountOffset = currentFrame < nextFrame ? 0 : 1;
+			float nextFrameRepTime = config.getReproductionTime(nextFrame, repCountOffset);
+
+
+			
+			for (int i = 0; i < m_ikRig.getChainNum(); i++) {
+				for (int j = 0; j < m_ikRig.getIKChain(i)->getJoints().size() - 1; j++) {
+					// chequear estado de angulos dinamicos
+					JointIndex jIndex = m_ikRig.getIKChain(i)->getJoints()[j];
+					if (!config.m_savedAngles[jIndex].inTRange(currentFrameRepTime)) {
+						config.setDynamicAngles(jIndex);
+					}
+					// recorte de los angulos guardados
+					for (int k = config.m_savedAngles[jIndex].getNumberOfPoints() - 1; 0 <= k; k--) {
+						float tVal = config.m_savedAngles[jIndex].getTValue(k);
+						float minVal = config.m_savedAngles[jIndex].getTRange()[1] - config.getAnimationDuration();
+						if (tVal < minVal) {
+							config.m_savedAngles[jIndex] = config.m_savedAngles[jIndex].sample(tVal, config.m_savedAngles[jIndex].getTRange()[1]);
+							break;
+						}
+					}
+				}
+			}
+			
+
 			// calcular nuevas rotaciones para la animacion con ik
 			std::vector<std::pair<JointIndex, glm::fquat>> calculatedRotations = m_ikRig.calculateRotations(animIndex, nextFrame);
 			auto anim = config.m_animationClip;
 			for (int i = 0; i < calculatedRotations.size(); i++) {
-				anim->SetRotation(calculatedRotations[i].second, nextFrame, calculatedRotations[i].first);
-				// para compensar el poco espacio entre en ultimo y el primer frame
-				if (nextFrame == config.getFrameNum() - 1) {
-					anim->SetRotation(calculatedRotations[i].second, 0, calculatedRotations[i].first);
-				}
-				// si el current frame no fue actualizado, le asignamos el valor calculado para next frame
-				if (last2UpdatedFrames[0] != currentFrame && last2UpdatedFrames[1] != currentFrame) {
-					anim->SetRotation(calculatedRotations[i].second, currentFrame, calculatedRotations[i].first);
-				}
-			}
-			last2UpdatedFrames[0] = nextFrame;
-			if (nextFrame == config.getFrameNum() - 1) {
-				last2UpdatedFrames[1] = 0;
-			}
-			else {
-				last2UpdatedFrames[1] = -1;
+				JointIndex jIndex = calculatedRotations[i].first;
+				glm::fquat calcRot = calculatedRotations[i].second;
+				// guardamos valor calculado
+				config.m_savedAngles[jIndex].insertPoint(glm::vec1(glm::angle(calcRot)), nextFrameRepTime);
+
+				// actualizamos current y next frame
+				float currentFrameAngle = config.m_savedAngles[jIndex].evalCurve(currentFrameRepTime)[0];
+				glm::vec3 currentFrameAxis = config.m_baseJointRotations[currentFrame][jIndex].getRotationAxis();
+				anim->SetRotation(glm::angleAxis(currentFrameAngle, currentFrameAxis), currentFrame, jIndex);
+
+				float nextFrameAngle = config.m_savedAngles[jIndex].evalCurve(nextFrameRepTime)[0];
+				glm::vec3 nextFrameAxis = config.m_baseJointRotations[nextFrame][jIndex].getRotationAxis();
+				anim->SetRotation(glm::angleAxis(nextFrameAngle, nextFrameAxis), nextFrame, jIndex);
 			}
 			
 		}

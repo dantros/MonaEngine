@@ -11,7 +11,8 @@ namespace Mona {
     typedef int FrameIndex;
     typedef int ChainIndex;
     class ForwardKinematics;
-    class AnimationClip;
+    class AnimationClip;    
+
     class JointRotation {
     private:
         // Rotacion en formato cuaternion
@@ -32,9 +33,6 @@ namespace Mona {
         float getRotationAngle() const { return m_rotationAngle; }
         glm::vec3 getRotationAxis() const { return m_rotationAxis; }
     };
-    
-
-
     enum class  AnimationType {
         IDLE,
         WALKING
@@ -56,6 +54,8 @@ namespace Mona {
         std::vector<std::vector<JointRotation>> m_baseJointRotations;
         // Rotaciones modificables para cada joint
         std::vector<std::vector<JointRotation>> m_dynamicJointRotations;
+        // Historial de angulos variables para cada joint
+        std::vector<LIC<1>> m_savedAngles;
         // Escalas para cada joint de la animacion base (fijas)
         std::vector<glm::vec3> m_jointScales;
         // Posiciones para cada joint de la animacion base (fijas)
@@ -82,6 +82,7 @@ namespace Mona {
         // Tipo de la animacion
         AnimationType m_animationType;
         FrameIndex m_fixedMovementFrame = -1;
+        void setDynamicAngles(JointIndex jointIndex);
     public:
         IKRigConfig(std::shared_ptr<AnimationClip> animation, AnimationType animationType, 
             AnimationIndex animIndex, ForwardKinematics* fk);

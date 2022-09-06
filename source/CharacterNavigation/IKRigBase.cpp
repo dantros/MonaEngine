@@ -28,7 +28,7 @@ namespace Mona{
 		}
 		m_baseJointRotations.resize(frameNum);
 		for (FrameIndex i = 0; i < frameNum; i++) {
-			m_baseJointRotations[i]  = std::vector<JointRotation>(totalJointNum, JointRotation());
+			m_baseJointRotations[i] = std::vector<JointRotation>(totalJointNum, JointRotation());
 			for (int j = 0; j < jointNum; j++) {
 				JointIndex jIndex = getJointIndices()[j];
 				int trackIndex = animation->GetTrackIndex(jIndex);
@@ -38,6 +38,19 @@ namespace Mona{
 		m_dynamicJointRotations = m_baseJointRotations;
 		m_animIndex = animationIndex;
 		m_forwardKinematics = forwardKinematics;
+		m_savedAngles = std::vector<LIC<1>>(totalJointNum);
+	}
+
+	void IKRigConfig::setDynamicAngles(JointIndex jointIndex) {
+		int totalJointNum = m_baseJointRotations.size();
+		float currentRepTime = getCurrentReproductionTime();
+		float currentAnimTime = getAnimationTime(currentRepTime);
+		std::vector<glm::vec1> jointAngles;
+		for (FrameIndex i = 0; i < getFrameNum(); i++) {
+			jointAngles.push_back(glm::vec1(m_baseJointRotations[i][jointIndex].getRotationAngle()));
+		}
+		m_savedAngles[jointIndex] = LIC<1>(jointAngles, m_timeStamps);
+		m_savedAngles[jointIndex].offsetTValues(-currentAnimTime + currentRepTime);
 	}
 
 	std::vector<glm::mat4> IKRigConfig::getEEListModelSpaceTransforms(std::vector<JointIndex> eeList,  FrameIndex frame, 
@@ -134,7 +147,26 @@ namespace Mona{
 		m_hipTrajectoryData.clear();
 		m_fixedMovementFrame = -1;
 		m_dynamicJointRotations = m_baseJointRotations;
+		m_savedAngles = std::vector<LIC<1>>(m_savedAngles.size());
 	}
+
+	void RigData::setJointMotionRange(std::string jointName, float minAngle, float maxAngle) {
+		if (jointName == "") {
+			MONA_LOG_ERROR("RigData: jointName cannot be empty string.");
+			return;
+		}
+		if (minAngle <= maxAngle) {
+			MONA_LOG_ERROR("RigData: maxAngle must be equal or greater than minAngle.");
+			return;
+		}
+		motionRanges[jointName].minAngle = minAngle;
+		motionRanges[jointName].maxAngle = maxAngle;
+	}
+
+	MotionRange RigData::getJointMotionRange(std::string jointName) {
+		return motionRanges[jointName];
+	}
+
 
 	JointRotation::JointRotation() {
 		setRotation(glm::identity<glm::fquat>());
@@ -166,23 +198,6 @@ namespace Mona{
 		rotationAxis = glm::normalize(rotationAxis);
 		m_quatRotation = glm::angleAxis(m_rotationAngle, rotationAxis);
 		m_rotationAxis = rotationAxis;
-	}
-
-	void RigData::setJointMotionRange(std::string jointName, float minAngle, float maxAngle) {
-		if (jointName == "") {
-			MONA_LOG_ERROR("RigData: jointName cannot be empty string.");
-			return;
-		}
-		if (minAngle <= maxAngle) {
-			MONA_LOG_ERROR("RigData: maxAngle must be equal or greater than minAngle.");
-			return;
-		}
-		motionRanges[jointName].minAngle = minAngle;
-		motionRanges[jointName].maxAngle = maxAngle;
-	}
-
-	MotionRange RigData::getJointMotionRange(std::string jointName) {
-		return motionRanges[jointName];
 	}
 
 }

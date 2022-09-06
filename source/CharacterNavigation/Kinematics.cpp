@@ -188,7 +188,7 @@ namespace Mona {
 		m_ikData.targetAngleDelta = 1 / pow(10, 3);
 		m_gradientDescent.setTermWeight(0, 1.0f / (pow(10, 2) * m_ikRig->getRigHeight()));
 		m_gradientDescent.setTermWeight(1, 0.015f);		
-		m_gradientDescent.setTermWeight(2, 0.01f);
+		m_gradientDescent.setTermWeight(2, 0.015f);
 		setIKChains();
 	}
 

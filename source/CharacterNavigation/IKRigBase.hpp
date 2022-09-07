@@ -70,11 +70,11 @@ namespace Mona {
         // Data de trayectoria para la cadera
         HipGlobalTrajectoryData m_hipTrajectoryData;
         // Tiempo actual de la animacion
-        float m_currentReproductionTime;
+        float m_currentReproductionTime = 0;
         // Indica el frame mas reciente de la animacion
-        FrameIndex m_currentFrameIndex;
+        FrameIndex m_currentFrameIndex = -1;
         // Indice del siguiente frame de la animacion
-        FrameIndex m_nextFrameIndex;
+        FrameIndex m_nextFrameIndex = -1;
         // Indica si es necesario actualizar las rotaciones de las joints
         bool m_onNewFrame = true;
         // Numero de veces que la animacion se ha reproducido

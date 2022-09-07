@@ -13,10 +13,6 @@ namespace Mona{
 		std::vector<JointIndex> trackJointIndices = m_animationClip->m_trackJointIndices;
 		std::sort(trackJointIndices.begin(), trackJointIndices.end());
 		m_jointIndices = trackJointIndices;
-		m_reproductionCount = 0;
-		m_currentReproductionTime = 0;
-		m_currentFrameIndex = 0;
-		m_nextFrameIndex = 1;
 		int frameNum = animation->m_animationTracks[0].rotationTimeStamps.size();
 		int jointNum = animation->m_animationTracks.size();
 		int totalJointNum = topology.size();
@@ -41,15 +37,12 @@ namespace Mona{
 		m_variableJointRotations = m_baseJointRotations[0];
 		m_animIndex = animationIndex;
 		m_forwardKinematics = forwardKinematics;
-		float currentRepTime = getCurrentReproductionTime();
-		float currentAnimTime = getAnimationTime(currentRepTime);
 		for (int i = 0; i < totalJointNum; ++i) {
 			std::vector<glm::vec1> jointAngles;
 			for (FrameIndex j = 0; j < getFrameNum(); j++) {
 				jointAngles.push_back(glm::vec1(m_baseJointRotations[j][i].getRotationAngle()));
 			}
 			m_savedAngles.push_back(LIC<1>(jointAngles, m_timeStamps));
-			m_savedAngles[i].offsetTValues(-currentAnimTime + currentRepTime);
 		}
 	}
 	void IKRigConfig::setVariableJointRotations(FrameIndex frame) {

@@ -191,13 +191,20 @@ namespace Mona {
 		float avgFrameDuration = config.getAnimationDuration() / config.getFrameNum();
 		EEGlobalTrajectoryData* trData;
 		if (config.m_onNewFrame) { // se realiza al llegar a un frame de la animacion
-		// guardado de posiciones globales ee y cadera
+			// chequear estado de angulos guardados, necesarios para calculo de posiciones globales
+			for (int i = 0; i < m_ikRig.getTopology().size(); ++i) {
+				if (!config.m_savedAngles[i].inTRange(currentFrameRepTime)) {
+					config.refreshSavedAngles(i);
+				}
+			}
+
+			// guardado de posiciones globales ee y cadera
 			std::vector<JointIndex> endEffectors;
 			for (ChainIndex i = 0; i < m_ikRig.getChainNum(); i++) {
 				endEffectors.push_back(m_ikRig.m_ikChains[i].getEndEffector());
 			}
 			glm::mat4 baseTransform = transformManager.GetComponentPointer(m_ikRig.getTransformHandle())->GetModelMatrix();
-			std::vector<glm::mat4> globalTransforms = config.getEEListCustomSpaceTransforms(endEffectors, baseTransform, currentFrame, true);
+			std::vector<glm::mat4> globalTransforms = config.getEEListCustomSpaceTransforms(endEffectors, baseTransform, currentFrameRepTime);
 			for (ChainIndex i = 0; i < m_ikRig.getChainNum(); i++) {
 				trData = config.getEETrajectoryData(i);
 				JointIndex ee = endEffectors[i];
@@ -245,31 +252,24 @@ namespace Mona {
 			// recalcular trayectorias de ee y caderas
 			m_ikRig.calculateTrajectories(animIndex, transformManager, staticMeshManager);
 
-			// ya que no hay info de posicion guardada al comenzar el movimiento, se rellena con la curva objetivo
-			if (!config.isMovementFixed()) {
-				for (ChainIndex i = 0; i < m_ikRig.getChainNum(); i++) {
-					trData = config.getEETrajectoryData(i);
-					if (!trData->m_motionInitialized) {
-						LIC<3> targetCurve = trData->getTargetTrajectory().getEECurve();
-						for (int j = 0; j < targetCurve.getNumberOfPoints(); j++) {
-							if (targetCurve.getTValue(j) < currentFrameRepTime - avgFrameDuration) {
-								trData->m_savedPositions.insertPoint(targetCurve.getCurvePoint(j), targetCurve.getTValue(j));
-							}
-						}
+			// si no hay info de posicion guardada al comenzar el movimiento, se usa la curva objetivo
+			for (ChainIndex i = 0; i < m_ikRig.getChainNum(); i++) {
+				trData = config.getEETrajectoryData(i);
+				if (!trData->m_motionInitialized) {
+					LIC<3> targetCurve = trData->getTargetTrajectory().getEECurve();
+					trData->m_savedPositions = targetCurve;
+					if (!config.isMovementFixed() || config.getAnimationType()==AnimationType::IDLE) {
 						trData->m_motionInitialized = true;
-					}
+					}					
 				}
-				if (!hipTrData->m_motionInitialized) {
-					LIC<3> targetCurve = hipTrData->getTargetPositions();
-					for (int j = 0; j < targetCurve.getNumberOfPoints(); j++) {
-						if (targetCurve.getTValue(j) < currentFrameRepTime - avgFrameDuration) {
-							hipTrData->m_savedPositions.insertPoint(targetCurve.getCurvePoint(j), targetCurve.getTValue(j));
-						}
-					}
+			}
+			if (!hipTrData->m_motionInitialized) {
+				LIC<3> targetCurve = hipTrData->getTargetPositions();
+				hipTrData->m_savedPositions = targetCurve;
+				if (!config.isMovementFixed() || config.getAnimationType() == AnimationType::IDLE) {
 					hipTrData->m_motionInitialized = true;
-				}
-			}			
-
+				}	
+			}
 			// asignar objetivos a ee's
 			int repOffset_next = config.getCurrentFrameIndex() < config.getFrameNum() - 1 ? 0 : 1;
 			float targetTimeNext = config.getReproductionTime(config.getNextFrameIndex(), repOffset_next);
@@ -325,15 +325,9 @@ namespace Mona {
 			int repCountOffset = currentFrame < nextFrame ? 0 : 1;
 			float nextFrameRepTime = config.getReproductionTime(nextFrame, repCountOffset);
 
-
-			
 			for (int i = 0; i < m_ikRig.getChainNum(); i++) {
 				for (int j = 0; j < m_ikRig.getIKChain(i)->getJoints().size() - 1; j++) {
-					// chequear estado de angulos dinamicos
 					JointIndex jIndex = m_ikRig.getIKChain(i)->getJoints()[j];
-					if (!config.m_savedAngles[jIndex].inTRange(currentFrameRepTime)) {
-						config.setDynamicAngles(jIndex);
-					}
 					// recorte de los angulos guardados
 					for (int k = config.m_savedAngles[jIndex].getNumberOfPoints() - 1; 0 <= k; k--) {
 						float tVal = config.m_savedAngles[jIndex].getTValue(k);
@@ -345,23 +339,26 @@ namespace Mona {
 					}
 				}
 			}
-			
 
 			// calcular nuevas rotaciones para la animacion con ik
-			std::vector<std::pair<JointIndex, glm::fquat>> calculatedRotations = m_ikRig.calculateRotations(animIndex, nextFrame);
+			std::vector<std::pair<JointIndex, float>> calculatedAngles = m_ikRig.calculateRotationAngles(animIndex);
 			auto anim = config.m_animationClip;
-			for (int i = 0; i < calculatedRotations.size(); i++) {
-				JointIndex jIndex = calculatedRotations[i].first;
-				glm::fquat calcRot = calculatedRotations[i].second;
+			for (int i = 0; i < calculatedAngles.size(); i++) {
+				JointIndex jIndex = calculatedAngles[i].first;
+				float calcAngle = calculatedAngles[i].second;
 				// guardamos valor calculado
-				config.m_savedAngles[jIndex].insertPoint(glm::vec1(glm::angle(calcRot)), nextFrameRepTime);
-
+				config.m_savedAngles[jIndex].insertPoint(glm::vec1(calcAngle), nextFrameRepTime);
+				// tomando en cuenta el poco espacio entre el ultimo y el primer frame
+				if (nextFrame == config.getFrameNum() - 1) {
+					float firstFrameRepTime = config.getReproductionTime(0, 1);
+					config.m_savedAngles[jIndex].insertPoint(glm::vec1(calcAngle), firstFrameRepTime);
+				}
 				// actualizamos current y next frame
-				float currentFrameAngle = config.m_savedAngles[jIndex].evalCurve(currentFrameRepTime)[0];
+				float currentFrameAngle = config.getSavedAngle(jIndex, currentFrameRepTime);
 				glm::vec3 currentFrameAxis = config.m_baseJointRotations[currentFrame][jIndex].getRotationAxis();
 				anim->SetRotation(glm::angleAxis(currentFrameAngle, currentFrameAxis), currentFrame, jIndex);
 
-				float nextFrameAngle = config.m_savedAngles[jIndex].evalCurve(nextFrameRepTime)[0];
+				float nextFrameAngle = config.getSavedAngle(jIndex, nextFrameRepTime);
 				glm::vec3 nextFrameAxis = config.m_baseJointRotations[nextFrame][jIndex].getRotationAxis();
 				anim->SetRotation(glm::angleAxis(nextFrameAngle, nextFrameAxis), nextFrame, jIndex);
 			}
@@ -398,12 +395,11 @@ namespace Mona {
 				config.m_nextFrameIndex = (i + 1) % (config.m_timeStamps.size());
 				break;
 			}
-		}
-		
+		}		
 	}
 
-	void IKRigController::clearConfig(IKRigConfig& config) {
-		config.clear();
+	void IKRigController::refreshConfig(IKRigConfig& config) {
+		config.refresh();
 		m_ikRig.resetAnimation(config.m_animIndex);
 	}
 
@@ -427,7 +423,7 @@ namespace Mona {
 			}
 			else {
 				config.m_active = false;
-				clearConfig(config);
+				refreshConfig(config);
 			}
 		}
 		m_transitioning = activeAnimations == 2;

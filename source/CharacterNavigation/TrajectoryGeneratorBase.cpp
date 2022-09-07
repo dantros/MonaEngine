@@ -4,7 +4,7 @@
 namespace Mona{
 
 
-EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int subTrajectoryID) {
+	EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int subTrajectoryID) {
         m_curve = trajectory;
         m_trajectoryType = trajectoryType;
         m_subTrajectoryID = subTrajectoryID;
@@ -31,7 +31,7 @@ EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int
 		return sampleOriginaCurve(initialExtendedAnimTime, finalExtendedAnimTime, m_originalPositions);
     }
 
-	void HipGlobalTrajectoryData::clear() {
+	void HipGlobalTrajectoryData::refresh() {
 		m_targetPositions = LIC<3>();
 		m_motionInitialized = false;
 		m_savedPositions = LIC<3>();
@@ -90,7 +90,7 @@ EETrajectory::EETrajectory(LIC<3> trajectory, TrajectoryType trajectoryType, int
 		return m_oppositeTrajectoryData;
 	}
 
-	void EEGlobalTrajectoryData::clear() {
+	void EEGlobalTrajectoryData::refresh() {
 		m_targetTrajectory.m_curve = LIC<3>();
 		m_targetTrajectory.m_subTrajectoryID = -1;
 		m_fixedTarget = false;

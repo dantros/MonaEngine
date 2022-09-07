@@ -13,7 +13,10 @@ namespace Mona{
 		std::vector<JointIndex> trackJointIndices = m_animationClip->m_trackJointIndices;
 		std::sort(trackJointIndices.begin(), trackJointIndices.end());
 		m_jointIndices = trackJointIndices;
-
+		m_reproductionCount = 0;
+		m_currentReproductionTime = 0;
+		m_currentFrameIndex = 0;
+		m_nextFrameIndex = 1;
 		int frameNum = animation->m_animationTracks[0].rotationTimeStamps.size();
 		int jointNum = animation->m_animationTracks.size();
 		int totalJointNum = topology.size();
@@ -35,51 +38,58 @@ namespace Mona{
 				m_baseJointRotations[i][jIndex] = JointRotation(animation->m_animationTracks[trackIndex].rotations[i]);
 			}
 		}
-		m_dynamicJointRotations = m_baseJointRotations;
+		m_variableJointRotations = m_baseJointRotations[0];
 		m_animIndex = animationIndex;
 		m_forwardKinematics = forwardKinematics;
-		m_savedAngles = std::vector<LIC<1>>(totalJointNum);
-	}
-
-	void IKRigConfig::setDynamicAngles(JointIndex jointIndex) {
-		int totalJointNum = m_baseJointRotations.size();
 		float currentRepTime = getCurrentReproductionTime();
 		float currentAnimTime = getAnimationTime(currentRepTime);
-		std::vector<glm::vec1> jointAngles;
-		for (FrameIndex i = 0; i < getFrameNum(); i++) {
-			jointAngles.push_back(glm::vec1(m_baseJointRotations[i][jointIndex].getRotationAngle()));
+		for (int i = 0; i < totalJointNum; ++i) {
+			std::vector<glm::vec1> jointAngles;
+			for (FrameIndex j = 0; j < getFrameNum(); j++) {
+				jointAngles.push_back(glm::vec1(m_baseJointRotations[j][i].getRotationAngle()));
+			}
+			m_savedAngles.push_back(LIC<1>(jointAngles, m_timeStamps));
+			m_savedAngles[i].offsetTValues(-currentAnimTime + currentRepTime);
 		}
-		m_savedAngles[jointIndex] = LIC<1>(jointAngles, m_timeStamps);
+	}
+	void IKRigConfig::setVariableJointRotations(FrameIndex frame) {
+		m_variableJointRotations = m_baseJointRotations[frame];
+	}
+
+	void IKRigConfig::refreshSavedAngles(JointIndex jointIndex) {
+		std::vector<glm::vec1> jointAngles;
+		float currentRepTime = getCurrentReproductionTime();
+		float currentAnimTime = getAnimationTime(currentRepTime);
+		for (FrameIndex i = 0; i < getFrameNum(); i++) {
+			m_savedAngles[jointIndex].setCurvePoint(i, glm::vec1(m_baseJointRotations[i][jointIndex].getRotationAngle()));
+		}
+		m_savedAngles[jointIndex].offsetTValues(-m_savedAngles[jointIndex].getTRange()[0]);
 		m_savedAngles[jointIndex].offsetTValues(-currentAnimTime + currentRepTime);
 	}
 
-	std::vector<glm::mat4> IKRigConfig::getEEListModelSpaceTransforms(std::vector<JointIndex> eeList,  FrameIndex frame, 
-		bool useDynamicRotations, std::vector<glm::mat4>* outJointSpaceTransforms) {
-		return m_forwardKinematics->EEListCustomSpaceTransforms(eeList, glm::identity<glm::mat4>(), m_animIndex, 
-			frame, useDynamicRotations, outJointSpaceTransforms);
+	std::vector<glm::mat4> IKRigConfig::getEEListModelSpaceVariableTransforms(std::vector<JointIndex> eeList, std::vector<glm::mat4>* outJointSpaceTransforms) {
+		return m_forwardKinematics->EEListCustomSpaceVariableTransforms(eeList, glm::identity<glm::mat4>(), m_animIndex, outJointSpaceTransforms);
 	}
-	std::vector<glm::mat4> IKRigConfig::getEEListCustomSpaceTransforms(std::vector<JointIndex> eeList, glm::mat4 baseTransform, FrameIndex frame, 
-		bool useDynamicRotations, std::vector<glm::mat4>* outJointSpaceTransforms) {
-		return m_forwardKinematics->EEListCustomSpaceTransforms(eeList, baseTransform, m_animIndex, 
-			frame, useDynamicRotations, outJointSpaceTransforms);
+	std::vector<glm::mat4> IKRigConfig::getEEListCustomSpaceTransforms(std::vector<JointIndex> eeList, glm::mat4 baseTransform, float reproductionTime, std::vector<glm::mat4>* outJointSpaceTransforms) {
+		return m_forwardKinematics->EEListCustomSpaceTransforms(eeList, baseTransform, m_animIndex, reproductionTime, outJointSpaceTransforms);
 	}
 
 	float IKRigConfig::getReproductionTime(FrameIndex frame, int repCountOffset) {
 		MONA_ASSERT(0 <= frame && frame < m_timeStamps.size(), "IKRigConfig: FrameIndex outside of range.");
-		return (m_reproductionCount + repCountOffset) * m_animationClip->GetDuration() - m_timeStamps[0] + m_timeStamps[frame];
+		return (m_reproductionCount + repCountOffset) * m_animationClip->GetDuration() + m_timeStamps[frame];
 	}
 	float IKRigConfig::getAnimationDuration() {
 		return m_animationClip->GetDuration(); 
 	}
 
 	float IKRigConfig::adjustAnimationTime(float extendedAnimationTime) {
-		if (extendedAnimationTime < m_timeStamps[0]) {
-			while (extendedAnimationTime < m_timeStamps[0]) {
+		if (extendedAnimationTime < 0) {
+			while (extendedAnimationTime < 0) {
 				extendedAnimationTime += getAnimationDuration();
 			}
 		}
-		else if (m_timeStamps[0] + getAnimationDuration() < extendedAnimationTime) {
-			while (m_timeStamps[0] + getAnimationDuration() < extendedAnimationTime) {
+		else if (getAnimationDuration() < extendedAnimationTime) {
+			while (getAnimationDuration() < extendedAnimationTime) {
 				extendedAnimationTime -= getAnimationDuration();
 			}
 		}
@@ -89,7 +99,7 @@ namespace Mona{
 	float IKRigConfig::getReproductionTime(float extendedAnimationTime, int repCountOffset) {
 		// llevar el tiempo al rango correcto
 		extendedAnimationTime = adjustAnimationTime(extendedAnimationTime);
-		return (m_reproductionCount + repCountOffset) * m_animationClip->GetDuration() - m_timeStamps[0] + extendedAnimationTime;
+		return (m_reproductionCount + repCountOffset) * m_animationClip->GetDuration() + extendedAnimationTime;
 	}
 
 	float IKRigConfig::getAnimationTime(FrameIndex frame) { 
@@ -101,7 +111,7 @@ namespace Mona{
 		while (reproductionTime < 0) {
 			reproductionTime += m_animationClip->GetDuration();
 		}
-		return fmod(reproductionTime, m_animationClip->GetDuration()) + m_timeStamps[0];
+		return fmod(reproductionTime, m_animationClip->GetDuration());
 	}
 
 	FrameIndex IKRigConfig::getFrame(float extendedAnimationTime) {
@@ -140,14 +150,15 @@ namespace Mona{
 		return false;
 	}
 
-	void IKRigConfig::clear() {
+	void IKRigConfig::refresh() {
 		for (int i = 0; i < m_eeTrajectoryData.size(); i++) {
-			m_eeTrajectoryData[i].clear();
+			m_eeTrajectoryData[i].refresh();
 		}
-		m_hipTrajectoryData.clear();
+		m_hipTrajectoryData.refresh();
 		m_fixedMovementFrame = -1;
-		m_dynamicJointRotations = m_baseJointRotations;
-		m_savedAngles = std::vector<LIC<1>>(m_savedAngles.size());
+		for (int i = 0; i < m_savedAngles.size(); ++i) {
+			refreshSavedAngles(i);
+		}
 	}
 
 	void RigData::setJointMotionRange(std::string jointName, float minAngle, float maxAngle) {

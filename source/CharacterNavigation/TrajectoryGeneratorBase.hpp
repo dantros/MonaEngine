@@ -38,7 +38,7 @@ namespace Mona{
         LIC<3> getTargetPositions() { return m_targetPositions; }
         void setTargetPositions(LIC<3> targetPositions) { m_targetPositions = targetPositions; }
         void init(IKRigConfig* config);
-        void clear();
+        void refresh();
     };
 
     class EETrajectory {
@@ -88,7 +88,7 @@ namespace Mona{
         void init(IKRigConfig* config, EEGlobalTrajectoryData* opposite);
         EEGlobalTrajectoryData* getOppositeTrajectoryData();
         bool isTargetFixed() { return m_fixedTarget; }
-        void clear();
+        void refresh();
     };
 
 

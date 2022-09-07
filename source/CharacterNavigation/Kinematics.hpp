@@ -22,15 +22,13 @@ namespace Mona {
 	public:
 		ForwardKinematics(IKRig* ikRig);
 		ForwardKinematics() = default;
-		std::vector<glm::mat4> CustomSpaceTransforms(glm::mat4 baseTransform, AnimationIndex animIndex, FrameIndex frame, bool useDynamicRotations);
-		std::vector<glm::mat4> EEListCustomSpaceTransforms(std::vector<JointIndex> eeList, glm::mat4 baseTransform, AnimationIndex animIndex, 
-			FrameIndex frame, bool useDynamicRotations, std::vector<glm::mat4>* outJointSpaceTransforms=nullptr);
-		std::vector<glm::vec3> CustomSpacePositions(glm::mat4 baseTransform, AnimationIndex animIndex, FrameIndex frame, bool useDynamicRotations);
-		std::vector<glm::mat4> ModelSpaceTransforms(AnimationIndex animIndex, FrameIndex frame, bool useDynamicRotations);
-		std::vector<glm::vec3> ModelSpacePositions(AnimationIndex animIndex, FrameIndex frame, bool useDynamicRotations);
-		std::vector<glm::mat4> EEListJointSpaceTransforms(std::vector<JointIndex> eeList, AnimationIndex animIndex, FrameIndex frame, bool useDynamicRotations);
-		std::vector<glm::mat4> JointSpaceTransforms(AnimationIndex animIndex, FrameIndex frame, bool useDynamicRotations);
-		glm::mat4 JointSpaceTransform(AnimationIndex animIndex, JointIndex jointIndex, FrameIndex frame, bool useDynamicRotations);
+		std::vector<glm::mat4> EEListCustomSpaceTransforms(std::vector<JointIndex> eeList, glm::mat4 baseTransform, AnimationIndex animIndex,
+			float reproductionTime, std::vector<glm::mat4>* outEEListJointSpaceTransforms = nullptr);
+		std::vector<glm::mat4> EEListCustomSpaceVariableTransforms(std::vector<JointIndex> eeList, glm::mat4 baseTransform, AnimationIndex animIndex,
+			std::vector<glm::mat4>* outEEListJointSpaceTransforms = nullptr);
+		glm::mat4 JointSpaceTransform(AnimationIndex animIndex, JointIndex jointIndex, float reproductionTime);
+		glm::mat4 JointSpaceVariableTransform(AnimationIndex animIndex, JointIndex jointIndex);
+
 
 	};
 
@@ -48,7 +46,6 @@ namespace Mona {
 		float descentRate;
 		float targetAngleDelta;
 		int maxIterations;
-		FrameIndex targetFrame;
 		std::vector<int> stepsByJoint;
 	};
 
@@ -61,7 +58,7 @@ namespace Mona {
 		InverseKinematics() = default;
 		InverseKinematics(IKRig* ikRig);
 		void init();
-		std::vector<std::pair<JointIndex, glm::fquat>> solveIKChains(AnimationIndex animationIndex, FrameIndex targetFrame);
+		std::vector<std::pair<JointIndex, float>> solveIKChains(AnimationIndex animationIndex);
 	};
 
 	

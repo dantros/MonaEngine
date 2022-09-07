@@ -35,8 +35,7 @@ namespace Mona {
 		for (int c = 0; c < dataPtr->ikChains.size(); c++) {
 			endEffectors.push_back(dataPtr->ikChains[c]->getEndEffector());
 		}
-		std::vector<glm::mat4> forwardModelSpaceTransforms = dataPtr->rigConfig->getEEListModelSpaceTransforms(endEffectors,
-			dataPtr->targetFrame, true);
+		std::vector<glm::mat4> forwardModelSpaceTransforms = dataPtr->rigConfig->getEEListModelSpaceVariableTransforms(endEffectors);
 		for (int c = 0; c < dataPtr->ikChains.size(); c++) {
 			eeIndex = endEffectors[c];
 			eePos = glm::vec3(forwardModelSpaceTransforms[eeIndex] * baseVec);
@@ -67,8 +66,7 @@ namespace Mona {
 		// calcular arreglos de transformaciones
 		std::vector<glm::mat4> jointSpaceTransforms;
 		// multiplicacion en cadena desde la raiz hasta el joint i
-		std::vector<glm::mat4> forwardModelSpaceTransforms = dataPtr->rigConfig->getEEListModelSpaceTransforms(endEffectors,
-			dataPtr->targetFrame, true, &jointSpaceTransforms);
+		std::vector<glm::mat4> forwardModelSpaceTransforms = dataPtr->rigConfig->getEEListModelSpaceVariableTransforms(endEffectors, &jointSpaceTransforms);
 
 		// multiplicacion en cadena desde el ee de la cadena hasta el joint i
 		std::vector<std::vector<glm::mat4>> backwardModelSpaceTransformsPerChain(affectedChains.size());
@@ -168,7 +166,7 @@ namespace Mona {
 		}
 
 		// setear nuevos angulos
-		std::vector<JointRotation>* configRot = dataPtr->rigConfig->getDynamicJointRotations(dataPtr->targetFrame);
+		std::vector<JointRotation>* configRot = dataPtr->rigConfig->getVariableJointRotations();
 		int jIndex = dataPtr->jointIndexes[varIndex_progressive];
 		(*configRot)[jIndex].setRotationAngle(args[varIndex_progressive]);
 	};
@@ -221,43 +219,45 @@ namespace Mona {
 		m_ikData.baseAngles.resize(m_ikData.jointIndexes.size());
 	}
 
-	std::vector<std::pair<JointIndex, glm::fquat>> InverseKinematics::solveIKChains(AnimationIndex animationIndex, FrameIndex targetFrame) {
+	std::vector<std::pair<JointIndex, float>> InverseKinematics::solveIKChains(AnimationIndex animationIndex) {
 
 		m_ikData.rigConfig = m_ikRig->getAnimationConfig(animationIndex);
-		m_ikData.targetFrame = targetFrame;
+		FrameIndex nextFrame = m_ikData.rigConfig->getNextFrameIndex();
+		FrameIndex currentFrame = m_ikData.rigConfig->getCurrentFrameIndex();
+		float currentFrameRepTime = m_ikData.rigConfig->getReproductionTime(currentFrame);
 
-		FrameIndex previousFrame = 0 < targetFrame ? targetFrame - 1 : m_ikData.rigConfig->getFrameNum()-1;
-
-		std::vector<JointRotation>const& baseRotations_target = m_ikData.rigConfig->getBaseJointRotations(targetFrame);
-		std::vector<JointRotation>* dynamicRotations_prev = m_ikData.rigConfig->getDynamicJointRotations(previousFrame);
 		// recuperamos los angulos previamente usados de la animacion
 		m_ikData.previousAngles.resize(m_ikData.jointIndexes.size());
 		for (int i = 0; i < m_ikData.jointIndexes.size(); i++) {
-			m_ikData.previousAngles[i] = (*dynamicRotations_prev)[m_ikData.jointIndexes[i]].getRotationAngle();
+			JointIndex jIndex = m_ikData.jointIndexes[i];
+			m_ikData.previousAngles[i] = m_ikData.rigConfig->getSavedAngle(jIndex, currentFrameRepTime);
 		}
 		std::vector<float> initialArgs(m_ikData.previousAngles.size());
 		for (int i = 0; i < m_ikData.previousAngles.size(); i++) {
 			initialArgs[i] = m_ikData.previousAngles[i] * 0.8f;
 		}
 
+		std::vector<JointRotation>const& baseRotations_target = m_ikData.rigConfig->getBaseJointRotations(nextFrame);
 		for (int i = 0; i < m_ikData.jointIndexes.size(); i++) {
 			m_ikData.rotationAxes[i] = baseRotations_target[m_ikData.jointIndexes[i]].getRotationAxis();
 			m_ikData.baseAngles[i] = baseRotations_target[m_ikData.jointIndexes[i]].getRotationAngle();
 		}
-		std::vector<JointRotation>* dynamicRotations_target = m_ikData.rigConfig->getDynamicJointRotations(targetFrame);
-		// ajustamos las rotaciones dinamicas a los argumentos iniciales
+		// setear rotaciones variables a los valores base de frame objetivo
+		m_ikData.rigConfig->setVariableJointRotations(nextFrame);
+		// ajustamos las rotaciones varaibles a los argumentos iniciales
+		std::vector<JointRotation>* variableRotations = m_ikData.rigConfig->getVariableJointRotations();
 		for (int i = 0; i < m_ikData.jointIndexes.size(); i++) {
 			JointIndex jIndex = m_ikData.jointIndexes[i];
-			(*dynamicRotations_target)[jIndex].setRotationAngle(initialArgs[i]);
+			(*variableRotations)[jIndex].setRotationAngle(initialArgs[i]);
 		}
 		std::vector<float> computedAngles = m_gradientDescent.computeArgsMin_progressive(m_ikData.descentRate, 
 			m_ikData.maxIterations, m_ikData.targetAngleDelta, initialArgs, m_ikData.stepsByJoint);
-		std::vector<std::pair<JointIndex, glm::fquat>> result(computedAngles.size());
+		std::vector<std::pair<JointIndex, float>> result(computedAngles.size());
 		
 		for (int i = 0; i < m_ikData.jointIndexes.size(); i++) {
 			JointIndex jIndex = m_ikData.jointIndexes[i];
-			(*dynamicRotations_target)[jIndex].setRotationAngle(computedAngles[i]);
-			result[i] = { jIndex,(* dynamicRotations_target)[jIndex].getQuatRotation() };
+			(*variableRotations)[jIndex].setRotationAngle(computedAngles[i]);
+			result[i] = { jIndex, computedAngles[i]};
 		}
 		return result;		
 	}
@@ -266,19 +266,8 @@ namespace Mona {
 		m_ikRig = ikRig;
 	}
 
-	std::vector<glm::mat4> ForwardKinematics::CustomSpaceTransforms(glm::mat4 baseTransform, AnimationIndex animIndex, FrameIndex frame, bool useDynamicRotations) {
-		IKRigConfig* config = m_ikRig->getAnimationConfig(animIndex);
-		std::vector<glm::mat4> customSpaceTr(m_ikRig->getTopology().size(), glm::identity<glm::mat4>());
-		for (int i = 0; i < config->getJointIndices().size(); i++) {
-			JointIndex jIndex = config->getJointIndices()[i];
-			glm::mat4 baseTransform_ = i == 0 ? baseTransform : customSpaceTr[m_ikRig->getTopology()[jIndex]];
-			customSpaceTr[jIndex] = baseTransform_ * JointSpaceTransform(animIndex, jIndex, frame, useDynamicRotations);
-		}
-		return customSpaceTr;
-	}
-
-	std::vector<glm::mat4> ForwardKinematics::EEListCustomSpaceTransforms(std::vector<JointIndex> eeList, glm::mat4 baseTransform, 
-		AnimationIndex animIndex, FrameIndex frame, bool useDynamicRotations, std::vector<glm::mat4>* outEEListJointSpaceTransforms) {
+	std::vector<glm::mat4> ForwardKinematics::EEListCustomSpaceTransforms(std::vector<JointIndex> eeList, glm::mat4 baseTransform, AnimationIndex animIndex,
+		float reproductionTime, std::vector<glm::mat4>* outEEListJointSpaceTransforms) {
 		IKRigConfig* config = m_ikRig->getAnimationConfig(animIndex);
 		std::vector<glm::mat4> eeListCustomSpaceTr(m_ikRig->getTopology().size(), glm::identity<glm::mat4>());
 		if (outEEListJointSpaceTransforms != nullptr) {
@@ -294,7 +283,7 @@ namespace Mona {
 				glm::mat4 customSpaceTr = glm::identity<glm::mat4>();
 				// recolectar jointSpaceTransforms
 				while (currJoint != -1) {
-					eeListCustomSpaceTr[currJoint] = JointSpaceTransform(animIndex, currJoint, frame, useDynamicRotations);
+					eeListCustomSpaceTr[currJoint] = JointSpaceTransform(animIndex, currJoint, reproductionTime);
 					if (outEEListJointSpaceTransforms != nullptr) {
 						(*outEEListJointSpaceTransforms)[currJoint] = eeListCustomSpaceTr[currJoint];
 					}
@@ -303,72 +292,70 @@ namespace Mona {
 				}
 				// calcular customSpaceTransforms
 				for (int i = 0; i < currJointHierarchy.size(); i++) {
-					glm::mat4 _baseTransform = i == 0 ? baseTransform : eeListCustomSpaceTr[currJointHierarchy[i-1]];
+					glm::mat4 _baseTransform = i == 0 ? baseTransform : eeListCustomSpaceTr[currJointHierarchy[i - 1]];
 					eeListCustomSpaceTr[currJointHierarchy[i]] = _baseTransform * eeListCustomSpaceTr[currJointHierarchy[i]];
 					calcJoints.push_back(currJointHierarchy[i]);
-				}				
-			}			
+				}
+			}
 		}
 		return eeListCustomSpaceTr;
-	}
 
-	std::vector<glm::mat4> ForwardKinematics::EEListJointSpaceTransforms(std::vector<JointIndex> eeList,	
-		AnimationIndex animIndex, FrameIndex frame, bool useDynamicRotations) {
+	}
+	std::vector<glm::mat4> ForwardKinematics::EEListCustomSpaceVariableTransforms(std::vector<JointIndex> eeList, glm::mat4 baseTransform, AnimationIndex animIndex,
+		std::vector<glm::mat4>* outEEListJointSpaceTransforms) {
 		IKRigConfig* config = m_ikRig->getAnimationConfig(animIndex);
-		std::vector<glm::mat4> eeListJointSpaceTr(m_ikRig->getTopology().size(), glm::identity<glm::mat4>());
+		std::vector<glm::mat4> eeListCustomSpaceTr(m_ikRig->getTopology().size(), glm::identity<glm::mat4>());
+		if (outEEListJointSpaceTransforms != nullptr) {
+			(*outEEListJointSpaceTransforms) = std::vector<glm::mat4>(m_ikRig->getTopology().size(), glm::identity<glm::mat4>());
+		}
 		funcUtils::sortUnique(eeList);
 		std::vector<JointIndex> calcJoints;
 		while (0 < eeList.size()) {
 			JointIndex currJoint = eeList.back();
 			eeList.pop_back();
 			if (funcUtils::findIndex(calcJoints, currJoint) == -1) {
+				std::vector<JointIndex> currJointHierarchy;
+				glm::mat4 customSpaceTr = glm::identity<glm::mat4>();
 				// recolectar jointSpaceTransforms
 				while (currJoint != -1) {
-					eeListJointSpaceTr[currJoint] = JointSpaceTransform(animIndex, currJoint, frame, useDynamicRotations);
-					calcJoints.push_back(currJoint);
+					eeListCustomSpaceTr[currJoint] = JointSpaceVariableTransform(animIndex, currJoint);
+					if (outEEListJointSpaceTransforms != nullptr) {
+						(*outEEListJointSpaceTransforms)[currJoint] = eeListCustomSpaceTr[currJoint];
+					}
+					currJointHierarchy.insert(currJointHierarchy.begin(), currJoint);
 					currJoint = m_ikRig->getTopology()[currJoint];
 				}
-
+				// calcular customSpaceTransforms
+				for (int i = 0; i < currJointHierarchy.size(); i++) {
+					glm::mat4 _baseTransform = i == 0 ? baseTransform : eeListCustomSpaceTr[currJointHierarchy[i - 1]];
+					eeListCustomSpaceTr[currJointHierarchy[i]] = _baseTransform * eeListCustomSpaceTr[currJointHierarchy[i]];
+					calcJoints.push_back(currJointHierarchy[i]);
+				}
 			}
 		}
-		return eeListJointSpaceTr;
+		return eeListCustomSpaceTr;
+
 	}
 
-	std::vector<glm::vec3> ForwardKinematics::CustomSpacePositions(glm::mat4 baseTransform, AnimationIndex animIndex, FrameIndex frame, bool useDynamicRotations) {
-		std::vector<glm::mat4> customSpaceTr = CustomSpaceTransforms(baseTransform, animIndex, frame, useDynamicRotations);
-		std::vector<glm::vec3> customSpacePos(customSpaceTr.size());
-		for (int i = 0; i < customSpaceTr.size(); i++) {
-			customSpacePos[i] = customSpaceTr[i] * glm::vec4(0, 0, 0, 1);
-		}
-		return customSpacePos;
-	}
-
-	std::vector<glm::mat4> ForwardKinematics::ModelSpaceTransforms(AnimationIndex animIndex, FrameIndex frame, bool useDynamicRotations) {
-		return CustomSpaceTransforms(glm::identity<glm::mat4>(), animIndex, frame, useDynamicRotations);
-	}
-
-	std::vector<glm::vec3> ForwardKinematics::ModelSpacePositions(AnimationIndex animIndex, FrameIndex frame, bool useDynamicRotations) {
-		return CustomSpacePositions(glm::identity<glm::mat4>(), animIndex, frame, useDynamicRotations);
-	}
-
-
-	std::vector<glm::mat4> ForwardKinematics::JointSpaceTransforms(AnimationIndex animIndex, FrameIndex frame, bool useDynamicRotations) {
+	glm::mat4 ForwardKinematics::JointSpaceTransform(AnimationIndex animIndex, JointIndex jointIndex, float reproductionTime) {
 		IKRigConfig* config = m_ikRig->getAnimationConfig(animIndex);
-		std::vector<glm::mat4> jointSpaceTr(m_ikRig->getTopology().size(), glm::identity<glm::mat4>());
-		for (int i = 0; i < config->getJointIndices().size(); i++) {
-			JointIndex jIndex = config->getJointIndices()[i];
-			jointSpaceTr[jIndex] = JointSpaceTransform(animIndex, jIndex, frame, useDynamicRotations);
-		}
-		return jointSpaceTr;
-	}
-
-	glm::mat4 ForwardKinematics::JointSpaceTransform(AnimationIndex animIndex, JointIndex jointIndex, FrameIndex frame, bool useDynamicRotations) {
-		IKRigConfig* config = m_ikRig->getAnimationConfig(animIndex);
-		std::vector<JointRotation>const& rotations = useDynamicRotations ? (*config->getDynamicJointRotations(frame)) : config->getBaseJointRotations(frame);
+		float animTime = config->getAnimationTime(reproductionTime);
+		float rotAngle = config->getSavedAngle(jointIndex, reproductionTime);
+		glm::vec3 rotAxis = config->getBaseJointRotations(config->getFrame(animTime))[jointIndex].getRotationAxis();
 		glm::mat4 jointSpaceTr = glmUtils::translationToMat4(config->getJointPositions()[jointIndex]) *
-			glmUtils::rotationToMat4(rotations[jointIndex].getQuatRotation()) *
+			glmUtils::rotationToMat4(glm::angleAxis(rotAngle, rotAxis)) *
 			glmUtils::scaleToMat4(config->getJointScales()[jointIndex]);
 		return jointSpaceTr;
+
+	}
+	glm::mat4 ForwardKinematics::JointSpaceVariableTransform(AnimationIndex animIndex, JointIndex jointIndex) {
+		IKRigConfig* config = m_ikRig->getAnimationConfig(animIndex);
+		std::vector<JointRotation>* variableJointRotations = config->getVariableJointRotations();
+		glm::mat4 jointSpaceTr = glmUtils::translationToMat4(config->getJointPositions()[jointIndex]) *
+			glmUtils::rotationToMat4((*variableJointRotations)[jointIndex].getQuatRotation()) *
+			glmUtils::scaleToMat4(config->getJointScales()[jointIndex]);
+		return jointSpaceTr;
+
 	}
 
 }

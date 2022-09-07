@@ -52,8 +52,8 @@ namespace Mona {
         std::vector<JointIndex> m_jointIndices;
         // Rotaciones para cada joint de la animacion base para cada frame 
         std::vector<std::vector<JointRotation>> m_baseJointRotations;
-        // Rotaciones modificables para cada joint
-        std::vector<std::vector<JointRotation>> m_dynamicJointRotations;
+        // Rotacion modificable por cada joint
+        std::vector<JointRotation> m_variableJointRotations;
         // Historial de angulos variables para cada joint
         std::vector<LIC<1>> m_savedAngles;
         // Escalas para cada joint de la animacion base (fijas)
@@ -70,11 +70,11 @@ namespace Mona {
         // Data de trayectoria para la cadera
         HipGlobalTrajectoryData m_hipTrajectoryData;
         // Tiempo actual de la animacion
-        float m_currentReproductionTime = -1;
+        float m_currentReproductionTime;
         // Indica el frame mas reciente de la animacion
-        FrameIndex m_currentFrameIndex = -1;
+        FrameIndex m_currentFrameIndex;
         // Indice del siguiente frame de la animacion
-        FrameIndex m_nextFrameIndex = -1;
+        FrameIndex m_nextFrameIndex;
         // Indica si es necesario actualizar las rotaciones de las joints
         bool m_onNewFrame = true;
         // Numero de veces que la animacion se ha reproducido
@@ -82,12 +82,12 @@ namespace Mona {
         // Tipo de la animacion
         AnimationType m_animationType;
         FrameIndex m_fixedMovementFrame = -1;
-        void setDynamicAngles(JointIndex jointIndex);
+        void refreshSavedAngles(JointIndex jointIndex);
     public:
         IKRigConfig(std::shared_ptr<AnimationClip> animation, AnimationType animationType, 
             AnimationIndex animIndex, ForwardKinematics* fk);
         const std::vector<JointRotation>& getBaseJointRotations(FrameIndex frame) const { return m_baseJointRotations[frame]; }
-        std::vector<JointRotation>* getDynamicJointRotations(FrameIndex frame) { return &(m_dynamicJointRotations[frame]); }
+        std::vector<JointRotation>* getVariableJointRotations() { return &m_variableJointRotations; }
         const std::vector<glm::vec3>& getJointScales() const { return m_jointScales; }
         const std::vector<glm::vec3>& getJointPositions() const { return m_jointPositions; }
         float getReproductionTime(float extendedAnimationTime, int repCountOffset = 0);
@@ -101,10 +101,8 @@ namespace Mona {
         float getCurrentReproductionTime() const { return m_currentReproductionTime; }
         FrameIndex getNextFrameIndex() const { return m_nextFrameIndex; }
         FrameIndex getCurrentFrameIndex() const { return m_currentFrameIndex; }
-        std::vector<glm::mat4> getEEListModelSpaceTransforms(std::vector<JointIndex> eeList, FrameIndex frame, 
-            bool useDynamicRotations, std::vector<glm::mat4>* outJointSpaceTransforms = nullptr);
-        std::vector<glm::mat4> getEEListCustomSpaceTransforms(std::vector<JointIndex> eeList, glm::mat4 baseTransform, FrameIndex frame, 
-            bool useDynamicRotations, std::vector<glm::mat4>* outJointSpaceTransforms = nullptr);
+        std::vector<glm::mat4> getEEListModelSpaceVariableTransforms(std::vector<JointIndex> eeList, std::vector<glm::mat4>* outJointSpaceTransforms = nullptr);
+        std::vector<glm::mat4> getEEListCustomSpaceTransforms(std::vector<JointIndex> eeList, glm::mat4 baseTransform, float reproductionTime, std::vector<glm::mat4>* outJointSpaceTransforms = nullptr);
         EEGlobalTrajectoryData* getEETrajectoryData(ChainIndex chainIndex) { return &(m_eeTrajectoryData[chainIndex]); }
         HipGlobalTrajectoryData* getHipTrajectoryData() { return &m_hipTrajectoryData; }
         AnimationType getAnimationType() { return m_animationType; }
@@ -115,7 +113,9 @@ namespace Mona {
         bool isActive() { return m_active; }
         bool isMovementFixed();
         FrameIndex getFixedMovementFrame() { return m_fixedMovementFrame; }
-        void clear();
+        float getSavedAngle(JointIndex jointIndex, float reproductionTime) { return m_savedAngles[jointIndex].evalCurve(reproductionTime)[0]; }
+        void setVariableJointRotations(FrameIndex frame);
+        void refresh();
     };
     struct ChainEnds {
         // Nombre de la articulacion base de la cadena

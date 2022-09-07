@@ -142,7 +142,7 @@ public:
 			originalFrontVector, Mona::AnimationType::WALKING);
 		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_idleAnimation, originalUpVector,
 			originalFrontVector, Mona::AnimationType::IDLE);
-		m_skeletalMesh->GetAnimationController().SetPlayRate(0.6f);
+		m_skeletalMesh->GetAnimationController().SetPlayRate(0.8f);
 
 	}
 	void OnDebugGUIEvent(const Mona::DebugGUIEvent& event) {

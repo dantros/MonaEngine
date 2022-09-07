@@ -194,7 +194,19 @@ namespace Mona {
 			// chequear estado de angulos guardados, necesarios para calculo de posiciones globales
 			for (int i = 0; i < m_ikRig.getTopology().size(); ++i) {
 				if (!config.m_savedAngles[i].inTRange(currentFrameRepTime)) {
-					config.refreshSavedAngles(i);
+					float lastCalcTime = config.m_savedAngles[i].getTRange()[1];
+					float maxElapsed = avgFrameDuration * 5;
+					// si nos saltamos por mucho el ultimo frame calculado reseteamos los angulos
+					if (maxElapsed < abs(lastCalcTime - currentFrameRepTime)) {
+						config.refreshSavedAngles(i);
+					}
+					else {						
+						float fraction = funcUtils::getFraction(lastCalcTime, lastCalcTime + maxElapsed, currentFrameRepTime);
+						float limitNewAngle = config.m_savedAngles[i].getEnd()[0] * 0.6f + config.getBaseJointRotations(currentFrame)[i].getRotationAngle() * 0.4f;
+						float interpolatedAngle = funcUtils::lerp(config.m_savedAngles[i].getEnd()[0], limitNewAngle, fraction);
+						config.m_savedAngles[i].insertPoint(glm::vec1(interpolatedAngle), currentFrameRepTime);
+					}
+					
 				}
 			}
 
@@ -324,6 +336,8 @@ namespace Mona {
 
 			int repCountOffset = currentFrame < nextFrame ? 0 : 1;
 			float nextFrameRepTime = config.getReproductionTime(nextFrame, repCountOffset);
+
+			float avgFrameDuration = config.getAnimationDuration() / config.getFrameNum();
 
 			for (int i = 0; i < m_ikRig.getChainNum(); i++) {
 				for (int j = 0; j < m_ikRig.getIKChain(i)->getJoints().size() - 1; j++) {

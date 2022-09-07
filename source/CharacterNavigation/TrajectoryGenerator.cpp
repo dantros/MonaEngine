@@ -194,7 +194,7 @@ namespace Mona{
         if (!trData->isTargetFixed() &&	currSubTrID == newSubTrID && savedCurve.inTRange(transitionTime1)) {
 			float avgFrameDuration = config->getAnimationDuration() / config->getFrameNum();
 			float transitionTime2 = transitionTime1 + avgFrameDuration;
-			for (int i = 0; i < 5; i++) {
+			for (int i = 0; i < 8; i++) {
 				if (savedCurve.inTRange(transitionTime2 + avgFrameDuration)) {
 					transitionTime2 += avgFrameDuration;
 				}
@@ -322,7 +322,7 @@ namespace Mona{
 			float avgFrameDuration = config->getAnimationDuration() / config->getFrameNum();
 			float transitionTime2 = transitionTime1 + avgFrameDuration;
 			LIC<3> savedCurve = hipTrData->getTargetPositions();
-			for (int i = 0; i < 5; i++) {
+			for (int i = 0; i < 8; i++) {
 				if (savedCurve.inTRange(transitionTime2 + avgFrameDuration)) {
 					transitionTime2 += avgFrameDuration;
 				}				

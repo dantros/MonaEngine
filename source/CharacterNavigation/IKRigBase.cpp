@@ -37,13 +37,14 @@ namespace Mona{
 		m_variableJointRotations = m_baseJointRotations[0];
 		m_animIndex = animationIndex;
 		m_forwardKinematics = forwardKinematics;
-		for (int i = 0; i < totalJointNum; ++i) {
-			std::vector<glm::vec1> jointAngles;
+		m_savedAngles = std::vector<LIC<1>>(totalJointNum);
+		for (JointIndex i = 0; i < totalJointNum; i++) {
+			m_savedAngles[i] = LIC<1>(std::vector<glm::vec1>(getFrameNum()), m_timeStamps);
 			for (FrameIndex j = 0; j < getFrameNum(); j++) {
-				jointAngles.push_back(glm::vec1(m_baseJointRotations[j][i].getRotationAngle()));
+				m_savedAngles[i].setCurvePoint(j, glm::vec1(m_baseJointRotations[j][i].getRotationAngle()));
 			}
-			m_savedAngles.push_back(LIC<1>(jointAngles, m_timeStamps));
 		}
+		
 	}
 	void IKRigConfig::setVariableJointRotations(FrameIndex frame) {
 		m_variableJointRotations = m_baseJointRotations[frame];
@@ -51,13 +52,12 @@ namespace Mona{
 
 	void IKRigConfig::refreshSavedAngles(JointIndex jointIndex) {
 		std::vector<glm::vec1> jointAngles;
-		float currentRepTime = getCurrentReproductionTime();
-		float currentAnimTime = getAnimationTime(currentRepTime);
-		for (FrameIndex i = 0; i < getFrameNum(); i++) {
-			m_savedAngles[jointIndex].setCurvePoint(i, glm::vec1(m_baseJointRotations[i][jointIndex].getRotationAngle()));
-		}
-		m_savedAngles[jointIndex].offsetTValues(-m_savedAngles[jointIndex].getTRange()[0]);
-		m_savedAngles[jointIndex].offsetTValues(-currentAnimTime + currentRepTime);
+		float currentFrameRepTime = getReproductionTime(m_currentFrameIndex);
+		float repCountOffset_next = m_currentFrameIndex < m_nextFrameIndex ? 0 : 1;
+		float nextFrameRepTime = getReproductionTime(m_nextFrameIndex, repCountOffset_next);
+		float currFrameBaseAngle = m_baseJointRotations[m_currentFrameIndex][jointIndex].getRotationAngle();
+		float nextFrameBaseAngle = m_baseJointRotations[m_nextFrameIndex][jointIndex].getRotationAngle();
+		m_savedAngles[jointIndex] = LIC<1>({ glm::vec1(currFrameBaseAngle), glm::vec1(nextFrameBaseAngle) }, { currentFrameRepTime, nextFrameRepTime });
 	}
 
 	std::vector<glm::mat4> IKRigConfig::getEEListModelSpaceVariableTransforms(std::vector<JointIndex> eeList, std::vector<glm::mat4>* outJointSpaceTransforms) {

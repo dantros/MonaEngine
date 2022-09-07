@@ -29,19 +29,19 @@ Mona::GameObjectHandle<Mona::GameObject> AddTerrain(Mona::World& world) {
 	materialPtr->SetDiffuseColor(glm::vec3(0.3, 0.1f, 0.1f));
 	auto transform = world.AddComponent<Mona::TransformComponent>(terrain);
 	transform->SetTranslation(glm::vec3(0, 0, 0));
-	glm::vec2 minXY(-50, -50);
-	glm::vec2 maxXY(50, 50);
+	glm::vec2 minXY(-100, -100);
+	glm::vec2 maxXY(100, 100);
 	int numInnerVerticesWidth = 100;
 	int numInnerVerticesHeight = 100;
 	auto heighFunc = [](float x, float y) -> float {
 		float result = 0;
-		int funcNum = 100;
-		glm::vec2 minXY(-50, -50);
-		glm::vec2 maxXY(50, 50);
+		int funcNum = 200;
+		glm::vec2 minXY(-100, -100);
+		glm::vec2 maxXY(100, 100);
 		float minHeight = -15;
-		float maxHeight = 60;
+		float maxHeight = 70;
 		float minSigma = 3;
-		float maxSigma = 20;
+		float maxSigma = 15;
 		std::srand(5);
 		for (int i = 0; i < funcNum; i++) {
 			float randMax = RAND_MAX;

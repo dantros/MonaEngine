@@ -216,7 +216,7 @@ namespace Mona{
             std::vector<glm::vec<D, float>> transitionCurvePoints;
             transitionCurvePoints.reserve(curve1.m_curvePoints.size() + curve2.m_curvePoints.size());
             for (int i = 0; i < curve1.m_tValues.size(); i++) {
-                if (curve1.m_tValues[i] < transitionT && 2*epsilon < abs(curve1.m_tValues[i]-transitionT)) {
+                if (curve1.m_tValues[i] + 2 * epsilon < transitionT) {
                     transitionTValues.push_back(curve1.m_tValues[i]);
                     transitionCurvePoints.push_back(curve1.m_curvePoints[i]);
                 }
@@ -225,7 +225,7 @@ namespace Mona{
             transitionTValues.push_back(transitionT);
             transitionCurvePoints.push_back(curve2.evalCurve(transitionT));
             for (int i = 0; i < curve2.m_tValues.size(); i++) {
-                if (transitionT < curve2.m_tValues[i] && 2*epsilon < abs(curve2.m_tValues[i] - transitionT)) {
+                if (transitionT + 2 * epsilon < curve2.m_tValues[i]) {
                     transitionTValues.push_back(curve2.m_tValues[i]);
                     transitionCurvePoints.push_back(curve2.m_curvePoints[i]);
                 }
@@ -236,6 +236,53 @@ namespace Mona{
                 transitionTValues.push_back(extraTValue);
                 transitionCurvePoints.push_back(transitionCurvePoints[0]);
             }           
+            return LIC(transitionCurvePoints, transitionTValues, epsilon);
+        }
+
+
+        static LIC<D> transitionSoft(const LIC& curve1, const LIC& curve2, float transitionT1, float transitionT2) {
+            MONA_ASSERT(curve1.m_tEpsilon == curve2.m_tEpsilon, "LIC: both curves must have the same tEpsilon.");
+            MONA_ASSERT(curve1.m_tEpsilon * 2 < transitionT2 - transitionT1, "LIC: transitionT1 must be greater than transitionT2 by at least 2*tEpsilon");
+            MONA_ASSERT(curve1.inTRange(transitionT1) && curve2.inTRange(transitionT1), "LIC: transitionT1 must be within t ranges of both curves.");
+            MONA_ASSERT(curve1.inTRange(transitionT2) && curve2.inTRange(transitionT2), "LIC: transitionT2 must be within t ranges of both curves.");
+            float epsilon = curve1.m_tEpsilon;
+            std::vector<float> transitionTValues;
+            transitionTValues.reserve(curve1.m_curvePoints.size() + curve2.m_curvePoints.size());
+            std::vector<glm::vec<D, float>> transitionCurvePoints;
+            transitionCurvePoints.reserve(curve1.m_curvePoints.size() + curve2.m_curvePoints.size());
+            for (int i = 0; i < curve1.m_tValues.size(); i++) {
+                if (curve1.m_tValues[i] + 2 * epsilon < transitionT1) {
+                transitionTValues.push_back(curve1.m_tValues[i]);
+                transitionCurvePoints.push_back(curve1.m_curvePoints[i]);
+                }
+                else { break; }
+            }
+            transitionTValues.push_back(transitionT1);
+            transitionCurvePoints.push_back(curve2.evalCurve(transitionT1));
+            for (int i = 0; i < curve2.m_tValues.size(); i++) {
+                if (transitionT1 + 2 * epsilon < curve2.m_tValues[i] && curve2.m_tValues[i] + 2*epsilon < transitionT2) {
+                    float currTVal = curve2.m_tValues[i];
+                    transitionTValues.push_back(currTVal);                    
+                    float fraction = funcUtils::getFraction(transitionT1, transitionT2, currTVal);
+                    transitionCurvePoints.push_back(funcUtils::lerp(curve1.evalCurve(currTVal), curve2.evalCurve(currTVal), fraction));
+                }
+            
+            }
+            transitionTValues.push_back(transitionT2);
+            transitionCurvePoints.push_back(curve2.evalCurve(transitionT2));
+
+            for (int i = 0; i < curve2.m_tValues.size(); i++) {
+                if (transitionT2 + 2 * epsilon < curve2.m_tValues[i]) {
+                    transitionTValues.push_back(curve2.m_tValues[i]);
+                    transitionCurvePoints.push_back(curve2.m_curvePoints[i]);
+                }
+            }
+            if (transitionTValues.size() == 1) {
+                float extraTValue = transitionTValues[0];
+                funcUtils::epsilonAdjustment_add(extraTValue, 3 * epsilon);
+                transitionTValues.push_back(extraTValue);
+                transitionCurvePoints.push_back(transitionCurvePoints[0]);
+            }
             return LIC(transitionCurvePoints, transitionTValues, epsilon);
         }
 

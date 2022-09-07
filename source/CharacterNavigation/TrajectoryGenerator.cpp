@@ -186,14 +186,26 @@ namespace Mona{
 				m_environmentData, transformManager, staticMeshManager);
 		}
 
-        int repCountOffset = config->getNextFrameIndex() == 0 ? 1 : 0;
-        float transitionTime = config->getReproductionTime(config->getNextFrameIndex(), repCountOffset);
+		int repCountOffset = config->getNextFrameIndex() == 0 ? 1 : 0;
+		float transitionTime1 = config->getReproductionTime(config->getNextFrameIndex(), repCountOffset);
         int currSubTrID = trData->getTargetTrajectory().getSubTrajectoryID();
         int newSubTrID = originalTrajectory.getSubTrajectoryID();
-        if (!trData->isTargetFixed() &&	currSubTrID == newSubTrID 
-			&& trData->getTargetTrajectory().getEECurve().inTRange(transitionTime)) {
-            trData->setTargetTrajectory(LIC<3>::transition(trData->getTargetTrajectory().getEECurve(),
-                baseCurve, transitionTime), trType, newSubTrID);
+		LIC<3>& savedCurve = trData->getTargetTrajectory().getEECurve();
+        if (!trData->isTargetFixed() &&	currSubTrID == newSubTrID && savedCurve.inTRange(transitionTime1)) {
+			float avgFrameDuration = config->getAnimationDuration() / config->getFrameNum();
+			float transitionTime2 = transitionTime1 + avgFrameDuration;
+			for (int i = 0; i < 6; i++) {
+				if (savedCurve.inTRange(transitionTime2 + avgFrameDuration)) {
+					transitionTime2 += avgFrameDuration;
+				}
+			}
+			if (savedCurve.inTRange(transitionTime1) && savedCurve.inTRange(transitionTime2)) {
+				trData->setTargetTrajectory(LIC<3>::transitionSoft(savedCurve, baseCurve, transitionTime1, transitionTime2), trType, newSubTrID);
+			}	
+			else {
+				trData->setTargetTrajectory(LIC<3>::transition(savedCurve, baseCurve, transitionTime1), trType, newSubTrID);
+			}
+            
         }
         else {
             trData->setTargetTrajectory(baseCurve, trType, newSubTrID);
@@ -304,13 +316,23 @@ namespace Mona{
                 glm::vec3 adjustedPoint(glm::vec2(hipPosCurve.evalCurve(tVal_rep)), adjustedZ);
                 hipPosCurve.setCurvePoint(i, adjustedPoint);
             }          
-            
-
+           
 			int repCountOffset = config->getNextFrameIndex() == 0 ? 1 : 0;
-			float transitionTime = config->getReproductionTime(config->getNextFrameIndex(), repCountOffset);
-            if (hipTrData->getTargetPositions().inTRange(transitionTime)) {
-                hipTrData->setTargetPositions(LIC<3>::transition(hipTrData->getTargetPositions(), hipPosCurve, transitionTime));
-            }
+			float transitionTime1 = config->getReproductionTime(config->getNextFrameIndex(), repCountOffset);
+			float avgFrameDuration = config->getAnimationDuration() / config->getFrameNum();
+			float transitionTime2 = transitionTime1 + avgFrameDuration;
+			LIC<3> savedCurve = hipTrData->getTargetPositions();
+			for (int i = 0; i < 6; i++) {
+				if (savedCurve.inTRange(transitionTime2 + avgFrameDuration)) {
+					transitionTime2 += avgFrameDuration;
+				}				
+			}
+            if (savedCurve.inTRange(transitionTime1) && savedCurve.inTRange(transitionTime2)) {
+                hipTrData->setTargetPositions(LIC<3>::transitionSoft(savedCurve, hipPosCurve, transitionTime1, transitionTime2));
+			}
+			else if (savedCurve.inTRange(transitionTime1)) {
+				hipTrData->setTargetPositions(LIC<3>::transition(savedCurve, hipPosCurve, transitionTime1));
+			}
             else {
                 hipTrData->setTargetPositions(hipPosCurve);
             }

@@ -13,8 +13,10 @@ namespace Mona {
 		void ShutDown() noexcept;
 		void drawLineList(const dd::DrawVertex* lines, int count, bool depthEnabled) override;
 		bool m_drawEETargetCurves = true;
+		bool m_drawEERealCurves = true;
 		bool m_drawHipTargetCurve = false;
-		glm::vec3 m_eeCurveColor = glm::vec3(1.0f, 0.0f, 0.0f);
+		glm::vec3 m_eeRealCurveColor = glm::vec3(1.0f, 1.0f, 0.0f);
+		glm::vec3 m_eeTargetCurveColor = glm::vec3(1.0f, 0.0f, 0.0f);
 		glm::vec3 m_hipCurveColor = glm::vec3(0.0f, 1.0f, 0.0f);
 	private:
 		uint32_t VAO = 0;

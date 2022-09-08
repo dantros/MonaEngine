@@ -38,12 +38,6 @@ namespace Mona{
 		m_animIndex = animationIndex;
 		m_forwardKinematics = forwardKinematics;
 		m_savedAngles = std::vector<LIC<1>>(totalJointNum);
-		for (JointIndex i = 0; i < totalJointNum; i++) {
-			m_savedAngles[i] = LIC<1>(std::vector<glm::vec1>(getFrameNum()), m_timeStamps);
-			for (FrameIndex j = 0; j < getFrameNum(); j++) {
-				m_savedAngles[i].setCurvePoint(j, glm::vec1(m_baseJointRotations[j][i].getRotationAngle()));
-			}
-		}
 		
 	}
 	void IKRigConfig::setVariableJointRotations(FrameIndex frame) {

@@ -182,7 +182,7 @@ namespace Mona {
 		auto terms = std::vector<FunctionTerm<IKData>>({ term1,term2, term3 });
 		m_gradientDescent = GradientDescent<IKData>(terms, 0, &m_ikData, postDescentStepCustomBehaviour);
 		m_ikData.descentRate = 1.0f;
-		m_ikData.maxIterations = 600;
+		m_ikData.maxIterations = 300;
 		m_ikData.targetAngleDelta = 1 / pow(10, 3);
 		m_gradientDescent.setTermWeight(0, 1.0f / (pow(10, 2) * m_ikRig->getRigHeight()));
 		m_gradientDescent.setTermWeight(1, 0.015f);		
@@ -230,7 +230,7 @@ namespace Mona {
 		m_ikData.previousAngles.resize(m_ikData.jointIndexes.size());
 		for (int i = 0; i < m_ikData.jointIndexes.size(); i++) {
 			JointIndex jIndex = m_ikData.jointIndexes[i];
-			m_ikData.previousAngles[i] = m_ikData.rigConfig->getSavedAngle(jIndex, currentFrameRepTime);
+			m_ikData.previousAngles[i] = m_ikData.rigConfig->getSavedAngles(jIndex).evalCurve(currentFrameRepTime)[0];
 		}
 		std::vector<float> initialArgs(m_ikData.previousAngles.size());
 		for (int i = 0; i < m_ikData.previousAngles.size(); i++) {
@@ -340,7 +340,7 @@ namespace Mona {
 	glm::mat4 ForwardKinematics::JointSpaceTransform(AnimationIndex animIndex, JointIndex jointIndex, float reproductionTime) {
 		IKRigConfig* config = m_ikRig->getAnimationConfig(animIndex);
 		float animTime = config->getAnimationTime(reproductionTime);
-		float rotAngle = config->getSavedAngle(jointIndex, reproductionTime);
+		float rotAngle = config->getSavedAngles(jointIndex).evalCurve(reproductionTime)[0];
 		glm::vec3 rotAxis = config->getBaseJointRotations(config->getFrame(animTime))[jointIndex].getRotationAxis();
 		glm::mat4 jointSpaceTr = glmUtils::translationToMat4(config->getJointPositions()[jointIndex]) *
 			glmUtils::rotationToMat4(glm::angleAxis(rotAngle, rotAxis)) *

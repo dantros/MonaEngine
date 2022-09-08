@@ -33,7 +33,7 @@ namespace Mona{
             LIC<D>& originalCurve);
     public:
         LIC<3> sampleOriginalPositions(float initialExtendedAnimTime, float finalExtendedAnimTime);
-        glm::vec3 getSavedPosition(float reproductionTime) { return m_savedPositions.evalCurve(reproductionTime); }
+        LIC<3> const& getSavedPositions() { return m_savedPositions; }
         bool motionInitialized() { return m_motionInitialized; }
         LIC<3> getTargetPositions() { return m_targetPositions; }
         void setTargetPositions(LIC<3> targetPositions) { m_targetPositions = targetPositions; }
@@ -79,7 +79,7 @@ namespace Mona{
         EETrajectory getSubTrajectory(float animationTime);
         EETrajectory getSubTrajectoryByID(int subTrajectoryID);
         int getSubTrajectoryNum() { return m_originalSubTrajectories.size(); }
-        glm::vec3 getSavedPosition(float reproductionTime) { return m_savedPositions.evalCurve(reproductionTime); }
+        LIC<3> const& getSavedPositions() { return m_savedPositions; }
         bool motionInitialized() { return m_motionInitialized; }
         float getSupportHeight(FrameIndex frame) { return m_supportHeights[frame]; }
         EETrajectory& getTargetTrajectory() { return m_targetTrajectory; }

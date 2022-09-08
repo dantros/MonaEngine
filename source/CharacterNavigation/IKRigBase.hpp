@@ -113,7 +113,7 @@ namespace Mona {
         bool isActive() { return m_active; }
         bool isMovementFixed();
         FrameIndex getFixedMovementFrame() { return m_fixedMovementFrame; }
-        float getSavedAngle(JointIndex jointIndex, float reproductionTime) { return m_savedAngles[jointIndex].evalCurve(reproductionTime)[0]; }
+        LIC<1>const& getSavedAngles(JointIndex jointIndex) { return m_savedAngles[jointIndex]; }
         void setVariableJointRotations(FrameIndex frame);
         void refresh();
     };

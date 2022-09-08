@@ -197,10 +197,10 @@ namespace Mona {
 					float lastCalcTime = config.m_savedAngles[i].getTRange()[1];
 					float maxElapsed = avgFrameDuration * 5;
 					// si nos saltamos por mucho el ultimo frame calculado reseteamos los angulos
-					if (maxElapsed < abs(lastCalcTime - currentFrameRepTime)) {
+					if (maxElapsed < abs(lastCalcTime - currentFrameRepTime) || config.m_savedAngles[i].getNumberOfPoints() == 0) {
 						config.refreshSavedAngles(i);
 					}
-					else {						
+					else {
 						float fraction = funcUtils::getFraction(lastCalcTime, lastCalcTime + maxElapsed, currentFrameRepTime);
 						float limitNewAngle = config.m_savedAngles[i].getEnd()[0] * 0.6f + config.getBaseJointRotations(currentFrame)[i].getRotationAngle() * 0.4f;
 						float interpolatedAngle = funcUtils::lerp(config.m_savedAngles[i].getEnd()[0], limitNewAngle, fraction);
@@ -345,7 +345,7 @@ namespace Mona {
 					// recorte de los angulos guardados
 					for (int k = config.m_savedAngles[jIndex].getNumberOfPoints() - 1; 0 <= k; k--) {
 						float tVal = config.m_savedAngles[jIndex].getTValue(k);
-						float minVal = config.m_savedAngles[jIndex].getTRange()[1] - config.getAnimationDuration();
+						float minVal = config.m_savedAngles[jIndex].getTRange()[1] - avgFrameDuration*6;
 						if (tVal < minVal) {
 							config.m_savedAngles[jIndex] = config.m_savedAngles[jIndex].sample(tVal, config.m_savedAngles[jIndex].getTRange()[1]);
 							break;
@@ -362,17 +362,12 @@ namespace Mona {
 				float calcAngle = calculatedAngles[i].second;
 				// guardamos valor calculado
 				config.m_savedAngles[jIndex].insertPoint(glm::vec1(calcAngle), nextFrameRepTime);
-				// tomando en cuenta el poco espacio entre el ultimo y el primer frame
-				if (nextFrame == config.getFrameNum() - 1) {
-					float firstFrameRepTime = config.getReproductionTime(0, 1);
-					config.m_savedAngles[jIndex].insertPoint(glm::vec1(calcAngle), firstFrameRepTime);
-				}
 				// actualizamos current y next frame
-				float currentFrameAngle = config.getSavedAngle(jIndex, currentFrameRepTime);
+				float currentFrameAngle = config.getSavedAngles(jIndex).evalCurve(currentFrameRepTime)[0];
 				glm::vec3 currentFrameAxis = config.m_baseJointRotations[currentFrame][jIndex].getRotationAxis();
 				anim->SetRotation(glm::angleAxis(currentFrameAngle, currentFrameAxis), currentFrame, jIndex);
 
-				float nextFrameAngle = config.getSavedAngle(jIndex, nextFrameRepTime);
+				float nextFrameAngle = config.getSavedAngles(jIndex).evalCurve(nextFrameRepTime)[0];
 				glm::vec3 nextFrameAxis = config.m_baseJointRotations[nextFrame][jIndex].getRotationAxis();
 				anim->SetRotation(glm::angleAxis(nextFrameAngle, nextFrameAxis), nextFrame, jIndex);
 			}

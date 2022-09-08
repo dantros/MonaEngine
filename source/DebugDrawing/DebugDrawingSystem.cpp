@@ -110,6 +110,7 @@ namespace Mona {
 			ImGui::Separator();
 			ImGui::Text("IK Navigation System Debug Draw:");
 			ImGui::Checkbox("Draw EndEffector Target Curves", &(m_ikNavDebugDrawPtr->m_drawEETargetCurves));
+			ImGui::Checkbox("Draw EndEffector Real Curves", &(m_ikNavDebugDrawPtr->m_drawEERealCurves));
 			ImGui::Checkbox("Draw Hip Target Curves", &(m_ikNavDebugDrawPtr->m_drawHipTargetCurve));
 			ImGui::End();
 		}
@@ -128,24 +129,42 @@ namespace Mona {
 			std::vector<IKRigConfig>& currConfigs = currController->m_ikRig.m_animationConfigs;
 			for (int j = 0; j < currConfigs.size(); j++) {
 				IKRigConfig& currConfig = currConfigs[j];
-				if (m_ikNavDebugDrawPtr->m_drawEETargetCurves && currConfig.isActive()) {
-					glm::vec3 color = m_ikNavDebugDrawPtr->m_eeCurveColor;
+				if ((m_ikNavDebugDrawPtr->m_drawEETargetCurves || m_ikNavDebugDrawPtr->m_drawEERealCurves) && currConfig.isActive()) {
+					glm::vec3 colorT = m_ikNavDebugDrawPtr->m_eeTargetCurveColor;
+					glm::vec3 colorR = m_ikNavDebugDrawPtr->m_eeRealCurveColor;
 					for (int k = 0; k < currConfig.m_eeTrajectoryData.size(); k++) {
 						LIC<3>& currTargetCurve = currConfig.m_eeTrajectoryData[k].getTargetTrajectory().getEECurve();
+						LIC<3>const& currRealCurve = currConfig.m_eeTrajectoryData[k].getSavedPositions();
 						int pointNum = currTargetCurve.getNumberOfPoints();
 						if (0 < pointNum) {
-							std::vector<dd::DrawVertex> lines(pointNum);
+							std::vector<dd::DrawVertex> linesT(pointNum);
+							std::vector<dd::DrawVertex> linesR;
 							for (int l = 0; l < pointNum; l++) {
-								dd::DrawVertex v;
-								glm::vec3 point = currTargetCurve.getCurvePoint(l);
-								v.line.r = color[0]; v.line.g = color[1]; v.line.b = color[2];
-								v.line.x = point[0]; v.line.y = point[1]; v.line.z = point[2];
-								lines[l] = v;
+								// posiciones objetivo
+								dd::DrawVertex vT;
+								glm::vec3 pointT = currTargetCurve.getCurvePoint(l);
+								vT.line.r = colorT[0]; vT.line.g = colorT[1]; vT.line.b = colorT[2];
+								vT.line.x = pointT[0]; vT.line.y = pointT[1]; vT.line.z = pointT[2];
+								linesT[l] = vT;
+
+								// posiciones reales
+								if (currRealCurve.inTRange(currTargetCurve.getTValue(l))) {
+									dd::DrawVertex vR;
+									glm::vec3 pointR = currRealCurve.evalCurve(currTargetCurve.getTValue(l));
+									vR.line.r = colorR[0]; vR.line.g = colorR[1]; vR.line.b = colorR[2];
+									vR.line.x = pointR[0]; vR.line.y = pointR[1]; vR.line.z = pointR[2];
+									linesR.push_back(vR);
+								}							
+
 							}
-							m_ikNavDebugDrawPtr->drawLineList(&lines[0], lines.size(), true);
-						}
-						
-						
+							if (m_ikNavDebugDrawPtr->m_drawEETargetCurves) {
+								m_ikNavDebugDrawPtr->drawLineList(&linesT[0], linesT.size(), true);
+							}
+							if (m_ikNavDebugDrawPtr->m_drawEERealCurves && 0 < linesR.size()) {
+								m_ikNavDebugDrawPtr->drawLineList(&linesR[0], linesR.size(), true);
+							}
+							
+						}			
 					}
 				}
 				if (m_ikNavDebugDrawPtr->m_drawHipTargetCurve && currConfig.isActive()) {

@@ -67,9 +67,10 @@ private:
 
 	}
 public:
-	IKRigCharacter(std::string characterName, glm::vec3 startingPosition) {
+	IKRigCharacter(std::string characterName, glm::vec3 startingPosition, int walkingAnimIndex) {
 		m_characterName = characterName;
 		m_startingPosition = startingPosition;
+		m_walkingAnimIndex = walkingAnimIndex;
 	}
 	virtual void UserUpdate(Mona::World& world, float timeStep) noexcept {
 		UpdateAnimationState();
@@ -121,7 +122,8 @@ public:
 		auto skinnedMesh = meshManager.LoadSkinnedMesh(skeleton, Mona::SourcePath("Assets/Models/" + m_characterName + ".fbx"), true);
 
 		m_idleAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/" + m_characterName + "/idle.fbx"), skeleton, true);
-		m_walkingAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/" + m_characterName + "/walking.fbx"), skeleton, false);
+		m_walkingAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/" + m_characterName + "/walking"
+			+ std::to_string(m_walkingAnimIndex) + ".fbx"), skeleton, false);
 
 		m_skeletalMesh = world.AddComponent<Mona::SkeletalMeshComponent>(*this, skinnedMesh, m_idleAnimation, materialPtr);
 
@@ -134,11 +136,11 @@ public:
 		rigData.initialRotationAngle = 0.0f;
 		rigData.initialPosition = m_startingPosition;
 		rigData.scale = 0.05f;
-		
+
 		glm::vec3 originalUpVector = glm::vec3(0, 1, 0);
 		glm::vec3 originalFrontVector = glm::vec3(0, 0, 1);
 		m_ikNavHandle = world.AddComponent<Mona::IKNavigationComponent>(*this, rigData);
-		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_walkingAnimation,originalUpVector, 
+		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_walkingAnimation, originalUpVector,
 			originalFrontVector, Mona::AnimationType::WALKING);
 		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_idleAnimation, originalUpVector,
 			originalFrontVector, Mona::AnimationType::IDLE);
@@ -147,18 +149,19 @@ public:
 	}
 	void OnDebugGUIEvent(const Mona::DebugGUIEvent& event) {
 		ImGui::Begin("IKNav Options:");
-		ImGui::Checkbox("Validate strides", & (m_validateStrides));
+		ImGui::Checkbox("Validate strides", &(m_validateStrides));
 		ImGui::Checkbox("Correct strides", &(m_correctStrides));
 		ImGui::Checkbox("Enable IK", &(m_enableIK));
 		ImGui::End();
 	}
 private:
-	float m_angularSpeed = 1.0f;
+	float m_angularSpeed = 0.8f;
 	float m_fadeTime = 0.5f;
 	bool m_validateStrides = false;
 	bool m_correctStrides = true;
 	bool m_enableIK = true;
-	float m_playRate = 0.8f;
+	float m_playRate = 0.6f;
+	int m_walkingAnimIndex;
 	std::string m_characterName;
 	glm::vec3 m_startingPosition;
 	Mona::TransformHandle m_transform;
@@ -183,7 +186,7 @@ public:
 		world.SetMainCamera(world.GetComponentHandle<Mona::CameraComponent>(m_camera));
 		AddDirectionalLight(world, glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-130.0f), 2);
 		AddDirectionalLight(world, glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(-30.0f), 8.5f);
-		auto character = world.CreateGameObject<IKRigCharacter>("akai", glm::vec3(0,-10,0));
+		auto character = world.CreateGameObject<IKRigCharacter>("akai", glm::vec3(0,-10,0), 0);
 		auto terrainObject = AddTerrain(world);
 		world.GetComponentHandle<Mona::IKNavigationComponent>(character)->AddTerrain(terrainObject);
 	}

@@ -139,9 +139,10 @@ private:
 
 	}
 public:
-	IKRigCharacter(std::string characterName, glm::vec3 startingPosition) {
+	IKRigCharacter(std::string characterName, glm::vec3 startingPosition, int walkingAnimIndex) {
 		m_characterName = characterName;
 		m_startingPosition = startingPosition;
+		m_walkingAnimIndex = walkingAnimIndex;
 	}
 	virtual void UserUpdate(Mona::World& world, float timeStep) noexcept {
 		UpdateAnimationState();
@@ -193,7 +194,8 @@ public:
 		auto skinnedMesh = meshManager.LoadSkinnedMesh(skeleton, Mona::SourcePath("Assets/Models/" + m_characterName + ".fbx"), true);
 
 		m_idleAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/" + m_characterName + "/idle.fbx"), skeleton, true);
-		m_walkingAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/" + m_characterName + "/walking.fbx"), skeleton, false);
+		m_walkingAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/" + m_characterName + "/walking"
+			+ std::to_string(m_walkingAnimIndex) + ".fbx"), skeleton, false);
 
 		m_skeletalMesh = world.AddComponent<Mona::SkeletalMeshComponent>(*this, skinnedMesh, m_idleAnimation, materialPtr);
 
@@ -230,7 +232,8 @@ private:
 	bool m_validateStrides = false;
 	bool m_correctStrides = true;
 	bool m_enableIK = true;
-	float m_playRate = 0.5f;
+	float m_playRate = 0.7f;
+	int m_walkingAnimIndex;
 	std::string m_characterName;
 	glm::vec3 m_startingPosition;
 	Mona::TransformHandle m_transform;
@@ -255,7 +258,7 @@ public:
 		world.SetMainCamera(world.GetComponentHandle<Mona::CameraComponent>(m_camera));
 		AddDirectionalLight(world, glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-130.0f), 2);
 		AddDirectionalLight(world, glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(-30.0f), 8);
-		auto character = world.CreateGameObject<IKRigCharacter>("prisoner", glm::vec3(0,0,0));
+		auto character = world.CreateGameObject<IKRigCharacter>("prisoner", glm::vec3(0,0,0), 0);
 		auto terrainObject1 = AddTerrain1(world);
 		world.GetComponentHandle<Mona::IKNavigationComponent>(character)->AddTerrain(terrainObject1);
 		auto terrainObject2 = AddTerrain2(world);

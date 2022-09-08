@@ -21,7 +21,7 @@ public:
 		auto skeleton = skeletonManager.LoadSkeleton(Mona::SourcePath("Assets/Models/xbot.fbx"));
 		auto skinnedMesh = meshManager.LoadSkinnedMesh(skeleton, Mona::SourcePath("Assets/Models/xbot.fbx"));
 		m_animation0 = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/xbot/running.fbx"), skeleton);
-		m_animation1 = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/xbot/walking.fbx"), skeleton);
+		m_animation1 = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/xbot/walking0.fbx"), skeleton);
 		m_animation2 = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/xbot/idle.fbx"), skeleton);
 
 		m_skeletalMesh = world.AddComponent<Mona::SkeletalMeshComponent>(*this, skinnedMesh, m_animation0, material);

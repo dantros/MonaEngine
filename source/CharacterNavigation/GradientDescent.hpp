@@ -84,7 +84,7 @@ namespace Mona {
 		}
 
 		std::vector<float> computeArgsMin(float descentRate, int maxIterations, float targetArgDelta,
-			const std::vector<float>& initialArgs, DescentType descentType=DescentType::SGDM, bool softenSteps = true) {
+			const std::vector<float>& initialArgs, DescentType descentType=DescentType::REGULAR, bool softenSteps = true) {
 			MONA_ASSERT(initialArgs.size() == m_argNum, "GradientDescent: number of args does not match argNum value");
 			std::vector<float> args = initialArgs;
 			std::vector<float> gradient;
@@ -128,7 +128,7 @@ namespace Mona {
 
 
 		std::vector<float> computeArgsMin_progressive(float descentRate, int maxIterations, float targetArgDelta,
-			const std::vector<float>& initialArgs, std::vector<int> successiveStepsPerVar = {}, DescentType descentType = DescentType::SGDM, bool softenSteps = true) {
+			const std::vector<float>& initialArgs, std::vector<int> successiveStepsPerVar = {}, DescentType descentType = DescentType::REGULAR, bool softenSteps = true) {
 
 			MONA_ASSERT(initialArgs.size() == m_argNum, "GradientDescent: number of args does not match argNum value");
 			MONA_ASSERT(successiveStepsPerVar.empty() || successiveStepsPerVar.size() == m_argNum,

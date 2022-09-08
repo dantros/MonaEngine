@@ -155,16 +155,6 @@ namespace Mona {
 
 	std::function<void(std::vector<float>&, IKData*, std::vector<float>&,int)>  postDescentStepCustomBehaviour =
 		[](std::vector<float>& args, IKData* dataPtr, std::vector<float>& argsRawDelta, int varIndex_progressive)->void {
-		// aplicar restricciones de movimiento
-		if (args[varIndex_progressive] <= dataPtr->motionRanges[varIndex_progressive][0]) {
-			args[varIndex_progressive] = dataPtr->motionRanges[varIndex_progressive][0];
-			argsRawDelta[varIndex_progressive] *= 0.5f;
-		}
-		else if (dataPtr->motionRanges[varIndex_progressive][1] <= args[varIndex_progressive]) {
-			args[varIndex_progressive] = dataPtr->motionRanges[varIndex_progressive][1];
-			argsRawDelta[varIndex_progressive] *= 0.5f;
-		}
-
 		// setear nuevos angulos
 		std::vector<JointRotation>* configRot = dataPtr->rigConfig->getVariableJointRotations();
 		int jIndex = dataPtr->jointIndexes[varIndex_progressive];
@@ -187,6 +177,8 @@ namespace Mona {
 		m_gradientDescent.setTermWeight(0, 1.0f / (pow(10, 2) * m_ikRig->getRigHeight()));
 		m_gradientDescent.setTermWeight(1, 0.015f);		
 		m_gradientDescent.setTermWeight(2, 0.015f);
+
+
 		setIKChains();
 	}
 
@@ -204,16 +196,11 @@ namespace Mona {
 			jointIndexes.insert(jointIndexes.end(), chainPtrs[c]->getJoints().begin(), chainPtrs[c]->getJoints().end()-1);
 			int jointNum = chainPtrs[c]->getJoints().size()-1;
 			for (int j = jointNum-1; 0 <= j ; j--) {
-				m_ikData.stepsByJoint.push_back(pow(2, j));
+				m_ikData.stepsByJoint.push_back(pow(1, j));
 			}
 		}
 		funcUtils::removeDuplicates(jointIndexes);
 		m_ikData.jointIndexes = jointIndexes;
-		m_ikData.motionRanges = std::vector<glm::vec2>(m_ikData.jointIndexes.size());
-		for (int j = 0; j < m_ikData.jointIndexes.size(); j++) {
-			JointIndex jInd = m_ikData.jointIndexes[j];
-			m_ikData.motionRanges[j] = m_ikRig->getMotionRange(jInd);
-		}
 		m_gradientDescent.setArgNum(m_ikData.jointIndexes.size());
 		m_ikData.rotationAxes.resize(m_ikData.jointIndexes.size());
 		m_ikData.baseAngles.resize(m_ikData.jointIndexes.size());

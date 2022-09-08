@@ -66,38 +66,6 @@ namespace Mona{
 
     }
 
-
-	void AnimationValidator::checkLegGlobalRotationAxes(std::shared_ptr<AnimationClip> animation, IKChain* legChain) {
-		std::vector<JointIndex>const& topology = m_ikRig->getTopology();
-		int frameNum = animation->m_animationTracks[0].rotations.size();
-		for (int i = 0; i < legChain->getJoints().size() - 1; i++) {
-			std::vector<glm::vec3> globalRotationAxes;
-			JointIndex jIndex = legChain->getJoints()[i];
-			for (FrameIndex j = 0; j < frameNum; j++) {
-				glm::fquat globalRotation = animation->m_animationTracks[animation->GetTrackIndex(jIndex)].rotations[j];
-				JointIndex parent = topology[jIndex];
-				while (parent != -1) {
-					globalRotation = animation->m_animationTracks[animation->GetTrackIndex(parent)].rotations[j] * globalRotation;
-					parent = topology[parent];
-				}
-				globalRotationAxes.push_back(glm::axis(globalRotation));
-			}
-
-			// buscamos el eje de rotacion global principal
-			glm::vec3 meanRotationAxis(0);
-			for (FrameIndex j = 0; j < frameNum; j++) {
-				meanRotationAxis += globalRotationAxes[j];
-
-			}
-			meanRotationAxis /= frameNum;
-
-			if (abs(meanRotationAxis[0]) < 0.8f || 0.3f < abs(meanRotationAxis[1]) || 0.3f < abs(meanRotationAxis[2])) {
-				MONA_LOG_ERROR("AnimationValidator:Joint {} does not have an x main rotation axis globally.", jIndex);
-			}
-
-		}
-	}
-
 	void AnimationValidator::checkLegLocalRotationAxes(std::shared_ptr<AnimationClip> animation, IKChain* legChain, 
 		glm::vec3 originalUpVector, glm::vec3 originalFrontVector) {
 		glm::fquat deltaRotationUp = glmUtils::calcDeltaRotation(originalUpVector, glm::vec3(0, 0, 1), m_ikRig->getRightVector());
@@ -146,8 +114,6 @@ namespace Mona{
 		}
 
 	}
-
-
 
 
 

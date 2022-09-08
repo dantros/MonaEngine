@@ -137,7 +137,7 @@ namespace Mona{
 			for (int j = 0; j < D; j++) {
 				if (varPCoord[i * D + j] <= dataPtr->minValues[i * D + j]) {
 					varPCoord[i * D + j] = dataPtr->minValues[i * D + j];
-					argsRawDelta[i * D + j] *= 0.3f;
+					argsRawDelta[i * D + j] *= 0.1f;
 				}
 				newPos[j] = varPCoord[i * D + j];
 			}
@@ -201,7 +201,7 @@ namespace Mona{
 		m_tgData.varCurve = &targetCurve;
 
 		m_gradientDescent.setArgNum(initialArgs.size());
-		m_gradientDescent.computeArgsMin(m_tgData.descentRate, m_tgData.maxIterations, m_tgData.targetPosDelta, initialArgs);
+		m_gradientDescent.computeArgsMin(m_tgData.descentRate, m_tgData.maxIterations, m_tgData.targetPosDelta, initialArgs, DescentType::SGDM);
 	}
 
 

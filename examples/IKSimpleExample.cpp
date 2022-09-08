@@ -142,7 +142,7 @@ public:
 			originalFrontVector, Mona::AnimationType::WALKING);
 		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_idleAnimation, originalUpVector,
 			originalFrontVector, Mona::AnimationType::IDLE);
-		m_skeletalMesh->GetAnimationController().SetPlayRate(0.6f);
+		m_skeletalMesh->GetAnimationController().SetPlayRate(m_playRate);
 
 	}
 	void OnDebugGUIEvent(const Mona::DebugGUIEvent& event) {
@@ -158,6 +158,7 @@ private:
 	bool m_validateStrides = false;
 	bool m_correctStrides = true;
 	bool m_enableIK = true;
+	float m_playRate = 0.8f;
 	std::string m_characterName;
 	glm::vec3 m_startingPosition;
 	Mona::TransformHandle m_transform;

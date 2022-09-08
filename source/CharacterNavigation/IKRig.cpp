@@ -39,14 +39,6 @@ namespace Mona {
 			}
 		}
 
-		// setear constraints
-		m_motionRanges = std::vector<glm::vec2>(jointNum, glm::vec2(glm::radians(-360.0f), glm::radians(360.0f)));
-		for (JointIndex i = 0; i < jointNum; i++) {
-			MotionRange currData = rigData.motionRanges[jointNames[i]];
-			m_motionRanges[i][0] = glm::radians(currData.minAngle);
-			m_motionRanges[i][1] = glm::radians(currData.maxAngle);
-		}
-
 		// setear el la altura del rig
 		IKChain& leftLegChain = m_ikChains[0];
 		std::vector<glm::vec3> positions(jointNum);

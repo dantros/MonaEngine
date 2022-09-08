@@ -146,17 +146,8 @@ namespace Mona {
         ChainIndex getOpposite() { return m_opposite; }
     };
 
-
-    struct MotionRange {
-        // Minimo angulo de rotacion de la articulacion (grados)
-        float minAngle = -360;
-        // Maximo angulo de rotacion de la articulacion (grados)
-        float maxAngle = 360;
-    };
-
     struct RigData {
         friend class IKRig;
-        std::unordered_map<std::string, MotionRange> motionRanges;
     public:
         ChainEnds leftLeg;
         ChainEnds rightLeg;
@@ -164,8 +155,6 @@ namespace Mona {
         float initialRotationAngle = 0.0f;
         glm::vec3 initialPosition = glm::vec3(0);
         float scale = 1;
-        void setJointMotionRange(std::string jointName, float minAngle, float maxAngle);
-        MotionRange getJointMotionRange(std::string jointName);
     };
 
 }

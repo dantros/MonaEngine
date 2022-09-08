@@ -33,7 +33,6 @@ namespace Mona{
             float getRotationAngle() { return m_rotationAngle; }
             float getRigHeight() { return m_rigHeight; }
             float getRigScale() { return m_rigScale; }
-            glm::vec2 getMotionRange(JointIndex jointIndex) { return m_motionRanges[jointIndex]; }
             void setAngularSpeed(float angularSpeed) { m_angularSpeed = angularSpeed; }
             float getAngularSpeed() { return m_angularSpeed; }
             InnerComponentHandle getTransformHandle() { return m_transformHandle; }
@@ -44,7 +43,6 @@ namespace Mona{
             // Informacion de configuracion del IKRig por cada animacion
             std::vector<IKRigConfig> m_animationConfigs;
             std::shared_ptr<Skeleton> m_skeleton;
-            std::vector<glm::vec2> m_motionRanges;
             // Direccion frontal base de movimiento del rig
             glm::vec3 m_frontVector = glm::vec3(0.0f, 1.0f, 0.0f);
             glm::vec3 m_upVector = glm::vec3(0, 0, 1);

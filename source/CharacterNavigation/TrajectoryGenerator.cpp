@@ -323,11 +323,12 @@ namespace Mona{
 			float transitionTime2 = transitionTime1 + avgFrameDuration;
 			LIC<3> savedCurve = hipTrData->getTargetPositions();
 			for (int i = 0; i < 8; i++) {
-				if (savedCurve.inTRange(transitionTime2 + avgFrameDuration)) {
+				if (savedCurve.inTRange(transitionTime2 + avgFrameDuration) && 
+					hipPosCurve.inTRange(transitionTime2 + avgFrameDuration)) {
 					transitionTime2 += avgFrameDuration;
 				}				
 			}
-            if (savedCurve.inTRange(transitionTime1) && savedCurve.inTRange(transitionTime2)) {
+            if (savedCurve.inTRange(transitionTime1) && savedCurve.inTRange(transitionTime2) && hipPosCurve.inTRange(transitionTime2)) {
                 hipTrData->setTargetPositions(LIC<3>::transitionSoft(savedCurve, hipPosCurve, transitionTime1, transitionTime2));
 			}
 			else if (savedCurve.inTRange(transitionTime1)) {

@@ -91,7 +91,7 @@ namespace Mona{
 			}
 			meanRotationAxis /= frameNum;
 
-			if (abs(meanRotationAxis[0]) < 0.8f || 0.3f < abs(meanRotationAxis[1]) || 0.3f < abs(meanRotationAxis[2])) {
+			if (abs(meanRotationAxis[0]) < 0.7f || 0.3f < abs(meanRotationAxis[1]) || 0.3f < abs(meanRotationAxis[2])) {
 				MONA_LOG_WARNING("AnimationValidator:Joint {}'s local rotation axis does not allow for proper IK rotation control.", jIndex);
 			}
 

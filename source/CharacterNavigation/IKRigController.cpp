@@ -194,8 +194,10 @@ namespace Mona {
 				if (!config.m_savedAngles[i].inTRange(currentFrameRepTime)) {
 					float lastCalcTime = config.m_savedAngles[i].getTRange()[1];
 					float maxElapsed = avgFrameDuration * 5;
-					// si nos saltamos por mucho el ultimo frame calculado reseteamos los angulos
-					if (maxElapsed < abs(lastCalcTime - currentFrameRepTime) || config.m_savedAngles[i].getNumberOfPoints() == 0) {
+					// si nos saltamos por mucho el ultimo frame calculado reseteamos los angulos o no hay valores
+					if (maxElapsed < abs(lastCalcTime - currentFrameRepTime) 
+						|| config.m_savedAngles[i].getNumberOfPoints() == 0
+						|| currentFrameRepTime < lastCalcTime) {
 						config.refreshSavedAngles(i);
 					}
 					else {

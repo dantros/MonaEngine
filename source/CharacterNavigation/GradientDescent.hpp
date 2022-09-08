@@ -128,11 +128,9 @@ namespace Mona {
 
 
 		std::vector<float> computeArgsMin_progressive(float descentRate, int maxIterations, float targetArgDelta,
-			const std::vector<float>& initialArgs, std::vector<int> successiveStepsPerVar = {}, DescentType descentType = DescentType::REGULAR, bool softenSteps = true) {
+			const std::vector<float>& initialArgs, DescentType descentType = DescentType::REGULAR, bool softenSteps = true) {
 
 			MONA_ASSERT(initialArgs.size() == m_argNum, "GradientDescent: number of args does not match argNum value");
-			MONA_ASSERT(successiveStepsPerVar.empty() || successiveStepsPerVar.size() == m_argNum,
-				"GradientDescent: number of args does not match successive steps vector");
 			std::vector<float> args = initialArgs;
 			std::vector<float> argsRawDelta(args.size());
 			std::vector<bool> continueDescent(args.size(), true);
@@ -148,28 +146,22 @@ namespace Mona {
 			
 			while (stepNum < maxIterations && funcUtils::conditionVector_OR(continueDescent)) {
 				for (int i = 0; i < args.size(); i++) {
-					int subSteps = 1;
-					if (!successiveStepsPerVar.empty()) {
-						subSteps = successiveStepsPerVar[i];
+					float gradient = computeGradient_single(args, i);
+					if (softenSteps) {
+						if (gradient != 0 && abs(argsRawDelta[i] * 10) < abs(gradient)) {
+							float sign = gradient / abs(gradient);
+							gradient = abs(argsRawDelta[i] * 10) * sign;
+						}
 					}
-					for (int j = 0; j < subSteps; j++) {
-						float gradient = computeGradient_single(args, i);
-						if (softenSteps) {
-							if (gradient != 0 && abs(argsRawDelta[i] * 10) < abs(gradient)) {
-								float sign = gradient / abs(gradient);
-								gradient = abs(argsRawDelta[i] * 10) * sign;
-							}
-						}
-						if (descentType == DescentType::REGULAR) {
-							argsRawDelta[i] = gradient;
-						}
-						else if (descentType == DescentType::SGDM) {
-							argsRawDelta[i] = 0.8 * argsRawDelta[i] + 0.2 * gradient;
-						}
-						float argDelta = descentRate * argsRawDelta[i];
-						args[i] -= argDelta;
-						m_postDescentStepCustomBehaviour(args, m_dataPtr, argsRawDelta, i);
-					}					
+					if (descentType == DescentType::REGULAR) {
+						argsRawDelta[i] = gradient;
+					}
+					else if (descentType == DescentType::SGDM) {
+						argsRawDelta[i] = 0.8 * argsRawDelta[i] + 0.2 * gradient;
+					}
+					float argDelta = descentRate * argsRawDelta[i];
+					args[i] -= argDelta;
+					m_postDescentStepCustomBehaviour(args, m_dataPtr, argsRawDelta, i);								
 				}				
 				for (int i = 0; i < args.size(); i++) {
 					continueDescent[i] = targetArgDelta < abs(descentRate* argsRawDelta[i]);

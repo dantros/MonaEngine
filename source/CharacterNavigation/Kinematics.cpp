@@ -187,15 +187,10 @@ namespace Mona {
 		}
 		m_ikData.ikChains = chainPtrs;
 		m_ikData.jointIndexes = {};
-		m_ikData.stepsByJoint = {};
 		std::vector<JointIndex> jointIndexes;
 		for (int c = 0; c < chainPtrs.size(); c++) {
 			// se dejan fuera los ee, ya que cambiar sus angulos de rotacion no afecta su posicion
 			jointIndexes.insert(jointIndexes.end(), chainPtrs[c]->getJoints().begin(), chainPtrs[c]->getJoints().end()-1);
-			int jointNum = chainPtrs[c]->getJoints().size()-1;
-			for (int j = jointNum-1; 0 <= j ; j--) {
-				m_ikData.stepsByJoint.push_back(pow(1, j));
-			}
 		}
 		funcUtils::removeDuplicates(jointIndexes);
 		m_ikData.jointIndexes = jointIndexes;
@@ -236,7 +231,7 @@ namespace Mona {
 			(*variableRotations)[jIndex].setRotationAngle(initialArgs[i]);
 		}
 		std::vector<float> computedAngles = m_gradientDescent.computeArgsMin_progressive(m_ikData.descentRate, 
-			m_ikData.maxIterations, m_ikData.targetAngleDelta, initialArgs, m_ikData.stepsByJoint);
+			m_ikData.maxIterations, m_ikData.targetAngleDelta, initialArgs);
 		std::vector<std::pair<JointIndex, float>> result(computedAngles.size());
 		
 		for (int i = 0; i < m_ikData.jointIndexes.size(); i++) {

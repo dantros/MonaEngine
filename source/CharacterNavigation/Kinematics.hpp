@@ -45,7 +45,6 @@ namespace Mona {
 		float descentRate;
 		float targetAngleDelta;
 		int maxIterations;
-		std::vector<int> stepsByJoint;
 	};
 
 	class InverseKinematics {

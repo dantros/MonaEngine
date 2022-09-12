@@ -160,7 +160,7 @@ private:
 	bool m_validateStrides = false;
 	bool m_correctStrides = true;
 	bool m_enableIK = true;
-	float m_playRate = 0.6f;
+	float m_playRate = 0.7f;
 	int m_walkingAnimIndex;
 	std::string m_characterName;
 	glm::vec3 m_startingPosition;

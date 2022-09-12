@@ -39,6 +39,12 @@ namespace Mona {
 		std::vector<JointIndex> jointIndexes;
 		std::vector<glm::vec3> rotationAxes;
 		std::vector<IKChain*> ikChains;
+		// transformaciones locales
+		std::vector<glm::mat4> jointSpaceTransforms;
+		// multiplicacion en cadena desde la raiz hasta el joint i
+		std::vector<glm::mat4> forwardModelSpaceTransforms;
+		// multiplicacion en cadena desde el ee de la cadena hasta el joint i
+		std::vector<std::vector<glm::mat4>> backwardModelSpaceTransformsPerChain;
 		// other data
 		IKRigConfig* rigConfig;
 		std::vector<float> previousAngles;

@@ -49,74 +49,46 @@ namespace Mona {
 		float result = 0;
 		glm::mat4 TA; glm::mat4 TB; glm::vec3 TvarScl; glm::fquat TvarQuat;	glm::vec3 TvarTr;
 		glm::vec3 skew;	glm::vec4 perspective;
-		// buscamos las cadenas afectadas
-		std::vector<IKChain*> affectedChains;
-		std::vector<int> indexes;
-		std::vector<JointIndex> endEffectors;
 		JointIndex varJoint = dataPtr->jointIndexes[varIndex];
-		for (int i = 0; i < dataPtr->ikChains.size(); i++) {
-			std::vector<JointIndex>const& joints = dataPtr->ikChains[i]->getJoints();
-			int ind = funcUtils::findIndex(joints, varJoint);
+
+		for (int c = 0; c < dataPtr->ikChains.size(); c++) {
+			// chequeamos si la articulacion pertenece a la cadena actual
+			IKChain* chain = dataPtr->ikChains[c];
+			int ind = funcUtils::findIndex(chain->getJoints(), varJoint);
 			if (ind != -1) {
-				affectedChains.push_back(dataPtr->ikChains[i]);
-				indexes.push_back(ind);
-				endEffectors.push_back(affectedChains.back()->getEndEffector());
-			}
-		}
-		// calcular arreglos de transformaciones
-		std::vector<glm::mat4> jointSpaceTransforms;
-		// multiplicacion en cadena desde la raiz hasta el joint i
-		std::vector<glm::mat4> forwardModelSpaceTransforms = dataPtr->rigConfig->getEEListModelSpaceVariableTransforms(endEffectors, &jointSpaceTransforms);
+				// matriz de trnasformacion de la joint actual
+				glm::mat4 TvarRaw = dataPtr->jointSpaceTransforms[varJoint];
+				glm::decompose(TvarRaw, TvarScl, TvarQuat, TvarTr, skew, perspective);
+				JointIndex chainParent = chain->getParentJoint();
+				glm::mat4 chainBaseTransform = chainParent == -1 ? glm::identity<glm::mat4>() : dataPtr->forwardModelSpaceTransforms[chainParent];
+				// matriz que va a la izquierda de la matriz de rotacion de la joint actual en el calculo de la posicion con FK
+				TA = (0 < ind ? dataPtr->forwardModelSpaceTransforms[chain->getJoints()[ind - 1]] :
+					chainBaseTransform) * glmUtils::translationToMat4(TvarTr);
 
-		// multiplicacion en cadena desde el ee de la cadena hasta el joint i
-		std::vector<std::vector<glm::mat4>> backwardModelSpaceTransformsPerChain(affectedChains.size());
-		std::vector<glm::mat4>* bt;
-		for (int i = 0; i < affectedChains.size(); i++) {
-			std::vector<JointIndex>const& joints = affectedChains[i]->getJoints();
-			int ind = indexes[i];
-			bt = &backwardModelSpaceTransformsPerChain[i];
-			(*bt) = jointSpaceTransforms;
-			for (int j = joints.size() - 2; ind + 1 <= j; j--) {
-				(*bt)[joints[j]] = (*bt)[joints[j]] * (*bt)[joints[j + 1]];
-			}
-		}
-
-		for (int c = 0; c < affectedChains.size(); c++) {
-			std::vector<JointIndex>const& joints = affectedChains[c]->getJoints();
-			int ind = indexes[c];
-			// matriz de trnasformacion de la joint actual
-			glm::mat4 TvarRaw = jointSpaceTransforms[varJoint];
-			glm::decompose(TvarRaw, TvarScl, TvarQuat, TvarTr, skew, perspective);
-			// matriz que va a la izquierda de la matriz de rotacion de la joint actual en el calculo de la posicion con FK
-			JointIndex chainParent = affectedChains[c]->getParentJoint();
-			glm::mat4 chainBaseTransform = chainParent == -1 ? glm::identity<glm::mat4>() :
-				forwardModelSpaceTransforms[chainParent];
-			TA = (0 < ind ? forwardModelSpaceTransforms[joints[ind - 1]] :
-				chainBaseTransform) * glmUtils::translationToMat4(TvarTr);
-
-			// matriz que va a la  derecha de la matriz de rotacion de la joint actual en el calculo de la posicion con FK
-			TB = glmUtils::scaleToMat4(TvarScl) * (ind < joints.size() - 1 ?
-				backwardModelSpaceTransformsPerChain[c][joints[ind + 1]] : glm::identity<glm::mat4>());
-			glm::vec4 b = TB * glm::vec4(0, 0, 0, 1);
-			glm::mat4 Tvar = glmUtils::rotationToMat4(TvarQuat);
-			glm::mat4 dTvar = rotationMatrixDerivative_dAngle(varAngles[varIndex], dataPtr->rotationAxes[varIndex]);
-			glm::vec4 eeT = glm::vec4(affectedChains[c]->getCurrentEETarget(), 1);
-			glm::vec4 eePosCurr_d = forwardModelSpaceTransforms[joints.back()] * glm::vec4(0, 0, 0, 1);
-			for (int k = 0; k <= 3; k++) {
-				float mult1 = 0;
-				for (int j = 0; j <= 3; j++) {
-					for (int i = 0; i <= 3; i++) {
-						mult1 += b[j] * TA[i][k] * Tvar[j][i] - eeT[k] / 16;
+				// matriz que va a la  derecha de la matriz de rotacion de la joint actual en el calculo de la posicion con FK
+				TB = glmUtils::scaleToMat4(TvarScl) * (ind < chain->getJoints().size() - 1 ?
+					dataPtr->backwardModelSpaceTransformsPerChain[c][chain->getJoints()[ind + 1]] : glm::identity<glm::mat4>());
+				glm::vec4 b = TB * glm::vec4(0, 0, 0, 1);
+				glm::mat4 Tvar = glmUtils::rotationToMat4(TvarQuat);
+				glm::mat4 dTvar = rotationMatrixDerivative_dAngle(varAngles[varIndex], dataPtr->rotationAxes[varIndex]);
+				glm::vec4 eeT = glm::vec4(chain->getCurrentEETarget(), 1);
+				for (int k = 0; k <= 3; k++) {
+					float mult1 = 0;
+					for (int j = 0; j <= 3; j++) {
+						for (int i = 0; i <= 3; i++) {
+							mult1 += b[j] * TA[i][k] * Tvar[j][i] - eeT[k] / 16;
+						}
 					}
-				}
-				float mult2 = 0;
-				for (int j = 0; j <= 3; j++) {
-					for (int i = 0; i <= 3; i++) {
-						mult2 += b[j] * TA[i][k] * dTvar[j][i];
+					float mult2 = 0;
+					for (int j = 0; j <= 3; j++) {
+						for (int i = 0; i <= 3; i++) {
+							mult2 += b[j] * TA[i][k] * dTvar[j][i];
+						}
 					}
+					result += mult1 * mult2;
 				}
-				result += mult1 * mult2;
 			}
+			
 		}
 		return 2 * result;
 	};
@@ -153,12 +125,37 @@ namespace Mona {
 		return 2 * (varAngles[varIndex] - dataPtr->previousAngles[varIndex]);
 	};
 
-	std::function<void(std::vector<float>&, IKData*, std::vector<float>&,int)>  postDescentStepCustomBehaviour =
-		[](std::vector<float>& args, IKData* dataPtr, std::vector<float>& argsRawDelta, int varIndex_progressive)->void {
+	void setDescentTransformArrays(IKData* dataPtr) {
+		std::vector<JointIndex> endEffectors;
+		for (int i = 0; i < dataPtr->ikChains.size(); i++) {
+			endEffectors.push_back(dataPtr->ikChains[i]->getEndEffector());
+		}
+		// multiplicacion en cadena desde la raiz hasta el joint i
+		dataPtr->forwardModelSpaceTransforms = dataPtr->rigConfig->getEEListModelSpaceVariableTransforms(endEffectors, &(dataPtr->jointSpaceTransforms));
+		// multiplicacion en cadena desde el ee de la cadena hasta el joint i
+		dataPtr->backwardModelSpaceTransformsPerChain = std::vector<std::vector<glm::mat4>>(dataPtr->ikChains.size());
+		std::vector<glm::mat4>* bt;
+		for (int i = 0; i < dataPtr->ikChains.size(); i++) {
+			std::vector<JointIndex>const& joints = dataPtr->ikChains[i]->getJoints();
+			bt = &dataPtr->backwardModelSpaceTransformsPerChain[i];
+			(*bt) = dataPtr->jointSpaceTransforms;
+			for (int j = joints.size() - 2; 0 <= j; j--) {
+				(*bt)[joints[j]] = (*bt)[joints[j]] * (*bt)[joints[j + 1]];
+			}
+		}
+
+	}
+
+	std::function<void(std::vector<float>&, IKData*, std::vector<float>&)>  postDescentStepCustomBehaviour =
+		[](std::vector<float>& args, IKData* dataPtr, std::vector<float>& argsRawDelta)->void {
 		// setear nuevos angulos
-		std::vector<JointRotation>* configRot = dataPtr->rigConfig->getVariableJointRotations();
-		int jIndex = dataPtr->jointIndexes[varIndex_progressive];
-		(*configRot)[jIndex].setRotationAngle(args[varIndex_progressive]);
+		std::vector<JointRotation>* varRots = dataPtr->rigConfig->getVariableJointRotations();
+		for (int i = 0; i < args.size(); i++) {
+			int jIndex = dataPtr->jointIndexes[i];
+			(*varRots)[jIndex].setRotationAngle(args[i]);
+		}
+		// setear arreglos de transformaciones
+		setDescentTransformArrays(dataPtr);
 	};
 
 	InverseKinematics::InverseKinematics(IKRig* ikRig) {
@@ -175,7 +172,7 @@ namespace Mona {
 		m_ikData.maxIterations = 300;
 		m_ikData.targetAngleDelta = 1 / pow(10, 3);
 		m_gradientDescent.setTermWeight(0, 1.0f / (pow(10, 2) * m_ikRig->getRigHeight()));
-		m_gradientDescent.setTermWeight(1, 0.015f);		
+		m_gradientDescent.setTermWeight(1, 0.018f);		
 		m_gradientDescent.setTermWeight(2, 0.018f);
 		setIKChains();
 	}
@@ -212,10 +209,7 @@ namespace Mona {
 			JointIndex jIndex = m_ikData.jointIndexes[i];
 			m_ikData.previousAngles[i] = m_ikData.rigConfig->getSavedAngles(jIndex).evalCurve(currentFrameRepTime)[0];
 		}
-		std::vector<float> initialArgs(m_ikData.previousAngles.size());
-		for (int i = 0; i < m_ikData.previousAngles.size(); i++) {
-			initialArgs[i] = m_ikData.previousAngles[i] * 0.8f;
-		}
+		std::vector<float> initialArgs = m_ikData.previousAngles;
 
 		std::vector<JointRotation>const& baseRotations_target = m_ikData.rigConfig->getBaseJointRotations(nextFrame);
 		for (int i = 0; i < m_ikData.jointIndexes.size(); i++) {
@@ -230,7 +224,9 @@ namespace Mona {
 			JointIndex jIndex = m_ikData.jointIndexes[i];
 			(*variableRotations)[jIndex].setRotationAngle(initialArgs[i]);
 		}
-		std::vector<float> computedAngles = m_gradientDescent.computeArgsMin_progressive(m_ikData.descentRate, 
+		// setear arreglos de transformaciones
+		setDescentTransformArrays(&m_ikData);
+		std::vector<float> computedAngles = m_gradientDescent.computeArgsMin(m_ikData.descentRate, 
 			m_ikData.maxIterations, m_ikData.targetAngleDelta, initialArgs);
 		std::vector<std::pair<JointIndex, float>> result(computedAngles.size());
 		

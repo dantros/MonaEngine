@@ -43,11 +43,11 @@ namespace Mona {
 		std::vector<FunctionTerm<dataT>> m_terms;
 		int m_argNum;
 		dataT* m_dataPtr;
-		std::function<void(std::vector<float>&, dataT*, std::vector<float>&, int)>  m_postDescentStepCustomBehaviour;
+		std::function<void(std::vector<float>&, dataT*, std::vector<float>&)>  m_postDescentStepCustomBehaviour;
 	public:
 		GradientDescent() = default;
 		GradientDescent(std::vector<FunctionTerm<dataT>> terms, int argNum, dataT* dataPtr,
-			std::function<void(std::vector<float>&, dataT*, std::vector<float>&, int)>  postDescentStepCustomBehaviour) {
+			std::function<void(std::vector<float>&, dataT*, std::vector<float>&)>  postDescentStepCustomBehaviour) {
 			MONA_ASSERT(terms.size() > 0, "Must provide at least one function term");
 			m_argNum = argNum;
 			m_terms = terms;
@@ -98,7 +98,7 @@ namespace Mona {
 				float argDelta = descentRate * argsRawDelta[i];
 				args[i] -= argDelta;
 			}
-			m_postDescentStepCustomBehaviour(args, m_dataPtr, argsRawDelta, -1);		
+			m_postDescentStepCustomBehaviour(args, m_dataPtr, argsRawDelta);		
 			while (stepNum < maxIterations && funcUtils::conditionVector_OR(continueDescent)) {
 				gradient = computeGradient(args);
 				for (int i = 0; i < args.size(); i++) {
@@ -117,7 +117,7 @@ namespace Mona {
 					float argDelta = descentRate * argsRawDelta[i];
 					args[i] -= argDelta;
 				}
-				m_postDescentStepCustomBehaviour(args, m_dataPtr, argsRawDelta, -1);
+				m_postDescentStepCustomBehaviour(args, m_dataPtr, argsRawDelta);
 				for (int i = 0; i < args.size(); i++) {
 					continueDescent[i] = targetArgDelta < abs(descentRate*argsRawDelta[i]);
 				}
@@ -125,51 +125,6 @@ namespace Mona {
 			}
 			return args;
 		};
-
-
-		std::vector<float> computeArgsMin_progressive(float descentRate, int maxIterations, float targetArgDelta,
-			const std::vector<float>& initialArgs, DescentType descentType = DescentType::REGULAR, bool softenSteps = true) {
-
-			MONA_ASSERT(initialArgs.size() == m_argNum, "GradientDescent: number of args does not match argNum value");
-			std::vector<float> args = initialArgs;
-			std::vector<float> argsRawDelta(args.size());
-			std::vector<bool> continueDescent(args.size(), true);
-			int stepNum = 0;
-			// primer computo
-			for (int i = 0; i < args.size(); i++) {
-				float gradient = computeGradient_single(args, i);
-				argsRawDelta[i] = gradient;
-				float argDelta = descentRate * argsRawDelta[i];
-				args[i] -= argDelta;
-				m_postDescentStepCustomBehaviour(args, m_dataPtr, argsRawDelta, i);
-			}
-			
-			while (stepNum < maxIterations && funcUtils::conditionVector_OR(continueDescent)) {
-				for (int i = 0; i < args.size(); i++) {
-					float gradient = computeGradient_single(args, i);
-					if (softenSteps) {
-						if (gradient != 0 && abs(argsRawDelta[i] * 10) < abs(gradient)) {
-							float sign = gradient / abs(gradient);
-							gradient = abs(argsRawDelta[i] * 10) * sign;
-						}
-					}
-					if (descentType == DescentType::REGULAR) {
-						argsRawDelta[i] = gradient;
-					}
-					else if (descentType == DescentType::SGDM) {
-						argsRawDelta[i] = 0.8 * argsRawDelta[i] + 0.2 * gradient;
-					}
-					float argDelta = descentRate * argsRawDelta[i];
-					args[i] -= argDelta;
-					m_postDescentStepCustomBehaviour(args, m_dataPtr, argsRawDelta, i);								
-				}				
-				for (int i = 0; i < args.size(); i++) {
-					continueDescent[i] = targetArgDelta < abs(descentRate* argsRawDelta[i]);
-				}
-				stepNum += 1;
-			}
-			return args;
-		}
 
 
 		float computeFunctionValue(const std::vector<float>& args) {

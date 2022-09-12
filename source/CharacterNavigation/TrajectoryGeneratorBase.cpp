@@ -129,15 +129,15 @@ namespace Mona{
 		return result;
 	};
 
-	std::function<void(std::vector<float>&, TGData*, std::vector<float>&, int)>  postDescentStepCustomBehaviour =
-		[](std::vector<float>& varPCoord, TGData* dataPtr, std::vector<float>& argsRawDelta, int varIndex_progressive)->void {
+	std::function<void(std::vector<float>&, TGData*, std::vector<float>&)>  postDescentStepCustomBehaviour =
+		[](std::vector<float>& varPCoord, TGData* dataPtr, std::vector<float>& argsRawDelta)->void {
 		glm::vec3 newPos;
 		int D = 3;
 		for (int i = 0; i < dataPtr->pointIndexes.size(); i++) {
 			for (int j = 0; j < D; j++) {
 				if (varPCoord[i * D + j] <= dataPtr->minValues[i * D + j]) {
 					varPCoord[i * D + j] = dataPtr->minValues[i * D + j];
-					argsRawDelta[i * D + j] *= 0.1f;
+					argsRawDelta[i * D + j] *= 0.01f;
 				}
 				newPos[j] = varPCoord[i * D + j];
 			}
@@ -152,7 +152,7 @@ namespace Mona{
 		m_gradientDescent = GradientDescent<TGData>({ term1 }, 0, &m_tgData, postDescentStepCustomBehaviour);
 		m_tgData.descentRate = 1 / pow(10, 3);
 		m_tgData.maxIterations = 600;
-		m_tgData.targetPosDelta = 1 / pow(10, 6);
+		m_tgData.targetPosDelta = 1 / pow(10, 5);
 		m_gradientDescent.setTermWeight(0, 1.0f);
 	}
 

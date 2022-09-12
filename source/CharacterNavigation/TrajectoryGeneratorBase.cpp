@@ -147,12 +147,12 @@ namespace Mona{
 	};
 
 
-	void StrideCorrector::init() {
+	void StrideCorrector::init(float rigGlobalHeight) {
 		FunctionTerm<TGData> term1(term1Function, term1PartialDerivativeFunction);
 		m_gradientDescent = GradientDescent<TGData>({ term1 }, 0, &m_tgData, postDescentStepCustomBehaviour);
 		m_tgData.descentRate = 1 / pow(10, 3);
 		m_tgData.maxIterations = 600;
-		m_tgData.targetPosDelta = 1 / pow(10, 5);
+		m_tgData.targetPosDelta = rigGlobalHeight / pow(10, 5);
 		m_gradientDescent.setTermWeight(0, 1.0f);
 	}
 

@@ -18,7 +18,7 @@ namespace Mona{
     }
 
 	void TrajectoryGenerator::init() {
-		m_strideCorrector.init();
+		m_strideCorrector.init(m_ikRig->getRigHeight()*m_ikRig->getRigScale());
 	}
 
 	void TrajectoryGenerator::generateNewTrajectories(AnimationIndex animIndex,

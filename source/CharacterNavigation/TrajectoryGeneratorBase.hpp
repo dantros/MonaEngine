@@ -106,7 +106,7 @@ namespace Mona{
         TGData m_tgData;
     public:
         StrideCorrector() = default;
-        void init();
+        void init(float rigGlobalHeight);
         void correctStride(LIC<3>& targetCurve, LIC<3>& originalCurve, 
             EnvironmentData& environmentData,
             ComponentManager<TransformComponent>& transformManager,

@@ -318,18 +318,18 @@ namespace Mona {
 		float animTime = ikAnim->getAnimationTime(reproductionTime);
 		float rotAngle = ikAnim->getSavedAngles(jointIndex).evalCurve(reproductionTime)[0];
 		glm::vec3 rotAxis = ikAnim->getBaseJointRotations(ikAnim->getFrame(animTime))[jointIndex].getRotationAxis();
-		glm::mat4 jointSpaceTr = glmUtils::translationToMat4(ikAnim->getJointPositions()[jointIndex]) *
+		glm::mat4 jointSpaceTr = glmUtils::translationToMat4(ikAnim->getJointPosition(jointIndex)) *
 			glmUtils::rotationToMat4(glm::angleAxis(rotAngle, rotAxis)) *
-			glmUtils::scaleToMat4(ikAnim->getJointScales()[jointIndex]);
+			glmUtils::scaleToMat4(ikAnim->getJointScale(jointIndex));
 		return jointSpaceTr;
 
 	}
 	glm::mat4 ForwardKinematics::JointSpaceVariableTransform(AnimationIndex animIndex, JointIndex jointIndex) {
 		IKAnimation* ikAnim = m_ikRig->getIKAnimation(animIndex);
 		std::vector<JointRotation>* variableJointRotations = ikAnim->getVariableJointRotations();
-		glm::mat4 jointSpaceTr = glmUtils::translationToMat4(ikAnim->getJointPositions()[jointIndex]) *
+		glm::mat4 jointSpaceTr = glmUtils::translationToMat4(ikAnim->getJointPosition(jointIndex)) *
 			glmUtils::rotationToMat4((*variableJointRotations)[jointIndex].getQuatRotation()) *
-			glmUtils::scaleToMat4(ikAnim->getJointScales()[jointIndex]);
+			glmUtils::scaleToMat4(ikAnim->getJointScale(jointIndex));
 		return jointSpaceTr;
 
 	}

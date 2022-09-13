@@ -16,14 +16,6 @@ namespace Mona{
 		int frameNum = animationClip->m_animationTracks[0].rotationTimeStamps.size();
 		int jointNum = animationClip->m_animationTracks.size();
 		int totalJointNum = topology.size();
-		m_jointPositions = std::vector<glm::vec3>(totalJointNum, glm::vec3(0));
-		m_jointScales = std::vector<glm::vec3>(totalJointNum, glm::vec3(1));
-		for (int i = 0; i < jointNum;i++) {
-			JointIndex jIndex = getJointIndices()[i];
-			int trackIndex = animationClip->GetTrackIndex(jIndex);
-			m_jointPositions[jIndex] = animationClip->m_animationTracks[trackIndex].positions[0];
-			m_jointScales[jIndex] = animationClip->m_animationTracks[trackIndex].scales[0];
-		}
 		m_baseJointRotations.resize(frameNum);
 		for (FrameIndex i = 0; i < frameNum; i++) {
 			m_baseJointRotations[i] = std::vector<JointRotation>(totalJointNum, JointRotation());
@@ -62,6 +54,13 @@ namespace Mona{
 
 	const std::vector<float>& IKAnimation::getTimeStamps() {
 		return m_animationClip->m_animationTracks[0].rotationTimeStamps;
+	}
+
+	const glm::vec3& IKAnimation::getJointScale(JointIndex joint) const{
+		return m_animationClip->m_animationTracks[m_animationClip->GetTrackIndex(joint)].scales[0];
+	}
+	const glm::vec3& IKAnimation::getJointPosition(JointIndex joint) const{
+		return m_animationClip->m_animationTracks[m_animationClip->GetTrackIndex(joint)].positions[0];
 	}
 
 	float IKAnimation::getReproductionTime(FrameIndex frame, int repCountOffset) {

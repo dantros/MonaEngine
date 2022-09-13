@@ -160,8 +160,6 @@ namespace Mona {
 
 		// Se remueve el movimiento de las caderas
 		animationClip->RemoveJointTranslation(m_ikRig.m_hipJoint);
-		int hipTrackIndex = animationClip->GetTrackIndex(m_ikRig.m_hipJoint);
-		currentIKAnim->m_jointPositions[m_ikRig.m_hipJoint] = glm::vec3(0);
 	}
 
 	AnimationIndex IKRigController::removeAnimation(std::shared_ptr<AnimationClip> animationClip) {

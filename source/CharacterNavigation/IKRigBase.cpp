@@ -18,7 +18,6 @@ namespace Mona{
 		int totalJointNum = topology.size();
 		m_jointPositions = std::vector<glm::vec3>(totalJointNum, glm::vec3(0));
 		m_jointScales = std::vector<glm::vec3>(totalJointNum, glm::vec3(1));
-		m_timeStamps = animationClip->m_animationTracks[0].rotationTimeStamps;
 		for (int i = 0; i < jointNum;i++) {
 			JointIndex jIndex = getJointIndices()[i];
 			int trackIndex = animationClip->GetTrackIndex(jIndex);
@@ -61,9 +60,13 @@ namespace Mona{
 		return m_forwardKinematics->EEListCustomSpaceTransforms(eeList, baseTransform, m_animIndex, reproductionTime, outJointSpaceTransforms);
 	}
 
+	const std::vector<float>& IKAnimation::getTimeStamps() {
+		return m_animationClip->m_animationTracks[0].rotationTimeStamps;
+	}
+
 	float IKAnimation::getReproductionTime(FrameIndex frame, int repCountOffset) {
-		MONA_ASSERT(0 <= frame && frame < m_timeStamps.size(), "IKAnimation: FrameIndex outside of range.");
-		return (m_reproductionCount + repCountOffset) * m_animationClip->GetDuration() + m_timeStamps[frame];
+		MONA_ASSERT(0 <= frame && frame < getFrameNum(), "IKAnimation: FrameIndex outside of range.");
+		return (m_reproductionCount + repCountOffset) * m_animationClip->GetDuration() + getTimeStamps()[frame];
 	}
 	float IKAnimation::getAnimationDuration() {
 		return m_animationClip->GetDuration(); 
@@ -90,8 +93,8 @@ namespace Mona{
 	}
 
 	float IKAnimation::getAnimationTime(FrameIndex frame) { 
-		MONA_ASSERT(0 <= frame && frame < m_timeStamps.size(), "IKAnimation: FrameIndex outside of range.");
-		return m_timeStamps[frame]; 
+		MONA_ASSERT(0 <= frame && frame < getFrameNum(), "IKAnimation: FrameIndex outside of range.");
+		return getTimeStamps()[frame];
 	}
 
 	float IKAnimation::getAnimationTime(float reproductionTime) {
@@ -106,13 +109,13 @@ namespace Mona{
 		extendedAnimationTime = adjustAnimationTime(extendedAnimationTime);
 		// si esta en torno a un frame
 		float epsilon = (getAnimationDuration()/getFrameNum()) / 1000;
-		for (FrameIndex i = 0; i < m_timeStamps.size(); i++) {
-			if (abs(extendedAnimationTime - m_timeStamps[i]) < epsilon) {
+		for (FrameIndex i = 0; i < getTimeStamps().size(); i++) {
+			if (abs(extendedAnimationTime - getTimeStamps()[i]) < epsilon) {
 				return i;
 			}
 		}
-		for (FrameIndex i = 0; i < m_timeStamps.size()-1; i++) {
-			if (m_timeStamps[i] <= extendedAnimationTime && extendedAnimationTime < m_timeStamps[i + 1]) {
+		for (FrameIndex i = 0; i < getTimeStamps().size()-1; i++) {
+			if (getTimeStamps()[i] <= extendedAnimationTime && extendedAnimationTime < getTimeStamps()[i + 1]) {
 				return i;
 			}
 		}

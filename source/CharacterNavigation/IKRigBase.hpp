@@ -60,8 +60,6 @@ namespace Mona {
         std::vector<glm::vec3> m_jointScales;
         // Posiciones para cada joint de la animacion base (fijas)
         std::vector<glm::vec3> m_jointPositions;
-        // Timestamps para las rotaciones indexadas por frame
-        std::vector<float> m_timeStamps;
         // Indice de la animacion que le corresponde a esta configuracion
         AnimationIndex m_animIndex = -1;
         ForwardKinematics* m_forwardKinematics;
@@ -90,13 +88,14 @@ namespace Mona {
         std::vector<JointRotation>* getVariableJointRotations() { return &m_variableJointRotations; }
         const std::vector<glm::vec3>& getJointScales() const { return m_jointScales; }
         const std::vector<glm::vec3>& getJointPositions() const { return m_jointPositions; }
+        const std::vector<float>& getTimeStamps();
         float getReproductionTime(float extendedAnimationTime, int repCountOffset = 0);
         float getReproductionTime(FrameIndex frame, int repCountOffset = 0);
         float getAnimationTime(FrameIndex frame);
         float getAnimationTime(float reproductionTime);
         FrameIndex getFrame(float extendedAnimationTime);
         float getAnimationDuration();
-        int getFrameNum() { return m_timeStamps.size(); }
+        int getFrameNum() { return getTimeStamps().size(); }
         int getReproductionCount() const { return m_reproductionCount; }
         float getCurrentReproductionTime() const { return m_currentReproductionTime; }
         FrameIndex getNextFrameIndex() const { return m_nextFrameIndex; }

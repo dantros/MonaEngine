@@ -478,7 +478,7 @@ namespace Mona{
 
     void TrajectoryGenerator::buildHipTrajectory(IKAnimation* ikAnim, std::vector<glm::vec3> const& hipGlobalPositions) {
         ikAnim->m_hipTrajectoryData.init(ikAnim);
-		ikAnim->m_hipTrajectoryData.m_originalPositions = LIC<3>(hipGlobalPositions, ikAnim->m_timeStamps);
+		ikAnim->m_hipTrajectoryData.m_originalPositions = LIC<3>(hipGlobalPositions, ikAnim->getTimeStamps());
     }
 
     void TrajectoryGenerator::buildEETrajectories(IKAnimation* ikAnim, 

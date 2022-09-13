@@ -396,12 +396,12 @@ namespace Mona {
 		ikAnim.m_currentReproductionTime = adjustedReproductionTime;
 		ikAnim.m_reproductionCount = ikAnim.m_currentReproductionTime / ikAnim.getAnimationDuration();
 		float adjustedSamplingTime = animClip->GetSamplingTime(ikAnim.m_currentReproductionTime, true);
-		for (int i = 0; i < ikAnim.m_timeStamps.size(); i++) {
-			float nextTimeStamp = i < ikAnim.m_timeStamps.size()-1 ? ikAnim.m_timeStamps[i + 1] : ikAnim.getAnimationDuration();
-			if (ikAnim.m_timeStamps[i] <= adjustedSamplingTime && adjustedSamplingTime < nextTimeStamp) {
+		for (int i = 0; i < ikAnim.getTimeStamps().size(); i++) {
+			float nextTimeStamp = i < ikAnim.getTimeStamps().size()-1 ? ikAnim.getTimeStamps()[i + 1] : ikAnim.getAnimationDuration();
+			if (ikAnim.getTimeStamps()[i] <= adjustedSamplingTime && adjustedSamplingTime < nextTimeStamp) {
 				ikAnim.m_onNewFrame = ikAnim.m_currentFrameIndex != i;
 				ikAnim.m_currentFrameIndex = i;
-				ikAnim.m_nextFrameIndex = (i + 1) % (ikAnim.m_timeStamps.size());
+				ikAnim.m_nextFrameIndex = (i + 1) % (ikAnim.getTimeStamps().size());
 				break;
 			}
 		}		

@@ -11,7 +11,7 @@ namespace Mona{
     typedef int FrameIndex;
 
     class IKRig;
-    class IKRigConfig;
+    class IKAnimation;
     class TrajectoryGenerator {
         friend class IKNavigationComponent;
         friend class IKRigController;
@@ -21,19 +21,19 @@ namespace Mona{
         StrideCorrector m_strideCorrector;
         bool m_strideValidationEnabled;
         bool m_strideCorrectionEnabled;
-        void generateEETrajectory(ChainIndex ikChain, IKRigConfig* config,
+        void generateEETrajectory(ChainIndex ikChain, IKAnimation* ikAnim,
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
         void generateFixedTrajectory(glm::vec2 basePos,
             glm::vec2 timeRange, int baseCurveID, float supportHeight,
             EEGlobalTrajectoryData* trData, ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
-        void generateHipTrajectory(IKRigConfig* config,
+        void generateHipTrajectory(IKAnimation* ikAnim,
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
 		float calcHipAdjustedHeight(std::pair<EEGlobalTrajectoryData*, EEGlobalTrajectoryData*> oppositeTrajectories, 
             float targetCurvesTime_rep,
-            float originalCurvesTime_extendedAnim, IKRigConfig* config,
+            float originalCurvesTime_extendedAnim, IKAnimation* ikAnim,
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
         bool calcStrideStartingPoint(float supportHeightStart, glm::vec2 xyReferencePoint, float targetDistance, 
@@ -41,13 +41,13 @@ namespace Mona{
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
         bool calcStrideFinalPoint(EEGlobalTrajectoryData* baseTrajectoryData, int baseTrajecoryID,
-            IKRigConfig* config,
+            IKAnimation* ikAnim,
             glm::vec3 startingPoint, float targetDistance,
             glm::vec2 targetDirection, glm::vec3& outStrideFinalPoint,
             ComponentManager<TransformComponent>& transformManager,
             ComponentManager<StaticMeshComponent>& staticMeshManager);
-		static void buildHipTrajectory(IKRigConfig* config, std::vector<glm::vec3> const& hipGlobalPositions);
-		static void buildEETrajectories(IKRigConfig* config,
+		static void buildHipTrajectory(IKAnimation* ikAnim, std::vector<glm::vec3> const& hipGlobalPositions);
+		static void buildEETrajectories(IKAnimation* ikAnim,
 			std::vector<std::vector<bool>> supportFramesPerChain,
 			std::vector<std::vector<glm::vec3>> globalPositionsPerChain,
             std::vector<ChainIndex> oppositePerChain);

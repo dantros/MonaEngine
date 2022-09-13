@@ -12,7 +12,7 @@ namespace Mona {
 	class AnimationClip {
 	public:
 		friend class AnimationClipManager;
-		friend class IKRigConfig;
+		friend class IKAnimation;
 		friend class IKRig;
 		friend class IKRigController;
 		friend class AnimationValidator;

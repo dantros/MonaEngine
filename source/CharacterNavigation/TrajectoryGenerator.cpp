@@ -26,86 +26,86 @@ namespace Mona{
 		ComponentManager<StaticMeshComponent>& staticMeshManager) {
 		// las trayectorias anteriores siempre deben llegar hasta el currentFrame
 
-        IKRigConfig* config = m_ikRig->getAnimationConfig(animIndex);
+        IKAnimation* ikAnim = m_ikRig->getIKAnimation(animIndex);
 
         for (ChainIndex i = 0; i < m_ikRig->getChainNum(); i++) {
 			JointIndex eeIndex = m_ikRig->getIKChain(i)->getEndEffector();
-			generateEETrajectory(i, config, transformManager, staticMeshManager);
+			generateEETrajectory(i, ikAnim, transformManager, staticMeshManager);
 		}
 
 		// fijamos o desfijamos la animacion si es necesario
-		FrameIndex prevSavedFixedFrame = config->m_fixedMovementFrame;
-		if (!config->isMovementFixed()) {
-			config->m_fixedMovementFrame = -1;
+		FrameIndex prevSavedFixedFrame = ikAnim->m_fixedMovementFrame;
+		if (!ikAnim->isMovementFixed()) {
+			ikAnim->m_fixedMovementFrame = -1;
 			if (prevSavedFixedFrame != -1) {
-				m_ikRig->resetAnimation(config->m_animIndex);
+				m_ikRig->resetAnimation(ikAnim->m_animIndex);
 			}
 		}
 		else {
-			m_ikRig->fixAnimation(config->m_animIndex, config->m_fixedMovementFrame);
+			m_ikRig->fixAnimation(ikAnim->m_animIndex, ikAnim->m_fixedMovementFrame);
 		}
         // si una trayectoria es dinamica es fija las demas tambien debera serlo
-        if (config->isMovementFixed()) {
-			FrameIndex currentFrame = config->getCurrentFrameIndex();
-			float currentFrameRepTime = config->getReproductionTime(currentFrame);
+        if (ikAnim->isMovementFixed()) {
+			FrameIndex currentFrame = ikAnim->getCurrentFrameIndex();
+			float currentFrameRepTime = ikAnim->getReproductionTime(currentFrame);
             for (ChainIndex i = 0; i < m_ikRig->getChainNum(); i++) {
-				EEGlobalTrajectoryData* trData = config->getEETrajectoryData(i);
+				EEGlobalTrajectoryData* trData = ikAnim->getEETrajectoryData(i);
 				if (trData->getTargetTrajectory().isDynamic()) {
 					if (!trData->isTargetFixed()) {
 						glm::vec3 currentPos = trData->getSavedPositions().evalCurve(currentFrameRepTime);
 						int trID = trData->getTargetTrajectory().getSubTrajectoryID();
-						float currSupportHeight = trData->getSupportHeight(config->m_fixedMovementFrame);
-						generateFixedTrajectory(glm::vec2(currentPos), { currentFrameRepTime, currentFrameRepTime + config->getAnimationDuration() },
+						float currSupportHeight = trData->getSupportHeight(ikAnim->m_fixedMovementFrame);
+						generateFixedTrajectory(glm::vec2(currentPos), { currentFrameRepTime, currentFrameRepTime + ikAnim->getAnimationDuration() },
 							trID, currSupportHeight, trData, transformManager, staticMeshManager);
 					}
 					EEGlobalTrajectoryData* oppositeTrData = trData->getOppositeTrajectoryData();
-					float oppositeCurrSupportHeight = oppositeTrData->getSupportHeight(config->m_fixedMovementFrame);
+					float oppositeCurrSupportHeight = oppositeTrData->getSupportHeight(ikAnim->m_fixedMovementFrame);
 					glm::vec3 oppositeCurrentPos = oppositeTrData->getSavedPositions().evalCurve(currentFrameRepTime);
 					int oppositeTrID = oppositeTrData->getTargetTrajectory().getSubTrajectoryID();
-					generateFixedTrajectory(glm::vec2(oppositeCurrentPos), { currentFrameRepTime, currentFrameRepTime + config->getAnimationDuration() },
+					generateFixedTrajectory(glm::vec2(oppositeCurrentPos), { currentFrameRepTime, currentFrameRepTime + ikAnim->getAnimationDuration() },
 						oppositeTrID, oppositeCurrSupportHeight, oppositeTrData, transformManager, staticMeshManager);
 				}
             }
         }
 
 		// queda setear la trayectoria de la cadera
-		generateHipTrajectory(config, transformManager, staticMeshManager);
+		generateHipTrajectory(ikAnim, transformManager, staticMeshManager);
 	}
 
     void TrajectoryGenerator::generateFixedTrajectory(glm::vec2 basePos,
         glm::vec2 timeRange, int baseCurveID, float supportHeight,	EEGlobalTrajectoryData* trData,
         ComponentManager<TransformComponent>& transformManager,
         ComponentManager<StaticMeshComponent>& staticMeshManager) {
-		IKRigConfig* config = trData->m_config;
+		IKAnimation* ikAnim = trData->m_ikAnim;
         float calcHeight = m_environmentData.getTerrainHeight(glm::vec2(basePos), transformManager, staticMeshManager);
         glm::vec3 fixedPos(basePos, calcHeight + supportHeight);
         LIC<3> fixedCurve({ fixedPos, fixedPos }, { timeRange[0], timeRange[1] });
         trData->setTargetTrajectory(fixedCurve, trData->getSubTrajectoryByID(baseCurveID).m_trajectoryType, baseCurveID);
         trData->m_fixedTarget = true;
-		if (config->getAnimationType()==AnimationType::WALKING) {
-			if (config->m_fixedMovementFrame == -1) {
-				config->m_fixedMovementFrame = config->getCurrentFrameIndex();
+		if (ikAnim->getAnimationType()==AnimationType::WALKING) {
+			if (ikAnim->m_fixedMovementFrame == -1) {
+				ikAnim->m_fixedMovementFrame = ikAnim->getCurrentFrameIndex();
 			}
 		}
 		else {
-			config->m_fixedMovementFrame = config->getCurrentFrameIndex();
+			ikAnim->m_fixedMovementFrame = ikAnim->getCurrentFrameIndex();
 		}
     }
 
-	void TrajectoryGenerator::generateEETrajectory(ChainIndex ikChain, IKRigConfig* config,
+	void TrajectoryGenerator::generateEETrajectory(ChainIndex ikChain, IKAnimation* ikAnim,
 		ComponentManager<TransformComponent>& transformManager,
 		ComponentManager<StaticMeshComponent>& staticMeshManager) {
-		EEGlobalTrajectoryData* trData = config->getEETrajectoryData(ikChain);
-		FrameIndex currentFrame = config->getCurrentFrameIndex();
-		FrameIndex nextFrame = config->getNextFrameIndex();
-		float currentAnimTime = config->getAnimationTime(currentFrame);
-		float nextAnimTime = config->getAnimationTime(nextFrame);
-		float currentFrameRepTime = config->getReproductionTime(currentFrame);
+		EEGlobalTrajectoryData* trData = ikAnim->getEETrajectoryData(ikChain);
+		FrameIndex currentFrame = ikAnim->getCurrentFrameIndex();
+		FrameIndex nextFrame = ikAnim->getNextFrameIndex();
+		float currentAnimTime = ikAnim->getAnimationTime(currentFrame);
+		float nextAnimTime = ikAnim->getAnimationTime(nextFrame);
+		float currentFrameRepTime = ikAnim->getReproductionTime(currentFrame);
 		float currSupportHeight = trData->getSupportHeight(currentFrame);
 		glm::vec3 currentPos = trData->getSavedPositions().evalCurve(currentFrameRepTime);
-		if (config->getAnimationType() == AnimationType::IDLE) {
+		if (ikAnim->getAnimationType() == AnimationType::IDLE) {
 			int subTrID = trData->m_originalSubTrajectories[0].m_subTrajectoryID;
-			generateFixedTrajectory(glm::vec2(currentPos), { currentFrameRepTime, currentFrameRepTime + config->getAnimationDuration() }, subTrID,
+			generateFixedTrajectory(glm::vec2(currentPos), { currentFrameRepTime, currentFrameRepTime + ikAnim->getAnimationDuration() }, subTrID,
 				currSupportHeight, trData, transformManager, staticMeshManager);
 			return;
 		}
@@ -119,10 +119,10 @@ namespace Mona{
 		}
 		LIC<3> baseCurve = originalTrajectory.getEECurve();
 
-		FrameIndex initialFrame = config->getFrame(baseCurve.getTRange()[0]);
-		FrameIndex finalFrame = config->getFrame(baseCurve.getTRange()[1]);
+		FrameIndex initialFrame = ikAnim->getFrame(baseCurve.getTRange()[0]);
+		FrameIndex finalFrame = ikAnim->getFrame(baseCurve.getTRange()[1]);
 
-		HipGlobalTrajectoryData* hipTrData = config->getHipTrajectoryData();
+		HipGlobalTrajectoryData* hipTrData = ikAnim->getHipTrajectoryData();
 		LIC<3> hipPosCurve = hipTrData->sampleOriginalPositions(baseCurve.getTRange()[0], baseCurve.getTRange()[1]);
 
 		// llevar a reproduction time
@@ -143,7 +143,7 @@ namespace Mona{
         if (!trData->motionInitialized()) {
 			glm::vec2 originalXYDirection = glm::normalize(glm::vec2(baseCurve.getEnd() - baseCurve.getStart()));
 			glm::vec2 baseTargetXYDirection = glm::rotate(glm::vec2(originalXYDirection), m_ikRig->getRotationAngle());
-            float referenceTime = config->getReproductionTime(currentFrame);
+            float referenceTime = ikAnim->getReproductionTime(currentFrame);
             glm::vec3 sampledCurveReferencePoint = baseCurve.evalCurve(referenceTime);
             float xyDistanceToStart = glm::distance(glm::vec2(baseCurve.getStart()), glm::vec2(sampledCurveReferencePoint));
             glm::vec2 currEEXYPoint = glm::vec2(currentPos);
@@ -166,10 +166,10 @@ namespace Mona{
 		glm::vec2 targetXYDirection = glm::normalize(targetEEPos - glm::vec2(initialPos));
 
 		glm::vec3 finalPos;
-		bool endingPosValid = calcStrideFinalPoint(trData, originalTrajectory.getSubTrajectoryID(), config,
+		bool endingPosValid = calcStrideFinalPoint(trData, originalTrajectory.getSubTrajectoryID(), ikAnim,
             initialPos, strideLength, targetXYDirection, finalPos, transformManager, staticMeshManager);
         if (!endingPosValid) { // si no es posible avanzar por la elevacion del terreno
-			float fixedSupportHeight = config->m_fixedMovementFrame == -1 ? currSupportHeight : trData->getSupportHeight(config->m_fixedMovementFrame);
+			float fixedSupportHeight = ikAnim->m_fixedMovementFrame == -1 ? currSupportHeight : trData->getSupportHeight(ikAnim->m_fixedMovementFrame);
 			generateFixedTrajectory(glm::vec2(currentPos), { baseCurve.getTRange()[0], baseCurve.getTRange()[1] }, originalTrajectory.getSubTrajectoryID(),
 				currSupportHeight, trData, transformManager, staticMeshManager);
             return;
@@ -186,13 +186,13 @@ namespace Mona{
 				m_environmentData, transformManager, staticMeshManager);
 		}
 
-		int repCountOffset = config->getNextFrameIndex() == 0 ? 1 : 0;
-		float transitionTime1 = config->getReproductionTime(config->getNextFrameIndex(), repCountOffset);
+		int repCountOffset = ikAnim->getNextFrameIndex() == 0 ? 1 : 0;
+		float transitionTime1 = ikAnim->getReproductionTime(ikAnim->getNextFrameIndex(), repCountOffset);
         int currSubTrID = trData->getTargetTrajectory().getSubTrajectoryID();
         int newSubTrID = originalTrajectory.getSubTrajectoryID();
 		LIC<3>& savedCurve = trData->getTargetTrajectory().getEECurve();
         if (!trData->isTargetFixed() &&	currSubTrID == newSubTrID && savedCurve.inTRange(transitionTime1)) {
-			float avgFrameDuration = config->getAnimationDuration() / config->getFrameNum();
+			float avgFrameDuration = ikAnim->getAnimationDuration() / ikAnim->getFrameNum();
 			float transitionTime2 = transitionTime1 + avgFrameDuration;
 			for (int i = 0; i < 8; i++) {
 				if (savedCurve.inTRange(transitionTime2 + avgFrameDuration)) {
@@ -214,43 +214,43 @@ namespace Mona{
 	}
 	
 
-    void TrajectoryGenerator::generateHipTrajectory(IKRigConfig* config,
+    void TrajectoryGenerator::generateHipTrajectory(IKAnimation* ikAnim,
         ComponentManager<TransformComponent>& transformManager,
         ComponentManager<StaticMeshComponent>& staticMeshManager) {
 
-        HipGlobalTrajectoryData* hipTrData = config->getHipTrajectoryData();
-        FrameIndex currentFrame = config->getCurrentFrameIndex();
-		float currentFrameRepTime = config->getReproductionTime(currentFrame);
-        if (config->isMovementFixed()) {
-            float initialTime_rep = config->getReproductionTime(currentFrame);
-            float currFrameTime_extendedAnim = config->getAnimationTime(currentFrame);
-            float nextFrameTime_extendedAnim = config->getAnimationTime(config->getNextFrameIndex());
+        HipGlobalTrajectoryData* hipTrData = ikAnim->getHipTrajectoryData();
+        FrameIndex currentFrame = ikAnim->getCurrentFrameIndex();
+		float currentFrameRepTime = ikAnim->getReproductionTime(currentFrame);
+        if (ikAnim->isMovementFixed()) {
+            float initialTime_rep = ikAnim->getReproductionTime(currentFrame);
+            float currFrameTime_extendedAnim = ikAnim->getAnimationTime(currentFrame);
+            float nextFrameTime_extendedAnim = ikAnim->getAnimationTime(ikAnim->getNextFrameIndex());
             if (nextFrameTime_extendedAnim < currFrameTime_extendedAnim) {
-                nextFrameTime_extendedAnim += config->getAnimationDuration();
+                nextFrameTime_extendedAnim += ikAnim->getAnimationDuration();
             }
             glm::vec3 initialPos = hipTrData->getSavedPositions().evalCurve(initialTime_rep);
             // chequear si hay info de posicion valida previa
             if (!hipTrData->motionInitialized()) {
                 std::pair<EEGlobalTrajectoryData*, EEGlobalTrajectoryData*> trDataPair;
-                trDataPair.first = config->getEETrajectoryData(0);
+                trDataPair.first = ikAnim->getEETrajectoryData(0);
                 trDataPair.second = trDataPair.first->getOppositeTrajectoryData();
                 glm::vec2 basePoint(initialPos);
 				initialPos = glm::vec3(basePoint, calcHipAdjustedHeight(trDataPair,
-                    initialTime_rep, config->getAnimationTime(currentFrame), config,
+                    initialTime_rep, ikAnim->getAnimationTime(currentFrame), ikAnim,
 					transformManager, staticMeshManager));
             }
-            LIC<3> newHipPositions({ initialPos, initialPos }, { initialTime_rep, initialTime_rep + config->getAnimationDuration() });
+            LIC<3> newHipPositions({ initialPos, initialPos }, { initialTime_rep, initialTime_rep + ikAnim->getAnimationDuration() });
             hipTrData->setTargetPositions(newHipPositions);
         }
         else {
-            HipGlobalTrajectoryData* hipTrData = config->getHipTrajectoryData();
+            HipGlobalTrajectoryData* hipTrData = ikAnim->getHipTrajectoryData();
             // buscamos la curva a la que le quede mas tiempo
             float tInfLimitRep = std::numeric_limits<float>::lowest();
             float tSupLimitRep = std::numeric_limits<float>::lowest();
             EETrajectory baseEETargetTr;
             EEGlobalTrajectoryData* baseEETrData;
             for (ChainIndex i = 0; i < m_ikRig->getChainNum(); i++) {
-                EEGlobalTrajectoryData* trData = config->getEETrajectoryData(i);
+                EEGlobalTrajectoryData* trData = ikAnim->getEETrajectoryData(i);
                 EETrajectory& currTr = trData->getTargetTrajectory();
                 float tCurrentSupLimit = currTr.getEECurve().getTRange()[1];
                 if (tSupLimitRep < tCurrentSupLimit) {
@@ -271,9 +271,9 @@ namespace Mona{
 
 			float tInfLimitExtendedAnim = baseEEOriginalCurve.getTRange()[0];
 			float tSupLimitExtendedAnim = baseEEOriginalCurve.getTRange()[1];
-            float tCurrExtendedAnim = config->getAnimationTime(currentFrame);
-            while (tCurrExtendedAnim < tInfLimitExtendedAnim) { tCurrExtendedAnim += config->getAnimationDuration(); }
-            while (tSupLimitExtendedAnim < tCurrExtendedAnim) { tCurrExtendedAnim -= config->getAnimationDuration(); }
+            float tCurrExtendedAnim = ikAnim->getAnimationTime(currentFrame);
+            while (tCurrExtendedAnim < tInfLimitExtendedAnim) { tCurrExtendedAnim += ikAnim->getAnimationDuration(); }
+            while (tSupLimitExtendedAnim < tCurrExtendedAnim) { tCurrExtendedAnim -= ikAnim->getAnimationDuration(); }
 
 
             LIC<3> hipPosCurve = hipTrData->sampleOriginalPositions(tInfLimitExtendedAnim, tSupLimitExtendedAnim);
@@ -282,7 +282,7 @@ namespace Mona{
 
             float hipOriginalXYDistance = glm::length(glm::vec2(hipPosCurve.getEnd() - hipPosCurve.getStart()));
 
-            FrameIndex initialFrame = config->getFrame(tInfLimitExtendedAnim);
+            FrameIndex initialFrame = ikAnim->getFrame(tInfLimitExtendedAnim);
             // calculo del punto inicial de la trayectoria
             glm::vec3 initialPos;
             // chequear si hay info de posicion valida previa
@@ -296,7 +296,7 @@ namespace Mona{
                 glm::vec2 targetDirection = glm::rotate(glm::vec2(hipTrOriginalDirection), m_ikRig->getRotationAngle());
                 glm::vec2 targetXYPos = currXYHipPos - targetDirection * targetXYDistance;
 				initialPos = glm::vec3(glm::vec2(targetXYPos),
-					calcHipAdjustedHeight(trDataPair, tInfLimitRep, tInfLimitExtendedAnim, config, transformManager, staticMeshManager));
+					calcHipAdjustedHeight(trDataPair, tInfLimitRep, tInfLimitExtendedAnim, ikAnim, transformManager, staticMeshManager));
             }        
            
 			// ajuste a tiempo de reproduccion
@@ -312,14 +312,14 @@ namespace Mona{
             for (int i = 1; i < hipPosCurve.getNumberOfPoints(); i++) {
                 float tVal_rep = hipPosCurve.getTValue(i);
                 float adjustedZ = calcHipAdjustedHeight(trDataPair, tVal_rep, tVal_rep - tInfLimitRep + tInfLimitExtendedAnim, 
-                    config, transformManager, staticMeshManager);
+                    ikAnim, transformManager, staticMeshManager);
                 glm::vec3 adjustedPoint(glm::vec2(hipPosCurve.evalCurve(tVal_rep)), adjustedZ);
                 hipPosCurve.setCurvePoint(i, adjustedPoint);
             }          
            
-			int repCountOffset = config->getNextFrameIndex() == 0 ? 1 : 0;
-			float transitionTime1 = config->getReproductionTime(config->getNextFrameIndex(), repCountOffset);
-			float avgFrameDuration = config->getAnimationDuration() / config->getFrameNum();
+			int repCountOffset = ikAnim->getNextFrameIndex() == 0 ? 1 : 0;
+			float transitionTime1 = ikAnim->getReproductionTime(ikAnim->getNextFrameIndex(), repCountOffset);
+			float avgFrameDuration = ikAnim->getAnimationDuration() / ikAnim->getFrameNum();
 			float transitionTime2 = transitionTime1 + avgFrameDuration;
 			LIC<3> savedCurve = hipTrData->getTargetPositions();
 			for (int i = 0; i < 8; i++) {
@@ -372,7 +372,7 @@ namespace Mona{
 	}
     
 	bool TrajectoryGenerator::calcStrideFinalPoint(EEGlobalTrajectoryData* baseTrajectoryData, int baseTrajecoryID,
-		IKRigConfig* config,
+		IKAnimation* ikAnim,
 		glm::vec3 startingPoint, float targetDistance, 
 		glm::vec2 targetDirection, glm::vec3& outStrideFinalPoint,
 		ComponentManager<TransformComponent>& transformManager,
@@ -404,10 +404,10 @@ namespace Mona{
 		if (baseEETr.isDynamic()) {
 			if (m_strideValidationEnabled) {
 				LIC<3> oppositeEECurve = baseTrajectoryData->getOppositeTrajectoryData()->getTargetTrajectory().getEECurve();
-				FrameIndex currentFrame = config->getCurrentFrameIndex();
-				float currentRepTime = config->getReproductionTime(currentFrame);
+				FrameIndex currentFrame = ikAnim->getCurrentFrameIndex();
+				float currentRepTime = ikAnim->getReproductionTime(currentFrame);
 				bool oppositeDataAvailable = oppositeEECurve.inTRange(currentRepTime);
-				if (oppositeDataAvailable && (baseTrajectoryData->m_fixedTarget && config->getCurrentFrameIndex() == config->getFixedMovementFrame()
+				if (oppositeDataAvailable && (baseTrajectoryData->m_fixedTarget && ikAnim->getCurrentFrameIndex() == ikAnim->getFixedMovementFrame()
 					|| !baseTrajectoryData->m_fixedTarget)) {
 					float currentOppositeZ = oppositeEECurve.evalCurve(currentRepTime)[2];
 					float candidateEEZ = selectedFinalPoint[2];
@@ -432,13 +432,13 @@ namespace Mona{
 
 	float TrajectoryGenerator::calcHipAdjustedHeight(std::pair<EEGlobalTrajectoryData*, EEGlobalTrajectoryData*> oppositeTrajectories,
         float targetCurvesTime_rep,
-		float originalCurvesTime_extendedAnim, IKRigConfig* config,
+		float originalCurvesTime_extendedAnim, IKAnimation* ikAnim,
 		ComponentManager<TransformComponent>& transformManager,
 		ComponentManager<StaticMeshComponent>& staticMeshManager) {
 
         
-		HipGlobalTrajectoryData* hipTrData = config->getHipTrajectoryData();
-        float avgFrameDuration = config->getAnimationDuration() / config->getFrameNum();
+		HipGlobalTrajectoryData* hipTrData = ikAnim->getHipTrajectoryData();
+        float avgFrameDuration = ikAnim->getAnimationDuration() / ikAnim->getFrameNum();
 		LIC<3> hipTrCurve = hipTrData->sampleOriginalPositions(originalCurvesTime_extendedAnim,	
             originalCurvesTime_extendedAnim + avgFrameDuration);
         float hipOriginalZ = hipTrCurve.evalCurve(originalCurvesTime_extendedAnim)[2];
@@ -476,30 +476,30 @@ namespace Mona{
 	}
 
 
-    void TrajectoryGenerator::buildHipTrajectory(IKRigConfig* config, std::vector<glm::vec3> const& hipGlobalPositions) {
-        config->m_hipTrajectoryData.init(config);
-		config->m_hipTrajectoryData.m_originalPositions = LIC<3>(hipGlobalPositions, config->m_timeStamps);
+    void TrajectoryGenerator::buildHipTrajectory(IKAnimation* ikAnim, std::vector<glm::vec3> const& hipGlobalPositions) {
+        ikAnim->m_hipTrajectoryData.init(ikAnim);
+		ikAnim->m_hipTrajectoryData.m_originalPositions = LIC<3>(hipGlobalPositions, ikAnim->m_timeStamps);
     }
 
-    void TrajectoryGenerator::buildEETrajectories(IKRigConfig* config, 
+    void TrajectoryGenerator::buildEETrajectories(IKAnimation* ikAnim, 
         std::vector<std::vector<bool>> supportFramesPerChain, 
         std::vector<std::vector<glm::vec3>> globalPositionsPerChain,
         std::vector<ChainIndex> oppositePerChain) {
         int chainNum = supportFramesPerChain.size();
-        int frameNum = config->getFrameNum();
+        int frameNum = ikAnim->getFrameNum();
 		std::vector<int> connectedCurveIndexes(chainNum, -1);
 		std::vector<bool> continueTrajectory(chainNum, false);
         int subTrajectoryID = 0;
         for (ChainIndex i = 0; i < chainNum; i++) {
-            config->m_eeTrajectoryData[i].init(config, &(config->m_eeTrajectoryData[oppositePerChain[i]]));
+            ikAnim->m_eeTrajectoryData[i].init(ikAnim, &(ikAnim->m_eeTrajectoryData[oppositePerChain[i]]));
         }
 		for (int i = 0; i < chainNum; i++) {
 			std::vector<EETrajectory> subTrajectories;
-			if (config->getAnimationType() == AnimationType::IDLE) {
+			if (ikAnim->getAnimationType() == AnimationType::IDLE) {
 				glm::vec3 staticPos = globalPositionsPerChain[i][0];
-				LIC<3> staticTr({ staticPos, staticPos }, { config->getAnimationTime(0), config->getAnimationTime(frameNum - 1) });
+				LIC<3> staticTr({ staticPos, staticPos }, { ikAnim->getAnimationTime(0), ikAnim->getAnimationTime(frameNum - 1) });
 				subTrajectories.push_back(EETrajectory(staticTr, TrajectoryType::STATIC, 0));
-				for (int j = 0; j < frameNum; j++) { config->m_eeTrajectoryData[i].m_supportHeights[j] = globalPositionsPerChain[i][0][2]; }
+				for (int j = 0; j < frameNum; j++) { ikAnim->m_eeTrajectoryData[i].m_supportHeights[j] = globalPositionsPerChain[i][0][2]; }
 			}
 			else {
                 bool allStatic = funcUtils::conditionVector_AND(supportFramesPerChain[i]);
@@ -523,22 +523,22 @@ namespace Mona{
 					bool baseFrameType = supportFramesPerChain[i][currFrame];
 					TrajectoryType trType = baseFrameType ? TrajectoryType::STATIC : TrajectoryType::DYNAMIC;
 					supportHeight = globalPositionsPerChain[i][initialFrame][2];
-					config->m_eeTrajectoryData[i].m_supportHeights[initialFrame] = supportHeight;
+					ikAnim->m_eeTrajectoryData[i].m_supportHeights[initialFrame] = supportHeight;
 					if (trType == TrajectoryType::DYNAMIC) {
 						shInterpolationLimits.push_back({ j - 1, j });
 					}
 					std::vector<glm::vec3> curvePoints_1 = { globalPositionsPerChain[i][initialFrame] };
-					std::vector<float> tValues_1 = { config->getAnimationTime(initialFrame) };
+					std::vector<float> tValues_1 = { ikAnim->getAnimationTime(initialFrame) };
 					std::vector<glm::vec3> curvePoints_2;
 					std::vector<float> tValues_2;
 					std::vector<glm::vec3>* selectedCPArr = &curvePoints_1;
 					std::vector<float>* selectedTVArr = &tValues_1;
 				GATHER_POINTS:
 					while (baseFrameType == supportFramesPerChain[i][currFrame]) {
-						config->m_eeTrajectoryData[i].m_supportHeights[currFrame] = baseFrameType ?
+						ikAnim->m_eeTrajectoryData[i].m_supportHeights[currFrame] = baseFrameType ?
 							globalPositionsPerChain[i][currFrame][2] : supportHeight;
 						(*selectedCPArr).push_back(globalPositionsPerChain[i][currFrame]);
-						(*selectedTVArr).push_back(config->getAnimationTime(currFrame));
+						(*selectedTVArr).push_back(ikAnim->getAnimationTime(currFrame));
 						j++;
 						currFrame = j % frameNum;
 						if (j == frameNum) {
@@ -561,7 +561,7 @@ namespace Mona{
 					else if (curvePoints_2.size() == 1) {
 						connectedCurveIndexes[i] = subTrajectories.size();
 						LIC<3> curve(curvePoints_1, tValues_1);
-						float tDiff = tValues_2[0] + config->getAnimationDuration() - curve.getTRange()[1];
+						float tDiff = tValues_2[0] + ikAnim->getAnimationDuration() - curve.getTRange()[1];
 						if (0 < tDiff) {
 							fullCurve = LIC<3>::connectPoint(curve, curvePoints_2[0], tDiff);
 						}
@@ -584,7 +584,7 @@ namespace Mona{
 					// falta agregar la misma curva pero al comienzo del arreglo (con otro desplazamiento temporal)
 					LIC<3> connectedCurve = subTrajectories[connectedCurveIndexes[i]].getEECurve();
 					TrajectoryType connectedTrType = subTrajectories[connectedCurveIndexes[i]].isDynamic() ? TrajectoryType::DYNAMIC : TrajectoryType::STATIC;
-					connectedCurve.offsetTValues(-config->getAnimationDuration());
+					connectedCurve.offsetTValues(-ikAnim->getAnimationDuration());
 					subTrajectories.push_back(EETrajectory(connectedCurve, connectedTrType));
 				}
 				// nos aseguramos de que las curvas esten bien ordenadas
@@ -614,24 +614,24 @@ namespace Mona{
 
 				// interpolamos los valores de support height para las curvas dinamicas
 				for (int k = 0; k < shInterpolationLimits.size(); k++) {
-					float sh1 = config->m_eeTrajectoryData[i].m_supportHeights[shInterpolationLimits[k].first % frameNum];
-					float sh2 = config->m_eeTrajectoryData[i].m_supportHeights[shInterpolationLimits[k].second % frameNum];
+					float sh1 = ikAnim->m_eeTrajectoryData[i].m_supportHeights[shInterpolationLimits[k].first % frameNum];
+					float sh2 = ikAnim->m_eeTrajectoryData[i].m_supportHeights[shInterpolationLimits[k].second % frameNum];
 					int minIndex = shInterpolationLimits[k].first;
 					int maxIndex = shInterpolationLimits[k].second;
 					if (sh1 != sh2) {
 						for (int l = minIndex; l <= maxIndex; l++) {
 							FrameIndex shFrame = l % frameNum;
 							float shFraction = funcUtils::getFraction(minIndex, maxIndex, l);
-							config->m_eeTrajectoryData[i].m_supportHeights[shFrame] = funcUtils::lerp(sh1, sh2, shFraction);
+							ikAnim->m_eeTrajectoryData[i].m_supportHeights[shFrame] = funcUtils::lerp(sh1, sh2, shFraction);
 						}
 					}
 				}
 			}
 
 			// asignamos las sub trayectorias a la cadena correspondiente
-			config->m_eeTrajectoryData[i].m_originalSubTrajectories = subTrajectories;
+			ikAnim->m_eeTrajectoryData[i].m_originalSubTrajectories = subTrajectories;
 			for (int j = 0; j < subTrajectories.size(); j++) {
-				config->m_eeTrajectoryData[i].m_originalSubTrajectories[j].m_subTrajectoryID = subTrajectoryID;
+				ikAnim->m_eeTrajectoryData[i].m_originalSubTrajectories[j].m_subTrajectoryID = subTrajectoryID;
                 subTrajectoryID += 1;
 			}
 		}

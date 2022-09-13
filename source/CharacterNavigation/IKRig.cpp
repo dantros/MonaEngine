@@ -62,7 +62,7 @@ namespace Mona {
 		m_forwardKinematics = ForwardKinematics(this);
 		m_trajectoryGenerator = TrajectoryGenerator(this);
 		m_trajectoryGenerator.init();
-		m_animationConfigs.reserve(MAX_EXPECTED_NUMBER_OF_ANIMATIONS_PER_IKRIG);
+		m_ikAnimations.reserve(MAX_EXPECTED_NUMBER_OF_ANIMATIONS_PER_IKRIG);
 	}
 
 	const std::vector<int>& IKRig::getTopology() const { 
@@ -107,40 +107,40 @@ namespace Mona {
 	}
 
 	void IKRig::fixAnimation(AnimationIndex animIndex, FrameIndex fixedFrame) {
-		IKRigConfig& config = m_animationConfigs[animIndex];
-		std::shared_ptr<AnimationClip> anim = config.m_animationClip;
+		IKAnimation& ikAnim = m_ikAnimations[animIndex];
+		std::shared_ptr<AnimationClip> animClip = ikAnim.m_animationClip;
 		for (ChainIndex i = 0; i < m_ikChains.size(); i++) {
 			IKChain& ikChain = m_ikChains[i];
 			for (int j = 0; j < ikChain.m_joints.size(); j++) {
 				JointIndex jIndex = ikChain.m_joints[j];
-				auto& track = anim->m_animationTracks[anim->GetTrackIndex(jIndex)];
-				for (FrameIndex k = 0; k < config.getFrameNum(); k++) {
+				auto& track = animClip->m_animationTracks[animClip->GetTrackIndex(jIndex)];
+				for (FrameIndex k = 0; k < ikAnim.getFrameNum(); k++) {
 					track.rotations[k] = track.rotations[fixedFrame];
 				}
 			}
 		}
-		auto& hipTrack = anim->m_animationTracks[anim->GetTrackIndex(m_hipJoint)];
-		for (FrameIndex i = 0; i < config.getFrameNum(); i++) {
+		auto& hipTrack = animClip->m_animationTracks[animClip->GetTrackIndex(m_hipJoint)];
+		for (FrameIndex i = 0; i < ikAnim.getFrameNum(); i++) {
 			hipTrack.rotations[i] = hipTrack.rotations[fixedFrame];
 		}
 	}
 	void IKRig::resetAnimation(AnimationIndex animIndex) {
-		IKRigConfig& config = m_animationConfigs[animIndex];
-		std::shared_ptr<AnimationClip> anim = config.m_animationClip;
+		IKAnimation& ikAnim = m_ikAnimations[animIndex];
+		std::shared_ptr<AnimationClip> animClip = ikAnim.m_animationClip;
 		for (ChainIndex i = 0; i < m_ikChains.size(); i++) {
 			IKChain& ikChain = m_ikChains[i];
 			for (int j = 0; j < ikChain.m_joints.size(); j++) {
 				JointIndex jIndex = ikChain.m_joints[j];
-				auto& track = anim->m_animationTracks[anim->GetTrackIndex(jIndex)];
-				for (FrameIndex k = 0; k < config.getFrameNum(); k++) {
-					std::vector<JointRotation>const& baseRotations = config.getBaseJointRotations(k);
+				auto& track = animClip->m_animationTracks[animClip->GetTrackIndex(jIndex)];
+				for (FrameIndex k = 0; k < ikAnim.getFrameNum(); k++) {
+					std::vector<JointRotation>const& baseRotations = ikAnim.getBaseJointRotations(k);
 					track.rotations[k] = baseRotations[jIndex].getQuatRotation();
 				}
 			}
 		}
-		auto& hipTrack = anim->m_animationTracks[anim->GetTrackIndex(m_hipJoint)];
-		for (FrameIndex i = 0; i < config.getFrameNum(); i++) {
-			std::vector<JointRotation>const& baseRotations = config.getBaseJointRotations(i);
+		auto& hipTrack = animClip->m_animationTracks[animClip->GetTrackIndex(m_hipJoint)];
+		for (FrameIndex i = 0; i < ikAnim.getFrameNum(); i++) {
+			std::vector<JointRotation>const& baseRotations = ikAnim.getBaseJointRotations(i);
 			hipTrack.rotations[i] = baseRotations[m_hipJoint].getQuatRotation();
 		}
 	}

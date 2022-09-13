@@ -21,7 +21,7 @@ namespace Mona{
         public:
             IKRig() = default;
             IKRig(std::shared_ptr<Skeleton> skeleton, RigData rigData, InnerComponentHandle transformHandle);
-            IKRigConfig* getAnimationConfig(AnimationIndex animIndex) { return &m_animationConfigs[animIndex]; };
+            IKAnimation* getIKAnimation(AnimationIndex animIndex) { return &m_ikAnimations[animIndex]; };
             const std::vector<int>& getTopology() const;
             const std::vector<std::string>& getJointNames() const;
             IKChain* getIKChain(ChainIndex chainIndex) { return &m_ikChains[chainIndex]; };
@@ -41,7 +41,7 @@ namespace Mona{
             void resetAnimation(AnimationIndex animIndex);
         private:
             // Informacion de configuracion del IKRig por cada animacion
-            std::vector<IKRigConfig> m_animationConfigs;
+            std::vector<IKAnimation> m_ikAnimations;
             std::shared_ptr<Skeleton> m_skeleton;
             // Direccion frontal base de movimiento del rig
             glm::vec3 m_frontVector = glm::vec3(0.0f, 1.0f, 0.0f);

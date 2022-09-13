@@ -126,15 +126,15 @@ namespace Mona {
 		std::vector<IKRigController*> ikRigControllers = m_ikNavSystemPtr->getControllersDebug();
 		for (int i = 0; i < ikRigControllers.size(); i++) {
 			IKRigController* currController = ikRigControllers[i];
-			std::vector<IKRigConfig>& currConfigs = currController->m_ikRig.m_animationConfigs;
-			for (int j = 0; j < currConfigs.size(); j++) {
-				IKRigConfig& currConfig = currConfigs[j];
-				if ((m_ikNavDebugDrawPtr->m_drawEETargetCurves || m_ikNavDebugDrawPtr->m_drawEERealCurves) && currConfig.isActive()) {
+			std::vector<IKAnimation>& currentIKAnims = currController->m_ikRig.m_ikAnimations;
+			for (int j = 0; j < currentIKAnims.size(); j++) {
+				IKAnimation& currentIKAnim = currentIKAnims[j];
+				if ((m_ikNavDebugDrawPtr->m_drawEETargetCurves || m_ikNavDebugDrawPtr->m_drawEERealCurves) && currentIKAnim.isActive()) {
 					glm::vec3 colorT = m_ikNavDebugDrawPtr->m_eeTargetCurveColor;
 					glm::vec3 colorR = m_ikNavDebugDrawPtr->m_eeRealCurveColor;
-					for (int k = 0; k < currConfig.m_eeTrajectoryData.size(); k++) {
-						LIC<3>& currTargetCurve = currConfig.m_eeTrajectoryData[k].getTargetTrajectory().getEECurve();
-						LIC<3>const& currRealCurve = currConfig.m_eeTrajectoryData[k].getSavedPositions();
+					for (int k = 0; k < currentIKAnim.m_eeTrajectoryData.size(); k++) {
+						LIC<3>& currTargetCurve = currentIKAnim.m_eeTrajectoryData[k].getTargetTrajectory().getEECurve();
+						LIC<3>const& currRealCurve = currentIKAnim.m_eeTrajectoryData[k].getSavedPositions();
 						int pointNum = currTargetCurve.getNumberOfPoints();
 						if (0 < pointNum) {
 							std::vector<dd::DrawVertex> linesT(pointNum);
@@ -167,9 +167,9 @@ namespace Mona {
 						}			
 					}
 				}
-				if (m_ikNavDebugDrawPtr->m_drawHipTargetCurve && currConfig.isActive()) {
+				if (m_ikNavDebugDrawPtr->m_drawHipTargetCurve && currentIKAnim.isActive()) {
 					glm::vec3 color = m_ikNavDebugDrawPtr->m_hipCurveColor;
-					LIC<3>& hipTargetCurve = currConfig.getHipTrajectoryData()->m_targetPositions;
+					LIC<3>& hipTargetCurve = currentIKAnim.getHipTrajectoryData()->m_targetPositions;
 					int pointNum = hipTargetCurve.getNumberOfPoints();
 					if (0 < pointNum) {
 						std::vector<dd::DrawVertex> lines(pointNum);

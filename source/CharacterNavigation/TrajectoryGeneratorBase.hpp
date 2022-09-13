@@ -17,7 +17,7 @@ namespace Mona{
         DYNAMIC
     };
 
-    class IKRigConfig;
+    class IKAnimation;
     class HipGlobalTrajectoryData {
         friend class IKRigController;
         friend class DebugDrawingSystem_ikNav;
@@ -27,7 +27,7 @@ namespace Mona{
         LIC<3> m_targetPositions;
         LIC<3> m_savedPositions;
         bool m_motionInitialized = false;
-        IKRigConfig* m_config;
+        IKAnimation* m_ikAnim;
 		template <int D>
         LIC<D> sampleOriginaCurve(float initialExtendedAnimTime, float finalExtendedAnimTime,
             LIC<D>& originalCurve);
@@ -37,7 +37,7 @@ namespace Mona{
         bool motionInitialized() { return m_motionInitialized; }
         LIC<3> getTargetPositions() { return m_targetPositions; }
         void setTargetPositions(LIC<3> targetPositions) { m_targetPositions = targetPositions; }
-        void init(IKRigConfig* config);
+        void init(IKAnimation* ikAnim);
         void refresh();
     };
 
@@ -71,7 +71,7 @@ namespace Mona{
         // Posiciones guardadas calculadas para frames previos con IK
         LIC<3> m_savedPositions;
         bool m_motionInitialized = false;
-        IKRigConfig* m_config;
+        IKAnimation* m_ikAnim;
         EEGlobalTrajectoryData* m_oppositeTrajectoryData;
         bool m_fixedTarget = false;
     public:
@@ -85,7 +85,7 @@ namespace Mona{
         EETrajectory& getTargetTrajectory() { return m_targetTrajectory; }
         void setTargetTrajectory(LIC<3> curve, TrajectoryType trajectoryType, int subTrajectoryID) { 
             m_targetTrajectory = EETrajectory(curve, trajectoryType, subTrajectoryID); }
-        void init(IKRigConfig* config, EEGlobalTrajectoryData* opposite);
+        void init(IKAnimation* ikAnim, EEGlobalTrajectoryData* opposite);
         EEGlobalTrajectoryData* getOppositeTrajectoryData();
         bool isTargetFixed() { return m_fixedTarget; }
         void refresh();

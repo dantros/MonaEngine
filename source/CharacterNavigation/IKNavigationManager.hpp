@@ -11,7 +11,7 @@ namespace Mona {
 		IKNavigationManager& operator=(IKNavigationManager const&) = delete;
 		void CleanUnusedSkeletons() noexcept;
 		void AddTerrain();
-		void AddAnimation(std::shared_ptr<AnimationClip> animation, std::shared_ptr<Skeleton> character);
+		void AddAnimation(std::shared_ptr<AnimationClip> animationClip, std::shared_ptr<Skeleton> character);
 		static IKNavigationManager& GetInstance() noexcept {
 			static IKNavigationManager manager;
 			return manager;

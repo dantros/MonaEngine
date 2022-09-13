@@ -14,7 +14,7 @@ namespace Mona {
 		friend class SkeletonManager;
 		friend class AnimationClip;
 		friend class IKRig;
-		friend class IKRigConfig;
+		friend class IKAnimation;
 		using size_type = std::vector<std::string>::size_type;
 		size_type JointCount() const {
 			return m_jointNames.size();

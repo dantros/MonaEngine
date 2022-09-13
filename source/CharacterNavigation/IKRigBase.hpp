@@ -37,7 +37,7 @@ namespace Mona {
         IDLE,
         WALKING
     };
-    class IKRigConfig {
+    class IKAnimation {
         friend class IKRig;
         friend class IKRigController;
         friend class AnimationValidator;
@@ -84,7 +84,7 @@ namespace Mona {
         FrameIndex m_fixedMovementFrame = -1;
         void refreshSavedAngles(JointIndex jointIndex);
     public:
-        IKRigConfig(std::shared_ptr<AnimationClip> animation, AnimationType animationType, 
+        IKAnimation(std::shared_ptr<AnimationClip> animationClip, AnimationType animationType, 
             AnimationIndex animIndex, ForwardKinematics* fk);
         const std::vector<JointRotation>& getBaseJointRotations(FrameIndex frame) const { return m_baseJointRotations[frame]; }
         std::vector<JointRotation>* getVariableJointRotations() { return &m_variableJointRotations; }

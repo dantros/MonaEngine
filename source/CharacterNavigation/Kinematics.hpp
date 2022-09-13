@@ -15,7 +15,7 @@ namespace Mona {
 
 	class IKRig;
 	class IKChain;
-	class IKRigConfig;
+	class IKAnimation;
 
 	class ForwardKinematics {
 		IKRig* m_ikRig;
@@ -46,7 +46,7 @@ namespace Mona {
 		// multiplicacion en cadena desde el ee de la cadena hasta el joint i
 		std::vector<std::vector<glm::mat4>> backwardModelSpaceTransformsPerChain;
 		// other data
-		IKRigConfig* rigConfig;
+		IKAnimation* rigConfig;
 		std::vector<float> previousAngles;
 		float descentRate;
 		float targetAngleDelta;

@@ -10,8 +10,8 @@ namespace Mona{
         m_subTrajectoryID = subTrajectoryID;
     }
 
-    void HipGlobalTrajectoryData::init(IKRigConfig* config) {
-        m_config = config;
+    void HipGlobalTrajectoryData::init(IKAnimation* ikAnim) {
+        m_ikAnim = ikAnim;
     }
 
 	template <int D>
@@ -38,10 +38,10 @@ namespace Mona{
 	}
 
 	EETrajectory EEGlobalTrajectoryData::getSubTrajectory(float animationTime) {
-		FrameIndex currFrame = m_config->getFrame(animationTime);
-		float nextAnimationTime = m_config->getAnimationTime((currFrame + 1) % m_config->getFrameNum());
+		FrameIndex currFrame = m_ikAnim->getFrame(animationTime);
+		float nextAnimationTime = m_ikAnim->getAnimationTime((currFrame + 1) % m_ikAnim->getFrameNum());
 		if (nextAnimationTime < animationTime) {
-			nextAnimationTime += m_config->getAnimationDuration();
+			nextAnimationTime += m_ikAnim->getAnimationDuration();
 		}
 		for (int i = 0; i < m_originalSubTrajectories.size(); i++) {
 			if (m_originalSubTrajectories[i].getEECurve().inTRange(animationTime) &&
@@ -54,11 +54,11 @@ namespace Mona{
 		return EETrajectory();
 	}
 
-    void  EEGlobalTrajectoryData::init(IKRigConfig* config, EEGlobalTrajectoryData* oppositeTrData) {
-		int frameNum = config->getFrameNum();
+    void  EEGlobalTrajectoryData::init(IKAnimation* ikAnim, EEGlobalTrajectoryData* oppositeTrData) {
+		int frameNum = ikAnim->getFrameNum();
 		m_savedPositions = LIC<3>();
         m_supportHeights = std::vector<float>(frameNum);
-		m_config = config;
+		m_ikAnim = ikAnim;
 		m_oppositeTrajectoryData = oppositeTrData;
     }
 

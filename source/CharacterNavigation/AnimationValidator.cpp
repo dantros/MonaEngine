@@ -16,8 +16,8 @@ namespace Mona{
 		// la animacion debe tener globalmente vector front={0,1,0} y up={0,0,1}
 		MONA_ASSERT(animationClip->GetSkeleton() == m_ikRig->m_skeleton,
 			"AnimationValidator: Input animation does not correspond to base skeleton.");
-		for (int i = 0; i < m_ikRig->m_animationConfigs.size(); i++) {
-			if (m_ikRig->m_animationConfigs[i].m_animationClip->GetAnimationName() == animationClip->GetAnimationName()) {
+		for (int i = 0; i < m_ikRig->m_ikAnimations.size(); i++) {
+			if (m_ikRig->m_ikAnimations[i].m_animationClip->GetAnimationName() == animationClip->GetAnimationName()) {
 				MONA_LOG_WARNING("AnimationValidator: Animation {0} for model {1} had already been added",
 					animationClip->GetAnimationName(), m_ikRig->m_skeleton->GetModelName());
 				return;

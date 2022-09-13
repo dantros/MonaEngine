@@ -37,11 +37,11 @@ namespace Mona{
 
 	void IKAnimation::refreshSavedAngles(JointIndex jointIndex) {
 		std::vector<glm::vec1> jointAngles;
-		float currentFrameRepTime = getReproductionTime(m_currentFrameIndex);
-		float repCountOffset_next = m_currentFrameIndex < m_nextFrameIndex ? 0 : 1;
-		float nextFrameRepTime = getReproductionTime(m_nextFrameIndex, repCountOffset_next);
-		float currFrameBaseAngle = m_baseJointRotations[m_currentFrameIndex][jointIndex].getRotationAngle();
-		float nextFrameBaseAngle = m_baseJointRotations[m_nextFrameIndex][jointIndex].getRotationAngle();
+		float currentFrameRepTime = getReproductionTime(getCurrentFrameIndex());
+		float repCountOffset_next = getCurrentFrameIndex() < getNextFrameIndex() ? 0 : 1;
+		float nextFrameRepTime = getReproductionTime(getNextFrameIndex(), repCountOffset_next);
+		float currFrameBaseAngle = m_baseJointRotations[getCurrentFrameIndex()][jointIndex].getRotationAngle();
+		float nextFrameBaseAngle = m_baseJointRotations[getNextFrameIndex()][jointIndex].getRotationAngle();
 		m_savedAngles[jointIndex] = LIC<1>({ glm::vec1(currFrameBaseAngle), glm::vec1(nextFrameBaseAngle) }, { currentFrameRepTime, nextFrameRepTime });
 	}
 
@@ -52,7 +52,7 @@ namespace Mona{
 		return m_forwardKinematics->EEListCustomSpaceTransforms(eeList, baseTransform, m_animIndex, reproductionTime, outJointSpaceTransforms);
 	}
 
-	const std::vector<float>& IKAnimation::getTimeStamps() {
+	const std::vector<float>& IKAnimation::getTimeStamps() const{
 		return m_animationClip->m_animationTracks[0].rotationTimeStamps;
 	}
 
@@ -67,7 +67,7 @@ namespace Mona{
 		MONA_ASSERT(0 <= frame && frame < getFrameNum(), "IKAnimation: FrameIndex outside of range.");
 		return (m_reproductionCount + repCountOffset) * m_animationClip->GetDuration() + getTimeStamps()[frame];
 	}
-	float IKAnimation::getAnimationDuration() {
+	float IKAnimation::getAnimationDuration() const{
 		return m_animationClip->GetDuration(); 
 	}
 

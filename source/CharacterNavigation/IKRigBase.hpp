@@ -67,8 +67,6 @@ namespace Mona {
         float m_currentReproductionTime = 0;
         // Indica el frame mas reciente de la animacion
         FrameIndex m_currentFrameIndex = -1;
-        // Indice del siguiente frame de la animacion
-        FrameIndex m_nextFrameIndex = -1;
         // Indica si es necesario actualizar las rotaciones de las joints
         bool m_onNewFrame = true;
         // Numero de veces que la animacion se ha reproducido
@@ -84,17 +82,17 @@ namespace Mona {
         std::vector<JointRotation>* getVariableJointRotations() { return &m_variableJointRotations; }
         const glm::vec3& getJointScale(JointIndex joint) const;
         const glm::vec3& getJointPosition(JointIndex joint) const;
-        const std::vector<float>& getTimeStamps();
+        const std::vector<float>& getTimeStamps() const;
         float getReproductionTime(float extendedAnimationTime, int repCountOffset = 0);
         float getReproductionTime(FrameIndex frame, int repCountOffset = 0);
         float getAnimationTime(FrameIndex frame);
         float getAnimationTime(float reproductionTime);
         FrameIndex getFrame(float extendedAnimationTime);
-        float getAnimationDuration();
+        float getAnimationDuration() const;
         int getFrameNum() { return getTimeStamps().size(); }
         int getReproductionCount() const { return m_reproductionCount; }
         float getCurrentReproductionTime() const { return m_currentReproductionTime; }
-        FrameIndex getNextFrameIndex() const { return m_nextFrameIndex; }
+        FrameIndex getNextFrameIndex() const { return (m_currentFrameIndex + 1) % (getTimeStamps().size());}
         FrameIndex getCurrentFrameIndex() const { return m_currentFrameIndex; }
         std::vector<glm::mat4> getEEListModelSpaceVariableTransforms(std::vector<JointIndex> eeList, std::vector<glm::mat4>* outJointSpaceTransforms = nullptr);
         std::vector<glm::mat4> getEEListCustomSpaceTransforms(std::vector<JointIndex> eeList, glm::mat4 baseTransform, float reproductionTime, std::vector<glm::mat4>* outJointSpaceTransforms = nullptr);

@@ -399,7 +399,6 @@ namespace Mona {
 			if (ikAnim.getTimeStamps()[i] <= adjustedSamplingTime && adjustedSamplingTime < nextTimeStamp) {
 				ikAnim.m_onNewFrame = ikAnim.m_currentFrameIndex != i;
 				ikAnim.m_currentFrameIndex = i;
-				ikAnim.m_nextFrameIndex = (i + 1) % (ikAnim.getTimeStamps().size());
 				break;
 			}
 		}		

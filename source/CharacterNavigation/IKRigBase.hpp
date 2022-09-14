@@ -51,7 +51,7 @@ namespace Mona {
         // Indices de las articulaciones presentes en la animacion. Ordenados de acuerdo a la toplogia.
         std::vector<JointIndex> m_jointIndices;
         // Rotaciones para cada joint de la animacion base para cada frame 
-        std::vector<std::vector<JointRotation>> m_baseJointRotations;
+        std::vector<std::vector<JointRotation>> m_originalJointRotations;
         // Rotacion modificable por cada joint
         std::vector<JointRotation> m_variableJointRotations;
         // Historial de angulos variables para cada joint
@@ -78,7 +78,7 @@ namespace Mona {
     public:
         IKAnimation(std::shared_ptr<AnimationClip> animationClip, AnimationType animationType, 
             AnimationIndex animIndex, ForwardKinematics* fk);
-        const std::vector<JointRotation>& getBaseJointRotations(FrameIndex frame) const { return m_baseJointRotations[frame]; }
+        const std::vector<JointRotation>& getOriginalJointRotations(FrameIndex frame) const { return m_originalJointRotations[frame]; }
         std::vector<JointRotation>* getVariableJointRotations() { return &m_variableJointRotations; }
         const glm::vec3& getJointScale(JointIndex joint) const;
         const glm::vec3& getJointPosition(JointIndex joint) const;

@@ -16,23 +16,23 @@ namespace Mona{
 		int frameNum = animationClip->m_animationTracks[0].rotationTimeStamps.size();
 		int jointNum = animationClip->m_animationTracks.size();
 		int totalJointNum = topology.size();
-		m_baseJointRotations.resize(frameNum);
+		m_originalJointRotations.resize(frameNum);
 		for (FrameIndex i = 0; i < frameNum; i++) {
-			m_baseJointRotations[i] = std::vector<JointRotation>(totalJointNum, JointRotation());
+			m_originalJointRotations[i] = std::vector<JointRotation>(totalJointNum, JointRotation());
 			for (int j = 0; j < jointNum; j++) {
 				JointIndex jIndex = getJointIndices()[j];
 				int trackIndex = animationClip->GetTrackIndex(jIndex);
-				m_baseJointRotations[i][jIndex] = JointRotation(animationClip->m_animationTracks[trackIndex].rotations[i]);
+				m_originalJointRotations[i][jIndex] = JointRotation(animationClip->m_animationTracks[trackIndex].rotations[i]);
 			}
 		}
-		m_variableJointRotations = m_baseJointRotations[0];
+		m_variableJointRotations = m_originalJointRotations[0];
 		m_animIndex = animationIndex;
 		m_forwardKinematics = forwardKinematics;
 		m_savedAngles = std::vector<LIC<1>>(totalJointNum);
 		
 	}
 	void IKAnimation::setVariableJointRotations(FrameIndex frame) {
-		m_variableJointRotations = m_baseJointRotations[frame];
+		m_variableJointRotations = m_originalJointRotations[frame];
 	}
 
 	void IKAnimation::refreshSavedAngles(JointIndex jointIndex) {
@@ -40,8 +40,8 @@ namespace Mona{
 		float currentFrameRepTime = getReproductionTime(getCurrentFrameIndex());
 		float repCountOffset_next = getCurrentFrameIndex() < getNextFrameIndex() ? 0 : 1;
 		float nextFrameRepTime = getReproductionTime(getNextFrameIndex(), repCountOffset_next);
-		float currFrameBaseAngle = m_baseJointRotations[getCurrentFrameIndex()][jointIndex].getRotationAngle();
-		float nextFrameBaseAngle = m_baseJointRotations[getNextFrameIndex()][jointIndex].getRotationAngle();
+		float currFrameBaseAngle = m_originalJointRotations[getCurrentFrameIndex()][jointIndex].getRotationAngle();
+		float nextFrameBaseAngle = m_originalJointRotations[getNextFrameIndex()][jointIndex].getRotationAngle();
 		m_savedAngles[jointIndex] = LIC<1>({ glm::vec1(currFrameBaseAngle), glm::vec1(nextFrameBaseAngle) }, { currentFrameRepTime, nextFrameRepTime });
 	}
 

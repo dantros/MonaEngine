@@ -178,7 +178,7 @@ public:
 		auto skeleton = skeletonManager.LoadSkeleton(Mona::SourcePath("Assets/Models/akai.fbx"));
 		auto skinnedMesh = meshManager.LoadSkinnedMesh(skeleton, Mona::SourcePath("Assets/Models/akai.fbx"), true);
 		m_runningAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/akai/running.fbx"), skeleton);
-		m_walkingAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/akai/walking0.fbx"), skeleton);
+		m_walkingAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/akai/walking.fbx"), skeleton);
 		m_idleAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/akai/idle.fbx"), skeleton);
 		m_skeletalMesh = world.AddComponent<Mona::SkeletalMeshComponent>(*this, skinnedMesh, m_idleAnimation, materialPtr);
 		Mona::BoxShapeInformation boxInfo(glm::vec3(.6f, 1.0f, 0.6f));

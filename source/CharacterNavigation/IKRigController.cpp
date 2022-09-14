@@ -43,10 +43,9 @@ namespace Mona {
 
 		// Para los siguientes pasos las rotaciones deben estar descomprimidas
 		m_animationValidator.correctAnimationOrientation(animationClip, originalUpVector, originalFrontVector);
-		for (int i = 0; i < m_ikRig.getChainNum(); i++) {
-			if (animationType == AnimationType::WALKING) {
-				m_animationValidator.checkLegLocalRotationAxes(animationClip, m_ikRig.getIKChain(i), originalUpVector, originalFrontVector);
-				
+		if (animationType == AnimationType::WALKING) {
+			for (int i = 0; i < m_ikRig.getChainNum(); i++) {
+					m_animationValidator.checkLegLocalRotationAxes(animationClip, m_ikRig.getIKChain(i), originalUpVector, originalFrontVector);
 			}
 		}
 		AnimationIndex newIndex = m_ikRig.m_ikAnimations.size();
@@ -200,7 +199,7 @@ namespace Mona {
 					}
 					else {
 						float fraction = funcUtils::getFraction(lastCalcTime, lastCalcTime + maxElapsed, currentFrameRepTime);
-						float limitNewAngle = ikAnim.m_savedAngles[i].getEnd()[0] * 0.6f + ikAnim.getBaseJointRotations(currentFrame)[i].getRotationAngle() * 0.4f;
+						float limitNewAngle = ikAnim.m_savedAngles[i].getEnd()[0] * 0.6f + ikAnim.getOriginalJointRotations(currentFrame)[i].getRotationAngle() * 0.4f;
 						float interpolatedAngle = funcUtils::lerp(ikAnim.m_savedAngles[i].getEnd()[0], limitNewAngle, fraction);
 						ikAnim.m_savedAngles[i].insertPoint(glm::vec1(interpolatedAngle), currentFrameRepTime);
 					}
@@ -362,11 +361,11 @@ namespace Mona {
 				ikAnim.m_savedAngles[jIndex].insertPoint(glm::vec1(calcAngle), nextFrameRepTime);
 				// actualizamos current y next frame
 				float currentFrameAngle = ikAnim.getSavedAngles(jIndex).evalCurve(currentFrameRepTime)[0];
-				glm::vec3 currentFrameAxis = ikAnim.m_baseJointRotations[currentFrame][jIndex].getRotationAxis();
+				glm::vec3 currentFrameAxis = ikAnim.m_originalJointRotations[currentFrame][jIndex].getRotationAxis();
 				animClip->SetRotation(glm::angleAxis(currentFrameAngle, currentFrameAxis), currentFrame, jIndex);
 
 				float nextFrameAngle = ikAnim.getSavedAngles(jIndex).evalCurve(nextFrameRepTime)[0];
-				glm::vec3 nextFrameAxis = ikAnim.m_baseJointRotations[nextFrame][jIndex].getRotationAxis();
+				glm::vec3 nextFrameAxis = ikAnim.m_originalJointRotations[nextFrame][jIndex].getRotationAxis();
 				animClip->SetRotation(glm::angleAxis(nextFrameAngle, nextFrameAxis), nextFrame, jIndex);
 			}
 			

@@ -133,14 +133,14 @@ namespace Mona {
 				JointIndex jIndex = ikChain.m_joints[j];
 				auto& track = animClip->m_animationTracks[animClip->GetTrackIndex(jIndex)];
 				for (FrameIndex k = 0; k < ikAnim.getFrameNum(); k++) {
-					std::vector<JointRotation>const& baseRotations = ikAnim.getBaseJointRotations(k);
+					std::vector<JointRotation>const& baseRotations = ikAnim.getOriginalJointRotations(k);
 					track.rotations[k] = baseRotations[jIndex].getQuatRotation();
 				}
 			}
 		}
 		auto& hipTrack = animClip->m_animationTracks[animClip->GetTrackIndex(m_hipJoint)];
 		for (FrameIndex i = 0; i < ikAnim.getFrameNum(); i++) {
-			std::vector<JointRotation>const& baseRotations = ikAnim.getBaseJointRotations(i);
+			std::vector<JointRotation>const& baseRotations = ikAnim.getOriginalJointRotations(i);
 			hipTrack.rotations[i] = baseRotations[m_hipJoint].getQuatRotation();
 		}
 	}

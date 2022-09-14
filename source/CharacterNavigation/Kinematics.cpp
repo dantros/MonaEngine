@@ -173,7 +173,7 @@ namespace Mona {
 		m_ikData.targetAngleDelta = 1 / pow(10, 3);
 		m_gradientDescent.setTermWeight(0, 1.0f / (pow(10, 2) * m_ikRig->getRigHeight()));
 		m_gradientDescent.setTermWeight(1, 0.02f);		
-		m_gradientDescent.setTermWeight(2, 0.02f);
+		m_gradientDescent.setTermWeight(2, 0.025f);
 		setIKChains();
 	}
 
@@ -211,7 +211,7 @@ namespace Mona {
 		}
 		std::vector<float> initialArgs = m_ikData.previousAngles;
 
-		std::vector<JointRotation>const& baseRotations_target = m_ikData.rigConfig->getBaseJointRotations(nextFrame);
+		std::vector<JointRotation>const& baseRotations_target = m_ikData.rigConfig->getOriginalJointRotations(nextFrame);
 		for (int i = 0; i < m_ikData.jointIndexes.size(); i++) {
 			m_ikData.rotationAxes[i] = baseRotations_target[m_ikData.jointIndexes[i]].getRotationAxis();
 			m_ikData.baseAngles[i] = baseRotations_target[m_ikData.jointIndexes[i]].getRotationAngle();
@@ -317,7 +317,7 @@ namespace Mona {
 		IKAnimation* ikAnim = m_ikRig->getIKAnimation(animIndex);
 		float animTime = ikAnim->getAnimationTime(reproductionTime);
 		float rotAngle = ikAnim->getSavedAngles(jointIndex).evalCurve(reproductionTime)[0];
-		glm::vec3 rotAxis = ikAnim->getBaseJointRotations(ikAnim->getFrame(animTime))[jointIndex].getRotationAxis();
+		glm::vec3 rotAxis = ikAnim->getOriginalJointRotations(ikAnim->getFrame(animTime))[jointIndex].getRotationAxis();
 		glm::mat4 jointSpaceTr = glmUtils::translationToMat4(ikAnim->getJointPosition(jointIndex)) *
 			glmUtils::rotationToMat4(glm::angleAxis(rotAngle, rotAxis)) *
 			glmUtils::scaleToMat4(ikAnim->getJointScale(jointIndex));

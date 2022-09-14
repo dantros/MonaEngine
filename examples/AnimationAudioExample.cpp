@@ -168,18 +168,18 @@ public:
 
 		auto materialPtr = std::static_pointer_cast<Mona::DiffuseTexturedMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseTextured, true));
 		auto& textureManager = Mona::TextureManager::GetInstance();
-		auto diffuseTexture = textureManager.LoadTexture(Mona::SourcePath("Assets/Textures/akai/diffuse.png"));
+		auto diffuseTexture = textureManager.LoadTexture(Mona::SourcePath("Assets/Textures/akai_e_espiritu/diffuse.png"));
 		materialPtr->SetMaterialTint(glm::vec3(0.1f));
 		materialPtr->SetDiffuseTexture(diffuseTexture);
 
 		auto& meshManager = Mona::MeshManager::GetInstance();
 		auto& skeletonManager = Mona::SkeletonManager::GetInstance();
 		auto& animationManager = Mona::AnimationClipManager::GetInstance();
-		auto skeleton = skeletonManager.LoadSkeleton(Mona::SourcePath("Assets/Models/akai.fbx"));
-		auto skinnedMesh = meshManager.LoadSkinnedMesh(skeleton, Mona::SourcePath("Assets/Models/akai.fbx"), true);
-		m_runningAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/akai/running.fbx"), skeleton);
-		m_walkingAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/akai/walking.fbx"), skeleton);
-		m_idleAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/akai/idle.fbx"), skeleton);
+		auto skeleton = skeletonManager.LoadSkeleton(Mona::SourcePath("Assets/Models/akai_e_espiritu.fbx"));
+		auto skinnedMesh = meshManager.LoadSkinnedMesh(skeleton, Mona::SourcePath("Assets/Models/akai_e_espiritu.fbx"), true);
+		m_runningAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/akai_e_espiritu/running.fbx"), skeleton);
+		m_walkingAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/akai_e_espiritu/walking.fbx"), skeleton);
+		m_idleAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/akai_e_espiritu/idle.fbx"), skeleton);
 		m_skeletalMesh = world.AddComponent<Mona::SkeletalMeshComponent>(*this, skinnedMesh, m_idleAnimation, materialPtr);
 		Mona::BoxShapeInformation boxInfo(glm::vec3(.6f, 1.0f, 0.6f));
 		m_rigidBody = world.AddComponent<Mona::RigidBodyComponent>(*this, boxInfo, Mona::RigidBodyType::DynamicBody, 1.0f, false, glm::vec3(0.0f, -0.1f, 0.0f));

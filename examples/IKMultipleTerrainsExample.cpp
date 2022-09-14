@@ -258,7 +258,7 @@ public:
 		world.SetMainCamera(world.GetComponentHandle<Mona::CameraComponent>(m_camera));
 		AddDirectionalLight(world, glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-130.0f), 2);
 		AddDirectionalLight(world, glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(-30.0f), 8);
-		// choosable characters: ely, sportyGranny, prisoner, maria, theBoss, xbot.
+		// choosable characters: akai, ely, sportyGranny, prisoner, maria, theBoss, xbot.
 		// choosable walking animations: 0, 1 ,2 .
 		auto character = world.CreateGameObject<IKRigCharacter>("prisoner", glm::vec3(0,0,0), 0);
 		auto terrainObject1 = AddTerrain1(world);

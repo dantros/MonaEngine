@@ -68,8 +68,8 @@ namespace Mona{
 
 	void AnimationValidator::checkLegLocalRotationAxes(std::shared_ptr<AnimationClip> animation, IKChain* legChain, 
 		glm::vec3 originalUpVector, glm::vec3 originalFrontVector) {
-		glm::fquat deltaRotationUp = glmUtils::calcDeltaRotation(originalUpVector, glm::vec3(0, 0, 1), m_ikRig->getRightVector());
-		glm::fquat deltaRotationFront = glmUtils::calcDeltaRotation(deltaRotationUp * originalFrontVector, glm::vec3(0, 1, 0), m_ikRig->getUpVector());
+		glm::fquat deltaRotationUp = glmUtils::calcDeltaRotation(originalUpVector, m_ikRig->getUpVector(), m_ikRig->getRightVector());
+		glm::fquat deltaRotationFront = glmUtils::calcDeltaRotation(deltaRotationUp * originalFrontVector, m_ikRig->getFrontVector(), m_ikRig->getUpVector());
 		glm::fquat deltaRotation = deltaRotationFront * deltaRotationUp;
 		std::vector<JointIndex>const& topology = m_ikRig->getTopology();
 		int frameNum = animation->m_animationTracks[0].rotations.size();
@@ -91,7 +91,7 @@ namespace Mona{
 			}
 			meanRotationAxis /= frameNum;
 
-			if (abs(meanRotationAxis[0]) < 0.5f) {
+			if (abs(meanRotationAxis[0]) < 0.35f) {
 				MONA_LOG_WARNING("AnimationValidator:Joint {}'s local rotation axis does not allow for proper IK rotation control.", jIndex);
 			}
 

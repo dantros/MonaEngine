@@ -189,7 +189,7 @@ public:
 		AddDirectionalLight(world, glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-130.0f), 2);
 		AddDirectionalLight(world, glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(-30.0f), 8.5f);
 		auto terrainObject1 = AddTerrain(world);
-		// choosable characters: ely, sportyGranny, prisoner, maria, theBoss, xbot.
+		// choosable characters: akai, ely, sportyGranny, prisoner, maria, theBoss, xbot.
 		// choosable walking animations: 0, 1 ,2 .
 		auto character1 = world.CreateGameObject<IKRigCharacter>("ely",glm::vec3(0,0,0), 1);
 		world.GetComponentHandle<Mona::IKNavigationComponent>(character1)->AddTerrain(terrainObject1);

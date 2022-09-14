@@ -315,7 +315,13 @@ namespace Mona {
 					int valIndex = currentTimeIndexes[i] > 0 ? currentTimeIndexes[i] - 1 : m_animationTracks[i].rotationTimeStamps.size() - 1;
 					auto rotIt = m_animationTracks[i].rotations.begin() + insertOffset;
 					auto timeRotIt = m_animationTracks[i].rotationTimeStamps.begin() + insertOffset;
-					m_animationTracks[i].rotations.insert(rotIt, m_animationTracks[i].rotations[valIndex]);
+					glm::fquat rotVal = m_animationTracks[i].rotations[valIndex];
+					if (valIndex < m_animationTracks[i].rotations.size() - 1) {
+						float timeFrac = funcUtils::getFraction(m_animationTracks[i].rotationTimeStamps[valIndex],
+							m_animationTracks[i].rotationTimeStamps[valIndex + 1], currentMinTime);
+						rotVal = funcUtils::lerp(rotVal, m_animationTracks[i].rotations[valIndex + 1], timeFrac);
+					}
+					m_animationTracks[i].rotations.insert(rotIt, rotVal);
 					m_animationTracks[i].rotationTimeStamps.insert(timeRotIt, currentMinTime);
 				}
 				currentTimeIndexes[i] += 1;

@@ -40,14 +40,12 @@ namespace Mona{
 			glm::vec3 baseScale = track.scales[0];
 			for (int j = 1; j < track.positions.size(); j++) {
 				MONA_ASSERT(glmUtils::areApproxEqual(track.positions[j], basePosition) || jIndex == m_ikRig->m_hipJoint,
-					"AnimationValidator: Jointa other than the hip must have fixed translations.");
+					"AnimationValidator: Joints other than the hip must have fixed translations.");
 			}
 			for (int j = 1; j < track.scales.size(); j++) {
 				MONA_ASSERT(glmUtils::areApproxEqual(track.scales[j], baseScale),
 					"AnimationValidator: Animation must have fixed scales per joint.");
 			}
-			MONA_ASSERT(glmUtils::isApproxUniform(baseScale),
-				"AnimationValidator: Animation must have uniform scales.");
 		}
 
 		JointIndex parent = m_ikRig->getTopology()[m_ikRig->m_hipJoint];

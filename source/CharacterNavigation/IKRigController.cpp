@@ -403,9 +403,10 @@ namespace Mona {
 		}		
 	}
 
-	void IKRigController::refreshConfig(IKAnimation& ikAnim) {
+	void IKRigController::refreshConfig(AnimationIndex animIndex) {
+		IKAnimation& ikAnim = m_ikRig.m_ikAnimations[animIndex];
 		ikAnim.refresh();
-		m_ikRig.resetAnimation(ikAnim.m_animIndex);
+		m_ikRig.resetAnimation(animIndex);
 	}
 
 	void IKRigController::updateIKRig(float timeStep, ComponentManager<TransformComponent>& transformManager,
@@ -428,7 +429,7 @@ namespace Mona {
 			}
 			else {
 				ikAnim.m_active = false;
-				refreshConfig(ikAnim);
+				refreshConfig(i);
 			}
 		}
 		m_transitioning = activeAnimations == 2;

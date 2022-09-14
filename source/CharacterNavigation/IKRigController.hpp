@@ -36,7 +36,7 @@ namespace Mona {
 		void updateIKRig(float timeStep, ComponentManager<TransformComponent>& transformManager,
 			ComponentManager<StaticMeshComponent>& staticMeshManager, ComponentManager<SkeletalMeshComponent>& skeletalMeshManager);
 		void updateMovementDirection(float timeStep);
-		void refreshConfig(IKAnimation& ikAnim);
+		void refreshConfig(AnimationIndex animIndex);
 		void enableIK(bool enableIK);
 		void init();
 	};

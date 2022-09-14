@@ -56,8 +56,6 @@ namespace Mona {
         std::vector<JointRotation> m_variableJointRotations;
         // Historial de angulos variables para cada joint
         std::vector<LIC<1>> m_savedAngles;
-        // Indice de la animacion que le corresponde a esta configuracion
-        AnimationIndex m_animIndex = -1;
         ForwardKinematics* m_forwardKinematics;
         // Data de trayectoria para cada ikChain (mantiene orden del arreglo original de cadenas)
         std::vector<EEGlobalTrajectoryData> m_eeTrajectoryData;

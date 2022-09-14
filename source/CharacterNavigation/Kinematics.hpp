@@ -22,12 +22,12 @@ namespace Mona {
 	public:
 		ForwardKinematics(IKRig* ikRig);
 		ForwardKinematics() = default;
-		std::vector<glm::mat4> EEListCustomSpaceTransforms(std::vector<JointIndex> eeList, glm::mat4 baseTransform, AnimationIndex animIndex,
+		std::vector<glm::mat4> EEListCustomSpaceTransforms(std::vector<JointIndex> eeList, glm::mat4 baseTransform, IKAnimation* ikAnim,
 			float reproductionTime, std::vector<glm::mat4>* outEEListJointSpaceTransforms = nullptr);
-		std::vector<glm::mat4> EEListCustomSpaceVariableTransforms(std::vector<JointIndex> eeList, glm::mat4 baseTransform, AnimationIndex animIndex,
+		std::vector<glm::mat4> EEListCustomSpaceVariableTransforms(std::vector<JointIndex> eeList, glm::mat4 baseTransform, IKAnimation* ikAnim,
 			std::vector<glm::mat4>* outEEListJointSpaceTransforms = nullptr);
-		glm::mat4 JointSpaceTransform(AnimationIndex animIndex, JointIndex jointIndex, float reproductionTime);
-		glm::mat4 JointSpaceVariableTransform(AnimationIndex animIndex, JointIndex jointIndex);
+		glm::mat4 JointSpaceTransform(IKAnimation* ikAnim, JointIndex jointIndex, float reproductionTime);
+		glm::mat4 JointSpaceVariableTransform(IKAnimation* ikAnim, JointIndex jointIndex);
 
 
 	};

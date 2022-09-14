@@ -26,7 +26,6 @@ namespace Mona{
 			}
 		}
 		m_variableJointRotations = m_originalJointRotations[0];
-		m_animIndex = animationIndex;
 		m_forwardKinematics = forwardKinematics;
 		m_savedAngles = std::vector<LIC<1>>(totalJointNum);
 		
@@ -46,10 +45,10 @@ namespace Mona{
 	}
 
 	std::vector<glm::mat4> IKAnimation::getEEListModelSpaceVariableTransforms(std::vector<JointIndex> eeList, std::vector<glm::mat4>* outJointSpaceTransforms) {
-		return m_forwardKinematics->EEListCustomSpaceVariableTransforms(eeList, glm::identity<glm::mat4>(), m_animIndex, outJointSpaceTransforms);
+		return m_forwardKinematics->EEListCustomSpaceVariableTransforms(eeList, glm::identity<glm::mat4>(), this, outJointSpaceTransforms);
 	}
 	std::vector<glm::mat4> IKAnimation::getEEListCustomSpaceTransforms(std::vector<JointIndex> eeList, glm::mat4 baseTransform, float reproductionTime, std::vector<glm::mat4>* outJointSpaceTransforms) {
-		return m_forwardKinematics->EEListCustomSpaceTransforms(eeList, baseTransform, m_animIndex, reproductionTime, outJointSpaceTransforms);
+		return m_forwardKinematics->EEListCustomSpaceTransforms(eeList, baseTransform, this, reproductionTime, outJointSpaceTransforms);
 	}
 
 	const std::vector<float>& IKAnimation::getTimeStamps() const{

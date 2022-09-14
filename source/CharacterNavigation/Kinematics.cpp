@@ -242,9 +242,8 @@ namespace Mona {
 		m_ikRig = ikRig;
 	}
 
-	std::vector<glm::mat4> ForwardKinematics::EEListCustomSpaceTransforms(std::vector<JointIndex> eeList, glm::mat4 baseTransform, AnimationIndex animIndex,
+	std::vector<glm::mat4> ForwardKinematics::EEListCustomSpaceTransforms(std::vector<JointIndex> eeList, glm::mat4 baseTransform, IKAnimation* ikAnim,
 		float reproductionTime, std::vector<glm::mat4>* outEEListJointSpaceTransforms) {
-		IKAnimation* ikAnim = m_ikRig->getIKAnimation(animIndex);
 		std::vector<glm::mat4> eeListCustomSpaceTr(m_ikRig->getTopology().size(), glm::identity<glm::mat4>());
 		if (outEEListJointSpaceTransforms != nullptr) {
 			(*outEEListJointSpaceTransforms) = std::vector<glm::mat4>(m_ikRig->getTopology().size(), glm::identity<glm::mat4>());
@@ -259,7 +258,7 @@ namespace Mona {
 				glm::mat4 customSpaceTr = glm::identity<glm::mat4>();
 				// recolectar jointSpaceTransforms
 				while (currJoint != -1) {
-					eeListCustomSpaceTr[currJoint] = JointSpaceTransform(animIndex, currJoint, reproductionTime);
+					eeListCustomSpaceTr[currJoint] = JointSpaceTransform(ikAnim, currJoint, reproductionTime);
 					if (outEEListJointSpaceTransforms != nullptr) {
 						(*outEEListJointSpaceTransforms)[currJoint] = eeListCustomSpaceTr[currJoint];
 					}
@@ -277,9 +276,8 @@ namespace Mona {
 		return eeListCustomSpaceTr;
 
 	}
-	std::vector<glm::mat4> ForwardKinematics::EEListCustomSpaceVariableTransforms(std::vector<JointIndex> eeList, glm::mat4 baseTransform, AnimationIndex animIndex,
+	std::vector<glm::mat4> ForwardKinematics::EEListCustomSpaceVariableTransforms(std::vector<JointIndex> eeList, glm::mat4 baseTransform, IKAnimation* ikAnim,
 		std::vector<glm::mat4>* outEEListJointSpaceTransforms) {
-		IKAnimation* ikAnim = m_ikRig->getIKAnimation(animIndex);
 		std::vector<glm::mat4> eeListCustomSpaceTr(m_ikRig->getTopology().size(), glm::identity<glm::mat4>());
 		if (outEEListJointSpaceTransforms != nullptr) {
 			(*outEEListJointSpaceTransforms) = std::vector<glm::mat4>(m_ikRig->getTopology().size(), glm::identity<glm::mat4>());
@@ -294,7 +292,7 @@ namespace Mona {
 				glm::mat4 customSpaceTr = glm::identity<glm::mat4>();
 				// recolectar jointSpaceTransforms
 				while (currJoint != -1) {
-					eeListCustomSpaceTr[currJoint] = JointSpaceVariableTransform(animIndex, currJoint);
+					eeListCustomSpaceTr[currJoint] = JointSpaceVariableTransform(ikAnim, currJoint);
 					if (outEEListJointSpaceTransforms != nullptr) {
 						(*outEEListJointSpaceTransforms)[currJoint] = eeListCustomSpaceTr[currJoint];
 					}
@@ -313,8 +311,7 @@ namespace Mona {
 
 	}
 
-	glm::mat4 ForwardKinematics::JointSpaceTransform(AnimationIndex animIndex, JointIndex jointIndex, float reproductionTime) {
-		IKAnimation* ikAnim = m_ikRig->getIKAnimation(animIndex);
+	glm::mat4 ForwardKinematics::JointSpaceTransform(IKAnimation* ikAnim, JointIndex jointIndex, float reproductionTime) {
 		float animTime = ikAnim->getAnimationTime(reproductionTime);
 		float rotAngle = ikAnim->getSavedAngles(jointIndex).evalCurve(reproductionTime)[0];
 		glm::vec3 rotAxis = ikAnim->getOriginalJointRotations(ikAnim->getFrame(animTime))[jointIndex].getRotationAxis();
@@ -324,8 +321,7 @@ namespace Mona {
 		return jointSpaceTr;
 
 	}
-	glm::mat4 ForwardKinematics::JointSpaceVariableTransform(AnimationIndex animIndex, JointIndex jointIndex) {
-		IKAnimation* ikAnim = m_ikRig->getIKAnimation(animIndex);
+	glm::mat4 ForwardKinematics::JointSpaceVariableTransform(IKAnimation* ikAnim, JointIndex jointIndex) {
 		std::vector<JointRotation>* variableJointRotations = ikAnim->getVariableJointRotations();
 		glm::mat4 jointSpaceTr = glmUtils::translationToMat4(ikAnim->getJointPosition(jointIndex)) *
 			glmUtils::rotationToMat4((*variableJointRotations)[jointIndex].getQuatRotation()) *

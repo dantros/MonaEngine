@@ -38,11 +38,11 @@ namespace Mona{
 		if (!ikAnim->isMovementFixed()) {
 			ikAnim->m_fixedMovementFrame = -1;
 			if (prevSavedFixedFrame != -1) {
-				m_ikRig->resetAnimation(ikAnim->m_animIndex);
+				m_ikRig->resetAnimation(ikAnim);
 			}
 		}
 		else {
-			m_ikRig->fixAnimation(ikAnim->m_animIndex, ikAnim->m_fixedMovementFrame);
+			m_ikRig->fixAnimation(ikAnim, ikAnim->m_fixedMovementFrame);
 		}
         // si una trayectoria es dinamica es fija las demas tambien debera serlo
         if (ikAnim->isMovementFixed()) {

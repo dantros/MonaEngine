@@ -72,17 +72,6 @@ namespace Mona {
 			return gradient;
 		}
 
-		float computeGradient_single(const std::vector<float>& args, int varIndex) {
-			MONA_ASSERT(args.size() == m_argNum, "GradientDescent: number of args does not match argNum value");
-			float gradient = 0;
-			for (int i = 0; i < m_terms.size(); i++) {
-				if (m_terms[i].m_weight != 0) {
-					gradient += m_terms[i].m_weight * m_terms[i].calcTermPartialDerivative(args, varIndex);
-				}
-			}
-			return gradient;
-		}
-
 		std::vector<float> computeArgsMin(float descentRate, int maxIterations, float targetArgDelta,
 			const std::vector<float>& initialArgs, DescentType descentType=DescentType::REGULAR, bool softenSteps = true) {
 			MONA_ASSERT(initialArgs.size() == m_argNum, "GradientDescent: number of args does not match argNum value");

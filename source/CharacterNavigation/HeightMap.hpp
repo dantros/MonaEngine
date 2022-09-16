@@ -15,7 +15,6 @@ namespace Mona {
 			float m_minY;
 			float m_maxX;
 			float m_maxY;
-			bool m_isValid = false;
 			float (*m_heightFunc)(float, float) = nullptr;
 
 		public:
@@ -25,7 +24,7 @@ namespace Mona {
 			glm::vec2 getMinXY() { return glm::vec2( m_minX, m_minY ); }
 			glm::vec2 getMaxXY() { return glm::vec2(m_maxX, m_maxY); }
 			float getHeight(float x, float y);
-			bool isValid() { return m_isValid; }
+			bool isValid() { return m_heightFunc != nullptr; }
 	};
 
 }

@@ -36,7 +36,7 @@ namespace Mona {
 	
 	enum class DescentType {
 		REGULAR,
-		SGDM
+		MOMENTUM
 	};
 	template <typename dataT>
 	class GradientDescent {
@@ -100,7 +100,7 @@ namespace Mona {
 					if (descentType == DescentType::REGULAR) {
 						argsRawDelta[i] = gradient[i];
 					}
-					else if(descentType == DescentType::SGDM){
+					else if(descentType == DescentType::MOMENTUM){
 						argsRawDelta[i] = 0.8 * argsRawDelta[i] + 0.2 * gradient[i];
 					}
 					float argDelta = descentRate * argsRawDelta[i];

@@ -12,7 +12,6 @@ namespace Mona{
 		m_maxX = topRight[0];
         m_maxY = topRight[1];
 		m_heightFunc = heightFunc;
-        m_isValid = true;
     }
 
     bool HeightMap::withinBoundaries(float x, float y) {

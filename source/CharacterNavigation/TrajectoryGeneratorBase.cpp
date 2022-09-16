@@ -201,7 +201,7 @@ namespace Mona{
 		m_tgData.varCurve = &targetCurve;
 
 		m_gradientDescent.setArgNum(initialArgs.size());
-		m_gradientDescent.computeArgsMin(m_tgData.descentRate, m_tgData.maxIterations, m_tgData.targetPosDelta, initialArgs, DescentType::SGDM);
+		m_gradientDescent.computeArgsMin(m_tgData.descentRate, m_tgData.maxIterations, m_tgData.targetPosDelta, initialArgs, DescentType::MOMENTUM);
 	}
 
 

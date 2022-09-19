@@ -44,7 +44,7 @@ namespace Mona{
 		else {
 			m_ikRig->fixAnimation(ikAnim, ikAnim->m_fixedMovementFrame);
 		}
-        // si una trayectoria es dinamica es fija las demas tambien debera serlo
+        // si una trayectoria dinamica es fija las demas tambien debera serlo
         if (ikAnim->isMovementFixed()) {
 			FrameIndex currentFrame = ikAnim->getCurrentFrameIndex();
 			float currentFrameRepTime = ikAnim->getReproductionTime(currentFrame);

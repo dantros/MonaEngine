@@ -8,7 +8,6 @@
 namespace Mona {
 
 	glm::mat4 rotationMatrixDerivative_dAngle(float angle, glm::vec3 axis) {
-		// column major!!
 		glm::mat4 mat(0.0f);
 		mat[0][0] = sin(angle) * (pow(axis[0], 2) - 1);;
 		mat[0][1] = axis[0] * axis[1] * sin(angle) + axis[2] * cos(angle);

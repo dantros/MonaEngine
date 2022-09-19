@@ -187,6 +187,8 @@ namespace Mona{
             }
         }
 
+        /* Se unen dos curvas.Se incluye la primera curva completa.
+         Se incluyen los valores de la segunda curva que ocurran temporalmente despues de los de la primera*/
         static LIC<D> join(const LIC& curve1, const LIC& curve2) {
             MONA_ASSERT(curve1.m_tEpsilon == curve2.m_tEpsilon, "LIC: both curves must have the same tEpsilon.");
             float epsilon = curve1.m_tEpsilon;
@@ -207,6 +209,7 @@ namespace Mona{
             
         }
 
+        // Transicion de una curva a otra. En el t transitionT indicado la curva generada pasa de los valores de curve1 a los de curve2
         static LIC<D> transition(const LIC& curve1, const LIC& curve2, float transitionT) {
             MONA_ASSERT(curve1.inTRange(transitionT) && curve2.inTRange(transitionT), "LIC: transitionT must be within t ranges of both curves.");
             MONA_ASSERT(curve1.m_tEpsilon == curve2.m_tEpsilon, "LIC: both curves must have the same tEpsilon.");
@@ -239,7 +242,7 @@ namespace Mona{
             return LIC(transitionCurvePoints, transitionTValues, epsilon);
         }
 
-
+        // Transicion suave de una curva a otra. Se pasa de los valores de curve1 a curve2 a lo largo del periodo de tiempo transitionT2 - transitionT1
         static LIC<D> transitionSoft(const LIC& curve1, const LIC& curve2, float transitionT1, float transitionT2) {
             MONA_ASSERT(curve1.m_tEpsilon == curve2.m_tEpsilon, "LIC: both curves must have the same tEpsilon.");
             MONA_ASSERT(curve1.m_tEpsilon * 2 < transitionT2 - transitionT1, "LIC: transitionT1 must be greater than transitionT2 by at least 2*tEpsilon");
@@ -310,6 +313,7 @@ namespace Mona{
             return selectedIndex;
         }
 
+        // Se conectan dos curvas en el espacio. Se desplazan los valores de t de tal forma que una empiece donde la otra termina.
         static LIC<D> connect(LIC<D> curve1, LIC<D> curve2, bool connectAtFront=true) {
             MONA_ASSERT(curve1.m_tEpsilon == curve2.m_tEpsilon, "LIC: both curves must have the same tEpsilon.");
             float epsilon = curve1.m_tEpsilon;

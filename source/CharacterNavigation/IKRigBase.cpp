@@ -117,6 +117,12 @@ namespace Mona{
 				return i;
 			}
 		}
+		if (getTimeStamps().back() <= extendedAnimationTime && extendedAnimationTime <= getAnimationDuration()) {
+			return getTimeStamps().size() - 1;
+		}
+		if (abs(extendedAnimationTime - getAnimationDuration()) < epsilon) {
+			return 0;
+		}
 		return -1;
 	}
 

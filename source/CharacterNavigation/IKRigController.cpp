@@ -159,6 +159,13 @@ namespace Mona {
 
 		// Se remueve el movimiento de las caderas
 		animationClip->RemoveJointTranslation(m_ikRig.m_hipJoint);
+
+		// expandir los arreglos de objetivos de las cadenas
+		for (int i = 0; i < m_ikRig.m_ikChains.size(); i++) {
+			m_ikRig.m_ikChains[i].m_currentEETargets.push_back(glm::vec3(0));
+		}
+		// asignar indice a la IKAnimation
+		currentIKAnim->m_animationIndex = m_ikRig.m_ikAnimations.size() - 1;
 	}
 
 	AnimationIndex IKRigController::removeAnimation(std::shared_ptr<AnimationClip> animationClip) {
@@ -293,7 +300,7 @@ namespace Mona {
 				IKChain* ikChain = m_ikRig.getIKChain(i);
 				trData = ikAnim.getEETrajectoryData(i);
 				glm::vec3 eeTarget = toModelSpace *glm::vec4(trData->getTargetTrajectory().getEECurve().evalCurve(targetTimeNext), 1);
-				ikChain->setCurrentEETarget(eeTarget);
+				ikChain->setCurrentEETarget(animIndex, eeTarget);
 			}
 		}
 		
@@ -373,7 +380,7 @@ namespace Mona {
 		
 	}
 
-	void IKRigController::updateIKRigConfigTime(float animationTimeStep, AnimationIndex animIndex, AnimationController& animController) {
+	void IKRigController::updateIKAnimationTime(float animationTimeStep, AnimationIndex animIndex, AnimationController& animController) {
 		IKAnimation& ikAnim = m_ikRig.m_ikAnimations[animIndex];
 		float avgFrameDuration = ikAnim.getAnimationDuration() / ikAnim.getFrameNum();
 		std::shared_ptr<AnimationClip> animClip = ikAnim.m_animationClip;
@@ -403,7 +410,7 @@ namespace Mona {
 		}		
 	}
 
-	void IKRigController::refreshConfig(AnimationIndex animIndex) {
+	void IKRigController::refreshIKAnimation(AnimationIndex animIndex) {
 		IKAnimation& ikAnim = m_ikRig.m_ikAnimations[animIndex];
 		ikAnim.refresh();
 		m_ikRig.resetAnimation(animIndex);
@@ -416,7 +423,7 @@ namespace Mona {
 		float animTimeStep = timeStep * animController.GetPlayRate();
 		m_reproductionTime += animTimeStep;
 		for (AnimationIndex i = 0; i < m_ikRig.m_ikAnimations.size(); i++) {
-			updateIKRigConfigTime(animTimeStep, i, animController);
+			updateIKAnimationTime(animTimeStep, i, animController);
 		}
 		updateMovementDirection(animTimeStep);
 		int activeAnimations = 0;
@@ -429,7 +436,7 @@ namespace Mona {
 			}
 			else {
 				ikAnim.m_active = false;
-				refreshConfig(i);
+				refreshIKAnimation(i);
 			}
 		}
 		m_transitioning = activeAnimations == 2;

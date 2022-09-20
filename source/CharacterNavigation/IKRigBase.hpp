@@ -44,6 +44,7 @@ namespace Mona {
         friend class DebugDrawingSystem_ikNav;
         friend class TrajectoryGenerator;
     private:
+        AnimationIndex m_animationIndex = -1;
         // Indica si la animacion asociada esta activa
         bool m_active = false;
         // Clip de animacion asociado a esta configuracion
@@ -76,6 +77,7 @@ namespace Mona {
     public:
         IKAnimation(std::shared_ptr<AnimationClip> animationClip, AnimationType animationType, 
             AnimationIndex animIndex, ForwardKinematics* fk);
+        AnimationIndex getAnimationIndex() { return m_animationIndex; }
         const std::vector<JointRotation>& getOriginalJointRotations(FrameIndex frame) const { return m_originalJointRotations[frame]; }
         std::vector<JointRotation>* getVariableJointRotations() { return &m_variableJointRotations; }
         const glm::vec3& getJointScale(JointIndex joint) const;
@@ -116,14 +118,15 @@ namespace Mona {
     };
     class IKChain {
         friend class IKRig;
+        friend class IKRigController;
         // Nombre de la cadena
         std::string m_name;
         // Articulaciones que conforman la cadena, desde su origen hasta el ee
         std::vector<JointIndex> m_joints;
         // Articulacion padre de la cadena (no es parte de la cadena)
         JointIndex m_parentJoint;
-        // Objetivo actual para el end effector (donde debe posicionarse) (model space)
-        glm::vec3 m_currentEETarget;
+        // Objetivo actual para el end effector (donde debe posicionarse) (model space) por cada IKAnimation
+        std::vector<glm::vec3> m_currentEETargets;
         // Cadena opuesta a la actual (ej: pierna izquierda a pierna derecha). Para ajustar posiciones relativas.
         ChainIndex m_opposite;
     public:
@@ -132,8 +135,8 @@ namespace Mona {
         const std::vector<JointIndex>& getJoints() const { return m_joints; };
         JointIndex getParentJoint() { return m_parentJoint; }
         JointIndex getEndEffector() { return m_joints.back(); }
-        const glm::vec3& getCurrentEETarget() const { return m_currentEETarget; };
-        void setCurrentEETarget(glm::vec3 currentEETarget) { m_currentEETarget = currentEETarget; }
+        glm::vec3 getCurrentEETarget(AnimationIndex animIndex) const { return m_currentEETargets[animIndex]; };
+        void setCurrentEETarget(AnimationIndex animIndex, glm::vec3 currentEETarget) { m_currentEETargets[animIndex] = currentEETarget; }
         ChainIndex getOpposite() { return m_opposite; }
     };
 

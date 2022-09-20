@@ -158,7 +158,7 @@ private:
 	bool m_validateStrides = false;
 	bool m_correctStrides = true;
 	bool m_enableIK = true;
-	float m_playRate = 1.0f;
+	float m_playRate = 0.5f;
 	std::string m_characterName;
 	glm::vec3 m_startingPosition;
 	Mona::TransformHandle m_transform;

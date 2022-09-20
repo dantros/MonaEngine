@@ -46,7 +46,7 @@ namespace Mona {
 		// multiplicacion en cadena desde el ee de la cadena hasta el joint i
 		std::vector<std::vector<glm::mat4>> backwardModelSpaceTransformsPerChain;
 		// other data
-		IKAnimation* rigConfig;
+		IKAnimation* ikAnimation;
 		std::vector<float> previousAngles;
 		float descentRate;
 		float targetAngleDelta;

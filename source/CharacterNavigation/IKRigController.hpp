@@ -28,7 +28,7 @@ namespace Mona {
 			glm::vec3 originalFrontVector, AnimationType animationType, float supportFrameDistanceFactor);
 		void setAngularSpeed(float angularSpeed) { m_ikRig.setAngularSpeed(angularSpeed); }
 		AnimationIndex removeAnimation(std::shared_ptr<AnimationClip> animationClip);
-		void updateIKRigConfigTime(float animationTimeStep, AnimationIndex animIndex, AnimationController& animController);
+		void updateIKAnimationTime(float animationTimeStep, AnimationIndex animIndex, AnimationController& animController);
 		void updateTrajectories(AnimationIndex animIndex, ComponentManager<TransformComponent>& transformManager,
 			ComponentManager<StaticMeshComponent>& staticMeshManager);
 		void updateGlobalTransform(ComponentManager<TransformComponent>& transformManager);
@@ -36,7 +36,7 @@ namespace Mona {
 		void updateIKRig(float timeStep, ComponentManager<TransformComponent>& transformManager,
 			ComponentManager<StaticMeshComponent>& staticMeshManager, ComponentManager<SkeletalMeshComponent>& skeletalMeshManager);
 		void updateMovementDirection(float timeStep);
-		void refreshConfig(AnimationIndex animIndex);
+		void refreshIKAnimation(AnimationIndex animIndex);
 		void enableIK(bool enableIK);
 		void init();
 	};

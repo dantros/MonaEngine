@@ -34,11 +34,11 @@ namespace Mona {
 		for (int c = 0; c < dataPtr->ikChains.size(); c++) {
 			endEffectors.push_back(dataPtr->ikChains[c]->getEndEffector());
 		}
-		std::vector<glm::mat4> forwardModelSpaceTransforms = dataPtr->rigConfig->getEEListModelSpaceVariableTransforms(endEffectors);
+		std::vector<glm::mat4> forwardModelSpaceTransforms = dataPtr->ikAnimation->getEEListModelSpaceVariableTransforms(endEffectors);
 		for (int c = 0; c < dataPtr->ikChains.size(); c++) {
 			eeIndex = endEffectors[c];
 			eePos = glm::vec3(forwardModelSpaceTransforms[eeIndex] * baseVec);
-			result += glm::length2(eePos - dataPtr->ikChains[c]->getCurrentEETarget());
+			result += glm::length2(eePos - dataPtr->ikChains[c]->getCurrentEETarget(dataPtr->ikAnimation->getAnimationIndex()));
 		}
 		return result;
 	};
@@ -70,7 +70,7 @@ namespace Mona {
 				glm::vec4 b = TB * glm::vec4(0, 0, 0, 1);
 				glm::mat4 Tvar = glmUtils::rotationToMat4(TvarQuat);
 				glm::mat4 dTvar = rotationMatrixDerivative_dAngle(varAngles[varIndex], dataPtr->rotationAxes[varIndex]);
-				glm::vec4 eeT = glm::vec4(chain->getCurrentEETarget(), 1);
+				glm::vec4 eeT = glm::vec4(chain->getCurrentEETarget(dataPtr->ikAnimation->getAnimationIndex()), 1);
 				for (int k = 0; k <= 3; k++) {
 					float mult1 = 0;
 					for (int j = 0; j <= 3; j++) {
@@ -130,7 +130,7 @@ namespace Mona {
 			endEffectors.push_back(dataPtr->ikChains[i]->getEndEffector());
 		}
 		// multiplicacion en cadena desde la raiz hasta el joint i
-		dataPtr->forwardModelSpaceTransforms = dataPtr->rigConfig->getEEListModelSpaceVariableTransforms(endEffectors, &(dataPtr->jointSpaceTransforms));
+		dataPtr->forwardModelSpaceTransforms = dataPtr->ikAnimation->getEEListModelSpaceVariableTransforms(endEffectors, &(dataPtr->jointSpaceTransforms));
 		// multiplicacion en cadena desde el ee de la cadena hasta el joint i
 		dataPtr->backwardModelSpaceTransformsPerChain = std::vector<std::vector<glm::mat4>>(dataPtr->ikChains.size());
 		std::vector<glm::mat4>* bt;
@@ -148,7 +148,7 @@ namespace Mona {
 	std::function<void(std::vector<float>&, IKData*, std::vector<float>&)>  postDescentStepCustomBehaviour =
 		[](std::vector<float>& args, IKData* dataPtr, std::vector<float>& argsRawDelta)->void {
 		// setear nuevos angulos
-		std::vector<JointRotation>* varRots = dataPtr->rigConfig->getVariableJointRotations();
+		std::vector<JointRotation>* varRots = dataPtr->ikAnimation->getVariableJointRotations();
 		for (int i = 0; i < args.size(); i++) {
 			int jIndex = dataPtr->jointIndexes[i];
 			(*varRots)[jIndex].setRotationAngle(args[i]);
@@ -197,28 +197,28 @@ namespace Mona {
 
 	std::vector<std::pair<JointIndex, float>> InverseKinematics::solveIKChains(AnimationIndex animationIndex) {
 
-		m_ikData.rigConfig = m_ikRig->getIKAnimation(animationIndex);
-		FrameIndex nextFrame = m_ikData.rigConfig->getNextFrameIndex();
-		FrameIndex currentFrame = m_ikData.rigConfig->getCurrentFrameIndex();
-		float currentFrameRepTime = m_ikData.rigConfig->getReproductionTime(currentFrame);
+		m_ikData.ikAnimation = m_ikRig->getIKAnimation(animationIndex);
+		FrameIndex nextFrame = m_ikData.ikAnimation->getNextFrameIndex();
+		FrameIndex currentFrame = m_ikData.ikAnimation->getCurrentFrameIndex();
+		float currentFrameRepTime = m_ikData.ikAnimation->getReproductionTime(currentFrame);
 
 		// recuperamos los angulos previamente usados de la animacion
 		m_ikData.previousAngles.resize(m_ikData.jointIndexes.size());
 		for (int i = 0; i < m_ikData.jointIndexes.size(); i++) {
 			JointIndex jIndex = m_ikData.jointIndexes[i];
-			m_ikData.previousAngles[i] = m_ikData.rigConfig->getSavedAngles(jIndex).evalCurve(currentFrameRepTime)[0];
+			m_ikData.previousAngles[i] = m_ikData.ikAnimation->getSavedAngles(jIndex).evalCurve(currentFrameRepTime)[0];
 		}
 		std::vector<float> initialArgs = m_ikData.previousAngles;
 
-		std::vector<JointRotation>const& baseRotations_target = m_ikData.rigConfig->getOriginalJointRotations(nextFrame);
+		std::vector<JointRotation>const& baseRotations_target = m_ikData.ikAnimation->getOriginalJointRotations(nextFrame);
 		for (int i = 0; i < m_ikData.jointIndexes.size(); i++) {
 			m_ikData.rotationAxes[i] = baseRotations_target[m_ikData.jointIndexes[i]].getRotationAxis();
 			m_ikData.baseAngles[i] = baseRotations_target[m_ikData.jointIndexes[i]].getRotationAngle();
 		}
 		// setear rotaciones variables a los valores base de frame objetivo
-		m_ikData.rigConfig->setVariableJointRotations(nextFrame);
+		m_ikData.ikAnimation->setVariableJointRotations(nextFrame);
 		// ajustamos las rotaciones varaibles a los argumentos iniciales
-		std::vector<JointRotation>* variableRotations = m_ikData.rigConfig->getVariableJointRotations();
+		std::vector<JointRotation>* variableRotations = m_ikData.ikAnimation->getVariableJointRotations();
 		for (int i = 0; i < m_ikData.jointIndexes.size(); i++) {
 			JointIndex jIndex = m_ikData.jointIndexes[i];
 			(*variableRotations)[jIndex].setRotationAngle(initialArgs[i]);

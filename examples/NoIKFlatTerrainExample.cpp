@@ -152,7 +152,7 @@ private:
 	float m_fadeTime = 0.5f;
 	bool m_validateStrides = false;
 	bool m_correctStrides = true;
-	bool m_enableIK = true;
+	bool m_enableIK = false;
 	float m_playRate = 0.7f;
 	int m_walkingAnimIndex;
 	std::string m_characterName;
@@ -205,14 +205,6 @@ public:
 		else if (input.IsKeyPressed(MONA_KEY_J))
 		{
 			window.SetWindowDimensions(glm::ivec2(1000, 1000));
-		}
-		else if (input.IsKeyPressed(MONA_KEY_1)) {
-			m_camera->SetActive(false);
-			input.SetCursorType(Mona::Input::CursorType::Normal);
-		}
-		else if (input.IsKeyPressed(MONA_KEY_2)) {
-			m_camera->SetActive(true);
-			input.SetCursorType(Mona::Input::CursorType::Disabled);
 		}
 	}
 };

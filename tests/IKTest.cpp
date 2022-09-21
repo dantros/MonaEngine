@@ -82,9 +82,6 @@ public:
 			Mona::BlendType blendType = m_walkingAnimation == animController.GetCurrentAnimation() ? Mona::BlendType::KeepSynchronize : Mona::BlendType::Smooth;
 			animController.FadeTo(m_walkingAnimation, blendType, m_fadeTime, 0.0f);
 		}
-		else if (input.IsKeyPressed(MONA_KEY_DOWN)) {
-			animController.FadeTo(m_idleAnimation, Mona::BlendType::Smooth, m_fadeTime, 0.0f);
-		}
 
 		if (input.IsKeyPressed(MONA_KEY_RIGHT))
 		{
@@ -107,11 +104,24 @@ public:
 		auto& eventManager = world.GetEventManager();
 		eventManager.Subscribe(m_debugGUISubcription, this, &IKRigCharacter::OnDebugGUIEvent);
 
+		// retrieve file path
+		char path[MAX_PATH];
+
+		GetModuleFileNameA(NULL, path, MAX_PATH);
+		std::string strPath(path);
+		const size_t last_slash_idx = strPath.rfind('\\');
+		std::string currDirectory;
+		if (std::string::npos != last_slash_idx)
+		{
+			currDirectory = strPath.substr(0, last_slash_idx);
+		}
+
+
 		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
 
 		std::shared_ptr<Mona::DiffuseTexturedMaterial> materialTextured = std::static_pointer_cast<Mona::DiffuseTexturedMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseTextured, true));
 		auto& textureManager = Mona::TextureManager::GetInstance();
-		auto diffuseTexture = textureManager.LoadTexture(Mona::SourcePath("Assets/Textures/" + m_characterName + "/diffuse.png"));
+		auto diffuseTexture = textureManager.LoadTexture(currDirectory + "\\Assets\\Textures\\" + m_characterName + "\\diffuse.png");
 		materialTextured->SetMaterialTint(glm::vec3(0.1f));
 		materialTextured->SetDiffuseTexture(diffuseTexture);
 
@@ -121,18 +131,16 @@ public:
 		auto& meshManager = Mona::MeshManager::GetInstance();
 		auto& skeletonManager = Mona::SkeletonManager::GetInstance();
 		auto& animationManager = Mona::AnimationClipManager::GetInstance();
-		auto skeleton = skeletonManager.LoadSkeleton(Mona::SourcePath("Assets/Models/" + m_characterName + ".fbx"));
-		auto skinnedMesh = meshManager.LoadSkinnedMesh(skeleton, Mona::SourcePath("Assets/Models/" + m_characterName + ".fbx"), true);
-
-		m_idleAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/" + m_characterName + "/idle.fbx"), skeleton, true);
-		m_walkingAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/" + m_characterName + "/walking"
-			+ std::to_string(m_walkingAnimIndex) + ".fbx"), skeleton, false);
+		auto skeleton = skeletonManager.LoadSkeleton(currDirectory + "\\Assets\\Models\\" + m_characterName + ".fbx");
+		auto skinnedMesh = meshManager.LoadSkinnedMesh(skeleton, currDirectory + "\\Assets\\Models\\" + m_characterName + ".fbx", true);
+		m_walkingAnimation = animationManager.LoadAnimationClip(currDirectory + "\\Assets\\Animations\\" + m_characterName + "\\walking"
+			+ std::to_string(m_walkingAnimIndex) + ".fbx", skeleton, false);
 
 		if (m_characterName != "xbot"){
-			m_skeletalMesh = world.AddComponent<Mona::SkeletalMeshComponent>(*this, skinnedMesh, m_idleAnimation, materialTextured);
+			m_skeletalMesh = world.AddComponent<Mona::SkeletalMeshComponent>(*this, skinnedMesh, m_walkingAnimation, materialTextured);
 		}
 		else {
-			m_skeletalMesh = world.AddComponent<Mona::SkeletalMeshComponent>(*this, skinnedMesh, m_idleAnimation, materialFlat);
+			m_skeletalMesh = world.AddComponent<Mona::SkeletalMeshComponent>(*this, skinnedMesh, m_walkingAnimation, materialFlat);
 		}
 		
 
@@ -151,8 +159,7 @@ public:
 		m_ikNavHandle = world.AddComponent<Mona::IKNavigationComponent>(*this, rigData);
 		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_walkingAnimation, originalUpVector,
 			originalFrontVector, Mona::AnimationType::WALKING);
-		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_idleAnimation, originalUpVector,
-			originalFrontVector, Mona::AnimationType::IDLE);
+		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->EnableIK(true);
 		m_skeletalMesh->GetAnimationController().SetPlayRate(m_playRate);
 
 	}
@@ -177,7 +184,6 @@ private:
 	Mona::SkeletalMeshHandle m_skeletalMesh;
 	Mona::IKNavigationHandle m_ikNavHandle;
 	std::shared_ptr<Mona::AnimationClip> m_walkingAnimation;
-	std::shared_ptr<Mona::AnimationClip> m_idleAnimation;
 	Mona::SubscriptionHandle m_debugGUISubcription;
 
 };

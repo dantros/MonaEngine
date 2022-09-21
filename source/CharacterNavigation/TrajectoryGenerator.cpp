@@ -417,7 +417,7 @@ namespace Mona{
 		}
 		else {
 			// las trayectorias estaticas se calculan siempre
-			if (targetDistance * 0.2f < minDistDiff) {
+			if (targetDistance * 0.5f < minDistDiff) {
 				outStrideFinalPoint = startingPoint + glm::vec3(targetDirection, 0) * targetDistance;
 			}
 		}

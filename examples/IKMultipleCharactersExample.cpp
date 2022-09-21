@@ -226,14 +226,6 @@ public:
 		{
 			window.SetWindowDimensions(glm::ivec2(1000, 1000));
 		}
-		else if (input.IsKeyPressed(MONA_KEY_1)) {
-			m_camera->SetActive(false);
-			input.SetCursorType(Mona::Input::CursorType::Normal);
-		}
-		else if (input.IsKeyPressed(MONA_KEY_2)) {
-			m_camera->SetActive(true);
-			input.SetCursorType(Mona::Input::CursorType::Disabled);
-		}
 	}
 };
 int main()

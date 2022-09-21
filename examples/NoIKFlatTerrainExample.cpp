@@ -180,7 +180,7 @@ public:
 		AddDirectionalLight(world, glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-130.0f), 2);
 		AddDirectionalLight(world, glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(-30.0f), 8.5f);
 		// choosable characters: akai, xbot.
-		// choosable walking animations: 0, 1
+		// choosable walking animations: 0, 1, 2 ,3.
 		auto character = world.CreateGameObject<IKRigCharacter>("akai", glm::vec3(0, -10, 0), 1);
 		auto terrainObject = AddTerrain(world);
 		world.GetComponentHandle<Mona::IKNavigationComponent>(character)->AddTerrain(terrainObject);

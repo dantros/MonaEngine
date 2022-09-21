@@ -90,7 +90,7 @@ namespace Mona {
 			}
 			hipGlblPositions.push_back(glblPositions[m_ikRig.m_hipJoint]);
 			// distancia base entre puntos para identificacion de puntos de soporte
-			float minDistance = 20*(m_ikRig.m_rigHeight * m_ikRig.m_rigScale / 1000);
+			float minDistance = m_ikRig.m_rigHeight * m_ikRig.m_rigScale / 120;
 			for (ChainIndex j = 0; j < chainNum; j++) {
 				int eeIndex = m_ikRig.m_ikChains[j].getEndEffector();
 				bool isSupportFrame = glm::distance(glblPositions[eeIndex], previousPositions[eeIndex]) <= minDistance*supportFrameDistanceFactor;

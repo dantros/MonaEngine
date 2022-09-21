@@ -111,11 +111,14 @@ public:
 
 		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
 
-		auto materialPtr = std::static_pointer_cast<Mona::DiffuseTexturedMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseTextured, true));
+		std::shared_ptr<Mona::DiffuseTexturedMaterial> materialTextured = std::static_pointer_cast<Mona::DiffuseTexturedMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseTextured, true));
 		auto& textureManager = Mona::TextureManager::GetInstance();
 		auto diffuseTexture = textureManager.LoadTexture(Mona::SourcePath("Assets/Textures/" + m_characterName + "/diffuse.png"));
-		materialPtr->SetMaterialTint(glm::vec3(0.1f));
-		materialPtr->SetDiffuseTexture(diffuseTexture);
+		materialTextured->SetMaterialTint(glm::vec3(0.1f));
+		materialTextured->SetDiffuseTexture(diffuseTexture);
+
+		std::shared_ptr<Mona::DiffuseFlatMaterial> materialFlat = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseFlat, true));
+		materialFlat->SetDiffuseColor(0.1f * glm::vec3(0.8f, 0.3f, 0.4f));
 
 		auto& meshManager = Mona::MeshManager::GetInstance();
 		auto& skeletonManager = Mona::SkeletonManager::GetInstance();
@@ -127,14 +130,20 @@ public:
 		m_walkingAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/" + m_characterName + "/walking"
 			+ std::to_string(m_walkingAnimIndex) + ".fbx"), skeleton, false);
 
-		m_skeletalMesh = world.AddComponent<Mona::SkeletalMeshComponent>(*this, skinnedMesh, m_idleAnimation, materialPtr);
+		if (m_characterName != "xbot") {
+			m_skeletalMesh = world.AddComponent<Mona::SkeletalMeshComponent>(*this, skinnedMesh, m_idleAnimation, materialTextured);
+		}
+		else {
+			m_skeletalMesh = world.AddComponent<Mona::SkeletalMeshComponent>(*this, skinnedMesh, m_idleAnimation, materialFlat);
+		}
+
 
 		Mona::RigData rigData;
-		rigData.leftLeg.baseJointName = "mixamorig:LeftUpLeg";
-		rigData.leftLeg.endEffectorName = "mixamorig:LeftFoot";
-		rigData.rightLeg.baseJointName = "mixamorig:RightUpLeg";
-		rigData.rightLeg.endEffectorName = "mixamorig:RightFoot";
-		rigData.hipJointName = "mixamorig:Hips";
+		rigData.leftLeg.baseJointName = "LeftUpLeg";
+		rigData.leftLeg.endEffectorName = "LeftFoot";
+		rigData.rightLeg.baseJointName = "RightUpLeg";
+		rigData.rightLeg.endEffectorName = "RightFoot";
+		rigData.hipJointName = "Hips";
 		rigData.initialRotationAngle = 0.0f;
 		rigData.initialPosition = m_startingPosition;
 		rigData.scale = 0.05f;
@@ -189,11 +198,11 @@ public:
 		AddDirectionalLight(world, glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-130.0f), 2);
 		AddDirectionalLight(world, glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(-30.0f), 8.5f);
 		auto terrainObject1 = AddTerrain(world);
-		// choosable characters: akai, ely, sportyGranny, prisoner, maria, theBoss, xbot.
-		// choosable walking animations: 0, 1 ,2 .
-		auto character1 = world.CreateGameObject<IKRigCharacter>("ely",glm::vec3(0,0,0), 1);
+		// choosable characters: akai, xbot.
+		// choosable walking animations: 0, 1.
+		auto character1 = world.CreateGameObject<IKRigCharacter>("akai",glm::vec3(0,0,0), 0);
 		world.GetComponentHandle<Mona::IKNavigationComponent>(character1)->AddTerrain(terrainObject1);
-		auto character2 = world.CreateGameObject<IKRigCharacter>("maria", glm::vec3(-20, -5, 0), 2);
+		auto character2 = world.CreateGameObject<IKRigCharacter>("xbot", glm::vec3(-20, -5, 0), 1);
 		world.GetComponentHandle<Mona::IKNavigationComponent>(character2)->AddTerrain(terrainObject1);
 	}
 

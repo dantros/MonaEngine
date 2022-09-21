@@ -39,11 +39,11 @@ namespace Mona{
 			glm::vec3 basePosition = track.positions[0];
 			glm::vec3 baseScale = track.scales[0];
 			for (int j = 1; j < track.positions.size(); j++) {
-				MONA_ASSERT(glmUtils::areApproxEqual(track.positions[j], basePosition) || jIndex == m_ikRig->m_hipJoint,
+				MONA_ASSERT(glmUtils::areApproxEqual(track.positions[j], basePosition, 0.01) || jIndex == m_ikRig->m_hipJoint,
 					"AnimationValidator: Joints other than the hip must have fixed translations.");
 			}
 			for (int j = 1; j < track.scales.size(); j++) {
-				MONA_ASSERT(glmUtils::areApproxEqual(track.scales[j], baseScale),
+				MONA_ASSERT(glmUtils::areApproxEqual(track.scales[j], baseScale, 0.01),
 					"AnimationValidator: Animation must have fixed scales per joint.");
 			}
 		}

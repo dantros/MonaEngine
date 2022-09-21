@@ -14,9 +14,8 @@ Add_Example(Example1_WindowInputOperations WindowInputExample.cpp)
 Add_Example(Example2_Breakout Breakout.cpp)
 Add_Example(Example3_AnimationAudio AnimationAudioExample.cpp)
 Add_Example(Example4_NoIKFlatTerrain NoIKFlatTerrainExample.cpp)
-Add_Example(Example5_IKProperAnimation IKProperAnimationExample.cpp)
-Add_Example(Example6_IKBasic IKBasicExample.cpp)
-Add_Example(Example7_IKMultipleTerrains IKMultipleTerrainsExample.cpp)
-Add_Example(Example8_IKMultipleCharacters IKMultipleCharactersExample.cpp)
+Add_Example(Example5_IKBasic IKBasicExample.cpp)
+Add_Example(Example6_IKMultipleTerrains IKMultipleTerrainsExample.cpp)
+Add_Example(Example7_IKMultipleCharacters IKMultipleCharactersExample.cpp)
 
 

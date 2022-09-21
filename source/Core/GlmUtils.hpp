@@ -41,7 +41,7 @@ namespace Mona {
         }
 
         template <int D>
-        inline bool isApproxUniform(glm::vec<D, float> vec, float epsilon = 0.000001) {
+        inline bool isApproxUniform(glm::vec<D, float> vec, float epsilon = 0.0001) {
             float baseValue = vec[0];
             for (int i = 1; i < D; i++) {
                 if (glm::epsilonNotEqual(vec[i], baseValue, epsilon)) {

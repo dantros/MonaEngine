@@ -51,8 +51,10 @@ private:
 
 	}
 public:
-	IKRigCharacter(glm::vec3 startingPosition) {
+	IKRigCharacter(std::string characterName, glm::vec3 startingPosition, int walkingAnimIndex) {
+		m_characterName = characterName;
 		m_startingPosition = startingPosition;
+		m_walkingAnimIndex = walkingAnimIndex;
 	}
 	virtual void UserUpdate(Mona::World& world, float timeStep) noexcept {
 		UpdateAnimationState();
@@ -90,13 +92,15 @@ public:
 		eventManager.Subscribe(m_debugGUISubcription, this, &IKRigCharacter::OnDebugGUIEvent);
 
 		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
-		m_characterName = "akai_e_espiritu";
 
-		auto materialPtr = std::static_pointer_cast<Mona::DiffuseTexturedMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseTextured, true));
+		std::shared_ptr<Mona::DiffuseTexturedMaterial> materialTextured = std::static_pointer_cast<Mona::DiffuseTexturedMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseTextured, true));
 		auto& textureManager = Mona::TextureManager::GetInstance();
 		auto diffuseTexture = textureManager.LoadTexture(Mona::SourcePath("Assets/Textures/" + m_characterName + "/diffuse.png"));
-		materialPtr->SetMaterialTint(glm::vec3(0.1f));
-		materialPtr->SetDiffuseTexture(diffuseTexture);
+		materialTextured->SetMaterialTint(glm::vec3(0.1f));
+		materialTextured->SetDiffuseTexture(diffuseTexture);
+
+		std::shared_ptr<Mona::DiffuseFlatMaterial> materialFlat = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseFlat, true));
+		materialFlat->SetDiffuseColor(0.1f * glm::vec3(0.8f, 0.3f, 0.4f));
 
 		auto& meshManager = Mona::MeshManager::GetInstance();
 		auto& skeletonManager = Mona::SkeletonManager::GetInstance();
@@ -105,9 +109,16 @@ public:
 		auto skinnedMesh = meshManager.LoadSkinnedMesh(skeleton, Mona::SourcePath("Assets/Models/" + m_characterName + ".fbx"), true);
 
 		m_idleAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/" + m_characterName + "/idle.fbx"), skeleton, true);
-		m_walkingAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/"  + m_characterName + "/walking.fbx"), skeleton, false);
+		m_walkingAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/" + m_characterName + "/walking"
+			+ std::to_string(m_walkingAnimIndex) + ".fbx"), skeleton, false);
 
-		m_skeletalMesh = world.AddComponent<Mona::SkeletalMeshComponent>(*this, skinnedMesh, m_walkingAnimation, materialPtr);
+		if (m_characterName != "xbot") {
+			m_skeletalMesh = world.AddComponent<Mona::SkeletalMeshComponent>(*this, skinnedMesh, m_idleAnimation, materialTextured);
+		}
+		else {
+			m_skeletalMesh = world.AddComponent<Mona::SkeletalMeshComponent>(*this, skinnedMesh, m_idleAnimation, materialFlat);
+		}
+
 
 		Mona::RigData rigData;
 		rigData.leftLeg.baseJointName = "LeftUpLeg";
@@ -122,8 +133,10 @@ public:
 		glm::vec3 originalUpVector = glm::vec3(0, 1, 0);
 		glm::vec3 originalFrontVector = glm::vec3(0, 0, 1);
 		m_ikNavHandle = world.AddComponent<Mona::IKNavigationComponent>(*this, rigData);
-		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_walkingAnimation, originalUpVector,originalFrontVector, Mona::AnimationType::WALKING);
-		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_idleAnimation, originalUpVector,originalFrontVector, Mona::AnimationType::IDLE);
+		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_walkingAnimation, originalUpVector,
+			originalFrontVector, Mona::AnimationType::WALKING);
+		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_idleAnimation, originalUpVector,
+			originalFrontVector, Mona::AnimationType::IDLE);
 		m_skeletalMesh->GetAnimationController().SetPlayRate(m_playRate);
 
 	}
@@ -139,8 +152,9 @@ private:
 	float m_fadeTime = 0.5f;
 	bool m_validateStrides = false;
 	bool m_correctStrides = true;
-	bool m_enableIK = false;
+	bool m_enableIK = true;
 	float m_playRate = 0.7f;
+	int m_walkingAnimIndex;
 	std::string m_characterName;
 	glm::vec3 m_startingPosition;
 	Mona::TransformHandle m_transform;
@@ -165,7 +179,9 @@ public:
 		world.SetMainCamera(world.GetComponentHandle<Mona::CameraComponent>(m_camera));
 		AddDirectionalLight(world, glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-130.0f), 2);
 		AddDirectionalLight(world, glm::vec3(0.0f, 1.0f, 0.0f), glm::radians(-30.0f), 8.5f);
-		auto character = world.CreateGameObject<IKRigCharacter>(glm::vec3(0,-10,0));
+		// choosable characters: akai, xbot.
+		// choosable walking animations: 0, 1
+		auto character = world.CreateGameObject<IKRigCharacter>("akai", glm::vec3(0, -10, 0), 1);
 		auto terrainObject = AddTerrain(world);
 		world.GetComponentHandle<Mona::IKNavigationComponent>(character)->AddTerrain(terrainObject);
 	}

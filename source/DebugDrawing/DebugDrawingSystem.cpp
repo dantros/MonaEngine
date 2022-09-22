@@ -54,8 +54,8 @@ namespace Mona {
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	}
 	void DebugDrawingSystem_physics::StartUp(PhysicsCollisionSystem* physicsSystemPtr) noexcept {
-		m_lineShader = ShaderProgram(SourcePath("source/Rendering/Shaders/LineVS.vs"),
-			SourcePath("source/Rendering/Shaders/LinePS.ps"));
+		m_lineShader = ShaderProgram(SourceDirectoryData::SourcePath("source/Rendering/Shaders/LineVS.vs"),
+			SourceDirectoryData::SourcePath("source/Rendering/Shaders/LinePS.ps"));
 		m_physicsWorldPtr = physicsSystemPtr->GetPhysicsWorldPtr();
 		m_bulletDebugDrawPtr.reset(new BulletDebugDraw());
 		m_bulletDebugDrawPtr->StartUp();
@@ -82,8 +82,8 @@ namespace Mona {
 
 
 	void DebugDrawingSystem_ikNav::StartUp(IKNavigationSystem* ikNavSystemPtr)  noexcept {
-		m_lineShader = ShaderProgram(SourcePath("source/Rendering/Shaders/LineVS.vs"),
-			SourcePath("source/Rendering/Shaders/LinePS.ps"));
+		m_lineShader = ShaderProgram(SourceDirectoryData::SourcePath("source/Rendering/Shaders/LineVS.vs"),
+			SourceDirectoryData::SourcePath("source/Rendering/Shaders/LinePS.ps"));
 		m_ikNavSystemPtr = ikNavSystemPtr;
 		m_ikNavDebugDrawPtr.reset(new IKNavigationDebugDraw);
 		m_ikNavDebugDrawPtr->StartUp();

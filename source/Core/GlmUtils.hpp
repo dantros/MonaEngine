@@ -110,7 +110,7 @@ namespace Mona {
         }
 
         inline glm::fquat calcDeltaRotation(glm::vec3 initialDirection, glm::vec3 targetDirection, glm::vec3 referenceUpVector) {
-            float epsilon = 0.001f;
+            float epsilon = 0.01f;
             float dotPr = glm::dot(initialDirection, targetDirection);
             if (abs(dotPr - 1) <= epsilon || abs(dotPr + 1) <= epsilon) {
                 float rotAngle = glm::orientedAngle(initialDirection, targetDirection, referenceUpVector);

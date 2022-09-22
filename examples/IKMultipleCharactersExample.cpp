@@ -100,8 +100,8 @@ public:
 			m_ikNavHandle->SetAngularSpeed(0);
 		}
 
-		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->SetStrideCorrection(m_correctStrides);
-		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->SetStrideValidation(m_validateStrides);
+		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->EnableStrideCorrection(m_correctStrides);
+		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->EnableStrideValidation(m_validateStrides);
 		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->EnableIK(m_enableIK);
 
 	};
@@ -113,7 +113,7 @@ public:
 
 		std::shared_ptr<Mona::DiffuseTexturedMaterial> materialTextured = std::static_pointer_cast<Mona::DiffuseTexturedMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseTextured, true));
 		auto& textureManager = Mona::TextureManager::GetInstance();
-		auto diffuseTexture = textureManager.LoadTexture(Mona::SourcePath("Assets/Textures/" + m_characterName + "/diffuse.png"));
+		auto diffuseTexture = textureManager.LoadTexture(Mona::SourceDirectoryData::SourcePath("Assets/Textures/" + m_characterName + "/diffuse.png"));
 		materialTextured->SetMaterialTint(glm::vec3(0.1f));
 		materialTextured->SetDiffuseTexture(diffuseTexture);
 
@@ -123,11 +123,11 @@ public:
 		auto& meshManager = Mona::MeshManager::GetInstance();
 		auto& skeletonManager = Mona::SkeletonManager::GetInstance();
 		auto& animationManager = Mona::AnimationClipManager::GetInstance();
-		auto skeleton = skeletonManager.LoadSkeleton(Mona::SourcePath("Assets/Models/" + m_characterName + ".fbx"));
-		auto skinnedMesh = meshManager.LoadSkinnedMesh(skeleton, Mona::SourcePath("Assets/Models/" + m_characterName + ".fbx"), true);
+		auto skeleton = skeletonManager.LoadSkeleton(Mona::SourceDirectoryData::SourcePath("Assets/Models/" + m_characterName + ".fbx"));
+		auto skinnedMesh = meshManager.LoadSkinnedMesh(skeleton, Mona::SourceDirectoryData::SourcePath("Assets/Models/" + m_characterName + ".fbx"), true);
 
-		m_idleAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/" + m_characterName + "/idle.fbx"), skeleton, true);
-		m_walkingAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/" + m_characterName + "/walking"
+		m_idleAnimation = animationManager.LoadAnimationClip(Mona::SourceDirectoryData::SourcePath("Assets/Animations/" + m_characterName + "/idle.fbx"), skeleton, true);
+		m_walkingAnimation = animationManager.LoadAnimationClip(Mona::SourceDirectoryData::SourcePath("Assets/Animations/" + m_characterName + "/walking"
 			+ std::to_string(m_walkingAnimIndex) + ".fbx"), skeleton, false);
 
 		if (m_characterName != "xbot") {

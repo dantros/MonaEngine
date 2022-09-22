@@ -137,7 +137,7 @@ namespace Mona{
 			for (int j = 0; j < D; j++) {
 				if (varPCoord[i * D + j] <= dataPtr->minValues[i * D + j]) {
 					varPCoord[i * D + j] = dataPtr->minValues[i * D + j];
-					argsRawDelta[i * D + j] *= 0.01f;
+					argsRawDelta[i * D + j] *= 0.00001f;
 				}
 				newPos[j] = varPCoord[i * D + j];
 			}

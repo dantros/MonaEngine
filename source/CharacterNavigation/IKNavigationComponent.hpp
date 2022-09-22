@@ -24,11 +24,11 @@ namespace Mona {
 				m_ikRigController.addAnimation(animationClip, originalUpVector, originalFrontVector, animationType, supportFrameDistanceFactor);
 			}
 
-			void SetStrideValidation(bool validateStrides) {
+			void EnableStrideValidation(bool validateStrides) {
 				m_ikRigController.m_ikRig.m_trajectoryGenerator.enableStrideValidation(validateStrides);
 			}
 
-			void SetStrideCorrection(bool correctStrides) {
+			void EnableStrideCorrection(bool correctStrides) {
 				m_ikRigController.m_ikRig.m_trajectoryGenerator.enableStrideCorrection(correctStrides);
 			}
 

@@ -168,18 +168,18 @@ public:
 
 		auto materialPtr = std::static_pointer_cast<Mona::DiffuseTexturedMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseTextured, true));
 		auto& textureManager = Mona::TextureManager::GetInstance();
-		auto diffuseTexture = textureManager.LoadTexture(Mona::SourcePath("Assets/Textures/akai/diffuse.png"));
+		auto diffuseTexture = textureManager.LoadTexture(Mona::SourceDirectoryData::SourcePath("Assets/Textures/akai/diffuse.png"));
 		materialPtr->SetMaterialTint(glm::vec3(0.1f));
 		materialPtr->SetDiffuseTexture(diffuseTexture);
 
 		auto& meshManager = Mona::MeshManager::GetInstance();
 		auto& skeletonManager = Mona::SkeletonManager::GetInstance();
 		auto& animationManager = Mona::AnimationClipManager::GetInstance();
-		auto skeleton = skeletonManager.LoadSkeleton(Mona::SourcePath("Assets/Models/akai.fbx"));
-		auto skinnedMesh = meshManager.LoadSkinnedMesh(skeleton, Mona::SourcePath("Assets/Models/akai.fbx"), true);
-		m_runningAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/akai/running.fbx"), skeleton);
-		m_walkingAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/akai/walking0.fbx"), skeleton);
-		m_idleAnimation = animationManager.LoadAnimationClip(Mona::SourcePath("Assets/Animations/akai/idle.fbx"), skeleton);
+		auto skeleton = skeletonManager.LoadSkeleton(Mona::SourceDirectoryData::SourcePath("Assets/Models/akai.fbx"));
+		auto skinnedMesh = meshManager.LoadSkinnedMesh(skeleton, Mona::SourceDirectoryData::SourcePath("Assets/Models/akai.fbx"), true);
+		m_runningAnimation = animationManager.LoadAnimationClip(Mona::SourceDirectoryData::SourcePath("Assets/Animations/akai/running.fbx"), skeleton);
+		m_walkingAnimation = animationManager.LoadAnimationClip(Mona::SourceDirectoryData::SourcePath("Assets/Animations/akai/walking0.fbx"), skeleton);
+		m_idleAnimation = animationManager.LoadAnimationClip(Mona::SourceDirectoryData::SourcePath("Assets/Animations/akai/idle.fbx"), skeleton);
 		m_skeletalMesh = world.AddComponent<Mona::SkeletalMeshComponent>(*this, skinnedMesh, m_idleAnimation, materialPtr);
 		Mona::BoxShapeInformation boxInfo(glm::vec3(.6f, 1.0f, 0.6f));
 		m_rigidBody = world.AddComponent<Mona::RigidBodyComponent>(*this, boxInfo, Mona::RigidBodyType::DynamicBody, 1.0f, false, glm::vec3(0.0f, -0.1f, 0.0f));
@@ -233,18 +233,18 @@ public:
 		AddDirectionalLight(world, glm::vec3(1.0f, 0.0f, 0.0f), 10.0f, glm::radians(-135.0f));
 
 		auto& meshManager = Mona::MeshManager::GetInstance();
-		auto ventMesh = meshManager.LoadMesh(Mona::SourcePath("Assets/Models/AirConditioner.obj"), true);
-		auto boomBoxMesh = meshManager.LoadMesh(Mona::SourcePath("Assets/Models/BoomBox.obj"), true);
+		auto ventMesh = meshManager.LoadMesh(Mona::SourceDirectoryData::SourcePath("Assets/Models/AirConditioner.obj"), true);
+		auto boomBoxMesh = meshManager.LoadMesh(Mona::SourceDirectoryData::SourcePath("Assets/Models/BoomBox.obj"), true);
 
 		auto ventMaterial = std::static_pointer_cast<Mona::PBRTexturedMaterial>(world.CreateMaterial(Mona::MaterialType::PBRTextured));
 		auto boomBoxMaterial = std::static_pointer_cast<Mona::PBRTexturedMaterial>(world.CreateMaterial(Mona::MaterialType::PBRTextured));
 		auto& textureManager = Mona::TextureManager::GetInstance();
 
-		auto ventAoTexture = textureManager.LoadTexture(Mona::SourcePath("Assets/Textures/AirConditionerOBJ/AO.png"));
-		auto ventAlbedoTexture = textureManager.LoadTexture(Mona::SourcePath("Assets/Textures/AirConditionerOBJ/Albedo.png"));
-		auto ventMetallicTexture = textureManager.LoadTexture(Mona::SourcePath("Assets/Textures/AirConditionerOBJ/Metallic.png"));
-		auto ventRoughnessTexture = textureManager.LoadTexture(Mona::SourcePath("Assets/Textures/AirConditionerOBJ/Roughness.png"));
-		auto ventNormalTexture = textureManager.LoadTexture(Mona::SourcePath("Assets/Textures/AirConditionerOBJ/Normal_Map.png"));
+		auto ventAoTexture = textureManager.LoadTexture(Mona::SourceDirectoryData::SourcePath("Assets/Textures/AirConditionerOBJ/AO.png"));
+		auto ventAlbedoTexture = textureManager.LoadTexture(Mona::SourceDirectoryData::SourcePath("Assets/Textures/AirConditionerOBJ/Albedo.png"));
+		auto ventMetallicTexture = textureManager.LoadTexture(Mona::SourceDirectoryData::SourcePath("Assets/Textures/AirConditionerOBJ/Metallic.png"));
+		auto ventRoughnessTexture = textureManager.LoadTexture(Mona::SourceDirectoryData::SourcePath("Assets/Textures/AirConditionerOBJ/Roughness.png"));
+		auto ventNormalTexture = textureManager.LoadTexture(Mona::SourceDirectoryData::SourcePath("Assets/Textures/AirConditionerOBJ/Normal_Map.png"));
 
 		ventMaterial->SetAmbientOcclusionTexture(ventAoTexture);
 		ventMaterial->SetAlbedoTexture(ventAlbedoTexture);
@@ -252,11 +252,11 @@ public:
 		ventMaterial->SetRoughnessTexture(ventRoughnessTexture);
 		ventMaterial->SetNormalMapTexture(ventNormalTexture);
 
-		auto boomBoxAoTexture = textureManager.LoadTexture(Mona::SourcePath("Assets/Textures/BoomBoxOBJ/AO.jpeg"));
-		auto boomBoxAlbedoTexture = textureManager.LoadTexture(Mona::SourcePath("Assets/Textures/BoomBoxOBJ/Albedo.jpeg"));
-		auto boomBoxMetallicTexture = textureManager.LoadTexture(Mona::SourcePath("Assets/Textures/BoomBoxOBJ/Metallic.jpeg"));
-		auto boomBoxRoughnessTexture = textureManager.LoadTexture(Mona::SourcePath("Assets/Textures/BoomBoxOBJ/Roughness.jpeg"));
-		auto boomBoxNormalTexture = textureManager.LoadTexture(Mona::SourcePath("Assets/Textures/BoomBoxOBJ/Normal_Map.jpeg"));
+		auto boomBoxAoTexture = textureManager.LoadTexture(Mona::SourceDirectoryData::SourcePath("Assets/Textures/BoomBoxOBJ/AO.jpeg"));
+		auto boomBoxAlbedoTexture = textureManager.LoadTexture(Mona::SourceDirectoryData::SourcePath("Assets/Textures/BoomBoxOBJ/Albedo.jpeg"));
+		auto boomBoxMetallicTexture = textureManager.LoadTexture(Mona::SourceDirectoryData::SourcePath("Assets/Textures/BoomBoxOBJ/Metallic.jpeg"));
+		auto boomBoxRoughnessTexture = textureManager.LoadTexture(Mona::SourceDirectoryData::SourcePath("Assets/Textures/BoomBoxOBJ/Roughness.jpeg"));
+		auto boomBoxNormalTexture = textureManager.LoadTexture(Mona::SourceDirectoryData::SourcePath("Assets/Textures/BoomBoxOBJ/Normal_Map.jpeg"));
 
 		boomBoxMaterial->SetAmbientOcclusionTexture(boomBoxAoTexture);
 		boomBoxMaterial->SetAlbedoTexture(boomBoxAlbedoTexture);
@@ -265,8 +265,8 @@ public:
 		boomBoxMaterial->SetNormalMapTexture(boomBoxNormalTexture);
 
 		auto& audioManager = Mona::AudioClipManager::GetInstance();
-		auto ventilationSound = audioManager.LoadAudioClip(Mona::SourcePath("Assets/AudioFiles/mono_fan_ventilation.wav"));
-		auto musicSound = audioManager.LoadAudioClip(Mona::SourcePath("Assets/AudioFiles/mono_music.wav"));
+		auto ventilationSound = audioManager.LoadAudioClip(Mona::SourceDirectoryData::SourcePath("Assets/AudioFiles/mono_fan_ventilation.wav"));
+		auto musicSound = audioManager.LoadAudioClip(Mona::SourceDirectoryData::SourcePath("Assets/AudioFiles/mono_music.wav"));
 
 
 

@@ -25,7 +25,7 @@ namespace Mona {
 		m_ambientLight(glm::vec3(0.1f))
 	{
 		auto& config = Config::GetInstance();
-		config.readFile(SourcePath("config.cfg").string());
+		config.readFile(SourceDirectoryData::SourcePath("config.cfg").string());
 
 		m_componentManagers[TransformComponent::componentIndex].reset(new ComponentManager<TransformComponent>());
 		m_componentManagers[CameraComponent::componentIndex].reset(new ComponentManager<CameraComponent>());

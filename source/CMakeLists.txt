@@ -97,6 +97,7 @@ set(MONA_SOURCES
 				CharacterNavigation/TrajectoryGenerator.cpp
 				CharacterNavigation/TrajectoryGeneratorBase.cpp
 				CharacterNavigation/IKRigController.cpp
+				Core/RootDirectory.cpp
 				Core/Config.cpp
 				Event/EventManager.cpp
 				Platform/Window.cpp

@@ -58,17 +58,18 @@ namespace Mona {
 
 			}
 		}
-
+		// Se guarda el nombre de la animacion
+		size_t pos = filePath.find_last_of("/\\");
+		std::string fileName = pos != std::string::npos ? filePath.substr(pos + 1) : filePath;
+		m_animationName = funcUtils::splitString(fileName, '.')[0];
 		m_trackJointIndices.resize(m_trackJointNames.size());
+
 		SetSkeleton(skeleton);
 		if (removeRootMotion) {
 			RemoveRootMotion();
 		}
 
-		// Se guarda el nombre de la animacion
-		size_t pos = filePath.find_last_of("/\\");
-		std::string fileName = pos != std::string::npos ? filePath.substr(pos + 1) : filePath;	
-		m_animationName = funcUtils::splitString(fileName, '.')[0];
+		
 	}
 
 	float AnimationClip::Sample(std::vector<JointPose>& outPose, float time, bool isLooping) {

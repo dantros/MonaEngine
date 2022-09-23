@@ -62,21 +62,31 @@ namespace Mona {
         }
 
         template <int D>
+        inline std::string vecToString(glm::vec<D, float> vec) {
+            std::string result = "[";
+            for (int i = 0; i < D; i++) {
+                result += std::to_string(vec[i]);
+                if (i < D - 1) {
+                    result += ", ";
+                }
+            }
+            result += "]";
+            return result;
+        }
+
+
+        template <int D>
         inline std::string stdVectorToString(std::vector<glm::vec<D, float>> vec) {
 			std::string result = "[ ";
 			for (int i = 0; i < vec.size(); i++) {
-                result += "[";
-                for (int j = 0; j < D; j++) {
-                    result += std::to_string(vec[i][j]);
-                    if (j != D - 1) { result += ", "; }
-                }
-                result += "]";
+                result += vecToString(vec[i]);
                 if (i != vec.size() - 1) { result += ", "; }
 			}
 			result += " ]";
 			return result;
         }
 
+        
         template <int D>
         inline void printColoredStdVector(std::vector<glm::vec<D, float>> vec, bool spread = true) {
             auto colors = { green, red, yellow, blue };

@@ -90,7 +90,9 @@ namespace Mona{
 			meanRotationAxis /= frameNum;
 
 			if (abs(meanRotationAxis[0]) < 0.35f) {
-				MONA_LOG_WARNING("AnimationValidator:Joint {}'s local rotation axis does not allow for proper IK rotation control.", jIndex);
+				MONA_LOG_WARNING(
+					"AnimationValidator:Joint {}'s mean local rotation axis is not perpendicular enough with animation's original plane of movement defined by {} and {}, to allow proper motion control.", 
+					jIndex, glmUtils::vecToString(originalFrontVector), glmUtils::vecToString(originalUpVector));
 			}
 
 		}

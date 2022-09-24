@@ -35,14 +35,14 @@ Mona::GameObjectHandle<Mona::GameObject> AddTerrain(Mona::World& world) {
 	int numInnerVerticesHeight = 100;
 	auto heighFunc = [](float x, float y) -> float {
 		float result = 0;
-		int funcNum = 200;
+		int funcNum = 250;
 		glm::vec2 minXY(-100, -100);
 		glm::vec2 maxXY(100, 100);
 		float minHeight = -15;
-		float maxHeight = 70;
+		float maxHeight = 80;
 		float minSigma = 3;
 		float maxSigma = 15;
-		std::srand(5);
+		std::srand(130);
 		for (int i = 0; i < funcNum; i++) {
 			float randMax = RAND_MAX;
 			result += gaussian(x, y, Mona::funcUtils::lerp(minHeight, maxHeight, std::rand() / randMax),

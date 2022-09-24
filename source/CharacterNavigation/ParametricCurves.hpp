@@ -226,7 +226,7 @@ namespace Mona{
                 else { break; }
             }
             transitionTValues.push_back(transitionT);
-            transitionCurvePoints.push_back((curve1.evalCurve(transitionT) + curve2.evalCurve(transitionT))/2);
+            transitionCurvePoints.push_back((curve1.evalCurve(transitionT) + curve2.evalCurve(transitionT))/2.0f);
             for (int i = 0; i < curve2.m_tValues.size(); i++) {
                 if (transitionT + 2 * epsilon < curve2.m_tValues[i]) {
                     transitionTValues.push_back(curve2.m_tValues[i]);

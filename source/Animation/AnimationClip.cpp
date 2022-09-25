@@ -8,6 +8,8 @@
 #include "../Core/Log.hpp"
 #include "Skeleton.hpp"
 #include "../Core/FuncUtils.hpp"
+#include "../Core/GlmUtils.hpp"
+
 namespace Mona {
 	AnimationClip::AnimationClip(const std::string& filePath,
 		std::shared_ptr<Skeleton> skeleton,
@@ -336,29 +338,19 @@ namespace Mona {
 	}
 
 
-	void AnimationClip::Rotate(glm::fquat rotation) {
-		AnimationTrack& rootTrack = m_animationTracks[GetTrackIndex(0)];
+	void AnimationClip::Reorient(glm::vec3 currentFrontVector, glm::vec3 currentUpVector, glm::vec3 targetFrontVector, glm::vec3 targetUpVector) {
+		glm::fquat deltaRotationUp = glmUtils::calcDeltaRotation(currentUpVector, targetUpVector, currentFrontVector);
+		glm::fquat deltaRotationFront = glmUtils::calcDeltaRotation(deltaRotationUp * currentFrontVector, targetFrontVector, targetUpVector);
+		glm::fquat deltaRotation = deltaRotationFront * deltaRotationUp;
+		AnimationClip::AnimationTrack& rootTrack = m_animationTracks[GetTrackIndex(0)];
 		for (int i = 0; i < rootTrack.rotations.size(); i++) {
-			rootTrack.rotations[i] = rotation * rootTrack.rotations[i];
+			rootTrack.rotations[i] = deltaRotation * rootTrack.rotations[i];
 		}
 		for (int i = 0; i < rootTrack.positions.size(); i++) {
-			rootTrack.positions[i] = rotation * rootTrack.positions[i];
+			rootTrack.positions[i] = deltaRotation * rootTrack.positions[i];
 		}
-	}
-	void AnimationClip::Scale(float scale) {
-		AnimationTrack& rootTrack = m_animationTracks[GetTrackIndex(0)];
-		for (int i = 0; i < rootTrack.scales.size(); i++) {
-			rootTrack.scales[i] = scale * rootTrack.scales[i];
-		}
-		for (int i = 0; i < rootTrack.positions.size(); i++) {
-			rootTrack.positions[i] = scale * rootTrack.positions[i];
-		}
-	}
-	void AnimationClip::Translate(glm::vec3 translation) {
-		AnimationTrack& rootTrack = m_animationTracks[GetTrackIndex(0)];
-		for (int i = 0; i < rootTrack.positions.size(); i++) {
-			rootTrack.positions[i] = translation + rootTrack.positions[i];
-		}
+
+
 	}
 
 }

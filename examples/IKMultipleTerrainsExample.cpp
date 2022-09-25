@@ -199,6 +199,12 @@ public:
 		m_idleAnimation = animationManager.LoadAnimationClip(Mona::SourceDirectoryData::SourcePath("Assets/Animations/" + m_characterName + "/idle.fbx"), skeleton, true);
 		m_walkingAnimation = animationManager.LoadAnimationClip(Mona::SourceDirectoryData::SourcePath("Assets/Animations/" + m_characterName + "/walking"
 			+ std::to_string(m_walkingAnimIndex) + ".fbx"), skeleton, false);
+		glm::vec3 originalUpVector = glm::vec3(0, 1, 0);
+		glm::vec3 originalFrontVector = glm::vec3(0, 0, 1);
+
+		// se aplica correccion de orientacion requerida por el sistema IK
+		m_idleAnimation->Reorient(originalFrontVector, originalUpVector, glm::vec3(0, 1, 0), glm::vec3(0, 0, 1));
+		m_walkingAnimation->Reorient(originalFrontVector, originalUpVector, glm::vec3(0, 1, 0), glm::vec3(0, 0, 1));
 
 		if (m_characterName != "xbot") {
 			m_skeletalMesh = world.AddComponent<Mona::SkeletalMeshComponent>(*this, skinnedMesh, m_idleAnimation, materialTextured);
@@ -218,8 +224,6 @@ public:
 		rigData.initialPosition = m_startingPosition;
 		rigData.scale = 0.05f;
 
-		glm::vec3 originalUpVector = glm::vec3(0, 1, 0);
-		glm::vec3 originalFrontVector = glm::vec3(0, 0, 1);
 		m_ikNavHandle = world.AddComponent<Mona::IKNavigationComponent>(*this, rigData);
 		world.GetComponentHandle<Mona::IKNavigationComponent>(*this)->AddAnimation(m_walkingAnimation, originalUpVector,
 			originalFrontVector, Mona::AnimationType::WALKING);
@@ -251,8 +255,8 @@ private:
 	std::shared_ptr<Mona::AnimationClip> m_walkingAnimation;
 	std::shared_ptr<Mona::AnimationClip> m_idleAnimation;
 	Mona::SubscriptionHandle m_debugGUISubcription;
-
 };
+
 
 class IKNav : public Mona::Application
 {

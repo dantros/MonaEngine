@@ -100,22 +100,6 @@ namespace Mona{
 	}
 
 
-	void AnimationValidator::correctAnimationOrientation(std::shared_ptr<AnimationClip> animation, 
-		glm::vec3 originalUpVector, glm::vec3 originalFrontVector) {
-		glm::fquat deltaRotationUp = glmUtils::calcDeltaRotation(originalUpVector, glm::vec3(0, 0, 1), m_ikRig->getRightVector());
-		glm::fquat deltaRotationFront = glmUtils::calcDeltaRotation(deltaRotationUp * originalFrontVector , glm::vec3(0, 1, 0), m_ikRig->getUpVector());
-		glm::fquat deltaRotation = deltaRotationFront * deltaRotationUp;
-		AnimationClip::AnimationTrack& rootTrack = animation->m_animationTracks[animation->GetTrackIndex(0)];
-		for (int i = 0; i < rootTrack.rotations.size(); i++) {
-			rootTrack.rotations[i] = deltaRotation * rootTrack.rotations[i];
-		}	
-		for (int i = 0; i < rootTrack.positions.size(); i++) {
-			rootTrack.positions[i] = deltaRotation * rootTrack.positions[i];
-		}
-
-	}
-
-
 
 
 

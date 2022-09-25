@@ -42,7 +42,6 @@ namespace Mona {
 		animationClip->DecompressRotations();
 
 		// Para los siguientes pasos las rotaciones deben estar descomprimidas
-		m_animationValidator.correctAnimationOrientation(animationClip, originalUpVector, originalFrontVector);
 		if (animationType == AnimationType::WALKING) {
 			for (int i = 0; i < m_ikRig.getChainNum(); i++) {
 					m_animationValidator.checkLegLocalRotationAxes(animationClip, m_ikRig.getIKChain(i), originalUpVector, originalFrontVector);

@@ -174,8 +174,12 @@ namespace Mona{
 				currSupportHeight, trData, transformManager, staticMeshManager);
             return;
         }
-		glm::vec2 refVector = glm::rotate(glm::vec2(m_ikRig->getRightVector()), m_ikRig->getRotationAngle());
-        baseCurve.fitEnds(initialPos, finalPos, glm::vec3(refVector,0));
+		// para evitar impresiciones al reorientar la curva por diferencias cercanas a 0 o 180 grados con la direccion objetivo
+		if (abs(glm::degrees(m_ikRig->getRotationAngle())) < 20 || 160 < abs(glm::degrees(m_ikRig->getRotationAngle()))) {
+			baseCurve.translate(-baseCurve.getStart());
+			baseCurve.rotate(glm::angleAxis(glm::degrees(90.0f), m_ikRig->getUpVector()));
+		}
+        baseCurve.fitEnds(initialPos, finalPos, m_ikRig->getUpVector());
 
 		if (m_strideCorrectionEnabled && originalTrajectory.isDynamic() && !trData->isTargetFixed()) {
 			m_strideCorrector.correctStride(baseCurve, originalTrajectory.getEECurve(),

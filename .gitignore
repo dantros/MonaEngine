@@ -1,4 +1,3 @@
-#bat files
 *.bat
 CMakeFiles/
 .vscode/

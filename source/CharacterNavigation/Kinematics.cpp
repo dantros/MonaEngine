@@ -170,7 +170,8 @@ namespace Mona {
 		m_ikData.descentRate = 0.01f;
 		m_ikData.maxIterations = 300;
 		m_ikData.targetAngleDelta = 1 / pow(10, 3);
-		m_gradientDescent.setTermWeight(0, 1 / m_ikRig->getRigHeight());
+		float avgDeltaDist = m_ikRig->getRigHeight() / 200;
+		m_gradientDescent.setTermWeight(0, 1 / (avgDeltaDist*m_ikRig->getRigHeight()));
 		m_gradientDescent.setTermWeight(1, 2);		
 		m_gradientDescent.setTermWeight(2, 4);
 		setIKChains();

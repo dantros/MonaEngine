@@ -353,4 +353,14 @@ namespace Mona {
 
 	}
 
+	void AnimationClip::Scale(float scale) {
+		AnimationTrack& rootTrack = m_animationTracks[GetTrackIndex(0)];
+		for (int i = 0; i < rootTrack.scales.size(); i++) {
+			rootTrack.scales[i] = scale * rootTrack.scales[i];
+		}
+		for (int i = 0; i < rootTrack.positions.size(); i++) {
+			rootTrack.positions[i] = scale * rootTrack.positions[i];
+		}
+	}
+
 }

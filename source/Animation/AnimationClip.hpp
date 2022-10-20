@@ -38,6 +38,7 @@ namespace Mona {
 			return m_skeletonPtr;
 		}
 		void Reorient(glm::vec3 currentFrontVector, glm::vec3 currentUpVector, glm::vec3 targetFrontVector, glm::vec3 targetUpVector);
+		void Scale(float scale);
 	private:
 		void SetSkeleton(std::shared_ptr<Skeleton> skeletonPtr);
 		AnimationClip(const std::string& filePath,

@@ -412,6 +412,7 @@ namespace Mona{
 					float currentOppositeZ = oppositeEECurve.evalCurve(currentRepTime)[2];
 					float candidateEEZ = selectedFinalPoint[2];
 					float glblLegLenght = m_ikRig->getRigHeight() * m_ikRig->getRigScale() / 2;
+					// se chequea que la diferencia de altura entre ambos tobillos no vaya a ser demasiada
 					valid = abs(currentOppositeZ - candidateEEZ) < glblLegLenght * 0.65f;
 				}
 				else if (baseTrajectoryData->m_fixedTarget) {

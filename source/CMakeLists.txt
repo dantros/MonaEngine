@@ -1,9 +1,25 @@
-set(MONA_HEADERS 
+set(MONA_HEADERS
+				CharacterNavigation/AnimationValidator.hpp
+				CharacterNavigation/IKRigBase.hpp
+				CharacterNavigation/IKNavigationSystem.hpp
+				CharacterNavigation/IKNavigationLifetimePolicy.hpp
+				CharacterNavigation/IKNavigationComponent.hpp
+				CharacterNavigation/HeightMap.hpp
+				CharacterNavigation/EnvironmentData.hpp
+				CharacterNavigation/IKRig.hpp
+				CharacterNavigation/Kinematics.hpp
+				CharacterNavigation/GradientDescent.hpp
+				CharacterNavigation/ParametricCurves.hpp
+				CharacterNavigation/TrajectoryGenerator.hpp
+				CharacterNavigation/TrajectoryGeneratorBase.hpp
+				CharacterNavigation/IKRigController.hpp
 				Core/Common.hpp 
 				Core/Log.hpp
 				Core/Config.hpp
 				Core/RootDirectory.hpp
 				Core/AssimpTransformations.hpp
+				Core/FuncUtils.hpp
+				Core/GlmUtils.hpp
 				Platform/Window.hpp
 				Platform/Input.hpp
 				Platform/KeyCodes.hpp
@@ -68,8 +84,20 @@ set(MONA_HEADERS
 				Audio/AudioSourceComponentLifetimePolicy.hpp
 				DebugDrawing/DebugDrawingSystem.hpp
 				DebugDrawing/BulletDebugDraw.hpp
+				DebugDrawing/IKNavigationDebugDraw.hpp
 				Utilities/BasicCameraControllers.hpp)
-set(MONA_SOURCES 
+set(MONA_SOURCES
+				CharacterNavigation/AnimationValidator.cpp
+				CharacterNavigation/IKRigBase.cpp
+				CharacterNavigation/IKNavigationSystem.cpp
+				CharacterNavigation/HeightMap.cpp
+				CharacterNavigation/EnvironmentData.cpp
+				CharacterNavigation/IKRig.cpp
+				CharacterNavigation/Kinematics.cpp
+				CharacterNavigation/TrajectoryGenerator.cpp
+				CharacterNavigation/TrajectoryGeneratorBase.cpp
+				CharacterNavigation/IKRigController.cpp
+				Core/RootDirectory.cpp
 				Core/Config.cpp
 				Event/EventManager.cpp
 				Platform/Window.cpp
@@ -97,6 +125,7 @@ set(MONA_SOURCES
 				Audio/AudioSourceComponent.cpp
 				DebugDrawing/ImGuiBuild.cpp
 				DebugDrawing/BulletDebugDraw.cpp
+				DebugDrawing/IKNavigationDebugDraw.cpp
 				DebugDrawing/DebugDrawingSystem.cpp)
 file(GLOB_RECURSE Shaders  "${CMAKE_SOURCE_DIR}/Assets/Shaders/*")
 source_group("Shaders" FILES ${Shaders})

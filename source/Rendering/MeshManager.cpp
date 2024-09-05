@@ -20,6 +20,18 @@ namespace Mona {
 		}
 	}
 
+	std::shared_ptr<Mesh> MeshManager::GenerateTerrain(const glm::vec2& minXY, const glm::vec2& maxXY,
+		int numInnerVerticesWidth, int numInnerVerticesHeight, float (*heightFunc)(float, float)) noexcept {
+		std::srand(std::time(nullptr)); // use current time as seed for random generator
+		int random_variable = std::rand();
+		const std::string& id = std::to_string(random_variable);
+		Mesh* meshPtr = new Mesh(minXY, maxXY, numInnerVerticesWidth, numInnerVerticesHeight, heightFunc);
+		std::shared_ptr<Mesh> sharedPtr = std::shared_ptr<Mesh>(meshPtr);
+		//Antes de retornar la malla recien cargada, insertamos esta al mapa para que cargas futuras sean mucho mas rapidas.
+		m_meshMap.insert({ id, sharedPtr });
+		return sharedPtr;
+	}
+
 	std::shared_ptr<Mesh> MeshManager::LoadMesh(Mesh::PrimitiveType type) noexcept
 	{
 		const std::string primName = PrimitiveEnumToString(type);
@@ -68,7 +80,7 @@ namespace Mona {
 
 
 		/*
-		* Elimina todos los punteros del mapa de mallas para animación cuyo conteo de referencias es igual a uno,
+		* Elimina todos los punteros del mapa de mallas para animaciï¿½n cuyo conteo de referencias es igual a uno,
 		* es decir, que el puntero del mapa es el unico que apunta a esa memoria.
 		*/
 		for (auto i = m_skinnedMeshMap.begin(), last = m_skinnedMeshMap.end(); i != last;) {
@@ -98,7 +110,7 @@ namespace Mona {
 		bool flipUVs) noexcept 
 	{
 		const std::string& stringPath = filePath.string();
-		//En caso de que ya exista una entrada en el mapa de mallas para animación con el mismo path, 
+		//En caso de que ya exista una entrada en el mapa de mallas para animaciï¿½n con el mismo path, 
 		// entonces se retorna inmediatamente dicha malla.
 		auto it = m_skinnedMeshMap.find(stringPath);
 		if (it != m_skinnedMeshMap.end()) {

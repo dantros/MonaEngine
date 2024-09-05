@@ -1,12 +1,12 @@
 #include "Skeleton.hpp"
 #include <stack>
-#include "Skeleton.hpp"
 #include "../Rendering/Renderer.hpp"
 #include "../Core/Log.hpp"
 #include "../Core/AssimpTransformations.hpp"
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include "../Core/FuncUtils.hpp"
 namespace Mona {
 
 	Skeleton::Skeleton(const std::string& filePath) {
@@ -49,6 +49,7 @@ namespace Mona {
 		m_jointNames.reserve(boneInfo.size());
 		m_parentIndices.reserve(boneInfo.size());
 		m_jointMap.reserve(boneInfo.size());
+		m_offsets.reserve(boneInfo.size());
 		//El grafo de la escena se reccorre usando DFS (Depth Search First) usando dos stacks. Para poder construir
 		// correctamente la jerarquía
 		std::stack<int32_t> parentNodeIndices;
@@ -73,6 +74,7 @@ namespace Mona {
 				m_jointNames.push_back(currentNode->mName.C_Str());
 				m_parentIndices.push_back(parentIndex);
 				m_jointMap.insert(std::make_pair(currentNode->mName.C_Str(), static_cast<uint32_t>(m_parentIndices.size() - 1)));
+				m_offsets.push_back(AssimpToGlmMatrix(currentNode->mTransformation));
 				int32_t newParentIndex = m_parentIndices.size() - 1;
 				for (uint32_t j = 0; j < currentNode->mNumChildren; j++) {
 					//Pusheamos los hijos y actualizamos el indice del padre
@@ -91,6 +93,10 @@ namespace Mona {
 
 		}
 
+		// Se guarda el nombre del modelo
+		size_t pos = filePath.find_last_of("/\\");
+		std::string fileName = pos != std::string::npos ? filePath.substr(pos + 1): filePath;
+		m_modelName = funcUtils::splitString(fileName, '.')[0];
 	}
 	
 }

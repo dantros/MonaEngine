@@ -7,6 +7,9 @@
 #include "../Core/AssimpTransformations.hpp"
 #include "../Core/Log.hpp"
 #include "Skeleton.hpp"
+#include "../Core/FuncUtils.hpp"
+#include "../Core/GlmUtils.hpp"
+
 namespace Mona {
 	AnimationClip::AnimationClip(const std::string& filePath,
 		std::shared_ptr<Skeleton> skeleton,
@@ -23,7 +26,7 @@ namespace Mona {
 			return;
 		}
 
-		//Solo cargamos la primera animación
+		//Solo cargamos la primera animaciï¿½n
 		aiAnimation* animation = scene->mAnimations[0];
 		// Dado que los tiempos de muestreo de assimp estan generalmente en ticks se debe dividir casi todos 
 		// los tiempos de sus objetos por tickspersecond. Por otro lado, assimp sigue la convencion de que si mTicksPerSecond 
@@ -47,29 +50,35 @@ namespace Mona {
 				animationTrack.positions.push_back(AssimpToGlmVec3(track->mPositionKeys[j].mValue));
 			}
 			for (uint32_t j = 0; j < track->mNumRotationKeys; j++) {
-				animationTrack.rotationTimeStamps.push_back(track->mPositionKeys[j].mTime / ticksPerSecond);
+				animationTrack.rotationTimeStamps.push_back(track->mRotationKeys[j].mTime / ticksPerSecond);
 				animationTrack.rotations.push_back(AssimpToGlmQuat(track->mRotationKeys[j].mValue));
 
 			}
 			for (uint32_t j = 0; j < track->mNumScalingKeys; j++) {
-				animationTrack.scaleTimeStamps.push_back(track->mPositionKeys[j].mTime / ticksPerSecond);
+				animationTrack.scaleTimeStamps.push_back(track->mScalingKeys[j].mTime / ticksPerSecond);
 				animationTrack.scales.push_back(AssimpToGlmVec3(track->mScalingKeys[j].mValue));
 
 			}
 		}
-
-
+		// Se guarda el nombre de la animacion
+		size_t pos = filePath.find_last_of("/\\");
+		std::string fileName = pos != std::string::npos ? filePath.substr(pos + 1) : filePath;
+		m_animationName = funcUtils::splitString(fileName, '.')[0];
 		m_trackJointIndices.resize(m_trackJointNames.size());
+
 		SetSkeleton(skeleton);
-		if (removeRootMotion)
+		if (removeRootMotion) {
 			RemoveRootMotion();
+		}
+
+		
 	}
 
 	float AnimationClip::Sample(std::vector<JointPose>& outPose, float time, bool isLooping) {
 		//Primero se obtiene el tiempo de muestreo correcto
 		float newTime = GetSamplingTime(time, isLooping);
 
-		//Por cada articulación o joint animada
+		//Por cada articulaciï¿½n o joint animada
 		for (uint32_t i = 0; i < m_animationTracks.size(); i++)
 		{
 			const AnimationTrack& animationTrack = m_animationTracks[i];
@@ -77,7 +86,7 @@ namespace Mona {
 			std::pair<uint32_t, float> fp;
 			glm::vec3 localPosition;
 			/* Siempre se chequea si hay solo una muestra en el track dado que en ese caso no tiene sentido interpolar.
-			En cada cado (rotación, translación y escala) primero se llama una función que obtiene, dado el tiempo de muestreo, 
+			En cada cado (rotaciï¿½n, translaciï¿½n y escala) primero se llama una funciï¿½n que obtiene, dado el tiempo de muestreo, 
 			el primer indice cuyo tiempo de muestreo es mayor al obtenido y un valor entre 0 y 1 que representa que tan cerca
 			esta de dicha muestra, este valor se usa para interpolar.*/
 			if (animationTrack.positions.size() > 1)
@@ -136,7 +145,7 @@ namespace Mona {
 	}
 
 	void AnimationClip::RemoveRootMotion() {
-		//Remueve las translaciones del track de animación asociado a la raiz del esqueleto
+		//Remueve las translaciones del track de animaciï¿½n asociado a la raiz del esqueleto
 		for (uint32_t i = 0; i < m_animationTracks.size(); i++)
 		{
 			AnimationTrack& animationTrack = m_animationTracks[i];
@@ -146,6 +155,36 @@ namespace Mona {
 			{
 				animationTrack.positions[j] = glm::vec3(0.0f);
 			}
+		}
+	}
+
+	void AnimationClip::RemoveJointTranslation(int jointIndex) {
+		//Remueve las translaciones del track de animacion asociado a una articulacion del esqueleto
+		int trackIndex = GetTrackIndex(jointIndex);
+		MONA_ASSERT(trackIndex != -1, "AnimationClip: Joint not present in animation.");
+		auto& track = m_animationTracks[trackIndex];
+		for (int i = 0; i < track.positions.size(); i++) {
+			track.positions[i] = glm::vec3(0);
+		}
+	}
+
+	void AnimationClip::RemoveJointScaling(int jointIndex) {
+		//Remueve los escalamientos del track de animacion asociado a una articulacion del esqueleto
+		int trackIndex = GetTrackIndex(jointIndex);
+		MONA_ASSERT(trackIndex != -1, "AnimationClip: Joint not present in animation.");
+		auto& track = m_animationTracks[trackIndex];
+		for (int i = 0; i < track.positions.size(); i++) {
+			track.scales[i] = glm::vec3(1);
+		}
+	}
+
+	void AnimationClip::RemoveJointRotation(int jointIndex) {
+		//Remueve las translaciones del track de animacion asociado a una articulacion del esqueleto
+		int trackIndex = GetTrackIndex(jointIndex);
+		MONA_ASSERT(trackIndex != -1, "AnimationClip: Joint not present in animation.");
+		auto& track = m_animationTracks[trackIndex];
+		for (int i = 0; i < track.positions.size(); i++) {
+			track.rotations[i] = glm::identity<glm::fquat>();
 		}
 	}
 
@@ -171,5 +210,157 @@ namespace Mona {
 		return { sample, frac };
 	}
 
+	glm::vec3 AnimationClip::GetPosition(float time, int joint, bool isLooping) {
+		//Primero se obtiene el tiempo de muestreo correcto
+		float newTime = GetSamplingTime(time, isLooping);
+		int trackIndex = GetTrackIndex(joint);
+		MONA_ASSERT(trackIndex != -1, "AnimationClip: Joint not present in animation.");
+		const AnimationTrack& animationTrack = m_animationTracks[trackIndex];
+		glm::vec3 localPosition;
+		if (animationTrack.positions.size() > 1)
+		{
+
+			std::pair<uint32_t, float> fp = GetTimeFraction(animationTrack.positionTimeStamps, newTime);
+			const glm::vec3& position = animationTrack.positions[fp.first - 1];
+			const glm::vec3& nextPosition = animationTrack.positions[fp.first % animationTrack.positions.size()];
+			localPosition = glm::mix(position, nextPosition, fp.second);
+		}
+		else {
+			localPosition = animationTrack.positions[0];
+		}
+		return localPosition;
+	}
+	glm::fquat AnimationClip::GetRotation(float time, int joint, bool isLooping) {
+		//Primero se obtiene el tiempo de muestreo correcto
+		float newTime = GetSamplingTime(time, isLooping);
+		int trackIndex = GetTrackIndex(joint);
+		MONA_ASSERT(trackIndex != -1, "AnimationClip: Joint not present in animation.");
+		const AnimationTrack& animationTrack = m_animationTracks[trackIndex];
+		glm::fquat localRotation;
+		if (animationTrack.rotations.size() > 1)
+		{
+
+			std::pair<uint32_t, float> fp = GetTimeFraction(animationTrack.rotationTimeStamps, newTime);
+			const glm::fquat& rotation = animationTrack.rotations[fp.first - 1];
+			const glm::fquat& nextRotation = animationTrack.rotations[fp.first % animationTrack.rotations.size()];
+			localRotation = glm::mix(rotation, nextRotation, fp.second);
+		}
+		else {
+			localRotation = animationTrack.rotations[0];
+		}
+		return localRotation;
+	}
+	glm::vec3 AnimationClip::GetScale(float time, int joint, bool isLooping) {
+		//Primero se obtiene el tiempo de muestreo correcto
+		float newTime = GetSamplingTime(time, isLooping);
+		int trackIndex = GetTrackIndex(joint);
+		MONA_ASSERT(trackIndex != -1, "AnimationClip: Joint not present in animation.");
+		const AnimationTrack& animationTrack = m_animationTracks[trackIndex];
+		glm::vec3 localScale;
+		if (animationTrack.scales.size() > 1)
+		{
+
+			std::pair<uint32_t, float> fp = GetTimeFraction(animationTrack.scaleTimeStamps, newTime);
+			const glm::vec3& scale = animationTrack.scales[fp.first - 1];
+			const glm::vec3& nextScale = animationTrack.scales[fp.first % animationTrack.scales.size()];
+			localScale = glm::mix(scale, nextScale, fp.second);
+		}
+		else {
+			localScale = animationTrack.scales[0];
+		}
+		return localScale;
+	}
+
+	void AnimationClip::SetRotation(glm::fquat newRotation, int frameIndex, int joint) {
+		int trackIndex = GetTrackIndex(joint);
+		MONA_ASSERT(trackIndex != -1, "AnimationClip: Joint not present in animation.");
+		AnimationTrack& animationTrack = m_animationTracks[trackIndex];
+		MONA_ASSERT(0 <= frameIndex && frameIndex < animationTrack.rotations.size(), "AnimationClip: frame index out of range.");
+		animationTrack.rotations[frameIndex] = newRotation;
+	}
+
+	int AnimationClip::GetTrackIndex(int jointIndex) {
+		for (int i = 0; i < m_trackJointIndices.size(); i++) {
+			if (m_trackJointIndices[i] == jointIndex) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	void AnimationClip::DecompressRotations() {
+		int nTracks = m_animationTracks.size();
+		std::vector<bool> conditions(nTracks);
+		std::vector<int> currentTimeIndexes(nTracks);
+		std::vector<float> currentTimes(nTracks);
+		for (int i = 0; i < nTracks; i++) {
+			currentTimeIndexes[i] = 0;
+			conditions[i] = currentTimeIndexes[i] < m_animationTracks[i].rotationTimeStamps.size();
+		}
+		while (funcUtils::conditionVector_OR(conditions)) {
+			// seteamos el valor del timestamp que le corresponde a cada track
+			for (int i = 0; i < nTracks; i++) {
+				currentTimes[i] = conditions[i] ? m_animationTracks[i].rotationTimeStamps[currentTimeIndexes[i]] : std::numeric_limits<float>::max();
+			}
+			// encontramos los indices de las tracks que tienen el minimo timestamp actual
+			std::vector<int> minTimeIndexes = funcUtils::minValueIndex_multiple<float>(currentTimes); // ordenados ascendentemente
+			float currentMinTime = currentTimes[minTimeIndexes[0]];
+
+			int minTimeIndexesIndex = 0;
+			for (int i = 0; i < nTracks; i++) {
+				if (minTimeIndexesIndex < minTimeIndexes.size() && minTimeIndexes[minTimeIndexesIndex] == i) { // track actual tiene un timestamp minimo
+					minTimeIndexesIndex += 1;
+				}
+				else {
+					// si el valor a insertar cae antes del primer timestamp, se replica el ultimo valor del arreglo de rotaciones
+					// se asume animacion circular
+					int insertOffset = currentTimeIndexes[i];
+					int valIndex = currentTimeIndexes[i] > 0 ? currentTimeIndexes[i] - 1 : m_animationTracks[i].rotationTimeStamps.size() - 1;
+					auto rotIt = m_animationTracks[i].rotations.begin() + insertOffset;
+					auto timeRotIt = m_animationTracks[i].rotationTimeStamps.begin() + insertOffset;
+					glm::fquat rotVal = m_animationTracks[i].rotations[valIndex];
+					if (valIndex < m_animationTracks[i].rotations.size() - 1) {
+						float timeFrac = funcUtils::getFraction(m_animationTracks[i].rotationTimeStamps[valIndex],
+							m_animationTracks[i].rotationTimeStamps[valIndex + 1], currentMinTime);
+						rotVal = funcUtils::lerp(rotVal, m_animationTracks[i].rotations[valIndex + 1], timeFrac);
+					}
+					m_animationTracks[i].rotations.insert(rotIt, rotVal);
+					m_animationTracks[i].rotationTimeStamps.insert(timeRotIt, currentMinTime);
+				}
+				currentTimeIndexes[i] += 1;
+			}
+
+			// actualizamos las condiciones
+			for (int i = 0; i < nTracks; i++) {
+				conditions[i] = currentTimeIndexes[i] < m_animationTracks[i].rotationTimeStamps.size();
+			}
+		}
+	}
+
+
+	void AnimationClip::Reorient(glm::vec3 currentFrontVector, glm::vec3 currentUpVector, glm::vec3 targetFrontVector, glm::vec3 targetUpVector) {
+		glm::fquat deltaRotationUp = glmUtils::calcDeltaRotation(currentUpVector, targetUpVector, currentFrontVector);
+		glm::fquat deltaRotationFront = glmUtils::calcDeltaRotation(deltaRotationUp * currentFrontVector, targetFrontVector, targetUpVector);
+		glm::fquat deltaRotation = deltaRotationFront * deltaRotationUp;
+		AnimationClip::AnimationTrack& rootTrack = m_animationTracks[GetTrackIndex(0)];
+		for (int i = 0; i < rootTrack.rotations.size(); i++) {
+			rootTrack.rotations[i] = deltaRotation * rootTrack.rotations[i];
+		}
+		for (int i = 0; i < rootTrack.positions.size(); i++) {
+			rootTrack.positions[i] = deltaRotation * rootTrack.positions[i];
+		}
+
+
+	}
+
+	void AnimationClip::Scale(float scale) {
+		AnimationTrack& rootTrack = m_animationTracks[GetTrackIndex(0)];
+		for (int i = 0; i < rootTrack.scales.size(); i++) {
+			rootTrack.scales[i] = scale * rootTrack.scales[i];
+		}
+		for (int i = 0; i < rootTrack.positions.size(); i++) {
+			rootTrack.positions[i] = scale * rootTrack.positions[i];
+		}
+	}
 
 }

@@ -4,7 +4,11 @@ function(Add_Test TARGETNAME FILENAME)
 	set_property(TARGET ${TARGETNAME} PROPERTY FOLDER Tests)
 	target_link_libraries(${TARGETNAME} PRIVATE MonaEngine)
 	target_include_directories(${TARGETNAME} PRIVATE ${MONA_INCLUDE_DIRECTORY} ${THIRD_PARTY_INCLUDE_DIRECTORIES})
+	add_custom_command(TARGET ${TARGETNAME} POST_BUILD        
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different 
+        $<TARGET_FILE:OpenAL> $<TARGET_FILE_DIR:${TARGETNAME}>)
 
 endfunction(Add_Test)
 
-Add_Test(Test002_World Test002_World.cpp)
+Add_Test(Test0_TestConIK IKTest.cpp)
+Add_Test(Test1_TestSinIK NoIKTest.cpp)

@@ -1,7 +1,11 @@
-#bat files
 *.bat
 CMakeFiles/
 .vscode/
 source/Core/RootDirectory.hpp
 ToDo_Future_Work.txt
 commit_message.txt
+out/
+.vs/
+.idea/
+__pycache__/
+build/

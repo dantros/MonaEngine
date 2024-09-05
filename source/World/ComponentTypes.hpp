@@ -14,6 +14,7 @@ namespace Mona {
 		SpotLightComponent,
 		PointLightComponent,
 		SkeletalMeshComponent,
+		IKNavigationComponent,
 		ComponentTypeCount
 	};
 
@@ -35,6 +36,7 @@ namespace Mona {
 	class SpotLightComponent;
 	class PointLightComponent;
 	class SkeletalMeshComponent;
+	class IKNavigationComponent;
 	template <typename ComponentType>
 	class DefaultLifetimePolicy;
 
@@ -52,7 +54,8 @@ namespace Mona {
 		DirectionalLightComponent,
 		SpotLightComponent,
 		PointLightComponent,
-		SkeletalMeshComponent>;
+		SkeletalMeshComponent,
+		IKNavigationComponent>;
 
 }
 #endif

@@ -43,6 +43,7 @@ namespace Mona {
 		void ShutDown(EventManager& eventManager) noexcept;
 		void OnWindowResizeEvent(const WindowResizeEvent& event);
 		std::shared_ptr<Material> CreateMaterial(MaterialType type, bool isForSkinning);
+		void SetBackgroundColor(float r, float g, float b, float alpha = 0.0f);
 	private:
 		struct DirectionalLight
 		{
@@ -82,6 +83,7 @@ namespace Mona {
 		SubscriptionHandle m_onWindowResizeSubscription;
 		DebugDrawingSystem* m_debugDrawingSystemPtr = nullptr;
 		unsigned int m_lightDataUBO = 0;
+		glm::vec4 m_backgroundColor = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 	};
 }

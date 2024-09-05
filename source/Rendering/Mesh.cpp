@@ -18,7 +18,7 @@ namespace Mona {
 		glm::vec3 tangent;
 		glm::vec3 bitangent;
 	};
-	
+
 	Mesh::~Mesh() {
 		if (m_vertexArrayID)
 			ClearData();
@@ -32,7 +32,7 @@ namespace Mona {
 		glDeleteVertexArrays(1, &m_vertexArrayID);
 		m_vertexArrayID = 0;
 	}
-	
+
 	Mesh::Mesh(const std::string& filePath, bool flipUVs) :
 		m_vertexArrayID(0),
 		m_vertexBufferID(0),
@@ -57,7 +57,7 @@ namespace Mona {
 		size_t numVertices = 0;
 		size_t numFaces = 0;
 		//El primer paso consiste en contar el numero de vertices y caras totales
-		//de esta manera se puede reservar memoria inmediatamente evitando realocación de memoria
+		//de esta manera se puede reservar memoria inmediatamente evitando realocaciï¿½n de memoria
 		for (uint32_t i = 0; i < scene->mNumMeshes; i++) {
 			numVertices += scene->mMeshes[i]->mNumVertices;
 			numFaces += scene->mMeshes[i]->mNumFaces;
@@ -69,7 +69,7 @@ namespace Mona {
 		//El grafo de la escena se reccorre usando DFS (Depth Search First) usando dos stacks.
 		std::stack<const aiNode*> sceneNodes;
 		std::stack<aiMatrix4x4> sceneTransforms;
-		//Luego pusheamos información asociada a la raiz del grafo
+		//Luego pusheamos informaciï¿½n asociada a la raiz del grafo
 		sceneNodes.push(scene->mRootNode);
 		sceneTransforms.push(scene->mRootNode->mTransformation);
 		unsigned int offset = 0;
@@ -125,7 +125,7 @@ namespace Mona {
 			}
 
 			for (uint32_t j = 0; j < currentNode->mNumChildren; j++) {
-				//Pusheamos los hijos y acumulamos la matrix de transformación
+				//Pusheamos los hijos y acumulamos la matrix de transformaciï¿½n
 				sceneNodes.push(currentNode->mChildren[j]);
 				sceneTransforms.push(currentNode->mChildren[j]->mTransformation * currentTransform);
 			}
@@ -154,7 +154,7 @@ namespace Mona {
 		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), (void*)offsetof(MeshVertex, tangent));
 		glEnableVertexAttribArray(4);
 		glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), (void*)offsetof(MeshVertex, bitangent));
-		
+
 	}
 
 	Mesh::Mesh(PrimitiveType type) :
@@ -165,28 +165,197 @@ namespace Mona {
 	{
 		switch (type)
 		{
-			case Mona::Mesh::PrimitiveType::Plane:
-			{
-				CreatePlane();
-				break;
-			}
-			case Mona::Mesh::PrimitiveType::Cube:
-			{
-				CreateCube();
-				break;
-			}
-			case Mona::Mesh::PrimitiveType::Sphere:
-			{
-				CreateSphere();
-				break;
-			}
-			default:
-			{
+		case Mona::Mesh::PrimitiveType::Plane:
+		{
+			CreatePlane();
+			break;
+		}
+		case Mona::Mesh::PrimitiveType::Cube:
+		{
+			CreateCube();
+			break;
+		}
+		case Mona::Mesh::PrimitiveType::Sphere:
+		{
+			CreateSphere();
+			break;
+		}
+		default:
+		{
 
-				CreateSphere();
-				break;
+			CreateSphere();
+			break;
+		}
+		}
+	}
+
+	glm::vec3 surfaceColor(glm::vec3 baseColor, float modifier) {
+		return { baseColor[0] * modifier, baseColor[1] * modifier / 2, baseColor[2] };
+	}
+
+
+	int orientationTest(const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& testV, float epsilon) { //arista de v1 a v2, +1 si el punto esta a arriba, -1 abajo,0 si es colineal, error(-2) si v1 y v2 iguales
+		float x1 = v1[0];
+		float y1 = v1[1];
+		float x2 = v2[0];
+		float y2 = v2[1];
+
+		int orientationV1V2 = 1;
+		if (x1 > x2) {
+			orientationV1V2 = -1;
+		}
+
+		if (std::abs(testV[0] - v1[0]) <= epsilon && std::abs(testV[1] - v1[1]) <= epsilon ||
+			std::abs(testV[0] - v2[0]) <= epsilon && std::abs(testV[1] - v2[1]) <= epsilon) {
+			return 0;
+		}
+
+		if (x1 == x2 and y1 == y2) {
+			MONA_LOG_ERROR("vertices are equal!");
+			return -2;
+		}
+		if (x1 == x2) {
+			if (y1 > y2) { orientationV1V2 = -1; }
+			if (testV[0] == x1) { return 0; }
+			else if (testV[0] > x1) { return -1 * orientationV1V2; }
+			else { return 1 * orientationV1V2; }
+		}
+
+
+		float yOnLine = ((y2 - y1) / (x2 - x1)) * (testV[0] - x1) + y1;
+		if (testV[1] > yOnLine) { return 1 * orientationV1V2; }
+		else if (testV[1] < yOnLine) { return -1 * orientationV1V2; }
+		else { return 0; }
+	}
+
+	Mesh::Mesh(const glm::vec2& minXY, const glm::vec2& maxXY, int numInnerVerticesWidth, int numInnerVerticesHeight,
+		float (*heightFunc)(float, float)) :
+		m_vertexArrayID(0),
+		m_vertexBufferID(0),
+		m_indexBufferID(0),
+		m_indexBufferCount(0)
+	{
+		//Un vertice de la malla se ve como
+		// v = {pos_x, pos_y, pos_z, normal_x, normal_y, normal_z, uv_u, uv_v, tangent_x, tangent_y, tangent_z}
+		std::vector<float> vertices;
+		std::vector<unsigned int> faces;
+		size_t numVertices = 0;
+		size_t numFaces = 0;
+
+		float stepX = (maxXY[0] - minXY[0]) / (numInnerVerticesWidth + 1);
+		float stepY = (maxXY[1] - minXY[1]) / (numInnerVerticesHeight + 1);
+		for (int i = 0; i < numInnerVerticesWidth + 2; i++) {
+			float x = minXY[0] + stepX * i;
+			for (int j = 0; j < numInnerVerticesHeight + 2; j++) {
+				float y = minXY[1] + stepY * j;
+				float z = heightFunc(x, y);
+				numVertices += 1;
+				vertices.insert(vertices.end(), { x, y, z, 0, 0, 0, 0, 0, 0, 0, 0 }); // falta rellenar valores
 			}
 		}
+
+		// indexing func
+		auto index = [&](int i, int j)
+		{
+			return i * (numInnerVerticesHeight + 2) + j;
+		};
+
+		// We generate quads for each cell connecting 4 neighbor vertices
+		for (int i = 0; i < numInnerVerticesWidth + 1; i++) {
+			for (int j = 0; j < numInnerVerticesHeight + 1; j++) {
+				// Getting indices for all vertices in this quad
+				unsigned int isw = index(i, j);
+				unsigned int ise = index(i + 1, j);
+				unsigned int ine = index(i + 1, j + 1);
+				unsigned int inw = index(i, j + 1);
+
+				numFaces += 2;
+				faces.insert(faces.end(), { isw, ise, ine, ine, inw, isw }); // falta rellenar las normales
+			}
+		}
+		std::vector<glm::vec3> vertexPositions;
+		std::vector<glm::vec3> groupedFaces;
+		std::unordered_map<int, std::vector<glm::vec3>> oneFacePerVertex;
+		vertexPositions.reserve(numVertices);
+		oneFacePerVertex.reserve(numVertices);
+		groupedFaces.reserve(faces.size());
+		for (int i = 0; i < vertices.size(); i += 11) {
+			glm::vec3 v(vertices[i], vertices[i + 1], vertices[i + 2]);
+			vertexPositions.push_back(v);
+		}
+		for (int i = 0; i < faces.size(); i += 3) {
+			glm::vec3 v1 = vertexPositions[faces[i]];
+			glm::vec3 v2 = vertexPositions[faces[i + 1]];
+			glm::vec3 v3 = vertexPositions[faces[i + 2]];
+			glm::vec3 f = { faces[i], faces[i + 1], faces[i + 2] };
+			int orientation = orientationTest(v1, v2, v3, 0.00001f);
+			if (orientation == -1) {
+				f = { faces[i + 1], faces[i], faces[i + 2] };
+			}
+			groupedFaces.push_back(f);
+			// Guardamos una cara por cada vertice para extraer normales y tangentes
+			if (oneFacePerVertex[faces[i]].empty()) {
+				oneFacePerVertex[faces[i]].push_back(vertexPositions[faces[i]]);
+				oneFacePerVertex[faces[i]].push_back(vertexPositions[faces[i + 1]]);
+				oneFacePerVertex[faces[i]].push_back(vertexPositions[faces[i + 2]]);
+			}
+			if (oneFacePerVertex[faces[i + 1]].empty()) {
+				oneFacePerVertex[faces[i + 1]].push_back(vertexPositions[faces[i]]);
+				oneFacePerVertex[faces[i + 1]].push_back(vertexPositions[faces[i + 1]]);
+				oneFacePerVertex[faces[i + 1]].push_back(vertexPositions[faces[i + 2]]);
+			}
+			if (oneFacePerVertex[faces[i + 2]].empty()) {
+				oneFacePerVertex[faces[i + 2]].push_back(vertexPositions[faces[i]]);
+				oneFacePerVertex[faces[i + 2]].push_back(vertexPositions[faces[i + 1]]);
+				oneFacePerVertex[faces[i + 2]].push_back(vertexPositions[faces[i + 2]]);
+			}
+		}
+
+		// Rellenar valores faltantes en vertices
+		for (int i = 0; i < vertices.size(); i += 11) {
+			int vertexIndex = i / 11;
+			glm::vec3 v1 = oneFacePerVertex[vertexIndex][0];
+			glm::vec3 v2 = oneFacePerVertex[vertexIndex][1];
+			glm::vec3 v3 = oneFacePerVertex[vertexIndex][2];
+			glm::vec3 normal = glm::normalize(glm::cross((v2 - v1), (v3 - v1)));
+			vertices[i + 3] = normal[0];
+			vertices[i + 4] = normal[1];
+			vertices[i + 5] = normal[2];
+			// uv
+			vertices[i + 6] = 0.0f;
+			vertices[i + 7] = 0.0f;
+			glm::vec3 tangent = glm::normalize(v2 - v1);
+			vertices[i + 8] = tangent[0];
+			vertices[i + 9] = tangent[1];
+			vertices[i + 10] = tangent[2];
+		}
+
+		m_heightMap = HeightMap({ minXY[0], minXY[1] }, { maxXY[0], maxXY[1] }, heightFunc);
+
+		//Comienza el paso de los datos en CPU a GPU usando OpenGL
+		m_indexBufferCount = static_cast<uint32_t>(faces.size());
+		glGenVertexArrays(1, &m_vertexArrayID);
+		glBindVertexArray(m_vertexArrayID);
+
+		glGenBuffers(1, &m_vertexBufferID);
+		glGenBuffers(1, &m_indexBufferID);
+		glBindBuffer(GL_ARRAY_BUFFER, m_vertexBufferID);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * static_cast<unsigned int>(vertices.size()), vertices.data(), GL_STATIC_DRAW);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexBufferID);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * static_cast<unsigned int>(faces.size()), faces.data(), GL_STATIC_DRAW);
+		//Un vertice de la malla se ve como
+		// v = {pos_x, pos_y, pos_z, normal_x, normal_y, normal_z, uv_u, uv_v, tangent_x, tangent_y, tangent_z}
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*)(3 * sizeof(float)));
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*)(6 * sizeof(float)));
+		glEnableVertexAttribArray(3);
+		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*)(8 * sizeof(float)));
+		glEnableVertexAttribArray(4);
+		glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*)(11 * sizeof(float)));
+
 	}
 
 	void Mesh::CreateCube() noexcept {
@@ -313,7 +482,7 @@ namespace Mona {
 	}
 
 	void Mesh::CreateSphere() noexcept {
-		//Esta implementación de la creacion procedural de la malla de una esfera
+		//Esta implementaciï¿½n de la creacion procedural de la malla de una esfera
 		//esta basada en: http://www.songho.ca/opengl/gl_sphere.html
 
 		//Cada vertice debe tener la forma

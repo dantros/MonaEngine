@@ -12,6 +12,9 @@ namespace Mona {
 	class Skeleton {
 	public:
 		friend class SkeletonManager;
+		friend class AnimationClip;
+		friend class IKRig;
+		friend class IKAnimation;
 		using size_type = std::vector<std::string>::size_type;
 		size_type JointCount() const {
 			return m_jointNames.size();
@@ -41,6 +44,10 @@ namespace Mona {
 		std::int32_t GetParentIndex(size_type index) const {
 			return m_parentIndices[index];
 		}
+
+		std::string GetModelName() {
+			return m_modelName;
+		}
 	private:
 		//Skeleton() : m_invBindPoseMatrices(), m_jointNames(), m_parentIndices() {}
 		/*
@@ -61,6 +68,8 @@ namespace Mona {
 		std::vector<glm::mat4> m_invBindPoseMatrices;
 		std::vector<std::string> m_jointNames;
 		std::vector<std::int32_t> m_parentIndices;
+		std::vector<glm::mat4> m_offsets;
+		std::string m_modelName;
 	};
 }
 #endif

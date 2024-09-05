@@ -31,28 +31,28 @@ namespace Mona{
 
 	void Renderer::StartUp(EventManager& eventManager, DebugDrawingSystem* debugDrawingSystemPtr) noexcept {
 	
-		//Construcción de todos los shaders que soporta el motor.
-		m_shaders[static_cast<unsigned int >(MaterialType::UnlitFlat)] = ShaderProgram(SourcePath("source/Rendering/Shaders/UnlitFlat.vs"), SourcePath("source/Rendering/Shaders/UnlitFlat.ps"));
-		m_shaders[static_cast<unsigned int >(MaterialType::UnlitTextured)] = ShaderProgram(SourcePath("source/Rendering/Shaders/UnlitTextured.vs"), SourcePath("source/Rendering/Shaders/UnlitTextured.ps"));
-		m_shaders[static_cast<unsigned int >(MaterialType::DiffuseFlat)] = ShaderProgram(SourcePath("source/Rendering/Shaders/DiffuseFlat.vs"), SourcePath("source/Rendering/Shaders/DiffuseFlat.ps"));
-		m_shaders[static_cast<unsigned int >(MaterialType::DiffuseTextured)] = ShaderProgram(SourcePath("source/Rendering/Shaders/DiffuseTextured.vs"), SourcePath("source/Rendering/Shaders/DiffuseTextured.ps"));
-		m_shaders[static_cast<unsigned int >(MaterialType::PBRFlat)] = ShaderProgram(SourcePath("source/Rendering/Shaders/PBRFlat.vs"), SourcePath("source/Rendering/Shaders/PBRFlat.ps"));
-		m_shaders[static_cast<unsigned int >(MaterialType::PBRTextured)] = ShaderProgram(SourcePath("source/Rendering/Shaders/PBRTextured.vs"), SourcePath("source/Rendering/Shaders/PBRTextured.ps"));
+		//Construcciï¿½n de todos los shaders que soporta el motor.
+		m_shaders[static_cast<unsigned int >(MaterialType::UnlitFlat)] = ShaderProgram(SourceDirectoryData::SourcePath("source/Rendering/Shaders/UnlitFlat.vs"), SourceDirectoryData::SourcePath("source/Rendering/Shaders/UnlitFlat.ps"));
+		m_shaders[static_cast<unsigned int >(MaterialType::UnlitTextured)] = ShaderProgram(SourceDirectoryData::SourcePath("source/Rendering/Shaders/UnlitTextured.vs"), SourceDirectoryData::SourcePath("source/Rendering/Shaders/UnlitTextured.ps"));
+		m_shaders[static_cast<unsigned int >(MaterialType::DiffuseFlat)] = ShaderProgram(SourceDirectoryData::SourcePath("source/Rendering/Shaders/DiffuseFlat.vs"), SourceDirectoryData::SourcePath("source/Rendering/Shaders/DiffuseFlat.ps"));
+		m_shaders[static_cast<unsigned int >(MaterialType::DiffuseTextured)] = ShaderProgram(SourceDirectoryData::SourcePath("source/Rendering/Shaders/DiffuseTextured.vs"), SourceDirectoryData::SourcePath("source/Rendering/Shaders/DiffuseTextured.ps"));
+		m_shaders[static_cast<unsigned int >(MaterialType::PBRFlat)] = ShaderProgram(SourceDirectoryData::SourcePath("source/Rendering/Shaders/PBRFlat.vs"), SourceDirectoryData::SourcePath("source/Rendering/Shaders/PBRFlat.ps"));
+		m_shaders[static_cast<unsigned int >(MaterialType::PBRTextured)] = ShaderProgram(SourceDirectoryData::SourcePath("source/Rendering/Shaders/PBRTextured.vs"), SourceDirectoryData::SourcePath("source/Rendering/Shaders/PBRTextured.ps"));
 		constexpr unsigned int offset = static_cast<unsigned int>(MaterialType::MaterialTypeCount);
-		m_shaders[static_cast<unsigned int>(MaterialType::UnlitFlat) + offset] = ShaderProgram(SourcePath("source/Rendering/Shaders/UnlitFlatSkinning.vs"), SourcePath("source/Rendering/Shaders/UnlitFlat.ps"));
-		m_shaders[static_cast<unsigned int>(MaterialType::UnlitTextured) + offset] = ShaderProgram(SourcePath("source/Rendering/Shaders/UnlitTexturedSkinning.vs"), SourcePath("source/Rendering/Shaders/UnlitTextured.ps"));
-		m_shaders[static_cast<unsigned int>(MaterialType::DiffuseFlat) + offset] = ShaderProgram(SourcePath("source/Rendering/Shaders/DiffuseFlatSkinning.vs"), SourcePath("source/Rendering/Shaders/DiffuseFlat.ps"));
-		m_shaders[static_cast<unsigned int>(MaterialType::DiffuseTextured) + offset] = ShaderProgram(SourcePath("source/Rendering/Shaders/DiffuseTexturedSkinning.vs"), SourcePath("source/Rendering/Shaders/DiffuseTextured.ps"));
-		m_shaders[static_cast<unsigned int>(MaterialType::PBRFlat) + offset] = ShaderProgram(SourcePath("source/Rendering/Shaders/PBRFlatSkinning.vs"), SourcePath("source/Rendering/Shaders/PBRFlat.ps"));
-		m_shaders[static_cast<unsigned int>(MaterialType::PBRTextured) + offset] = ShaderProgram(SourcePath("source/Rendering/Shaders/PBRTexturedSkinning.vs"), SourcePath("source/Rendering/Shaders/PBRTextured.ps"));
-		//El sistema de rendering debe subscribirse al cambio de resolución de la ventana para actulizar la resolución
+		m_shaders[static_cast<unsigned int>(MaterialType::UnlitFlat) + offset] = ShaderProgram(SourceDirectoryData::SourcePath("source/Rendering/Shaders/UnlitFlatSkinning.vs"), SourceDirectoryData::SourcePath("source/Rendering/Shaders/UnlitFlat.ps"));
+		m_shaders[static_cast<unsigned int>(MaterialType::UnlitTextured) + offset] = ShaderProgram(SourceDirectoryData::SourcePath("source/Rendering/Shaders/UnlitTexturedSkinning.vs"), SourceDirectoryData::SourcePath("source/Rendering/Shaders/UnlitTextured.ps"));
+		m_shaders[static_cast<unsigned int>(MaterialType::DiffuseFlat) + offset] = ShaderProgram(SourceDirectoryData::SourcePath("source/Rendering/Shaders/DiffuseFlatSkinning.vs"), SourceDirectoryData::SourcePath("source/Rendering/Shaders/DiffuseFlat.ps"));
+		m_shaders[static_cast<unsigned int>(MaterialType::DiffuseTextured) + offset] = ShaderProgram(SourceDirectoryData::SourcePath("source/Rendering/Shaders/DiffuseTexturedSkinning.vs"), SourceDirectoryData::SourcePath("source/Rendering/Shaders/DiffuseTextured.ps"));
+		m_shaders[static_cast<unsigned int>(MaterialType::PBRFlat) + offset] = ShaderProgram(SourceDirectoryData::SourcePath("source/Rendering/Shaders/PBRFlatSkinning.vs"), SourceDirectoryData::SourcePath("source/Rendering/Shaders/PBRFlat.ps"));
+		m_shaders[static_cast<unsigned int>(MaterialType::PBRTextured) + offset] = ShaderProgram(SourceDirectoryData::SourcePath("source/Rendering/Shaders/PBRTexturedSkinning.vs"), SourceDirectoryData::SourcePath("source/Rendering/Shaders/PBRTextured.ps"));
+		//El sistema de rendering debe subscribirse al cambio de resoluciï¿½n de la ventana para actulizar la resoluciï¿½n
 		//del framebuffer al que OpenGL renderiza.
 		eventManager.Subscribe(m_onWindowResizeSubscription, this, &Renderer::OnWindowResizeEvent);
 		m_debugDrawingSystemPtr = debugDrawingSystemPtr;
 		m_currentMatrixPalette.resize(NUM_MAX_BONES, glm::mat4(1.0f));
 		glEnable(GL_DEPTH_TEST);
 
-		//Se genera el buffer que contendra toda la información lumínica de la escena
+		//Se genera el buffer que contendra toda la informaciï¿½n lumï¿½nica de la escena
 		glGenBuffers(1, &m_lightDataUBO);
 		glBindBuffer(GL_UNIFORM_BUFFER, m_lightDataUBO);
 		glBufferData(GL_UNIFORM_BUFFER, sizeof(Lights), NULL, GL_DYNAMIC_DRAW);
@@ -80,12 +80,13 @@ namespace Mona{
 		ComponentManager<SpotLightComponent>& spotLightDataManager,
 		ComponentManager<PointLightComponent>& pointLightDataManager) noexcept
 	{
+		glClearColor(m_backgroundColor[0], m_backgroundColor[1], m_backgroundColor[2], m_backgroundColor[3]);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glm::mat4 viewMatrix;
 		glm::mat4 projectionMatrix;
 		glm::vec3 cameraPosition = glm::vec3(0.0f);
 		if (cameraDataManager.IsValid(cameraHandle)) {
-			//Si el usuario configuro la camara principal configuramos apartir de esta la matriz de vista y projección
+			//Si el usuario configuro la camara principal configuramos apartir de esta la matriz de vista y projecciï¿½n
 			//viewMatrix y projectionMatrix respectivamente
 			const CameraComponent* camera = cameraDataManager.GetComponentPointer(cameraHandle);
 			GameObject* cameraOwner = cameraDataManager.GetOwner(cameraHandle);
@@ -103,7 +104,7 @@ namespace Mona{
 
 
 
-		//Comienza carga en CPU de la información lumínica de la escena
+		//Comienza carga en CPU de la informaciï¿½n lumï¿½nica de la escena
 		Lights lights;
 		lights.ambientLight = ambientLight;
 
@@ -146,20 +147,20 @@ namespace Mona{
 			lights.pointLights[i].maxRadius = pointLight.GetMaxRadius();
 		}
 
-		//Pasamos la informacion lumínica a GPU con un unico llamado a OpenGL fuera de los loops de las primitivas.
+		//Pasamos la informacion lumï¿½nica a GPU con un unico llamado a OpenGL fuera de los loops de las primitivas.
 		glBindBuffer(GL_UNIFORM_BUFFER, m_lightDataUBO);
 		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(Lights), &lights);
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
-		//Iteración sobre todas las instancias de StaticMeshComponent
+		//Iteraciï¿½n sobre todas las instancias de StaticMeshComponent
 		for (decltype(staticMeshDataManager.GetCount()) i = 0;
 			i < staticMeshDataManager.GetCount();
 			i++)
 		{
 			StaticMeshComponent& staticMesh = staticMeshDataManager[i];
 			GameObject* owner = staticMeshDataManager.GetOwnerByIndex(i);
-			//Se obtiene la información espacial para configurar la matriz de modelo dentro del shader.
+			//Se obtiene la informaciï¿½n espacial para configurar la matriz de modelo dentro del shader.
 			TransformComponent* transform = transformDataManager.GetComponentPointer(owner->GetInnerComponentHandle<TransformComponent>());
-			//Configuración de la malla a ser renderizada y las uniformes asociadas a su material.
+			//Configuraciï¿½n de la malla a ser renderizada y las uniformes asociadas a su material.
 			glBindVertexArray(staticMesh.GetMeshVAOID());
 			staticMesh.m_materialPtr->SetUniforms(projectionMatrix, viewMatrix, transform->GetModelMatrix(), cameraPosition);
 			glDrawElements(GL_TRIANGLES, staticMesh.GetMeshIndexCount(), GL_UNSIGNED_INT, 0);
@@ -184,7 +185,7 @@ namespace Mona{
 			glUniformMatrix4fv(ShaderProgram::BoneTransformShaderLocation, skeletalMesh.GetSkeleton()->JointCount(), GL_FALSE, (GLfloat*) m_currentMatrixPalette.data());
 			glDrawElements(GL_TRIANGLES, skinnedMesh->GetIndexBufferCount(), GL_UNSIGNED_INT, 0);
 		}
-		//En no Debub build este llamado es vacio, en caso contrario se renderiza información de debug
+		//En no Debub build este llamado es vacio, en caso contrario se renderiza informaciï¿½n de debug
 		m_debugDrawingSystemPtr->Draw(eventManager, viewMatrix, projectionMatrix);
 		
 	}
@@ -220,5 +221,9 @@ namespace Mona{
 			return nullptr;
 			break;
 		}
+	}
+
+	void Renderer::SetBackgroundColor(float r, float g, float b, float alpha) {
+		m_backgroundColor = glm::vec4(r, g, b, alpha);
 	}
 }

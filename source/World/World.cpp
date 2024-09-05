@@ -25,7 +25,7 @@ namespace Mona {
 		m_ambientLight(glm::vec3(0.1f))
 	{
 		auto& config = Config::GetInstance();
-		config.readFile(SourcePath("config.cfg").string());
+		config.readFile(SourceDirectoryData::SourcePath("config.cfg").string());
 
 		m_componentManagers[TransformComponent::componentIndex].reset(new ComponentManager<TransformComponent>());
 		m_componentManagers[CameraComponent::componentIndex].reset(new ComponentManager<CameraComponent>());
@@ -36,24 +36,33 @@ namespace Mona {
 		m_componentManagers[SpotLightComponent::componentIndex].reset(new ComponentManager<SpotLightComponent>());
 		m_componentManagers[PointLightComponent::componentIndex].reset(new ComponentManager<PointLightComponent>());
 		m_componentManagers[SkeletalMeshComponent::componentIndex].reset(new ComponentManager<SkeletalMeshComponent>());
-		m_debugDrawingSystem.reset(new DebugDrawingSystem());
+		m_componentManagers[IKNavigationComponent::componentIndex].reset(new ComponentManager<IKNavigationComponent>());
+		m_debugDrawingSystemPhysics.reset(new DebugDrawingSystem_physics());
+		m_debugDrawingSystemIKNav.reset(new DebugDrawingSystem_ikNav());
 		
 		auto& transformDataManager = GetComponentManager<TransformComponent>();
 		auto& rigidBodyDataManager = GetComponentManager<RigidBodyComponent>();
 		auto& audioSourceDataManager = GetComponentManager<AudioSourceComponent>();
+		auto& skeletalMeshDataManager = GetComponentManager<SkeletalMeshComponent>();
+		auto& staticMeshDataManager = GetComponentManager<StaticMeshComponent>();
+		auto& ikNavigationDataManager = GetComponentManager<IKNavigationComponent>();
 
 		const GameObjectID expectedObjects = config.getValueOrDefault<int>("expected_number_of_gameobjects", 1000);
 		rigidBodyDataManager.SetLifetimePolicy(RigidBodyLifetimePolicy(&transformDataManager, &m_physicsCollisionSystem));
 		audioSourceDataManager.SetLifetimePolicy(AudioSourceComponentLifetimePolicy(&m_audioSystem));
+		ikNavigationDataManager.SetLifetimePolicy(IKNavigationLifetimePolicy(&transformDataManager, 
+			&skeletalMeshDataManager,&ikNavigationDataManager));
 		m_window.StartUp(m_eventManager);
 		m_input.StartUp(m_eventManager);
 		m_objectManager.StartUp(expectedObjects);
 		for (auto& componentManager : m_componentManagers)
 			componentManager->StartUp(m_eventManager, expectedObjects);
 		m_application = std::move(app);
-		m_renderer.StartUp(m_eventManager, m_debugDrawingSystem.get());
+		m_renderer.StartUp(m_eventManager, m_debugDrawingSystemIKNav.get());
+		//m_renderer.StartUp(m_eventManager, m_debugDrawingSystemPhysics.get());
 		m_audioSystem.StartUp();
-		m_debugDrawingSystem->StartUp(&m_physicsCollisionSystem);
+		m_debugDrawingSystemIKNav->StartUp(&m_ikNavigationSystyem);
+		//m_debugDrawingSystemPhysics->StartUp(&m_physicsCollisionSystem);
 		m_application.StartUp(*this);
 	
 	}
@@ -72,7 +81,8 @@ namespace Mona {
 		SkeletonManager::GetInstance().ShutDown();
 		AnimationClipManager::GetInstance().ShutDown();
 		m_renderer.ShutDown(m_eventManager);
-		m_debugDrawingSystem->ShutDown();
+		m_debugDrawingSystemIKNav->ShutDown();
+		//m_debugDrawingSystemPhysics->ShutDown();
 		m_window.ShutDown();
 		m_input.ShutDown(m_eventManager);
 		m_eventManager.ShutDown();
@@ -118,14 +128,22 @@ namespace Mona {
 
 	void World::StartMainLoop() noexcept {
 		std::chrono::time_point<std::chrono::steady_clock> startTime = std::chrono::steady_clock::now();
-		
+		float averageTimeStep = 1.0f/20.0f;
 		while (!m_window.ShouldClose() && !m_shouldClose)
 		{
 			std::chrono::time_point<std::chrono::steady_clock> newTime = std::chrono::steady_clock::now();
 			const auto frameTime = newTime - startTime;
 			startTime = newTime;
 			float timeStep = std::chrono::duration_cast<std::chrono::duration<float>>(frameTime).count();
-			Update(timeStep);
+			float correctedTimeStep = timeStep;
+			if (averageTimeStep * 3 < timeStep) {
+				correctedTimeStep = averageTimeStep;
+			}
+			Update(correctedTimeStep);
+			if (averageTimeStep*15 < timeStep) {
+				timeStep = averageTimeStep;
+			}
+			averageTimeStep = averageTimeStep * 0.9 + timeStep * 0.1;
 		}
 		m_eventManager.Publish(ApplicationEndEvent());
 		
@@ -142,9 +160,15 @@ namespace Mona {
 		auto& spotLightDataManager = GetComponentManager<SpotLightComponent>();
 		auto& pointLightDataManager = GetComponentManager<PointLightComponent>();
 		auto& skeletalMeshDataManager = GetComponentManager<SkeletalMeshComponent>();
+		auto& ikNavigationDataManager = GetComponentManager<IKNavigationComponent>();
 		m_input.Update();
 		m_physicsCollisionSystem.StepSimulation(timeStep);
 		m_physicsCollisionSystem.SubmitCollisionEvents(*this, m_eventManager, rigidBodyDataManager);
+		m_ikNavigationSystyem.UpdateAllRigs(ikNavigationDataManager, 
+			transformDataManager, 
+			staticMeshDataManager, 
+			skeletalMeshDataManager, 
+			timeStep);
 		m_animationSystem.UpdateAllPoses(skeletalMeshDataManager, timeStep);
 		m_objectManager.UpdateGameObjects(*this, m_eventManager, timeStep);
 		m_application.UserUpdate(*this, timeStep);
@@ -264,6 +288,9 @@ namespace Mona {
 		return worldPose * animController.GetJointModelPose(jointIndex);
 	}
 
+	void World::SetBackgroundColor(float r, float g, float b, float alpha) {
+		m_renderer.SetBackgroundColor(r, g, b, alpha);
+	}
 
 }
 

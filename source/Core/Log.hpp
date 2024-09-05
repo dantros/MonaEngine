@@ -30,9 +30,11 @@ namespace Mona {
 	#define MONA_LOG_INFO(...)					(void(0))
 	#define MONA_LOG_ERROR(...)					(void(0))
 	#define MONA_ASSERT(expr, ...)				(void(0))
+	#define MONA_LOG_WARNING(...)				(void(0))
 #else
 	#define MONA_LOG_INFO(...)					::Mona::Log::GetLogger()->info(__VA_ARGS__)
 	#define MONA_LOG_ERROR(...)					::Mona::Log::GetLogger()->error(__VA_ARGS__)
+	#define MONA_LOG_WARNING(...)				::Mona::Log::GetLogger()->warn(__VA_ARGS__)
 	#if WIN32
 		#define MONA_ASSERT(expr, ...)					{if(!(expr)){ \
 														MONA_LOG_ERROR(__VA_ARGS__); \

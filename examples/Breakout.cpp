@@ -9,7 +9,7 @@ void CreateBasicCameraWithMusicAndLight(Mona::World& world)
 	world.SetMainCamera(world.AddComponent<Mona::CameraComponent>(camera));
 	world.SetAudioListenerTransform(transform);
 	auto& audioClipManager = Mona::AudioClipManager::GetInstance();
-	auto audioClipPtr = audioClipManager.LoadAudioClip(Mona::SourcePath("Assets/AudioFiles/music.wav"));
+	auto audioClipPtr = audioClipManager.LoadAudioClip(Mona::SourceDirectoryData::SourcePath("Assets/AudioFiles/music.wav"));
 	auto audioSource = world.AddComponent<Mona::AudioSourceComponent>(camera, audioClipPtr);
 	audioSource->SetIsLooping(true);
 	audioSource->SetVolume(0.3f);
@@ -52,7 +52,7 @@ public:
 		rb->SetRestitution(1.0f);
 		
 		auto& audioClipManager = Mona::AudioClipManager::GetInstance();
-		m_ballBounceSound = audioClipManager.LoadAudioClip(Mona::SourcePath("Assets/AudioFiles/ballBounce.wav"));
+		m_ballBounceSound = audioClipManager.LoadAudioClip(Mona::SourceDirectoryData::SourcePath("Assets/AudioFiles/ballBounce.wav"));
 
 		auto ball = world.CreateGameObject<Mona::GameObject>();
 		float ballRadius = 0.5f;
@@ -117,7 +117,7 @@ public:
 		//Crear el los bloques destructibles del nivel
 		glm::vec3 blockScale(1.0f, 0.5f, 0.5f);
 		auto& audioClipManager = Mona::AudioClipManager::GetInstance();
-		m_blockBreakingSound = audioClipManager.LoadAudioClip(Mona::SourcePath("Assets/AudioFiles/boxBreaking.wav"));
+		m_blockBreakingSound = audioClipManager.LoadAudioClip(Mona::SourceDirectoryData::SourcePath("Assets/AudioFiles/boxBreaking.wav"));
 		auto& meshManager = Mona::MeshManager::GetInstance();
 		Mona::BoxShapeInformation boxInfo(blockScale);
 		auto blockMaterial = world.CreateMaterial(Mona::MaterialType::DiffuseFlat);

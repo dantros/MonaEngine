@@ -25,6 +25,11 @@ namespace Mona {
 		return glm::vec3(vec.x, vec.y, vec.z);
 	}
 
+	inline std::vector<float> AssimpToStdVec3(const aiVector3D& vec)
+	{
+		return { vec.x, vec.y, vec.z };
+	}
+
 	inline glm::fquat AssimpToGlmQuat(const aiQuaternion& quat) {
 		glm::fquat q;
 		q.x = quat.x;
@@ -33,6 +38,10 @@ namespace Mona {
 		q.w = quat.w;
 
 		return q;
+	}
+
+	inline std::vector<float> AssimpToStdVec4(const aiQuaternion& quat) {
+		return {quat.w, quat.x, quat.y, quat.z};
 	}
 }
 #endif

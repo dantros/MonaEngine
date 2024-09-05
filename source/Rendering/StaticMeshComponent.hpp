@@ -34,6 +34,10 @@ namespace Mona {
 			return m_materialPtr;
 		}
 
+		HeightMap* GetHeightMap() const noexcept {
+			return m_meshPtr->GetHeightMap();
+		}
+
 		void SetMaterial(std::shared_ptr<Material> material) noexcept {
 			if (material != nullptr)
 			{

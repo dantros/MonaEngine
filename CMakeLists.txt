@@ -36,4 +36,8 @@ configure_file(CMakeConfigFiles/RootDirectory.cpp.in "${CMAKE_CURRENT_SOURCE_DIR
 add_subdirectory(thirdParty)
 add_subdirectory(source)
 add_subdirectory(tests)
-add_subdirectory(examples)
+
+option(MONA_BUILD_EXAMPLES "Build the examples?" ON)
+if (MONA_BUILD_EXAMPLES)
+	add_subdirectory(examples)
+endif()

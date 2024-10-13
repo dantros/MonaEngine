@@ -67,6 +67,18 @@ namespace Mona
 
 			}
 		}
+		inline bool IsGamepadButtonPressed(int code) const noexcept
+		{
+			GLFWgamepadstate state;
+			glfwGetGamepadState(GLFW_JOYSTICK_1, &state);
+			return state.buttons[code];
+		}
+		float GetGamepadAxisValue(int code) const noexcept
+		{
+			GLFWgamepadstate state;
+			glfwGetGamepadState(GLFW_JOYSTICK_1, &state);
+			return state.axes[code];
+		}
 	private:
 		GLFWwindow* m_windowHandle;
 		glm::dvec2 m_mouseWheelOffset;
@@ -104,6 +116,16 @@ namespace Mona
 	void Input::SetCursorType(CursorType type) noexcept
 	{
 		p_Impl->SetCursorType(type);
+	}
+
+	bool Input::IsGamepadButtonPressed(int code) const noexcept
+	{
+		return p_Impl->IsGamepadButtonPressed(code);
+	}
+
+	float Input::GetGamepadAxisValue(int code) const noexcept
+	{
+		return p_Impl->GetGamepadAxisValue(code);
 	}
 
 	void Input::StartUp(EventManager& eventManager) noexcept {

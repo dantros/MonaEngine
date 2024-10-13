@@ -16,8 +16,8 @@ namespace Mona
 		
 	public:
 		/*
-		* Enumerador que representa el estado del cursor. Hidden esconde la representación visual del cursor al estar dentro
-		* de la ventana de la aplicación, mientras que Disabled como su nombre lo indica desabilita completamente el cursor.
+		* Enumerador que representa el estado del cursor. Hidden esconde la representaciï¿½n visual del cursor al estar dentro
+		* de la ventana de la aplicaciï¿½n, mientras que Disabled como su nombre lo indica desabilita completamente el cursor.
 		*/
 		enum class CursorType { Hidden, Disabled, Normal };
 		friend class World;
@@ -34,8 +34,8 @@ namespace Mona
 		*/
 		bool IsMouseButtonPressed(int button) const noexcept;
 		/*
-		* Retorna un vector de dos dimensiones con la posición en pixeles del mouse. 
-		* La posición (0,0) corresponde a la esquina superior izquierda.
+		* Retorna un vector de dos dimensiones con la posiciï¿½n en pixeles del mouse. 
+		* La posiciï¿½n (0,0) corresponde a la esquina superior izquierda.
 		*/
 		glm::dvec2 GetMousePosition() const noexcept;
 		/*
@@ -47,10 +47,21 @@ namespace Mona
 		* Ajusta el tipo de cursor al tipo entregado
 		*/
 		void SetCursorType(CursorType type) noexcept;
+
+		/*
+		* Retorna verdadero si el boton representado por keycode esta siendo presionado en este momento.
+		*/
+		bool IsGamepadButtonPressed(int code) const noexcept;
+
+		/*
+		* Retorna un valor entre -1 y 1 segÃºn el estado del eje indicado.
+		*/
+		float GetGamepadAxisValue(int code) const noexcept;
+
 	private:
 
 		/*
-		* Función llamada cada iteración del motor para actualizar el estado de los eventos de input
+		* Funciï¿½n llamada cada iteraciï¿½n del motor para actualizar el estado de los eventos de input
 		*/
 		void Update() noexcept;
 		void StartUp(EventManager& eventManager) noexcept;

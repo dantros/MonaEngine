@@ -76,21 +76,27 @@ public:
 
 	virtual void UserUpdate(Mona::World& world, float timeStep) noexcept {
 		auto& input = world.GetInput();
-		if (input.IsKeyPressed(MONA_KEY_A))
+		if (input.IsKeyPressed(MONA_KEY_A) or
+			input.IsKeyPressed(MONA_KEY_LEFT) or
+			input.IsGamepadButtonPressed(MONA_GAMEPAD_BUTTON_DPAD_LEFT) or
+			input.GetGamepadAxisValue(MONA_GAMEPAD_AXIS_LEFT_X) < -0.25f)
 		{
 			m_transform->Translate(glm::vec3(-m_paddleVelocity * timeStep, 0.0f, 0.0f));
 		}
-		else if (input.IsKeyPressed(MONA_KEY_D))
+		else if (input.IsKeyPressed(MONA_KEY_D) or
+			input.IsKeyPressed(MONA_KEY_RIGHT) or
+			input.IsGamepadButtonPressed(MONA_GAMEPAD_BUTTON_DPAD_RIGHT) or
+			input.GetGamepadAxisValue(MONA_GAMEPAD_AXIS_LEFT_X) > 0.25f)
 		{
 			m_transform->Translate(glm::vec3(m_paddleVelocity * timeStep, 0.0f, 0.0f));
 		}
 
-		if (input.IsMouseButtonPressed(MONA_MOUSE_BUTTON_1)) {
+		if (input.IsMouseButtonPressed(MONA_MOUSE_BUTTON_1) or
+			input.IsKeyPressed(MONA_KEY_SPACE) or
+			input.IsGamepadButtonPressed(MONA_GAMEPAD_BUTTON_A))
+		{
 			m_ballRigidBody->SetLinearVelocity(glm::vec3(0.0f,15.0f,0.0f));
-			
 		}
-
-
 	}
 
 private:

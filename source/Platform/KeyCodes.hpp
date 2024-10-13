@@ -138,6 +138,23 @@
 #define MONA_MOUSE_BUTTON_RIGHT     MONA_MOUSE_BUTTON_2
 #define MONA_MOUSE_BUTTON_MIDDLE    MONA_MOUSE_BUTTON_3
 
+#define MONA_JOYSTICK_1             0
+#define MONA_JOYSTICK_2             1
+#define MONA_JOYSTICK_3             2
+#define MONA_JOYSTICK_4             3
+#define MONA_JOYSTICK_5             4
+#define MONA_JOYSTICK_6             5
+#define MONA_JOYSTICK_7             6
+#define MONA_JOYSTICK_8             7
+#define MONA_JOYSTICK_9             8
+#define MONA_JOYSTICK_10            9
+#define MONA_JOYSTICK_11            10
+#define MONA_JOYSTICK_12            11
+#define MONA_JOYSTICK_13            12
+#define MONA_JOYSTICK_14            13
+#define MONA_JOYSTICK_15            14
+#define MONA_JOYSTICK_16            15
+
 #define MONA_GAMEPAD_BUTTON_A               0
 #define MONA_GAMEPAD_BUTTON_B               1
 #define MONA_GAMEPAD_BUTTON_X               2

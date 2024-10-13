@@ -67,16 +67,16 @@ namespace Mona
 
 			}
 		}
-		inline bool IsGamepadButtonPressed(int code) const noexcept
+		inline bool IsGamepadButtonPressed(int joystickId, int code) const noexcept
 		{
 			GLFWgamepadstate state;
-			glfwGetGamepadState(GLFW_JOYSTICK_1, &state);
+			glfwGetGamepadState(joystickId, &state);
 			return state.buttons[code];
 		}
-		float GetGamepadAxisValue(int code) const noexcept
+		float GetGamepadAxisValue(int joystickId, int code) const noexcept
 		{
 			GLFWgamepadstate state;
-			glfwGetGamepadState(GLFW_JOYSTICK_1, &state);
+			glfwGetGamepadState(joystickId, &state);
 			return state.axes[code];
 		}
 	private:
@@ -118,14 +118,14 @@ namespace Mona
 		p_Impl->SetCursorType(type);
 	}
 
-	bool Input::IsGamepadButtonPressed(int code) const noexcept
+	bool Input::IsGamepadButtonPressed(int joystickId, int code) const noexcept
 	{
-		return p_Impl->IsGamepadButtonPressed(code);
+		return p_Impl->IsGamepadButtonPressed(joystickId, code);
 	}
 
-	float Input::GetGamepadAxisValue(int code) const noexcept
+	float Input::GetGamepadAxisValue(int joystickId, int code) const noexcept
 	{
-		return p_Impl->GetGamepadAxisValue(code);
+		return p_Impl->GetGamepadAxisValue(joystickId, code);
 	}
 
 	void Input::StartUp(EventManager& eventManager) noexcept {

@@ -51,12 +51,12 @@ namespace Mona
 		/*
 		* Retorna verdadero si el boton representado por keycode esta siendo presionado en este momento.
 		*/
-		bool IsGamepadButtonPressed(int code) const noexcept;
+		bool IsGamepadButtonPressed(int joystickId, int code) const noexcept;
 
 		/*
 		* Retorna un valor entre -1 y 1 según el estado del eje indicado.
 		*/
-		float GetGamepadAxisValue(int code) const noexcept;
+		float GetGamepadAxisValue(int joystickId, int code) const noexcept;
 
 	private:
 

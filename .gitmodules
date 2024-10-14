@@ -1,0 +1,6 @@
+[submodule "thirdParty/whereami2cpp"]
+	path = thirdParty/whereami2cpp
+	url = https://github.com/dantros/whereami2cpp
+[submodule "thirdParty/spdlog"]
+	path = thirdParty/spdlog
+	url = https://github.com/gabime/spdlog.git

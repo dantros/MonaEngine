@@ -10,6 +10,5 @@ function(Add_Test TARGETNAME FILENAME)
 
 endfunction(Add_Test)
 
-#TODO fix assets
-#Add_Test(Test0_TestConIK IKTest.cpp)
-#Add_Test(Test1_TestSinIK NoIKTest.cpp)
+Add_Test(Test0_TestConIK IKTest.cpp)
+Add_Test(Test1_TestSinIK NoIKTest.cpp)

@@ -1,18 +1,16 @@
-/*
-	This field was automatically created with CMake please don't modify it
-*/
 #include "RootDirectory.hpp"
+#include <whereami2cpp.h>
 #include <filesystem>
+
 namespace Mona{
-	std::string source_directory = "D:/Universidad/2022-1/Trabajo_de_Titulo/codigo/MonaEngine_IK/";
-	void SourceDirectoryData::SetSourceDirectory(std::string newSourceDirectory){
-		if(newSourceDirectory.back() != '/' && newSourceDirectory.back() != '\\') {
-			newSourceDirectory.append("/");
-		}
-		source_directory = newSourceDirectory;
-	}
-	std::filesystem::path SourceDirectoryData::SourcePath(const std::string &relative_path){
-		return source_directory + relative_path;
+	std::filesystem::path SourceDirectoryData::SourcePath(const std::string &relativePath){
+		std::string executablePathStr = whereami::get_executable_path();
+		std::filesystem::path executablePath(executablePathStr);
+		std::filesystem::path executableDir = executablePath.parent_path();
+		std::filesystem::path absolutePath = executableDir;
+		absolutePath.append(relativePath);
+
+		return absolutePath.string();
 	}
 	
 }

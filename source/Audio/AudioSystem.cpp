@@ -1,7 +1,6 @@
 #include "AudioSystem.hpp"
 #include <algorithm>
 #include "../Core/Log.hpp"
-#include "../Core/RootDirectory.hpp"
 #include "../Core/Config.hpp"
 #include "../World/ComponentManager.hpp"
 #include "AudioMacros.hpp"

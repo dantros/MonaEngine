@@ -1,7 +1,8 @@
 #include "Config.hpp"
 #include "Log.hpp"
-#include "RootDirectory.hpp"
 #include <fstream>
+#include <whereami2cpp.h>
+
 namespace Mona
 {
 	void Config::readFile(const std::string& path)
@@ -43,6 +44,57 @@ namespace Mona
 		}
 		
 		return;
+	}
+
+	void Config::loadDirectories()
+	{
+		std::string executablePathStr = whereami::get_executable_path();
+		executablePath = executablePathStr;
+		executableDir = executablePath.parent_path();
+
+		configurationFile = executableDir;
+		configurationFile.append("config.cfg");
+
+		auto& config = Config::GetInstance();
+		config.readFile(configurationFile.string());
+
+		applicationAssetsDir = config.getValueOrDefault<std::string>("application_assets_dir", "Assets");
+		engineAssetsDir = config.getValueOrDefault<std::string>("engine_assets_dir", "EngineAssets");
+
+		loaded = true;
+	}
+
+	std::filesystem::path Config::SourcePath(const std::string &relativePath)
+	{
+		if (not loaded)
+			loadDirectories();
+
+		std::filesystem::path absolutePath = executableDir;
+		absolutePath.append(relativePath);
+
+		return absolutePath.string();
+	}
+
+	std::filesystem::path Config::ApplicationAssetPath(const std::string &relativePath)
+	{
+		if (not loaded)
+			loadDirectories();
+
+		std::filesystem::path absolutePath = applicationAssetsDir;
+		absolutePath.append(relativePath);
+
+		return absolutePath.string();
+	}
+
+	std::filesystem::path Config::EngineAssetPath(const std::string &relativePath)
+	{
+		if (not loaded)
+			loadDirectories();
+
+		std::filesystem::path absolutePath = engineAssetsDir;
+		absolutePath.append(relativePath);
+
+		return absolutePath.string();
 	}
 
 }

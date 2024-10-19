@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <string>
 #include <sstream>
+#include <filesystem>
 #include "Log.hpp"
 
 namespace Mona {
@@ -11,12 +12,13 @@ namespace Mona {
 	public:
 		Config(Config const&) = delete;
 		Config& operator=(Config const&) = delete;
+		
 		static Config& GetInstance()
 		{
 			static Config instance;
 			return instance;
 		}
-		void readFile(const std::string& path); 
+
 		template <typename T>
 		inline T getValueOrDefault(const std::string& key, const T& defaultValue) const noexcept
 		{
@@ -35,11 +37,28 @@ namespace Mona {
 			return defaultValue;
 		}
 
-
+		std::filesystem::path SourcePath(const std::string &relativePath);
+		std::filesystem::path ApplicationAssetPath(const std::string &relativePath);
+		std::filesystem::path EngineAssetPath(const std::string &relativePath);
 
 	private:
 		Config() noexcept {}
 		std::unordered_map<std::string, std::string> m_configurations;
+
+		bool loaded = false;
+		void loadDirectories();
+		void readFile(const std::string& path);
+
+		/* these values are set with the executable path, cannot be changed. */
+		std::filesystem::path executablePath;
+		std::filesystem::path executableDir;
+
+		/* configuration file should be next to the executable. */
+		std::filesystem::path configurationFile;
+
+		/* extratced from the configuration file. */
+		std::filesystem::path applicationAssetsDir;
+		std::filesystem::path engineAssetsDir;
 	};
 
 	template <>

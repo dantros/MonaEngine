@@ -2,9 +2,9 @@
 #ifndef MONAENGINE_HPP
 #define MONAENGINE_HPP
 
-#include"Core/Common.hpp"
+#include "Core/Common.hpp"
+#include "Core/Config.hpp"
 #include "Core/Log.hpp"
-#include "Core/RootDirectory.hpp"
 #include "Core/FuncUtils.hpp"
 #include "Engine.hpp"
 #include "Platform/KeyCodes.hpp"

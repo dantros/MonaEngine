@@ -1,6 +1,5 @@
 #include "World.hpp"
 #include "../Core/Config.hpp"
-#include "../Core/RootDirectory.hpp"
 #include "../Event/Events.hpp"
 #include "../DebugDrawing/DebugDrawingSystem.hpp"
 #include "../Audio/AudioClipManager.hpp"
@@ -25,7 +24,6 @@ namespace Mona {
 		m_ambientLight(glm::vec3(0.1f))
 	{
 		auto& config = Config::GetInstance();
-		config.readFile(SourceDirectoryData::SourcePath("config.cfg").string());
 
 		m_componentManagers[TransformComponent::componentIndex].reset(new ComponentManager<TransformComponent>());
 		m_componentManagers[CameraComponent::componentIndex].reset(new ComponentManager<CameraComponent>());

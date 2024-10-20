@@ -14,6 +14,8 @@ function(Add_Example TARGETNAME FILENAME)
 endfunction(Add_Example)
 
 # Setting up the configuration file to use the asset directories from the source code, this is only for development.
+set(APPLICATION_ASSETS_DIR ${CMAKE_SOURCE_DIR}/examples/Assets)
+set(ENGINE_ASSETS_DIR ${CMAKE_SOURCE_DIR}/EngineAssets)
 configure_file(${CMAKE_SOURCE_DIR}/config.cfg.in config.cfg)
 
 Add_Example(Example0_MinimalSetup MinimalSetup.cpp)

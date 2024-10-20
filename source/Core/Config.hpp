@@ -19,6 +19,8 @@ namespace Mona {
 			return instance;
 		}
 
+		void loadDefault();
+
 		template <typename T>
 		inline T getValueOrDefault(const std::string& key, const T& defaultValue) const noexcept
 		{
@@ -37,28 +39,28 @@ namespace Mona {
 			return defaultValue;
 		}
 
-		std::filesystem::path SourcePath(const std::string &relativePath);
-		std::filesystem::path ApplicationAssetPath(const std::string &relativePath);
-		std::filesystem::path EngineAssetPath(const std::string &relativePath);
+		std::filesystem::path getPathRelativeToExecutable(const std::string &relativePath);
+		std::filesystem::path getPathOfApplicationAsset(const std::string &relativePath);
+		std::filesystem::path getPathOfEngineAsset(const std::string &relativePath);
 
 	private:
 		Config() noexcept {}
 		std::unordered_map<std::string, std::string> m_configurations;
 
-		bool loaded = false;
+		bool m_loaded = false;
 		void loadDirectories();
 		void readFile(const std::string& path);
 
 		/* these values are set with the executable path, cannot be changed. */
-		std::filesystem::path executablePath;
-		std::filesystem::path executableDir;
+		std::filesystem::path m_executablePath;
+		std::filesystem::path m_executableDir;
 
 		/* configuration file should be next to the executable. */
-		std::filesystem::path configurationFile;
+		std::filesystem::path m_configurationFile;
 
 		/* extratced from the configuration file. */
-		std::filesystem::path applicationAssetsDir;
-		std::filesystem::path engineAssetsDir;
+		std::filesystem::path m_applicationAssetsDir;
+		std::filesystem::path m_engineAssetsDir;
 	};
 
 	template <>

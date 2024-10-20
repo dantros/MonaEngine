@@ -56,8 +56,8 @@ namespace Mona {
 	void DebugDrawingSystem_physics::StartUp(PhysicsCollisionSystem* physicsSystemPtr) noexcept {
 		auto& config = Mona::Config::GetInstance();
 		m_lineShader = ShaderProgram(
-			config.SourcePath("EngineAssets/Shaders/LineVS.vs"),
-			config.SourcePath("EngineAssets/Shaders/LinePS.ps")
+			config.getPathOfEngineAsset("Shaders/LineVS.vs"),
+			config.getPathOfEngineAsset("Shaders/LinePS.ps")
 		);
 		m_physicsWorldPtr = physicsSystemPtr->GetPhysicsWorldPtr();
 		m_bulletDebugDrawPtr.reset(new BulletDebugDraw());
@@ -87,8 +87,8 @@ namespace Mona {
 	void DebugDrawingSystem_ikNav::StartUp(IKNavigationSystem* ikNavSystemPtr)  noexcept {
 		auto& config = Mona::Config::GetInstance();
 		m_lineShader = ShaderProgram(
-			config.SourcePath("EngineAssets/Shaders/LineVS.vs"),
-			config.SourcePath("EngineAssets/Shaders/LinePS.ps")
+			config.getPathOfEngineAsset("Shaders/LineVS.vs"),
+			config.getPathOfEngineAsset("Shaders/LinePS.ps")
 		);
 		m_ikNavSystemPtr = ikNavSystemPtr;
 		m_ikNavDebugDrawPtr.reset(new IKNavigationDebugDraw);

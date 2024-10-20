@@ -8,7 +8,6 @@
 #include <imgui.h>
 #include <random>
 
-
 float gaussian(float x, float y, float s, float sigma, glm::vec2 mu) {
 	return (s / (sigma * std::sqrt(2 * std::numbers::pi))) * std::exp((-1 / (2 * std::pow(sigma, 2))) * (std::pow((x - mu[0]), 2) + std::pow((y - mu[1]), 2)));
 }
@@ -112,7 +111,7 @@ public:
 		std::shared_ptr<Mona::DiffuseTexturedMaterial> materialTextured = std::static_pointer_cast<Mona::DiffuseTexturedMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseTextured, true));
 		auto& textureManager = Mona::TextureManager::GetInstance();
 		auto& config = Mona::Config::GetInstance();
-		auto diffuseTexture = textureManager.LoadTexture(config.SourcePath("Assets/Textures/" + m_characterName + "/diffuse.png"));
+		auto diffuseTexture = textureManager.LoadTexture(config.getPathOfApplicationAsset("Textures/" + m_characterName + "/diffuse.png"));
 		materialTextured->SetMaterialTint(glm::vec3(0.1f));
 		materialTextured->SetDiffuseTexture(diffuseTexture);
 
@@ -122,11 +121,11 @@ public:
 		auto& meshManager = Mona::MeshManager::GetInstance();
 		auto& skeletonManager = Mona::SkeletonManager::GetInstance();
 		auto& animationManager = Mona::AnimationClipManager::GetInstance();
-		auto skeleton = skeletonManager.LoadSkeleton(config.SourcePath("Assets/Models/" + m_characterName + ".fbx"));
-		auto skinnedMesh = meshManager.LoadSkinnedMesh(skeleton, config.SourcePath("Assets/Models/" + m_characterName + ".fbx"), true);
+		auto skeleton = skeletonManager.LoadSkeleton(config.getPathOfApplicationAsset("Models/" + m_characterName + ".fbx"));
+		auto skinnedMesh = meshManager.LoadSkinnedMesh(skeleton, config.getPathOfApplicationAsset("Models/" + m_characterName + ".fbx"), true);
 
-		m_idleAnimation = animationManager.LoadAnimationClip(config.SourcePath("Assets/Animations/" + m_characterName + "/idle.fbx"), skeleton, true);
-		m_walkingAnimation = animationManager.LoadAnimationClip(config.SourcePath("Assets/Animations/" + m_characterName + "/walking"
+		m_idleAnimation = animationManager.LoadAnimationClip(config.getPathOfApplicationAsset("Animations/" + m_characterName + "/idle.fbx"), skeleton, true);
+		m_walkingAnimation = animationManager.LoadAnimationClip(config.getPathOfApplicationAsset("Animations/" + m_characterName + "/walking"
 			+ std::to_string(m_walkingAnimIndex) + ".fbx"), skeleton, false);
 		glm::vec3 originalUpVector = glm::vec3(0, 1, 0);
 		glm::vec3 originalFrontVector = glm::vec3(0, 0, 1);

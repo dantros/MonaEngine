@@ -1,5 +1,6 @@
 #include "AnimationClip.hpp"
 #include <algorithm>
+#include <filesystem>
 #include <math.h>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -16,6 +17,7 @@ namespace Mona {
 		bool removeRootMotion)
 	{
 		MONA_ASSERT(skeleton != nullptr, "AnimationClip Error: Skeleton cannot be null");
+		MONA_ASSERT(std::filesystem::is_regular_file(filePath), "There is no asset called: " + filePath);
 
 		Assimp::Importer importer;
 		unsigned int postProcessFlags = aiProcess_Triangulate;

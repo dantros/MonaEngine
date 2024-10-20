@@ -34,18 +34,18 @@ namespace Mona{
 		auto& config = Mona::Config::GetInstance();
 		constexpr unsigned int offset = static_cast<unsigned int>(MaterialType::MaterialTypeCount);
 		//Construcción de todos los shaders que soporta el motor.
-		m_shaders[static_cast<unsigned int>(MaterialType::UnlitFlat)]                = ShaderProgram(config.SourcePath("EngineAssets/Shaders/UnlitFlat.vs")               , config.SourcePath("EngineAssets/Shaders/UnlitFlat.ps"));
-		m_shaders[static_cast<unsigned int>(MaterialType::UnlitTextured)]            = ShaderProgram(config.SourcePath("EngineAssets/Shaders/UnlitTextured.vs")           , config.SourcePath("EngineAssets/Shaders/UnlitTextured.ps"));
-		m_shaders[static_cast<unsigned int>(MaterialType::DiffuseFlat)]              = ShaderProgram(config.SourcePath("EngineAssets/Shaders/DiffuseFlat.vs")             , config.SourcePath("EngineAssets/Shaders/DiffuseFlat.ps"));
-		m_shaders[static_cast<unsigned int>(MaterialType::DiffuseTextured)]          = ShaderProgram(config.SourcePath("EngineAssets/Shaders/DiffuseTextured.vs")         , config.SourcePath("EngineAssets/Shaders/DiffuseTextured.ps"));
-		m_shaders[static_cast<unsigned int>(MaterialType::PBRFlat)]                  = ShaderProgram(config.SourcePath("EngineAssets/Shaders/PBRFlat.vs")                 , config.SourcePath("EngineAssets/Shaders/PBRFlat.ps"));
-		m_shaders[static_cast<unsigned int>(MaterialType::PBRTextured)]              = ShaderProgram(config.SourcePath("EngineAssets/Shaders/PBRTextured.vs")             , config.SourcePath("EngineAssets/Shaders/PBRTextured.ps"));
-		m_shaders[static_cast<unsigned int>(MaterialType::UnlitFlat) + offset]       = ShaderProgram(config.SourcePath("EngineAssets/Shaders/UnlitFlatSkinning.vs")       , config.SourcePath("EngineAssets/Shaders/UnlitFlat.ps"));
-		m_shaders[static_cast<unsigned int>(MaterialType::UnlitTextured) + offset]   = ShaderProgram(config.SourcePath("EngineAssets/Shaders/UnlitTexturedSkinning.vs")   , config.SourcePath("EngineAssets/Shaders/UnlitTextured.ps"));
-		m_shaders[static_cast<unsigned int>(MaterialType::DiffuseFlat) + offset]     = ShaderProgram(config.SourcePath("EngineAssets/Shaders/DiffuseFlatSkinning.vs")     , config.SourcePath("EngineAssets/Shaders/DiffuseFlat.ps"));
-		m_shaders[static_cast<unsigned int>(MaterialType::DiffuseTextured) + offset] = ShaderProgram(config.SourcePath("EngineAssets/Shaders/DiffuseTexturedSkinning.vs") , config.SourcePath("EngineAssets/Shaders/DiffuseTextured.ps"));
-		m_shaders[static_cast<unsigned int>(MaterialType::PBRFlat) + offset]         = ShaderProgram(config.SourcePath("EngineAssets/Shaders/PBRFlatSkinning.vs")         , config.SourcePath("EngineAssets/Shaders/PBRFlat.ps"));
-		m_shaders[static_cast<unsigned int>(MaterialType::PBRTextured) + offset]     = ShaderProgram(config.SourcePath("EngineAssets/Shaders/PBRTexturedSkinning.vs")     , config.SourcePath("EngineAssets/Shaders/PBRTextured.ps"));
+		m_shaders[static_cast<unsigned int>(MaterialType::UnlitFlat)]                = ShaderProgram(config.getPathOfEngineAsset("Shaders/UnlitFlat.vs")               , config.getPathOfEngineAsset("Shaders/UnlitFlat.ps"));
+		m_shaders[static_cast<unsigned int>(MaterialType::UnlitTextured)]            = ShaderProgram(config.getPathOfEngineAsset("Shaders/UnlitTextured.vs")           , config.getPathOfEngineAsset("Shaders/UnlitTextured.ps"));
+		m_shaders[static_cast<unsigned int>(MaterialType::DiffuseFlat)]              = ShaderProgram(config.getPathOfEngineAsset("Shaders/DiffuseFlat.vs")             , config.getPathOfEngineAsset("Shaders/DiffuseFlat.ps"));
+		m_shaders[static_cast<unsigned int>(MaterialType::DiffuseTextured)]          = ShaderProgram(config.getPathOfEngineAsset("Shaders/DiffuseTextured.vs")         , config.getPathOfEngineAsset("Shaders/DiffuseTextured.ps"));
+		m_shaders[static_cast<unsigned int>(MaterialType::PBRFlat)]                  = ShaderProgram(config.getPathOfEngineAsset("Shaders/PBRFlat.vs")                 , config.getPathOfEngineAsset("Shaders/PBRFlat.ps"));
+		m_shaders[static_cast<unsigned int>(MaterialType::PBRTextured)]              = ShaderProgram(config.getPathOfEngineAsset("Shaders/PBRTextured.vs")             , config.getPathOfEngineAsset("Shaders/PBRTextured.ps"));
+		m_shaders[static_cast<unsigned int>(MaterialType::UnlitFlat) + offset]       = ShaderProgram(config.getPathOfEngineAsset("Shaders/UnlitFlatSkinning.vs")       , config.getPathOfEngineAsset("Shaders/UnlitFlat.ps"));
+		m_shaders[static_cast<unsigned int>(MaterialType::UnlitTextured) + offset]   = ShaderProgram(config.getPathOfEngineAsset("Shaders/UnlitTexturedSkinning.vs")   , config.getPathOfEngineAsset("Shaders/UnlitTextured.ps"));
+		m_shaders[static_cast<unsigned int>(MaterialType::DiffuseFlat) + offset]     = ShaderProgram(config.getPathOfEngineAsset("Shaders/DiffuseFlatSkinning.vs")     , config.getPathOfEngineAsset("Shaders/DiffuseFlat.ps"));
+		m_shaders[static_cast<unsigned int>(MaterialType::DiffuseTextured) + offset] = ShaderProgram(config.getPathOfEngineAsset("Shaders/DiffuseTexturedSkinning.vs") , config.getPathOfEngineAsset("Shaders/DiffuseTextured.ps"));
+		m_shaders[static_cast<unsigned int>(MaterialType::PBRFlat) + offset]         = ShaderProgram(config.getPathOfEngineAsset("Shaders/PBRFlatSkinning.vs")         , config.getPathOfEngineAsset("Shaders/PBRFlat.ps"));
+		m_shaders[static_cast<unsigned int>(MaterialType::PBRTextured) + offset]     = ShaderProgram(config.getPathOfEngineAsset("Shaders/PBRTexturedSkinning.vs")     , config.getPathOfEngineAsset("Shaders/PBRTextured.ps"));
 
 		//El sistema de rendering debe subscribirse al cambio de resoluci�n de la ventana para actulizar la resoluci�n
 		//del framebuffer al que OpenGL renderiza.

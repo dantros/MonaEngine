@@ -46,3 +46,47 @@ option(MONA_BUILD_EXAMPLES "Build the examples?" ON)
 if (MONA_BUILD_EXAMPLES)
 	add_subdirectory(examples)
 endif()
+
+include(GNUInstallDirs)
+install(TARGETS MonaEngine
+	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+		COMPONENT MonaEngine_Runtime
+	PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+		COMPONENT MonaEngine_Include
+	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+		COMPONENT MonaEngine_Runtime
+		NAMELINK_COMPONENT MonaEngine_Development
+	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+		COMPONENT MonaEngine_Development
+)
+
+# Install process
+install(
+	DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/EngineAssets
+	DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
+)
+
+if (${MONA_BUILD_EXAMPLES})
+	install(TARGETS
+		Example0_MinimalSetup
+		Example1_WindowInputOperations
+		Example2_Breakout
+		Example3_AnimationAudio
+		Example4_IKBasic
+		Example5_IKMultipleTerrains
+		Example6_IKMultipleCharacters
+
+		RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+			COMPONENT MonaEngineExamples_Runtime
+		LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+			COMPONENT MonaEngineExamples_Runtime
+			NAMELINK_COMPONENT MonaEngineExamples_Development
+		ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+			COMPONENT MonaEngineExamples_Development
+	)
+
+	install(
+		DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples/Assets
+		DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
+	)
+endif()

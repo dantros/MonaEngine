@@ -112,10 +112,11 @@ engine_assets_dir = C:\mona_engine_app\install\EngineAssets
 
 Si no se especifican `application_assets_dir` y/o `engine_assets_dir`, o si no se encuentra un archivo `config.cfg`, se buscarán los directorios `Assets` y `EngineAssets` que deben estar ubicados junto al ejecutable.
 
-Ejemplo de directorios para aplicación portable:
+Ejemplo de directorios para aplicación portable (*):
 ```
 AnyFolder/
 +---------SomeGame.exe
++---------OpenAL.dll
 +---------Assets/
           +------model.fbx
           +------texture.png
@@ -132,6 +133,7 @@ Ejemplo de directorios para aplicación en desarrollo:
 ```
 C:\mona_engine_src\build\
 +---------SomeGame.exe
++---------OpenAL.dll
 +---------config.cfg
 C:\mona_engine_app\install\
 +---------Assets/
@@ -153,6 +155,10 @@ En este último caso se deben especificar los directorios de assets en el archiv
 application_assets_dir = C:\mona_engine_app\install\Assets
 engine_assets_dir = C:\mona_engine_src\MonaEngine\EngineAssets
 ```
+
+## Instalación
+
+Una vez terminada la aplicación/videojuego, basta con construir el target INSTALL (de CMakePredefinedTargets) para generar una versión portable. CMake generará la estructura de archivos (*) dentro del directorio `${CMAKE_INSTALL_PREFIX}/bin` para los ejemplos, en caso de haberlos compilado. La biblioteca estática `MonaEngine.lib` (windows) o `MonaEngine.a` (linux) estará disponible en `${CMAKE_INSTALL_PREFIX}/lib`. El directorio `${CMAKE_INSTALL_PREFIX}/include` tendrá disponible los headers públicos de MonaEngine para la implementación de una nueva aplicación.
 
 ## Dependencias
 

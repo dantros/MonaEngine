@@ -76,19 +76,21 @@ Adicional a lo anterior, dado que cargaremos assets en tiempo de ejecución, es 
 
 Por defecto, junto al ejecutable, se deben encontrar las carpetas `Assets` y `EngineAssets`. En `Assets` se deben almacenar todos los assets propios de la aplicación, mientras que `EngineAssets`, se ubican aquellos que son propios del engine, como por ejemplo, shaders que son utilizados por el renderer.
 
-Para acceder a estos directorios de assets, se debe utilizar el singleton `Config` del siguiente modo:
+Para acceder a estos directorios de assets desde código, se debe utilizar el singleton `Config` del siguiente modo:
 
 ```
-auto& config = Mona::Config::GetInstance();
+Mona::Config& config = Mona::Config::GetInstance();
 std::string assetPathStr = config.getPathOfApplicationAsset("AudioFiles/music.wav")
 ```
-Usualmente no se necesitan assets provistos por el Engine, pero sí se utilizan dentro del motor mismo. Ahí se accede a dichos assets con: `config.getPathOfEngineAsset(Shaders/UnlitFlat.vs)`.
+Usualmente una apliación no necesitará assets provistos por el Engine, pero sí se utilizan dentro del motor mismo. Ahí se accede a dichos assets con: `config.getPathOfEngineAsset(Shaders/UnlitFlat.vs)`.
 
 La recomendación para comenzar, es revisar los ejemplos disponibles en la carpeta [examples](examples/README.md) y el repositorio https://github.com/dantros/BreakoutMona, donde se incluye MonaEngine como un submódulo git.
 
 ### Manejo de Assets en tiempo de desarrollo
 
 Para facilitar el desarrollo, es posible utilizar un archivo de configuración `config.cfg` junto al ejecutable, dentro de este archivo se pueden especificar directorios absolutos donde se buscarán los assets. Esto facilita el desarrollo vía un IDE como Visual Studio, donde se crean carpetas intermedias dependiendo del tipo de compilación (Release, Debug, etc).
+
+Convenientemente, los archivos CMake provistos utilizan `configure_file` para generar el archivo `config.cfg` (en base a `config.cfg.in`) y lo copia en las carpetas de desarrollo correspondientes, de esta forma, todo debiera funcionar inmediatamente, ya sea ejecutando una sesión de Debug en Visual Studio, o directamente vía doble clic en el ejecutable.
 
 Ejemplo de archivo `config.cfg`:
 ```

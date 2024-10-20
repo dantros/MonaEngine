@@ -8,7 +8,7 @@ Una versión minimalista de Breakout. Se ejercita lo siguiernte:
 - Implementación de colisiones vía componentes físicas.
 - Uso alternativo de teclado y joystick.
 
-![Breakout.cpp](../screenshots/breakout_700w.webp "breakout")
+![Breakout.cpp](../screenshots/breakout.png "breakout")
 
 # AnimationAudio
 
@@ -19,7 +19,7 @@ En este ejemplo se ejercítan varios sistemas:
 - Espacialización de audio. Los objetos emiten distintos sonitos, los que se atenuarán al alejarse de ellos.
 - El micrófono de la escena está atachado al personaje, por lo que un setup de parlantes o audífonos estéreo permitirá apreciar el efecto de espacialización al rotar el personaje.
 
-![AnimationAudioExample.cpp](../screenshots/AnimatedExample_700w.webp "AnimatedExample")
+![AnimationAudioExample.cpp](../screenshots/animation_audio.png "AnimatedExample")
 
 # Assets usados
 

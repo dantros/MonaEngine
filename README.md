@@ -2,9 +2,8 @@
 3D Game Engine implementado en C++ con fines académicos. Este motor ha sido probado en Windows y Ubuntu.
 
 ## Screenshots
-![examples/AnimationAudioExample.cpp](screenshots/AnimatedExample_700w.webp "AnimatedExample")
-
-![examples/Breakout.cpp](screenshots/breakout_700w.webp "breakout")
+![examples/Breakout.cpp](screenshots/breakout.png "breakout")
+![examples/AnimationAudioExample.cpp](screenshots/animation_audio.png "AnimatedExample")
 
 Ejemplos y sus descripciones disponibles en [examples](examples/README.md)
 
@@ -41,6 +40,7 @@ DEBUG o RELEASE.
 Una vez generada la solición o los makefiles, basta con seguir el flujo tipico de Visual Studio o Linux.
 
 ### Posibles problemas
+
 El motor se desarrolló principalmente en windows y se probó en dos computadores con Ubuntu Linux, en uno de estos fue necesario instalar
 
 algunas librerías con los siguientes comandos:
@@ -50,7 +50,8 @@ algunas librerías con los siguientes comandos:
 En uno de los computadores con linux en los que se probaron los ejemplos desarrollados fue necesario ejecutarlos con permisos de administrador
 ya que OpenAL los necesita, de no hacerse se provocará un crash en medio de la ejecución de los ejemplos.
 
-## Creando aplicaciones con el motor [WIP]
+## Creando aplicaciones con el motor
+
 Es posible utilizar este motor de distintas maneras, sin embargo, un enfoque sencillo es ubicar el código fuete del motor dentro del código fuente de la aplicación o videojuego, y enlazar la biblioteca estática `MonaEngine`.
 
 La dependencia a OpenAL-soft (licencia LGPL) se mantiene como biblioteca dinámica para mantener la licencia de MonaEngine como MIT. Por lo que para ejecutar la aplicación el archivo de biblioteca dinámica de OpenAL debe estar disponible. La forma simple es copiar el archivo OpenAL32.dll u OpenAL.so al mismo directorio que el ejecutable.
@@ -72,7 +73,78 @@ target_link_libraries(SomeGame  PRIVATE MonaEngine)
 target_include_directories(SomeGame  PRIVATE  ${MONA_INCLUDE_DIRECTORY} ${THIRD_PARTY_INCLUDE_DIRECTORIES})
 ```
 
+Adicional a lo anterior, dado que cargaremos assets en tiempo de ejecución, es necesario ubicar dichos archivos de manera consistente.
+
+Por defecto, junto al ejecutable, se deben encontrar las carpetas `Assets` y `EngineAssets`. En `Assets` se deben almacenar todos los assets propios de la aplicación, mientras que `EngineAssets`, se ubican aquellos que son propios del engine, como por ejemplo, shaders que son utilizados por el renderer.
+
+Para facilitar el desarrollo, es posible utilizar un archivo de configuración `config.cfg` junto al ejecutable, dentro de este archivo se pueden especificar directorios absolutos donde se buscarán los assets. Esto facilita el desarrollo vía un IDE como Visual Studio, donde se crean carpetas intermedias dependiendo del tipo de compilación (Release, Debug, etc).
+
+Ejemplo de archivo `config.cfg`:
+```
+# Window Settings
+windowTitle = Breakout
+
+# OpenGL Settings
+OpenGL_major_version = 4
+OpenGL_minor_version = 5
+
+# Audio Setting
+N_OPENAL_SOURCES = 32
+
+# Game Object Settings
+expected_number_of_gameobjects = 1200
+
+# Asset Folders
+application_assets_dir = C:\mona_engine_app\install\Assets
+engine_assets_dir = C:\mona_engine_app\install\EngineAssets
+```
+
+Si no se especifican `application_assets_dir` y/o `engine_assets_dir`, se utilizaran los valores por defecto `Assets` y `EngineAssets` ubicados junto al ejecutable.
+
+Ejemplo de directorios para aplicación portable:
+```
+AnyFolder/
++---------SomeGame.exe
++---------Assets/
+          +------model.fbx
+          +------texture.png
+          +------model.fbx
+          +------...
++--------EngineAssets/
+          +------Shaders/
+                 +-------shader1.vs
+                 +-------shader1.ps
+          +------...
+```
+
+Ejemplo de directorios para aplicación en desarrollo:
+```
+BuildFolder/
++---------SomeGame.exe
++---------config.cfg
+InstallFolder/
++---------Assets/
+          +------model.fbx
+          +------texture.png
+          +------model.fbx
+          +------...
+SourceFolder/
++--------EngineAssets/
+          +------Shaders/
+                 +-------shader1.vs
+                 +-------shader1.ps
+          +------...
+```
+
+En este último caso se deben especificar los directorios de assets en el archivo `config.cfg`:
+```
+...
+application_assets_dir = C:\mona_engine_app\install\Assets
+engine_assets_dir = C:\mona_engine_src\MonaEngine\EngineAssets
+```
+
 ## Dependencias
+
 MonaEngine depende de una lista de diferentes librerías, estas estan en el directorio `thirdParty/`
  - [ImGui](https://github.com/ocornut/imgui) Para gui de depuración.
  - [GLFW](https://www.glfw.org/) para la creación y manejo de ventanas e input.
@@ -86,6 +158,7 @@ MonaEngine depende de una lista de diferentes librerías, estas estan en el dire
  - [BulletPhysics](https://github.com/bulletphysics/bullet3) para la implementacion de sistema de fisica.
 
 ## El origen de MonaEngine
+
 Este motor fué inicialmente desarrollado por Byron Cornejo, en el contexto de su titulación en la carrera de Ingeniería en Computación de la Universidad de Chile. El documento escrito que describe en detalle el trabajo realizado esta en la carpeta Memoria.
 
 Sobre el trabajo anterior, Agustín Matthey realizó su trabajo de titulación, para la misma carrera, el cual implementa una metodología para modificar animaciones de caminatas y adaptarlas a terrenos de altura variable vía utilizando cinemática inversa. El detalle de este trabajo de título se encuentra en la carpeta Memoria.

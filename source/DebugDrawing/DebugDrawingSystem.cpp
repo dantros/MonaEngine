@@ -11,7 +11,7 @@
 #include <GLFW/glfw3.h>
 #include <glm/gtc/type_ptr.hpp>
 #include "../PhysicsCollision/PhysicsCollisionSystem.hpp"
-#include "../Core/RootDirectory.hpp"
+#include "../Core/Config.hpp"
 void GLAPIENTRY MessageCallback(GLenum source,
 	GLenum type,
 	GLuint id,
@@ -54,8 +54,11 @@ namespace Mona {
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	}
 	void DebugDrawingSystem_physics::StartUp(PhysicsCollisionSystem* physicsSystemPtr) noexcept {
-		m_lineShader = ShaderProgram(SourceDirectoryData::SourcePath("source/Rendering/Shaders/LineVS.vs"),
-			SourceDirectoryData::SourcePath("source/Rendering/Shaders/LinePS.ps"));
+		auto& config = Mona::Config::GetInstance();
+		m_lineShader = ShaderProgram(
+			config.getPathOfEngineAsset("Shaders/LineVS.vs"),
+			config.getPathOfEngineAsset("Shaders/LinePS.ps")
+		);
 		m_physicsWorldPtr = physicsSystemPtr->GetPhysicsWorldPtr();
 		m_bulletDebugDrawPtr.reset(new BulletDebugDraw());
 		m_bulletDebugDrawPtr->StartUp();
@@ -82,8 +85,11 @@ namespace Mona {
 
 
 	void DebugDrawingSystem_ikNav::StartUp(IKNavigationSystem* ikNavSystemPtr)  noexcept {
-		m_lineShader = ShaderProgram(SourceDirectoryData::SourcePath("source/Rendering/Shaders/LineVS.vs"),
-			SourceDirectoryData::SourcePath("source/Rendering/Shaders/LinePS.ps"));
+		auto& config = Mona::Config::GetInstance();
+		m_lineShader = ShaderProgram(
+			config.getPathOfEngineAsset("Shaders/LineVS.vs"),
+			config.getPathOfEngineAsset("Shaders/LinePS.ps")
+		);
 		m_ikNavSystemPtr = ikNavSystemPtr;
 		m_ikNavDebugDrawPtr.reset(new IKNavigationDebugDraw);
 		m_ikNavDebugDrawPtr->StartUp();

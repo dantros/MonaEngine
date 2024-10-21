@@ -16,7 +16,6 @@ set(MONA_HEADERS
 				Core/Common.hpp 
 				Core/Log.hpp
 				Core/Config.hpp
-				Core/RootDirectory.hpp
 				Core/AssimpTransformations.hpp
 				Core/FuncUtils.hpp
 				Core/GlmUtils.hpp
@@ -97,7 +96,6 @@ set(MONA_SOURCES
 				CharacterNavigation/TrajectoryGenerator.cpp
 				CharacterNavigation/TrajectoryGeneratorBase.cpp
 				CharacterNavigation/IKRigController.cpp
-				Core/RootDirectory.cpp
 				Core/Config.cpp
 				Event/EventManager.cpp
 				Platform/Window.cpp

@@ -108,7 +108,8 @@ public:
 
 		std::shared_ptr<Mona::DiffuseTexturedMaterial> materialTextured = std::static_pointer_cast<Mona::DiffuseTexturedMaterial>(world.CreateMaterial(Mona::MaterialType::DiffuseTextured, true));
 		auto& textureManager = Mona::TextureManager::GetInstance();
-		auto diffuseTexture = textureManager.LoadTexture(Mona::SourceDirectoryData::SourcePath("Assets\\Textures\\" + m_characterName + "\\diffuse.png"));
+		auto& config = Mona::Config::GetInstance();
+		auto diffuseTexture = textureManager.LoadTexture(config.getPathOfApplicationAsset("Textures/" + m_characterName + "/diffuse.png"));
 		materialTextured->SetMaterialTint(glm::vec3(0.1f));
 		materialTextured->SetDiffuseTexture(diffuseTexture);
 
@@ -118,9 +119,9 @@ public:
 		auto& meshManager = Mona::MeshManager::GetInstance();
 		auto& skeletonManager = Mona::SkeletonManager::GetInstance();
 		auto& animationManager = Mona::AnimationClipManager::GetInstance();
-		auto skeleton = skeletonManager.LoadSkeleton(Mona::SourceDirectoryData::SourcePath("\\Assets\\Models\\" + m_characterName + ".fbx"));
-		auto skinnedMesh = meshManager.LoadSkinnedMesh(skeleton, Mona::SourceDirectoryData::SourcePath("\\Assets\\Models\\" + m_characterName + ".fbx"), true);
-		m_walkingAnimation = animationManager.LoadAnimationClip(Mona::SourceDirectoryData::SourcePath("\\Assets\\Animations\\" + m_characterName + "\\walking"
+		auto skeleton = skeletonManager.LoadSkeleton(config.getPathOfApplicationAsset("Models/" + m_characterName + ".fbx"));
+		auto skinnedMesh = meshManager.LoadSkinnedMesh(skeleton, config.getPathOfApplicationAsset("Models/" + m_characterName + ".fbx"), true);
+		m_walkingAnimation = animationManager.LoadAnimationClip(config.getPathOfApplicationAsset("Animations/" + m_characterName + "/walking"
 			+ std::to_string(m_walkingAnimIndex) + ".fbx"), skeleton, false);
 
 		glm::vec3 originalUpVector = glm::vec3(0, 1, 0);
@@ -223,18 +224,6 @@ public:
 };
 int main()
 {
-	// retrieve file path
-	char path[MAX_PATH];
-
-	GetModuleFileNameA(NULL, path, MAX_PATH);
-	std::string strPath(path);
-	const size_t last_slash_idx = strPath.rfind('\\');
-	std::string currDirectory;
-	if (std::string::npos != last_slash_idx)
-	{
-		currDirectory = strPath.substr(0, last_slash_idx);
-	}
-	Mona::SourceDirectoryData::SetSourceDirectory(currDirectory);
 	IKNav app;
 	Mona::Engine engine(app);
 	engine.StartMainLoop();

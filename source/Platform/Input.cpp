@@ -5,135 +5,145 @@
 #include "../Event/Events.hpp"
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
-namespace Mona
+namespace Mona {
+class Input::InputImplementation {
+public:
+    InputImplementation()
+        : m_windowHandle(nullptr)
+        , m_mouseWheelOffset(0.0, 0.0)
+    {
+    }
+    InputImplementation(const InputImplementation& input) = delete;
+    InputImplementation& operator=(const InputImplementation& input) = delete;
+    void StartUp(EventManager& eventManager) noexcept
+    {
+        m_windowHandle = glfwGetCurrentContext();
+        MONA_ASSERT(m_windowHandle != NULL, "GLFW Error: Unable to find window");
+        eventManager.Subscribe(m_mouseScrollSubscription, this, &Input::InputImplementation::OnMouseScroll);
+    }
+
+    void ShutDown(EventManager& eventManager) noexcept
+    {
+        eventManager.Unsubscribe(m_mouseScrollSubscription);
+    }
+    void Update() noexcept
+    {
+        m_mouseWheelOffset.x = 0.0;
+        m_mouseWheelOffset.y = 0.0;
+        glfwPollEvents();
+    }
+    void OnMouseScroll(const MouseScrollEvent& e)
+    {
+        m_mouseWheelOffset = glm::dvec2(e.xOffset, e.yOffset);
+    }
+    inline bool IsKeyPressed(int keycode) const noexcept
+    {
+        return glfwGetKey(m_windowHandle, keycode) == GLFW_PRESS;
+    }
+    inline bool IsMouseButtonPressed(int button) const noexcept
+    {
+        return glfwGetMouseButton(m_windowHandle, button) == GLFW_PRESS;
+    }
+    inline glm::dvec2 GetMousePosition() const noexcept
+    {
+        double x, y;
+        glfwGetCursorPos(m_windowHandle, &x, &y);
+        return glm::dvec2(x, y);
+    }
+    inline glm::dvec2 GetMouseWheelOffset() const noexcept
+    {
+        return m_mouseWheelOffset;
+    }
+    void SetCursorType(CursorType type) noexcept
+    {
+        switch (type) {
+        case CursorType::Disabled: {
+            glfwSetInputMode(m_windowHandle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            return;
+        }
+        case CursorType::Hidden: {
+            glfwSetInputMode(m_windowHandle, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+            return;
+        }
+        case CursorType::Normal: {
+            glfwSetInputMode(m_windowHandle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            return;
+        }
+        }
+    }
+    inline bool IsGamepadButtonPressed(int joystickId, int code) const noexcept
+    {
+        GLFWgamepadstate state;
+        glfwGetGamepadState(joystickId, &state);
+        return state.buttons[code];
+    }
+    float GetGamepadAxisValue(int joystickId, int code) const noexcept
+    {
+        GLFWgamepadstate state;
+        glfwGetGamepadState(joystickId, &state);
+        return state.axes[code];
+    }
+
+private:
+    GLFWwindow* m_windowHandle;
+    glm::dvec2 m_mouseWheelOffset;
+    SubscriptionHandle m_mouseScrollSubscription;
+};
+
+Input::Input()
+    : p_Impl(std::make_unique<InputImplementation>())
 {
-	class Input::InputImplementation {
-	public:
-		InputImplementation():m_windowHandle(nullptr), m_mouseWheelOffset(0.0,0.0) {}
-		InputImplementation(const InputImplementation& input) = delete;
-		InputImplementation& operator=(const InputImplementation& input) = delete;
-		void StartUp(EventManager& eventManager) noexcept {
-			m_windowHandle = glfwGetCurrentContext();
-			MONA_ASSERT(m_windowHandle != NULL, "GLFW Error: Unable to find window");
-			eventManager.Subscribe(m_mouseScrollSubscription, this, &Input::InputImplementation::OnMouseScroll);
-		}
+}
 
-		void ShutDown(EventManager& eventManager) noexcept {
-			eventManager.Unsubscribe(m_mouseScrollSubscription);
-		}
-		void Update() noexcept {
-			m_mouseWheelOffset.x = 0.0;
-			m_mouseWheelOffset.y = 0.0;
-			glfwPollEvents();
-		}
-		void OnMouseScroll(const MouseScrollEvent& e)
-		{
-			m_mouseWheelOffset = glm::dvec2(e.xOffset, e.yOffset);
-		}
-		inline bool IsKeyPressed(int keycode) const noexcept
-		{
-			return glfwGetKey(m_windowHandle, keycode) == GLFW_PRESS;
-		}
-		inline bool IsMouseButtonPressed(int button) const noexcept {
-			return glfwGetMouseButton(m_windowHandle, button) == GLFW_PRESS;
-		}
-		inline glm::dvec2 GetMousePosition() const noexcept {
-			double x, y;
-			glfwGetCursorPos(m_windowHandle, &x, &y);
-			return glm::dvec2(x, y);
-		}
-		inline glm::dvec2 GetMouseWheelOffset() const noexcept {
-			return m_mouseWheelOffset;
-		}
-		void SetCursorType(CursorType type) noexcept
-		{
-			switch (type)
-			{
-				case CursorType::Disabled: 
-				{
-					glfwSetInputMode(m_windowHandle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-					return;
-				}
-				case CursorType::Hidden:
-				{
-					glfwSetInputMode(m_windowHandle, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-					return;
-				}
-				case CursorType::Normal:
-				{
-					glfwSetInputMode(m_windowHandle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-					return;
-				}
+Input::~Input() = default;
 
-			}
-		}
-		inline bool IsGamepadButtonPressed(int joystickId, int code) const noexcept
-		{
-			GLFWgamepadstate state;
-			glfwGetGamepadState(joystickId, &state);
-			return state.buttons[code];
-		}
-		float GetGamepadAxisValue(int joystickId, int code) const noexcept
-		{
-			GLFWgamepadstate state;
-			glfwGetGamepadState(joystickId, &state);
-			return state.axes[code];
-		}
-	private:
-		GLFWwindow* m_windowHandle;
-		glm::dvec2 m_mouseWheelOffset;
-		SubscriptionHandle m_mouseScrollSubscription;
-	};
+void Input::Update() noexcept
+{
+    p_Impl->Update();
+}
 
-	Input::Input() : p_Impl(std::make_unique<InputImplementation>()) {}
+bool Input::IsKeyPressed(int keycode) const noexcept
+{
+    return p_Impl->IsKeyPressed(keycode);
+}
 
-	Input::~Input() = default;
+bool Input::IsMouseButtonPressed(int button) const noexcept
+{
+    return p_Impl->IsMouseButtonPressed(button);
+}
 
-	void Input::Update() noexcept
-	{
-		p_Impl->Update();
-	}
+glm::dvec2 Input::GetMousePosition() const noexcept
+{
+    return p_Impl->GetMousePosition();
+}
 
-	bool Input::IsKeyPressed(int keycode) const noexcept
-	{
-		return p_Impl->IsKeyPressed(keycode);
-	}
+glm::dvec2 Input::GetMouseWheelOffset() const noexcept
+{
+    return p_Impl->GetMouseWheelOffset();
+}
+void Input::SetCursorType(CursorType type) noexcept
+{
+    p_Impl->SetCursorType(type);
+}
 
-	bool Input::IsMouseButtonPressed(int button) const noexcept
-	{
-		return p_Impl->IsMouseButtonPressed(button);
-	}
+bool Input::IsGamepadButtonPressed(int joystickId, int code) const noexcept
+{
+    return p_Impl->IsGamepadButtonPressed(joystickId, code);
+}
 
-	glm::dvec2 Input::GetMousePosition() const noexcept
-	{
-		return p_Impl->GetMousePosition();
-	}
+float Input::GetGamepadAxisValue(int joystickId, int code) const noexcept
+{
+    return p_Impl->GetGamepadAxisValue(joystickId, code);
+}
 
-	glm::dvec2 Input::GetMouseWheelOffset() const noexcept
-	{
-		return p_Impl->GetMouseWheelOffset();
-	}
-	void Input::SetCursorType(CursorType type) noexcept
-	{
-		p_Impl->SetCursorType(type);
-	}
+void Input::StartUp(EventManager& eventManager) noexcept
+{
+    p_Impl->StartUp(eventManager);
+}
 
-	bool Input::IsGamepadButtonPressed(int joystickId, int code) const noexcept
-	{
-		return p_Impl->IsGamepadButtonPressed(joystickId, code);
-	}
-
-	float Input::GetGamepadAxisValue(int joystickId, int code) const noexcept
-	{
-		return p_Impl->GetGamepadAxisValue(joystickId, code);
-	}
-
-	void Input::StartUp(EventManager& eventManager) noexcept {
-		p_Impl->StartUp(eventManager);
-	}
-
-	void Input::ShutDown(EventManager& eventManager) noexcept {
-		p_Impl->ShutDown(eventManager);
-	}
+void Input::ShutDown(EventManager& eventManager) noexcept
+{
+    p_Impl->ShutDown(eventManager);
+}
 
 }

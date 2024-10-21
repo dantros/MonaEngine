@@ -1,0 +1,6 @@
+# Ignore thirdParty libraries
+thirdParty/*
+
+# Ignore KeyCodes.hpp
+source/Platform/KeyCodes.hpp
+

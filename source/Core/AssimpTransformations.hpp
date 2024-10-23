@@ -6,6 +6,7 @@
 #include <assimp/vector3.h>
 #include <glm/glm.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include <vector>
 namespace Mona {
 inline glm::mat4 AssimpToGlmMatrix(const aiMatrix4x4& mat)
 {

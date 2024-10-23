@@ -5,6 +5,7 @@
 #include <string>
 #include <sstream>
 #include <filesystem>
+#include <nlohmann/json.hpp>
 #include "Log.hpp"
 
 namespace Mona {
@@ -46,10 +47,12 @@ namespace Mona {
 	private:
 		Config() noexcept {}
 		std::unordered_map<std::string, std::string> m_configurations;
+		nlohmann::json m_configurations2;
 
 		bool m_loaded = false;
 		void loadDirectories();
 		void readFile(const std::string& path);
+		void readFile2(const std::string& path);
 
 		/* these values are set with the executable path, cannot be changed. */
 		std::filesystem::path m_executablePath;

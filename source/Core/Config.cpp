@@ -19,6 +19,21 @@ namespace Mona
 
 		// Game Object Settings
 		m_configurations["expected_number_of_gameobjects"] = "1200";
+
+		//---
+
+		// Window Settings
+		m_configurations2["windowTitle"] = "MonaEngine Application";
+
+		// OpenGL Settings
+		m_configurations2["OpenGL_major_version"] = "4";
+		m_configurations2["OpenGL_minor_version"] = "5";
+
+		// Audio Setting
+		m_configurations2["N_OPENAL_SOURCES"] = "32";
+
+		// Game Object Settings
+		m_configurations2["expected_number_of_gameobjects"] = "1200";
 	}
 
 	void Config::readFile(const std::string& path)
@@ -62,6 +77,12 @@ namespace Mona
 		return;
 	}
 
+	void Config::readFile2(const std::string& path)
+	{
+		std::ifstream file(path);
+		file >> m_configurations2;
+	}
+
 	void Config::loadDirectories()
 	{
 		// TODO: change config file format to json
@@ -72,6 +93,14 @@ namespace Mona
 
 		m_configurationFile = m_executableDir;
 		m_configurationFile.append("config.cfg");
+
+		std::filesystem::path m_configurationFile2 = m_executableDir;
+		m_configurationFile2.append("config.json");
+
+		if (std::filesystem::is_regular_file(m_configurationFile))
+		{
+			readFile2(m_configurationFile2.string());
+		}
 
 		/* The configuration file allow us to specify asset folders for the application and for the engine.
 		   Those paths must be absolute, this is meant to help development only.

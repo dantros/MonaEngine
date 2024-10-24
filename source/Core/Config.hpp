@@ -40,6 +40,15 @@ namespace Mona {
 			return defaultValue;
 		}
 
+		template <typename T>
+		inline T getValueOrDefault2(const std::string& key, const T& defaultValue) const noexcept
+		{
+			if (m_configurations2.contains(key))
+				return m_configurations2[key];
+
+			return defaultValue;
+		}
+
 		std::filesystem::path getPathRelativeToExecutable(const std::string &relativePath);
 		std::filesystem::path getPathOfApplicationAsset(const std::string &relativePath);
 		std::filesystem::path getPathOfEngineAsset(const std::string &relativePath);

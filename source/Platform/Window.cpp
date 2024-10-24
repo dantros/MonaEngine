@@ -27,12 +27,12 @@ namespace Mona {
 			MONA_ASSERT(success, "Could not initialize GLFW!");
 			glfwSetErrorCallback(GLFWErrorCallback);
 			Mona::Config& config = Config::GetInstance(); 
-			const int glVersionMajor = config.getValueOrDefault<int>("OpenGL_major_version", 4);
-			const int glVersionMinor = config.getValueOrDefault<int>("OpenGL_minor_version", 5);
-			auto windowTitle = config.getValueOrDefault<std::string>("windowTitle", "Default Title");
-			int windowWidth = config.getValueOrDefault<int>("windowWidth", 1440);
-			int windowHeight = config.getValueOrDefault<int>("windowHeight", 810);
-			bool fullScreen = config.getValueOrDefault<bool>("fullscreen", false);
+			const int glVersionMajor = config.getValueOrDefault2<int>("OpenGL_major_version", 4);
+			const int glVersionMinor = config.getValueOrDefault2<int>("OpenGL_minor_version", 5);
+			auto windowTitle = config.getValueOrDefault2<std::string>("windowTitle", "Default Title");
+			int windowWidth = config.getValueOrDefault2<int>("windowWidth", 1440);
+			int windowHeight = config.getValueOrDefault2<int>("windowHeight", 810);
+			bool fullScreen = config.getValueOrDefault2<bool>("fullscreen", false);
 			glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, glVersionMajor);
 			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, glVersionMinor);
 			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);

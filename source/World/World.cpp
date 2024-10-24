@@ -45,7 +45,7 @@ namespace Mona {
 		auto& staticMeshDataManager = GetComponentManager<StaticMeshComponent>();
 		auto& ikNavigationDataManager = GetComponentManager<IKNavigationComponent>();
 
-		const GameObjectID expectedObjects = config.getValueOrDefault<int>("expected_number_of_gameobjects", 1000);
+		const GameObjectID expectedObjects = config.getValueOrDefault2<int>("expected_number_of_gameobjects", 1000);
 		rigidBodyDataManager.SetLifetimePolicy(RigidBodyLifetimePolicy(&transformDataManager, &m_physicsCollisionSystem));
 		audioSourceDataManager.SetLifetimePolicy(AudioSourceComponentLifetimePolicy(&m_audioSystem));
 		ikNavigationDataManager.SetLifetimePolicy(IKNavigationLifetimePolicy(&transformDataManager, 

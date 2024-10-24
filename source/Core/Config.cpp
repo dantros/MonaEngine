@@ -26,14 +26,14 @@ namespace Mona
 		m_configurations2["windowTitle"] = "MonaEngine Application";
 
 		// OpenGL Settings
-		m_configurations2["OpenGL_major_version"] = "4";
-		m_configurations2["OpenGL_minor_version"] = "5";
+		m_configurations2["OpenGL_major_version"] = 4;
+		m_configurations2["OpenGL_minor_version"] = 5;
 
 		// Audio Setting
-		m_configurations2["N_OPENAL_SOURCES"] = "32";
+		m_configurations2["N_OPENAL_SOURCES"] = 32;
 
 		// Game Object Settings
-		m_configurations2["expected_number_of_gameobjects"] = "1200";
+		m_configurations2["expected_number_of_gameobjects"] = 1200;
 	}
 
 	void Config::readFile(const std::string& path)
@@ -97,14 +97,40 @@ namespace Mona
 		std::filesystem::path m_configurationFile2 = m_executableDir;
 		m_configurationFile2.append("config.json");
 
-		if (std::filesystem::is_regular_file(m_configurationFile2))
-		{
-			readFile2(m_configurationFile2.string());
-		}
-
 		/* The configuration file allow us to specify asset folders for the application and for the engine.
 		   Those paths must be absolute, this is meant to help development only.
 		 */
+		if (std::filesystem::is_regular_file(m_configurationFile2))
+		{
+			readFile2(m_configurationFile2.string());
+
+			std::string applicationAssetsDirStr = getValueOrDefault2<std::string>("application_assets_dir", "X");
+			if (applicationAssetsDirStr == "X")
+			{
+				/* If we do not have a configuration file, we look for the asset folders next to the executable. */
+				m_applicationAssetsDir = m_executableDir;
+				m_applicationAssetsDir.append("Assets");
+			}
+			else
+			{
+				m_applicationAssetsDir = applicationAssetsDirStr;
+			}
+
+			std::string engineAssetsDirStr = getValueOrDefault2<std::string>("engine_assets_dir", "X");
+			if (engineAssetsDirStr == "X")
+			{
+				/* If we do not have a configuration file, we look for the asset folders next to the executable. */
+				m_engineAssetsDir = m_executableDir;
+				m_engineAssetsDir.append("EngineAssets");
+			}
+			else
+			{
+				m_engineAssetsDir = engineAssetsDirStr;
+			}
+		}
+
+		
+#if 0
 		if (std::filesystem::is_regular_file(m_configurationFile))
 		{
 			readFile(m_configurationFile.string());
@@ -133,9 +159,10 @@ namespace Mona
 				m_engineAssetsDir = engineAssetsDirStr;
 			}
 		}
+#endif
 		else
 		{
-			MONA_LOG_INFO("There is no configuration file \"config.cfg\" next to the executable. Using defaults.");
+			MONA_LOG_INFO("There is no configuration file \"config.json\" next to the executable. Using defaults.");
 
 			loadDefault();
 

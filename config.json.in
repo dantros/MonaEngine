@@ -1,0 +1,9 @@
+{
+    "windowTitle": "MonaEngine Application",
+    "OpenGL_major_version": 4,
+    "OpenGL_minor_version": 5,
+    "N_OPENAL_SOURCES": 32,
+    "expected_number_of_gameobjects": 1200,
+    "application_assets_dir": "${APPLICATION_ASSETS_DIR}",
+    "engine_assets_dir": "${ENGINE_ASSETS_DIR}"
+}

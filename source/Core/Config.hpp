@@ -23,24 +23,6 @@ namespace Mona {
 		void loadDefault();
 
 		template <typename T>
-		inline T getValueOrDefault(const std::string& key, const T& defaultValue) const noexcept
-		{
-			auto it = m_configurations.find(key);
-			if (it != m_configurations.end())
-			{
-				std::istringstream istr(it->second);
-				T returnValue;
-				if (!(istr >> returnValue))
-				{
-					MONA_LOG_ERROR("Configuration: Failed to transform {0}'s value from {1} into an {2}", it->first, it->second, typeid(T).name());
-					return defaultValue;
-				}
-				return returnValue;
-			}
-			return defaultValue;
-		}
-
-		template <typename T>
 		inline T getValueOrDefault2(const std::string& key, const T& defaultValue) const noexcept
 		{
 			if (m_configurations2.contains(key))
@@ -60,7 +42,6 @@ namespace Mona {
 
 		bool m_loaded = false;
 		void loadDirectories();
-		void readFile(const std::string& path);
 		void readFile2(const std::string& path);
 
 		/* these values are set with the executable path, cannot be changed. */
@@ -73,18 +54,7 @@ namespace Mona {
 		/* extratced from the configuration file. */
 		std::filesystem::path m_applicationAssetsDir;
 		std::filesystem::path m_engineAssetsDir;
-	};
-
-	template <>
-	inline std::string Config::getValueOrDefault(const std::string& key, const std::string& defaultValue) const noexcept
-	{
-		auto it = m_configurations.find(key);
-		if (it != m_configurations.end()) {
-			return it->second;
-		}
-		return defaultValue;
-	}
-	
+	};	
 }
 
 

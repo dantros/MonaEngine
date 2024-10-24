@@ -9,9 +9,6 @@ function(Add_Example TARGETNAME FILENAME)
         $<TARGET_FILE:OpenAL> $<TARGET_FILE_DIR:${TARGETNAME}>)
 	add_custom_command(TARGET ${TARGETNAME} POST_BUILD
 		COMMAND ${CMAKE_COMMAND} -E copy_if_different 
-        config.cfg $<TARGET_FILE_DIR:${TARGETNAME}>)
-	add_custom_command(TARGET ${TARGETNAME} POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy_if_different 
         config.json $<TARGET_FILE_DIR:${TARGETNAME}>)
 	
 endfunction(Add_Example)
@@ -19,7 +16,6 @@ endfunction(Add_Example)
 # Setting up the configuration file to use the asset directories from the source code, this is only for development.
 set(APPLICATION_ASSETS_DIR ${CMAKE_SOURCE_DIR}/examples/Assets)
 set(ENGINE_ASSETS_DIR ${CMAKE_SOURCE_DIR}/EngineAssets)
-configure_file(${CMAKE_SOURCE_DIR}/config.cfg.in config.cfg)
 configure_file(${CMAKE_SOURCE_DIR}/config.json.in config.json)
 
 Add_Example(Example0_MinimalSetup MinimalSetup.cpp)

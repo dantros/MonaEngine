@@ -58,8 +58,8 @@ La dependencia a OpenAL-soft (licencia LGPL) se mantiene como biblioteca dinámi
 Una estructura de archivos y carpetas de ejemplo:
  - Una carpeta de nombre MonaEngine que contiene los archivos del repositorio del motor (puede ser un submódulo git).
  - Un archivo llamado CMakeLists.txt con contenido similar al extracto de código mostrado más abajo.
- - El resto de los archivos fuentes y encabezados necesarios para la aplicación o videojuego. En el caso del ejemplo ilustrado por el extracto de código mostrado más abajo 
- estos corresponden a main.cpp, clase0.h, clase0.cpp, clase1.h y clase.cpp.
+ - El resto de los archivos fuentes y encabezados necesarios para la aplicación o videojuego. En el caso del ejemplo ilustrado por el extracto de código mostrado más abajo, estos corresponden a main.cpp, clase0.h, clase0.cpp, clase1.h y clase.cpp.
+ - Generar (o escribir) un archivo `config.json` que especifíque el path para assets del motor y de la aplicación.
 
 ```
 set(CMAKE_LEGACY_CYGWIN_WIN32 OFF)
@@ -70,11 +70,14 @@ add_executable(SomeGame main.cpp clase0.h clase0.cpp clase1.h clase1.cpp)
 set_property(TARGET SomeGame  PROPERTY CXX_STANDARD 20)
 target_link_libraries(SomeGame  PRIVATE MonaEngine)
 target_include_directories(SomeGame  PRIVATE  ${MONA_INCLUDE_DIRECTORY} ${THIRD_PARTY_INCLUDE_DIRECTORIES})
+
+# Configurando path para assets en archivo config.json
+set(APPLICATION_ASSETS_DIR ${CMAKE_SOURCE_DIR}/MyApp/Assets)
+set(ENGINE_ASSETS_DIR ${CMAKE_SOURCE_DIR}/EngineAssets)
+configure_file(${CMAKE_SOURCE_DIR}/config.json.in config.json)
 ```
 
-Adicional a lo anterior, dado que cargaremos assets en tiempo de ejecución, es necesario ubicar dichos archivos de manera consistente.
-
-Por defecto, junto al ejecutable, se deben encontrar las carpetas `Assets` y `EngineAssets`. En `Assets` se deben almacenar todos los assets propios de la aplicación, mientras que `EngineAssets`, se ubican aquellos que son propios del engine, como por ejemplo, shaders que son utilizados por el renderer.
+La última parte del cógido cmake anterior, se encarga de configurar un archivo json. Dado que cargaremos assets en tiempo de ejecución, es necesario ubicar dichos archivos de manera consistente. Si no se encuentra un archivo `config.json` junto al ejecutable, se deben encontrar las carpetas `Assets` y `EngineAssets`. En `Assets` se deben almacenar todos los assets propios de la aplicación, mientras que `EngineAssets`, se ubican aquellos que son propios del engine (Ejemplo: Shaders que son utilizados por el renderer).
 
 Para acceder a estos directorios de assets desde código, se debe utilizar el singleton `Config` del siguiente modo:
 
@@ -88,31 +91,24 @@ La recomendación para comenzar, es revisar los ejemplos disponibles en la carpe
 
 ### Manejo de Assets en tiempo de desarrollo
 
-Para facilitar el desarrollo, es posible utilizar un archivo de configuración `config.cfg` junto al ejecutable, dentro de este archivo se pueden especificar directorios absolutos donde se buscarán los assets. Esto facilita el desarrollo vía un IDE como Visual Studio, donde se crean carpetas intermedias dependiendo del tipo de compilación (Release, Debug, etc).
+Para facilitar el desarrollo, es posible utilizar un archivo de configuración `config.json` junto al ejecutable, dentro de este archivo se pueden especificar directorios absolutos donde se buscarán los assets. Esto facilita el desarrollo vía un IDE como Visual Studio, donde se crean carpetas intermedias dependiendo del tipo de compilación (Release, Debug, etc).
 
-Convenientemente, los archivos CMake provistos utilizan `configure_file` para generar el archivo `config.cfg` (en base a `config.cfg.in`) y lo copia en las carpetas de desarrollo correspondientes, de esta forma, todo debiera funcionar inmediatamente, ya sea ejecutando una sesión de Debug en Visual Studio, o directamente vía doble clic en el ejecutable.
+Convenientemente, los archivos CMake provistos utilizan `configure_file` para generar el archivo `config.json` (en base a `config.json.in`) y lo copia en las carpetas de desarrollo correspondientes, de esta forma, todo debiera funcionar inmediatamente, ya sea ejecutando una sesión de Debug en Visual Studio, o directamente vía doble clic en el ejecutable.
 
-Ejemplo de archivo `config.cfg`:
+Ejemplo de archivo `config.json`:
 ```
-# Window Settings
-windowTitle = Breakout
-
-# OpenGL Settings
-OpenGL_major_version = 4
-OpenGL_minor_version = 5
-
-# Audio Setting
-N_OPENAL_SOURCES = 32
-
-# Game Object Settings
-expected_number_of_gameobjects = 1200
-
-# Asset Folders
-application_assets_dir = C:\mona_engine_app\install\Assets
-engine_assets_dir = C:\mona_engine_app\install\EngineAssets
+{
+    "windowTitle": "MonaEngine Application",
+    "OpenGL_major_version": 4,
+    "OpenGL_minor_version": 5,
+    "N_OPENAL_SOURCES": 32,
+    "expected_number_of_gameobjects": 1200,
+    "application_assets_dir": "C:\mona_engine_app\install\Assets",
+    "engine_assets_dir": "C:\mona_engine_app\install\EngineAssets"
+}
 ```
 
-Si no se especifican `application_assets_dir` y/o `engine_assets_dir`, o si no se encuentra un archivo `config.cfg`, se buscarán los directorios `Assets` y `EngineAssets` que deben estar ubicados junto al ejecutable.
+Si no se especifican `application_assets_dir` y/o `engine_assets_dir`, o si no se encuentra un archivo `config.json`, se buscarán los directorios `Assets` y `EngineAssets` que deben estar ubicados junto al ejecutable.
 
 Ejemplo de directorios para aplicación portable (*):
 ```
@@ -136,7 +132,7 @@ Ejemplo de directorios para aplicación en desarrollo:
 C:\mona_engine_src\build\
 +---------SomeGame.exe
 +---------OpenAL.dll
-+---------config.cfg
++---------config.json
 C:\mona_engine_app\install\
 +---------Assets/
           +------model.fbx
@@ -151,11 +147,13 @@ C:\mona_engine_src\MonaEngine\
           +------...
 ```
 
-En este último caso se deben especificar los directorios de assets en el archivo `config.cfg`:
+En este último caso se deben especificar los directorios de assets en el archivo `config.json`:
 ```
-...
-application_assets_dir = C:\mona_engine_app\install\Assets
-engine_assets_dir = C:\mona_engine_src\MonaEngine\EngineAssets
+{
+    ...
+    "application_assets_dir": "C:\mona_engine_app\install\Assets",
+    "engine_assets_dir": "C:\mona_engine_src\MonaEngine\EngineAssets"
+}
 ```
 
 ## Instalación

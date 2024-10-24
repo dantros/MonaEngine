@@ -8,23 +8,23 @@ namespace Mona
 	void Config::loadDefault()
 	{
 		// Window Settings
-		m_configurations2["windowTitle"] = "MonaEngine Application";
+		m_configurations["windowTitle"] = "MonaEngine Application";
 
 		// OpenGL Settings
-		m_configurations2["OpenGL_major_version"] = 4;
-		m_configurations2["OpenGL_minor_version"] = 5;
+		m_configurations["OpenGL_major_version"] = 4;
+		m_configurations["OpenGL_minor_version"] = 5;
 
 		// Audio Setting
-		m_configurations2["N_OPENAL_SOURCES"] = 32;
+		m_configurations["N_OPENAL_SOURCES"] = 32;
 
 		// Game Object Settings
-		m_configurations2["expected_number_of_gameobjects"] = 1200;
+		m_configurations["expected_number_of_gameobjects"] = 1200;
 	}
 
-	void Config::readFile2(const std::string& path)
+	void Config::readFile(const std::string& path)
 	{
 		std::ifstream file(path);
-		file >> m_configurations2;
+		file >> m_configurations;
 	}
 
 	void Config::loadDirectories()
@@ -35,17 +35,17 @@ namespace Mona
 		m_executablePath = executablePathStr;
 		m_executableDir = m_executablePath.parent_path();
 
-		std::filesystem::path m_configurationFile2 = m_executableDir;
-		m_configurationFile2.append("config.json");
+		m_configurationFile = m_executableDir;
+		m_configurationFile.append("config.json");
 
 		/* The configuration file allow us to specify asset folders for the application and for the engine.
 		   Those paths must be absolute, this is meant to help development only.
 		 */
-		if (std::filesystem::is_regular_file(m_configurationFile2))
+		if (std::filesystem::is_regular_file(m_configurationFile))
 		{
-			readFile2(m_configurationFile2.string());
+			readFile(m_configurationFile.string());
 
-			std::string applicationAssetsDirStr = getValueOrDefault2<std::string>("application_assets_dir", "X");
+			std::string applicationAssetsDirStr = getValueOrDefault<std::string>("application_assets_dir", "X");
 			if (applicationAssetsDirStr == "X")
 			{
 				/* If we do not have a configuration file, we look for the asset folders next to the executable. */
@@ -57,7 +57,7 @@ namespace Mona
 				m_applicationAssetsDir = applicationAssetsDirStr;
 			}
 
-			std::string engineAssetsDirStr = getValueOrDefault2<std::string>("engine_assets_dir", "X");
+			std::string engineAssetsDirStr = getValueOrDefault<std::string>("engine_assets_dir", "X");
 			if (engineAssetsDirStr == "X")
 			{
 				/* If we do not have a configuration file, we look for the asset folders next to the executable. */

@@ -23,10 +23,10 @@ namespace Mona {
 		void loadDefault();
 
 		template <typename T>
-		inline T getValueOrDefault2(const std::string& key, const T& defaultValue) const noexcept
+		inline T getValueOrDefault(const std::string& key, const T& defaultValue) const noexcept
 		{
-			if (m_configurations2.contains(key))
-				return m_configurations2[key];
+			if (m_configurations.contains(key))
+				return m_configurations[key];
 
 			return defaultValue;
 		}
@@ -37,12 +37,11 @@ namespace Mona {
 
 	private:
 		Config() noexcept {}
-		std::unordered_map<std::string, std::string> m_configurations;
-		nlohmann::json m_configurations2;
+		nlohmann::json m_configurations;
 
 		bool m_loaded = false;
 		void loadDirectories();
-		void readFile2(const std::string& path);
+		void readFile(const std::string& path);
 
 		/* these values are set with the executable path, cannot be changed. */
 		std::filesystem::path m_executablePath;

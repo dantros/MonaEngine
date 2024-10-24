@@ -9,7 +9,7 @@
 namespace Mona {
 	void AudioSystem::StartUp() noexcept {
 		Config& config = Config::GetInstance();
-		const int channels = config.getValueOrDefault2<int>("N_OPENAL_SOURCES", 32);
+		const int channels = config.getValueOrDefault<int>("N_OPENAL_SOURCES", 32);
 		MONA_ASSERT(channels > 0, "AudioSystem Error: please request more than zero channels");
 		//Creación de una instancia de ALCdevice y ALCcontext, y posterior chequeo.
 		m_audioDevice = alcOpenDevice(nullptr);

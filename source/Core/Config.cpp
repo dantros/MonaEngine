@@ -97,7 +97,7 @@ namespace Mona
 		std::filesystem::path m_configurationFile2 = m_executableDir;
 		m_configurationFile2.append("config.json");
 
-		if (std::filesystem::is_regular_file(m_configurationFile))
+		if (std::filesystem::is_regular_file(m_configurationFile2))
 		{
 			readFile2(m_configurationFile2.string());
 		}

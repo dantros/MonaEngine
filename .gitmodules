@@ -7,3 +7,6 @@
 [submodule "thirdParty/json"]
 	path = thirdParty/json
 	url = https://github.com/nlohmann/json.git
+[submodule "thirdParty/entt"]
+	path = thirdParty/entt
+	url = https://github.com/skypjack/entt.git

@@ -37,6 +37,11 @@
 #include <filesystem>
 #include <string>
 
+namespace MonaECS
+{
+	class ECSHandler;
+}
+
 namespace Mona {
 
 	class Material;
@@ -112,6 +117,9 @@ namespace Mona {
 
 		void SetBackgroundColor(float r, float g, float b, float alpha = 0.0f);
 
+		void EnableECS();
+		MonaECS::ECSHandler* GetECSHandler();
+
 	private:
 		World(Application& app);
 		~World();
@@ -149,7 +157,7 @@ namespace Mona {
 
 		IKNavigationSystem m_ikNavigationSystyem;
 
-		
+		std::unique_ptr<MonaECS::ECSHandler> m_ecsHandler;
 	};
 
 	

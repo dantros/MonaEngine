@@ -10,6 +10,7 @@
 #include "../Animation/SkeletonManager.hpp"
 #include "../Animation/AnimationClipManager.hpp"
 #include "../Animation/AnimationController.hpp"
+#include "../ECS/ECS.hpp"
 #include <chrono>
 namespace Mona {
 	
@@ -288,6 +289,17 @@ namespace Mona {
 
 	void World::SetBackgroundColor(float r, float g, float b, float alpha) {
 		m_renderer.SetBackgroundColor(r, g, b, alpha);
+	}
+
+	void World::EnableECS() {
+		m_ecsHandler = std::make_unique<MonaECS::ECSHandler>(this);
+	}
+
+	MonaECS::ECSHandler* World::GetECSHandler() {
+		if (!m_ecsHandler) {
+			EnableECS();
+		}
+		return m_ecsHandler.get();
 	}
 
 }

@@ -1,9 +1,16 @@
-#include "MonaEngine.hpp"
-#include "Rendering/DiffuseFlatMaterial.hpp"
-#include "ECS/ECS.hpp"
-#include "ECS/Components.hpp"
-#include "ECS/Events.hpp"
-#include "ECS/Systems.hpp"
+#include <MonaEngine.hpp>
+#include <Rendering/DiffuseFlatMaterial.hpp>
+#include "ECS/Components/CollisionComponents.hpp"
+#include "ECS/Components/InputComponents.hpp"
+#include "ECS/Components/StatComponents.hpp"
+#include "ECS/Events/CollisionEvents.hpp"
+#include "ECS/Events/ColorChangeEvents.hpp"
+#include "ECS/Events/DestroyGameObjectEvents.hpp"
+#include "ECS/Events/InputEvents.hpp"
+#include "ECS/Systems/CollisionSystem.hpp"
+#include "ECS/Systems/InputSystem.hpp"
+#include "ECS/Systems/MovementSystem.hpp"
+#include "ECS/Systems/StatsSystem.hpp"
 #include <random>
 
 void CreateCamera(Mona::World &world)
@@ -308,6 +315,7 @@ private:
 	std::vector<entt::entity> walls;
 	float time = 0.0f;
 };
+
 int main()
 {
 	ECSExample app;

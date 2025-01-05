@@ -1,6 +1,7 @@
 #pragma once
 #ifndef ECS_INPUT_EVENTS_HPP
 #define ECS_INPUT_EVENTS_HPP
+
 #include <glm/glm.hpp>
 
 namespace MonaECS

@@ -2,6 +2,8 @@
 #ifndef ECS_STATS_SYSTEM_HPP
 #define ECS_STATS_SYSTEM_HPP
 
+#include <MonaEngine.hpp>
+
 namespace MonaECS
 {
     class BaseSystem;

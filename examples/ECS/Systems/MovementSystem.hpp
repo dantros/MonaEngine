@@ -2,6 +2,8 @@
 #ifndef MOVEMENT_SYSTEM_HPP
 #define MOVEMENT_SYSTEM_HPP
 
+#include <MonaEngine.hpp>
+
 namespace MonaECS {
     class BaseSystem;
     struct TransformComponent;

@@ -1,11 +1,8 @@
-#include "./BaseSystem.hpp"
-#include "./InputSystem.hpp"
-#include "../ComponentManager.hpp"
-#include "../EventManager.hpp"
+
+#include "InputSystem.hpp"
 #include "../Events/InputEvents.hpp"
 #include "../Components/InputComponents.hpp"
-#include "../../Platform/Input.hpp"
-#include "../../Platform/KeyCodes.hpp"
+#include <MonaEngine.hpp>
 
 namespace MonaECS
 {

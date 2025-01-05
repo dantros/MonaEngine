@@ -1,7 +1,8 @@
 #pragma once
 #ifndef COLLISION_COMPONENTS_HPP
 #define COLLISION_COMPONENTS_HPP
-#include "../../MonaEngine.hpp"
+
+#include <MonaEngine.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 

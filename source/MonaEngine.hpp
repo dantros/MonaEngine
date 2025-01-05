@@ -15,6 +15,8 @@
 #include "Rendering/TextureManager.hpp"
 #include "Animation/SkeletonManager.hpp"
 #include "Animation/AnimationClipManager.hpp"
+#include "ECS/ECS.hpp"
+#include "ECS/BaseSystem.hpp"
 #include <memory>
 
 #endif

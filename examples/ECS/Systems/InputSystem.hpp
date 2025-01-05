@@ -2,6 +2,8 @@
 #ifndef INPUT_SYSTEM_HPP
 #define INPUT_SYSTEM_HPP
 
+#include <MonaEngine.hpp>
+
 namespace Mona
 {
     class Input;

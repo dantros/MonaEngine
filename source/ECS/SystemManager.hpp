@@ -3,7 +3,7 @@
 #define ECS_SYSTEM_MANAGER_HPP
 #include <unordered_map>
 #include <typeindex>
-#include "./Systems/BaseSystem.hpp"
+#include "BaseSystem.hpp"
 
 namespace MonaECS
 {

@@ -1,8 +1,9 @@
 #pragma once
 #ifndef ECS_COLLISION_SYSTEM_HPP
 #define ECS_COLLISION_SYSTEM_HPP
+
+#include <MonaEngine.hpp>
 #include <vector>
-#include <glm/glm.hpp>
 
 namespace MonaECS
 {

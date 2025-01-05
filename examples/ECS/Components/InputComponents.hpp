@@ -2,6 +2,8 @@
 #ifndef ECS_INPUT_COMPONENTS_HPP
 #define ECS_INPUT_COMPONENTS_HPP
 
+#include <MonaEngine.hpp>
+
 namespace MonaECS
 {
     

@@ -1,10 +1,17 @@
 #include <unordered_map>
-#include "MonaEngine.hpp"
-#include "ECS/ECS.hpp"
-#include "ECS/Systems.hpp"
-#include "ECS/Components.hpp"
-#include "ECS/Events.hpp"
-#include "Rendering/DiffuseFlatMaterial.hpp"
+#include <MonaEngine.hpp>
+#include "ECS/Components/CollisionComponents.hpp"
+#include "ECS/Components/InputComponents.hpp"
+#include "ECS/Components/StatComponents.hpp"
+#include "ECS/Events/CollisionEvents.hpp"
+#include "ECS/Events/ColorChangeEvents.hpp"
+#include "ECS/Events/DestroyGameObjectEvents.hpp"
+#include "ECS/Events/InputEvents.hpp"
+#include "ECS/Systems/CollisionSystem.hpp"
+#include "ECS/Systems/InputSystem.hpp"
+#include "ECS/Systems/MovementSystem.hpp"
+#include "ECS/Systems/StatsSystem.hpp"
+#include <Rendering/DiffuseFlatMaterial.hpp>
 
 void CreateBasicCameraWithMusicAndLight(Mona::World &world)
 {

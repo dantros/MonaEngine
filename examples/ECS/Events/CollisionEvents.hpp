@@ -1,6 +1,7 @@
 #pragma once
 #ifndef ECS_COLLISION_EVENTS_HPP
 #define ECS_COLLISION_EVENTS_HPP
+
 #include <entt/entt.hpp>
 #include <glm/glm.hpp>
 

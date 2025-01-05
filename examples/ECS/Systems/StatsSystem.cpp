@@ -1,9 +1,8 @@
-#include "./BaseSystem.hpp"
-#include "./StatsSystem.hpp"
-#include "../Components.hpp"
-#include "../ComponentManager.hpp"
-#include "../EventManager.hpp"
-#include "../Events.hpp"
+#include "StatsSystem.hpp"
+#include "../Components/StatComponents.hpp"
+#include "../Events/ColorChangeEvents.hpp"
+#include "../Events/DestroyGameObjectEvents.hpp"
+#include <MonaEngine.hpp>
 #include <iostream>
 
 namespace MonaECS

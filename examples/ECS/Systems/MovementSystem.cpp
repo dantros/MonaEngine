@@ -1,10 +1,8 @@
-#include "./BaseSystem.hpp"
-#include "./MovementSystem.hpp"
-#include "../ComponentManager.hpp"
-#include "../EventManager.hpp"
+#include "MovementSystem.hpp"
 #include "../Components/InputComponents.hpp"
 #include "../Components/CollisionComponents.hpp"
-#include "../Events./InputEvents.hpp"
+#include "../Events/InputEvents.hpp"
+#include <MonaEngine.hpp>
 
 
 namespace MonaECS

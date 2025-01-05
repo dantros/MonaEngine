@@ -1,7 +1,8 @@
 #pragma once
 #ifndef STAT_COMPONENTS_HPP
 #define STAT_COMPONENTS_HPP
-#include "../../MonaEngine.hpp"
+
+#include <MonaEngine.hpp>
 #include <glm/glm.hpp>
 
 namespace MonaECS

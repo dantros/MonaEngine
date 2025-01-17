@@ -6,6 +6,7 @@
 ![examples/AnimationAudioExample.cpp](screenshots/animation_audio.png "AnimatedExample")
 
 Ejemplos y sus descripciones disponibles en [examples](examples/README.md)
+Por conveniencia y para mantener este repositorio tan liviano como sea posible, los ejemplos estan siendo transferidos al repositorio https://github.com/dantros/MonaEngineDemos
 
 ## Setup
 

@@ -12,5 +12,6 @@ function(Add_Example TARGETNAME FILENAME)
         config.json $<TARGET_FILE_DIR:${TARGETNAME}>)
 endfunction(Add_Example)
 
-Add_Example(Example0_MinimalSetup MinimalSetup.cpp)
-Add_Example(Example1_WindowInputOperations WindowInputExample.cpp)
+# Temporarily disabled as they do not work
+#Add_Example(Example0_MinimalSetup MinimalSetup.cpp)
+#Add_Example(Example1_WindowInputOperations WindowInputExample.cpp)

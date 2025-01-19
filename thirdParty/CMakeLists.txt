@@ -18,7 +18,7 @@ add_subdirectory_with_folder("thirdParty" imgui-1.78)
 add_subdirectory_with_folder("thirdParty/Bullet" bullet3-2.88)
 
 option(ALSOFT_EXAMPLES "" OFF)
-option(ALSOFT_INSTALL "" ON)
+option(ALSOFT_INSTALL "" OFF)
 option(ALSOFT_UTILS "" OFF)
 add_subdirectory_with_folder("thirdParty/OpenAL" openal-soft)
 add_subdirectory_with_folder("thirdParty" dr_wav)

@@ -176,10 +176,10 @@ MonaEngine depende de una lista de diferentes librerías, estas estan en el dire
 
 ## Créditos
 
-Versión inicial del motor: [@Aaron-Berland] (https://github.com/Aaron-Berland/MonaEngine)
-Investigación sobre IK: [@agumatt] (https://github.com/agumatt/MonaEngine_IK)
-Implementación inicial de ECS: [@JuanCidL] (https://github.com/JuanCidL/MonaEngineECS), [@IgnacioGHS] (https://github.com/IgnacioGHS)
-Mantención, implementación y coordinación de nuevos desarrollos: [@dantros](https://github.com/dantros)
+- Versión inicial del motor: [@Aaron-Berland] (https://github.com/Aaron-Berland/MonaEngine)
+- Investigación sobre IK: [@agumatt] (https://github.com/agumatt/MonaEngine_IK)
+- Implementación inicial de ECS: [@JuanCidL] (https://github.com/JuanCidL/MonaEngineECS), [@IgnacioGHS] (https://github.com/IgnacioGHS)
+- Mantención, implementación y coordinación de nuevos desarrollos: [@dantros](https://github.com/dantros)
 
 # CC5512: Arquitectura de Motores de Juegos
 

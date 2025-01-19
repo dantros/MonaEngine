@@ -13,3 +13,6 @@
 [submodule "thirdParty/miniaudio"]
 	path = thirdParty/miniaudio
 	url = https://github.com/mackron/miniaudio.git
+[submodule "thirdParty/glfw"]
+	path = thirdParty/glfw
+	url = https://github.com/glfw/glfw.git

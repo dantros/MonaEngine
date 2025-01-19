@@ -12,39 +12,5 @@ function(Add_Example TARGETNAME FILENAME)
         config.json $<TARGET_FILE_DIR:${TARGETNAME}>)
 endfunction(Add_Example)
 
-# Setting up the configuration file to use the asset directories from the source code, this is only for development.
-set(APPLICATION_ASSETS_DIR ${CMAKE_SOURCE_DIR}/examples/Assets)
-set(ENGINE_ASSETS_DIR ${CMAKE_SOURCE_DIR}/EngineAssets)
-configure_file(${CMAKE_SOURCE_DIR}/config.json.in config.json)
-
 Add_Example(Example0_MinimalSetup MinimalSetup.cpp)
 Add_Example(Example1_WindowInputOperations WindowInputExample.cpp)
-Add_Example(Example2_Breakout Breakout.cpp)
-Add_Example(Example3_AnimationAudio AnimationAudioExample.cpp)
-Add_Example(Example4_IKBasic IKBasicExample.cpp)
-Add_Example(Example5_IKMultipleTerrains IKMultipleTerrainsExample.cpp)
-Add_Example(Example6_IKMultipleCharacters IKMultipleCharactersExample.cpp)
-
-set(ECS_PROJECT_FILES
-	#ECS/Components/StatComponents.hpp
-	#ECS/Components/CollisionComponents.hpp
-	#ECS/Components/InputComponents.hpp
-	#ECS/Events/CollisionEvents.hpp
-	#ECS/Events/ColorChangeEvents.hpp
-	#ECS/Events/InputEvents.hpp
-	#ECS/Systems/BaseSystem.hpp
-	#ECS/Systems/StatsSystem.hpp
-	#ECS/Systems/CollisionSystem.hpp
-	#ECS/Systems/MovementSystem.hpp
-	#ECS/Systems/InputSystem.hpp
-	ECS/Systems/StatsSystem.cpp
-	ECS/Systems/CollisionSystem.cpp
-	ECS/Systems/MovementSystem.cpp
-	ECS/Systems/InputSystem.cpp
-)
-
-set(ECS_EXAMPLE_FILES ECSExample.cpp ${ECS_PROJECT_FILES})
-Add_Example(Example7_ECSExample "${ECS_EXAMPLE_FILES}")
-
-set(ECS_BREAKOUT_FILES ECSBreakout.cpp ${ECS_PROJECT_FILES})
-Add_Example(Example8_ECSBreakout "${ECS_BREAKOUT_FILES}")

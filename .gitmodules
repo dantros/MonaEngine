@@ -10,3 +10,6 @@
 [submodule "thirdParty/entt"]
 	path = thirdParty/entt
 	url = https://github.com/skypjack/entt.git
+[submodule "thirdParty/miniaudio"]
+	path = thirdParty/miniaudio
+	url = https://github.com/mackron/miniaudio.git

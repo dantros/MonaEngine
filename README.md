@@ -5,9 +5,7 @@
 ![examples/Breakout.cpp](screenshots/breakout.png "breakout")
 ![examples/AnimationAudioExample.cpp](screenshots/animation_audio.png "AnimatedExample")
 
-Ejemplos y sus descripciones disponibles en [examples](examples/README.md).
-
-Por conveniencia y para mantener este repositorio tan liviano como sea posible, los ejemplos estan siendo transferidos al repositorio https://github.com/dantros/MonaEngineDemos
+Ejemplos y sus descripciones disponibles en https://github.com/dantros/MonaEngineDemos
 
 ## Setup
 
@@ -176,10 +174,13 @@ MonaEngine depende de una lista de diferentes librerías, estas estan en el dire
  - [OpenAL-Soft](https://github.com/kcat/openal-soft) para la implementacion del sistema de audio.
  - [BulletPhysics](https://github.com/bulletphysics/bullet3) para la implementacion de sistema de fisica.
 
-## El origen de MonaEngine
+## Créditos
 
-Este motor fué inicialmente desarrollado por Byron Cornejo, en el contexto de su titulación en la carrera de Ingeniería en Computación de la Universidad de Chile. El documento escrito que describe en detalle el trabajo realizado esta en la carpeta Memoria.
+Versión inicial del motor: [@Aaron-Berland] (https://github.com/Aaron-Berland/MonaEngine)
+Investigación sobre IK: [@agumatt] (https://github.com/agumatt/MonaEngine_IK)
+Implementación inicial de ECS: [@JuanCidL] (https://github.com/JuanCidL/MonaEngineECS), [@IgnacioGHS] (https://github.com/IgnacioGHS)
+Mantención, implementación y coordinación de nuevos desarrollos: [@dantros](https://github.com/dantros)
 
-Sobre el trabajo anterior, Agustín Matthey realizó su trabajo de titulación, para la misma carrera, el cual implementa una metodología para modificar animaciones de caminatas y adaptarlas a terrenos de altura variable vía utilizando cinemática inversa. El detalle de este trabajo de título se encuentra en la carpeta Memoria.
+# CC5512: Arquitectura de Motores de Juegos
 
-Posteriormente, Daniel Calderón ha mantenido el repositorio https://github.com/dantros/MonaEngine, agregando funcionalidades y mejorando su usabilidad. El objetivo es facilitar la enseñanza del curso "CC5512: Arquitectura de Motores de Juegos", dictado en el departamento de Ciencias de la Computación de la Universidad de Uchile. El programa académico de dicho curso se encuentra disponible en: https://www.u-cursos.cl/ingenieria/2023/1/CC5512/1/material_docente/detalle?id=8028657
+Este motor se desarrolla para facilitar la enseñanza del curso "CC5512: Arquitectura de Motores de Juegos", dictado en el departamento de Ciencias de la Computación de la Universidad de Uchile por Daniel Calderón. El programa académico de dicho curso se encuentra disponible en: https://www.u-cursos.cl/ingenieria/2023/1/CC5512/1/material_docente/detalle?id=8028657

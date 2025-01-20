@@ -19,3 +19,6 @@
 [submodule "thirdParty/assimp"]
 	path = thirdParty/assimp
 	url = https://github.com/assimp/assimp.git
+[submodule "thirdParty/bullet3"]
+	path = thirdParty/bullet3
+	url = https://github.com/bulletphysics/bullet3.git

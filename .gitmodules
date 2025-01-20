@@ -22,3 +22,6 @@
 [submodule "thirdParty/bullet3"]
 	path = thirdParty/bullet3
 	url = https://github.com/bulletphysics/bullet3.git
+[submodule "thirdParty/openal-soft"]
+	path = thirdParty/openal-soft
+	url = https://github.com/kcat/openal-soft.git

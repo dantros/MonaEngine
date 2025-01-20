@@ -32,7 +32,7 @@ option(ASSIMP_BUILD_TESTS "" OFF)
 option(ASSIMP_BUILD_SAMPLES "" OFF)
 option(ASSIMP_INSTALL "" OFF) # It seems to be ignored by CMake file from the original library...
 option(ASSIMP_INSTALL_PDB "" OFF)
-add_subdirectory_with_folder("thirdParty/Assimp" assimp-5.1.6)
+add_subdirectory_with_folder("thirdParty/assimp" assimp)
 
 add_subdirectory_with_folder("thirdParty" stb)
 add_subdirectory_with_folder("thirdParty" console-color)

@@ -8,15 +8,15 @@ find_package(OpenGL REQUIRED)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(THIRD_PARTY_INCLUDE_DIRECTORIES
 	"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/glad/include"
-	"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/glfw-3.3.2/include"
+	"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/glfw/include"
 	"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/spdlog/include"
 	"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/glm-0.9.9.8"
 	"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/imgui-1.78"
 	"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/bullet3-2.88/src"
 	"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/openal-soft/include"
 	"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/dr_wav"
-	"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/assimp-5.1.6/include"
-	"${CMAKE_CURRENT_BINARY_DIR}/thirdParty/assimp-5.1.6/include"
+	"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/assimp/include"
+	"${CMAKE_CURRENT_BINARY_DIR}/thirdParty/assimp/include"
 	"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/stb"
 	"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/console-color"
 	"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/debug-draw"

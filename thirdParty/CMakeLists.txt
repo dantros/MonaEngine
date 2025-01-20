@@ -30,7 +30,7 @@ add_subdirectory_with_folder("thirdParty" dr_wav)
 option(ASSIMP_BUILD_ASSIMP_TOOLS "" OFF)
 option(ASSIMP_BUILD_TESTS "" OFF)
 option(ASSIMP_BUILD_SAMPLES "" OFF)
-option(ASSIMP_INSTALL "" OFF) # It seems to be ignored by CMake file from the original library...
+option(ASSIMP_INSTALL "" OFF)
 option(ASSIMP_INSTALL_PDB "" OFF)
 add_subdirectory_with_folder("thirdParty/assimp" assimp)
 

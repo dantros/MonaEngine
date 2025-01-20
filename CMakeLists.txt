@@ -48,7 +48,7 @@ if (${MONA_BUILD_EXAMPLES})
 	add_subdirectory(examples)
 endif()
 
-option(MONA_INSTALL "" OFF)
+option(MONA_INSTALL "" ON)
 if (${MONA_INSTALL})
 	include(GNUInstallDirs)
 	install(TARGETS MonaEngine

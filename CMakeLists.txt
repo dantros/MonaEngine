@@ -42,23 +42,28 @@ endif(MSVC)
 
 add_subdirectory(thirdParty)
 add_subdirectory(source)
-add_subdirectory(examples)
 
-include(GNUInstallDirs)
-install(TARGETS MonaEngine
-	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-		COMPONENT MonaEngine_Runtime
-	PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-		COMPONENT MonaEngine_Include
-	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-		COMPONENT MonaEngine_Runtime
-		NAMELINK_COMPONENT MonaEngine_Development
-	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-		COMPONENT MonaEngine_Development
-)
+option(MONA_BUILD_EXAMPLES "" ON)
+if (${MONA_BUILD_EXAMPLES})
+	add_subdirectory(examples)
+endif()
 
-# Install process
-install(
-	DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/EngineAssets
-	DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
-)
+option(MONA_INSTALL "" OFF)
+if (${MONA_INSTALL})
+	include(GNUInstallDirs)
+	install(TARGETS MonaEngine
+		RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+			COMPONENT MonaEngine_Runtime
+		PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+			COMPONENT MonaEngine_Include
+		LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+			COMPONENT MonaEngine_Runtime
+			NAMELINK_COMPONENT MonaEngine_Development
+		ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+			COMPONENT MonaEngine_Development
+	)
+	install(
+		DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/EngineAssets
+		DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
+	)
+endif()

@@ -12,7 +12,7 @@ set(THIRD_PARTY_INCLUDE_DIRECTORIES
 	"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/spdlog/include"
 	"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/glm-0.9.9.8"
 	"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/imgui-1.78"
-	"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/bullet3-2.88/src"
+	"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/bullet3/src"
 	"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/openal-soft/include"
 	"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/dr_wav"
 	"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/assimp/include"

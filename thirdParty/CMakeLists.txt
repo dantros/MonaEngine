@@ -18,7 +18,7 @@ option(GLFW_INSTALL "" OFF)
 add_subdirectory_with_folder("thirdParty/GLFW" glfw)
 
 add_subdirectory_with_folder("thirdParty" imgui-1.78)
-add_subdirectory_with_folder("thirdParty/Bullet" bullet3-2.88)
+add_subdirectory_with_folder("thirdParty/Bullet" bullet3)
 
 option(ALSOFT_EXAMPLES "" OFF)
 option(ALSOFT_INSTALL "" OFF)

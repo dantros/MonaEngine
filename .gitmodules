@@ -25,3 +25,6 @@
 [submodule "thirdParty/openal-soft"]
 	path = thirdParty/openal-soft
 	url = https://github.com/kcat/openal-soft.git
+[submodule "thirdParty/eigen"]
+	path = thirdParty/eigen
+	url = https://gitlab.com/libeigen/eigen.git

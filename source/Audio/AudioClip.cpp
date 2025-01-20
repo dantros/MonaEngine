@@ -4,6 +4,9 @@
 #include <limits>
 #include "../Core/Log.hpp"
 #include "AudioMacros.hpp"
+#include <AL/al.h>
+#include <AL/alc.h>
+
 namespace Mona {
 
 	AudioClip::AudioClip(const std::string& audioFilePath) :

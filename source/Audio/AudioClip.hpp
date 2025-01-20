@@ -2,8 +2,7 @@
 #ifndef AUDIOCLIP_HPP
 #define AUDIOCLIP_HPP
 #include <string>
-#include <AL/al.h>
-#include <AL/alc.h>
+
 namespace Mona {
 
 	/*
@@ -28,7 +27,7 @@ namespace Mona {
 		/*
 		* Retorna el número identificador del buffer de OpenAL.
 		*/
-		ALuint GetBufferID() const { return m_alBufferID; }
+		unsigned int GetBufferID() const { return m_alBufferID; }
 
 		/*
 		* Retorna la duración en segundos de este AudioClip
@@ -61,7 +60,7 @@ namespace Mona {
 		
 		uint32_t m_sampleRate;
 		float m_totalTime;
-		ALuint m_alBufferID;
+		unsigned int m_alBufferID;
 		uint8_t m_channels;
 	};
 }

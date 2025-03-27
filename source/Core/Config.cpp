@@ -32,7 +32,7 @@ namespace Mona
 			file >> m_configurations;
 			return true;
 		}
-		catch (auto& e)
+		catch (std::exception& e)
 		{
 			return false;
 		}

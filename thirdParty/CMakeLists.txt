@@ -35,6 +35,5 @@ option(ASSIMP_INSTALL_PDB "" OFF)
 add_subdirectory_with_folder("thirdParty/assimp" assimp)
 
 add_subdirectory_with_folder("thirdParty" stb)
-add_subdirectory_with_folder("thirdParty" console-color)
 add_subdirectory_with_folder("thirdParty" debug-draw)
 add_subdirectory_with_folder("thirdParty" whereami2cpp)

@@ -35,9 +35,9 @@ list (APPEND BULLET_LIBRARIES BulletCollision)
 list (APPEND BULLET_LIBRARIES LinearMath)
 
 if(MSVC)
-	set(THIRD_PARTY_LIBRARIES glad glfw ${OPENGL_LIBRARIES} ImGui ${BULLET_LIBRARIES} OpenAL dr_wav assimp stb console-color debug-draw whereami2cpp)
+	set(THIRD_PARTY_LIBRARIES glad glfw ${OPENGL_LIBRARIES} ImGui ${BULLET_LIBRARIES} OpenAL dr_wav assimp stb debug-draw whereami2cpp)
 else()
-	set(THIRD_PARTY_LIBRARIES glad glfw ${OPENGL_LIBRARIES} ImGui ${BULLET_LIBRARIES} stdc++fs OpenAL dr_wav assimp stb console-color debug-draw whereami2cpp)
+	set(THIRD_PARTY_LIBRARIES glad glfw ${OPENGL_LIBRARIES} ImGui ${BULLET_LIBRARIES} stdc++fs OpenAL dr_wav assimp stb debug-draw whereami2cpp)
 endif(MSVC)
 
 add_subdirectory(thirdParty)

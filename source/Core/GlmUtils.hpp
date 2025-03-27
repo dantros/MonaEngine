@@ -10,7 +10,6 @@
 #include <glm/gtx/quaternion.hpp>
 #include "glm/gtx/vector_angle.hpp"
 #include "Log.hpp"
-#include <ConsoleColor.h>
 #include <numbers>
 
 namespace Mona {
@@ -74,7 +73,6 @@ namespace Mona {
             return result;
         }
 
-
         template <int D>
         inline std::string stdVectorToString(std::vector<glm::vec<D, float>> vec) {
 			std::string result = "[ ";
@@ -84,39 +82,6 @@ namespace Mona {
 			}
 			result += " ]";
 			return result;
-        }
-
-        
-        template <int D>
-        inline void printColoredStdVector(std::vector<glm::vec<D, float>> vec, bool spread = true) {
-            auto colors = { green, red, yellow, blue };
-			std::cout << "[ ";
-			for (int i = 0; i < vec.size(); i++) {
-                std::cout << "[";
-                for (int j = 0; j < D; j++) {
-                    std::cout << *(colors.begin() + j % colors.size()) << vec[i][j];
-                    if (j != D - 1) { std::cout << ", "; }
-                }
-                std::cout << white << "]";
-                if (i != vec.size() - 1) { 
-                    std::cout << ", "; 
-                    if (spread) { std::cout << std::endl; }
-                }				
-			}
-			std::cout << " ]" << std::endl;
-        }
-
-
-        template <int D>
-        inline void printColoredVec(glm::vec<D, float> vec) {
-            auto colors = { green, red, yellow, blue };
-            std::cout << white << "[";
-            for (int i = 0; i < D; i++) {
-                std::cout << *(colors.begin() + i % colors.size()) << vec[i] << white;
-                if (i != D - 1) { std::cout << ", "; }
-            }
-            std::cout << white <<"]";
-            std::cout << std::endl;        
         }
 
         inline glm::fquat calcDeltaRotation(glm::vec3 initialDirection, glm::vec3 targetDirection, glm::vec3 referenceUpVector) {
@@ -133,10 +98,7 @@ namespace Mona {
                 return angleAxis(rotAngle, rotAxis);
             }
         }
-    
     }
-        
-    
 }
 
 

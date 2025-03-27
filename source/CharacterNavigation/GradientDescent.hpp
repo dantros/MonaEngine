@@ -11,7 +11,7 @@ namespace Mona {
 
 	template <typename dataT>
 	class FunctionTerm { // representa un termino de la funcion objetivo
-		template <typename dataT>
+		template <typename dataType>
 		friend class GradientDescent;
 		dataT* m_dataPtr;
 		float m_weight = 1.0f;

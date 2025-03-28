@@ -21,91 +21,6 @@ namespace Mona {
 		return mat;
 	}
 
-	// terminos para el descenso de gradiente
-	
-
-
-	std::function<float(const std::vector<float>&, int, IKData*)> term1PartialDerivativeFunction =
-		[](const std::vector<float>& varAngles, int varIndex, IKData* dataPtr)->float {
-		float result = 0;
-		glm::mat4 TA; glm::mat4 TB; glm::vec3 TvarScl; glm::fquat TvarQuat;	glm::vec3 TvarTr;
-		glm::vec3 skew;	glm::vec4 perspective;
-		JointIndex varJoint = dataPtr->jointIndexes[varIndex];
-
-		for (int c = 0; c < dataPtr->ikChains.size(); c++) {
-			// chequeamos si la articulacion pertenece a la cadena actual
-			IKChain* chain = dataPtr->ikChains[c];
-			int ind = funcUtils::findIndex(chain->getJoints(), varJoint);
-			if (ind != -1) {
-				// matriz de trnasformacion de la joint actual
-				glm::mat4 TvarRaw = dataPtr->jointSpaceTransforms[varJoint];
-				glm::decompose(TvarRaw, TvarScl, TvarQuat, TvarTr, skew, perspective);
-				JointIndex chainParent = chain->getParentJoint();
-				glm::mat4 chainBaseTransform = chainParent == -1 ? glm::identity<glm::mat4>() : dataPtr->forwardModelSpaceTransforms[chainParent];
-				// matriz que va a la izquierda de la matriz de rotacion de la joint actual en el calculo de la posicion con FK
-				TA = (0 < ind ? dataPtr->forwardModelSpaceTransforms[chain->getJoints()[ind - 1]] :
-					chainBaseTransform) * glmUtils::translationToMat4(TvarTr);
-
-				// matriz que va a la  derecha de la matriz de rotacion de la joint actual en el calculo de la posicion con FK
-				TB = glmUtils::scaleToMat4(TvarScl) * (ind < chain->getJoints().size() - 1 ?
-					dataPtr->backwardModelSpaceTransformsPerChain[c][chain->getJoints()[ind + 1]] : glm::identity<glm::mat4>());
-				glm::vec4 b = TB * glm::vec4(0, 0, 0, 1);
-				glm::mat4 Tvar = glmUtils::rotationToMat4(TvarQuat);
-				glm::mat4 dTvar = rotationMatrixDerivative_dAngle(varAngles[varIndex], dataPtr->rotationAxes[varIndex]);
-				glm::vec4 eeT = glm::vec4(chain->getCurrentEETarget(dataPtr->ikAnimation->getAnimationIndex()), 1);
-				for (int k = 0; k <= 3; k++) {
-					float mult1 = 0;
-					for (int j = 0; j <= 3; j++) {
-						for (int i = 0; i <= 3; i++) {
-							mult1 += b[j] * TA[i][k] * Tvar[j][i] - eeT[k] / 16;
-						}
-					}
-					float mult2 = 0;
-					for (int j = 0; j <= 3; j++) {
-						for (int i = 0; i <= 3; i++) {
-							mult2 += b[j] * TA[i][k] * dTvar[j][i];
-						}
-					}
-					result += mult1 * mult2;
-				}
-			}
-			
-		}
-		return 2 * result;
-	};
-
-	// termino 2 (acercar la animacion creada a la animacion original)
-	std::function<float(const std::vector<float>&, IKData*)> term2Function =
-		[](const std::vector<float>& varAngles, IKData* dataPtr)->float {
-		float result = 0;
-		for (int i = 0; i < varAngles.size(); i++) {
-			result += pow(varAngles[i] - dataPtr->baseAngles[i], 2);
-		}
-		return result;
-	};
-
-	std::function<float(const std::vector<float>&, int, IKData*)> term2PartialDerivativeFunction =
-		[](const std::vector<float>& varAngles, int varIndex, IKData* dataPtr)->float {
-		return 2 * (varAngles[varIndex] - dataPtr->baseAngles[varIndex]);
-	};
-
-	
-
-	// termino 3 (acercar los valores actuales a los del frame anterior)
-	std::function<float(const std::vector<float>&, IKData*)> term3Function =
-		[](const std::vector<float>& varAngles, IKData* dataPtr)->float {
-		float result = 0;
-		for (int i = 0; i < varAngles.size(); i++) {
-			result += pow(varAngles[i] - dataPtr->previousAngles[i], 2);
-		}
-		return result;
-	};
-
-	std::function<float(const std::vector<float>&, int, IKData*)> term3PartialDerivativeFunction =
-		[](const std::vector<float>& varAngles, int varIndex, IKData* dataPtr)->float {
-		return 2 * (varAngles[varIndex] - dataPtr->previousAngles[varIndex]);
-	};
-
 	void setDescentTransformArrays(IKData* dataPtr) {
 		std::vector<JointIndex> endEffectors;
 		for (int i = 0; i < dataPtr->ikChains.size(); i++) {
@@ -126,18 +41,6 @@ namespace Mona {
 		}
 
 	}
-
-	std::function<void(std::vector<float>&, IKData*, std::vector<float>&)>  postDescentStepCustomBehaviour =
-		[](std::vector<float>& args, IKData* dataPtr, std::vector<float>& argsRawDelta)->void {
-		// setear nuevos angulos
-		std::vector<JointRotation>* varRots = dataPtr->ikAnimation->getVariableJointRotations();
-		for (int i = 0; i < args.size(); i++) {
-			int jIndex = dataPtr->jointIndexes[i];
-			(*varRots)[jIndex].setRotationAngle(args[i]);
-		}
-		// setear arreglos de transformaciones
-		setDescentTransformArrays(dataPtr);
-	};
 
 	InverseKinematics::InverseKinematics(IKRig* ikRig) {
 		m_ikRig = ikRig;
@@ -164,10 +67,106 @@ namespace Mona {
 			return result;
 		};
 
+		// terminos para el descenso de gradiente
+
+		std::function<float(const std::vector<float>&, int, IKData*)> term1PartialDerivativeFunction =
+			[](const std::vector<float>& varAngles, int varIndex, IKData* dataPtr)->float {
+			float result = 0;
+			glm::mat4 TA; glm::mat4 TB; glm::vec3 TvarScl; glm::fquat TvarQuat;	glm::vec3 TvarTr;
+			glm::vec3 skew;	glm::vec4 perspective;
+			JointIndex varJoint = dataPtr->jointIndexes[varIndex];
+
+			for (int c = 0; c < dataPtr->ikChains.size(); c++) {
+				// chequeamos si la articulacion pertenece a la cadena actual
+				IKChain* chain = dataPtr->ikChains[c];
+				int ind = funcUtils::findIndex(chain->getJoints(), varJoint);
+				if (ind != -1) {
+					// matriz de trnasformacion de la joint actual
+					glm::mat4 TvarRaw = dataPtr->jointSpaceTransforms[varJoint];
+					glm::decompose(TvarRaw, TvarScl, TvarQuat, TvarTr, skew, perspective);
+					JointIndex chainParent = chain->getParentJoint();
+					glm::mat4 chainBaseTransform = chainParent == -1 ? glm::identity<glm::mat4>() : dataPtr->forwardModelSpaceTransforms[chainParent];
+					// matriz que va a la izquierda de la matriz de rotacion de la joint actual en el calculo de la posicion con FK
+					TA = (0 < ind ? dataPtr->forwardModelSpaceTransforms[chain->getJoints()[ind - 1]] :
+						chainBaseTransform) * glmUtils::translationToMat4(TvarTr);
+
+					// matriz que va a la  derecha de la matriz de rotacion de la joint actual en el calculo de la posicion con FK
+					TB = glmUtils::scaleToMat4(TvarScl) * (ind < chain->getJoints().size() - 1 ?
+						dataPtr->backwardModelSpaceTransformsPerChain[c][chain->getJoints()[ind + 1]] : glm::identity<glm::mat4>());
+					glm::vec4 b = TB * glm::vec4(0, 0, 0, 1);
+					glm::mat4 Tvar = glmUtils::rotationToMat4(TvarQuat);
+					glm::mat4 dTvar = rotationMatrixDerivative_dAngle(varAngles[varIndex], dataPtr->rotationAxes[varIndex]);
+					glm::vec4 eeT = glm::vec4(chain->getCurrentEETarget(dataPtr->ikAnimation->getAnimationIndex()), 1);
+					for (int k = 0; k <= 3; k++) {
+						float mult1 = 0;
+						for (int j = 0; j <= 3; j++) {
+							for (int i = 0; i <= 3; i++) {
+								mult1 += b[j] * TA[i][k] * Tvar[j][i] - eeT[k] / 16;
+							}
+						}
+						float mult2 = 0;
+						for (int j = 0; j <= 3; j++) {
+							for (int i = 0; i <= 3; i++) {
+								mult2 += b[j] * TA[i][k] * dTvar[j][i];
+							}
+						}
+						result += mult1 * mult2;
+					}
+				}
+				
+			}
+			return 2 * result;
+		};
+
+		// termino 2 (acercar la animacion creada a la animacion original)
+		std::function<float(const std::vector<float>&, IKData*)> term2Function =
+			[](const std::vector<float>& varAngles, IKData* dataPtr)->float {
+			float result = 0;
+			for (int i = 0; i < varAngles.size(); i++) {
+				result += pow(varAngles[i] - dataPtr->baseAngles[i], 2);
+			}
+			return result;
+		};
+
+		std::function<float(const std::vector<float>&, int, IKData*)> term2PartialDerivativeFunction =
+			[](const std::vector<float>& varAngles, int varIndex, IKData* dataPtr)->float {
+			return 2 * (varAngles[varIndex] - dataPtr->baseAngles[varIndex]);
+		};
+
+
+
+		// termino 3 (acercar los valores actuales a los del frame anterior)
+		std::function<float(const std::vector<float>&, IKData*)> term3Function =
+			[](const std::vector<float>& varAngles, IKData* dataPtr)->float {
+			float result = 0;
+			for (int i = 0; i < varAngles.size(); i++) {
+				result += pow(varAngles[i] - dataPtr->previousAngles[i], 2);
+			}
+			return result;
+		};
+
+		std::function<float(const std::vector<float>&, int, IKData*)> term3PartialDerivativeFunction =
+			[](const std::vector<float>& varAngles, int varIndex, IKData* dataPtr)->float {
+			return 2 * (varAngles[varIndex] - dataPtr->previousAngles[varIndex]);
+		};
+
 		FunctionTerm<IKData> term1(term1Function, term1PartialDerivativeFunction);
 		FunctionTerm<IKData> term2(term2Function, term2PartialDerivativeFunction);
 		FunctionTerm<IKData> term3(term3Function, term3PartialDerivativeFunction);
 		auto terms = std::vector<FunctionTerm<IKData>>({ term1,term2, term3 });
+
+		std::function<void(std::vector<float>&, IKData*, std::vector<float>&)>  postDescentStepCustomBehaviour =
+			[](std::vector<float>& args, IKData* dataPtr, std::vector<float>& argsRawDelta)->void {
+			// setear nuevos angulos
+			std::vector<JointRotation>* varRots = dataPtr->ikAnimation->getVariableJointRotations();
+			for (int i = 0; i < args.size(); i++) {
+				int jIndex = dataPtr->jointIndexes[i];
+				(*varRots)[jIndex].setRotationAngle(args[i]);
+			}
+			// setear arreglos de transformaciones
+			setDescentTransformArrays(dataPtr);
+		};
+
 		m_gradientDescent = GradientDescent<IKData>(terms, 0, &m_ikData, postDescentStepCustomBehaviour);
 		m_ikData.descentRate = 0.01f;
 		m_ikData.maxIterations = 300;

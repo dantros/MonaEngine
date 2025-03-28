@@ -98,42 +98,6 @@ namespace Mona{
 		m_savedPositions = LIC<3>();
 	}
 
-	std::function<float(const std::vector<float>&, int, TGData*)> term1PartialDerivativeFunction =
-		[](const std::vector<float>& varPCoord, int varIndex, TGData* dataPtr)->float {
-		int D = 3;
-		int pIndex = dataPtr->pointIndexes[varIndex / D];
-		int coordIndex = varIndex % D;
-		float t_kPrev = dataPtr->varCurve->getTValue(pIndex - 1);
-		float t_kCurr = dataPtr->varCurve->getTValue(pIndex);
-		float t_kNext = dataPtr->varCurve->getTValue(pIndex + 1);
-		glm::vec3 lVel = dataPtr->varCurve->getPointVelocity(pIndex);
-		glm::vec3 rVel = dataPtr->varCurve->getPointVelocity(pIndex, true);
-		glm::vec3 baseLVel = dataPtr->baseCurve.getPointVelocity(pIndex);
-		glm::vec3 baseRVel = dataPtr->baseCurve.getPointVelocity(pIndex, true);
-		float result = 0;
-		result += 2 * (lVel[coordIndex] - baseLVel[coordIndex]) * (1 / (t_kCurr - t_kPrev));
-		result += 2 * (rVel[coordIndex] - baseRVel[coordIndex]) * (-1 / (t_kNext - t_kCurr));
-		return result;
-	};
-
-	std::function<void(std::vector<float>&, TGData*, std::vector<float>&)>  postDescentStepCustomBehaviour =
-		[](std::vector<float>& varPCoord, TGData* dataPtr, std::vector<float>& argsRawDelta)->void {
-		glm::vec3 newPos;
-		int D = 3;
-		for (int i = 0; i < dataPtr->pointIndexes.size(); i++) {
-			for (int j = 0; j < D; j++) {
-				if (varPCoord[i * D + j] <= dataPtr->minValues[i * D + j]) {
-					varPCoord[i * D + j] = dataPtr->minValues[i * D + j];
-					argsRawDelta[i * D + j] *= 0.00001f;
-				}
-				newPos[j] = varPCoord[i * D + j];
-			}
-			int pIndex = dataPtr->pointIndexes[i];
-			dataPtr->varCurve->setCurvePoint(pIndex, newPos);
-		}
-	};
-
-
 	void StrideCorrector::init(float rigGlobalHeight) {
 		// primer termino: acercar los modulos de las velocidades
 		std::function<float(const std::vector<float>&, TGData*)> term1Function =
@@ -145,6 +109,41 @@ namespace Mona{
 				result += glm::distance2(dataPtr->varCurve->getPointVelocity(pIndex, true), dataPtr->baseCurve.getPointVelocity(pIndex, true));
 			}
 			return result;
+		};
+		
+		std::function<float(const std::vector<float>&, int, TGData*)> term1PartialDerivativeFunction =
+			[](const std::vector<float>& varPCoord, int varIndex, TGData* dataPtr)->float {
+			int D = 3;
+			int pIndex = dataPtr->pointIndexes[varIndex / D];
+			int coordIndex = varIndex % D;
+			float t_kPrev = dataPtr->varCurve->getTValue(pIndex - 1);
+			float t_kCurr = dataPtr->varCurve->getTValue(pIndex);
+			float t_kNext = dataPtr->varCurve->getTValue(pIndex + 1);
+			glm::vec3 lVel = dataPtr->varCurve->getPointVelocity(pIndex);
+			glm::vec3 rVel = dataPtr->varCurve->getPointVelocity(pIndex, true);
+			glm::vec3 baseLVel = dataPtr->baseCurve.getPointVelocity(pIndex);
+			glm::vec3 baseRVel = dataPtr->baseCurve.getPointVelocity(pIndex, true);
+			float result = 0;
+			result += 2 * (lVel[coordIndex] - baseLVel[coordIndex]) * (1 / (t_kCurr - t_kPrev));
+			result += 2 * (rVel[coordIndex] - baseRVel[coordIndex]) * (-1 / (t_kNext - t_kCurr));
+			return result;
+		};
+
+		std::function<void(std::vector<float>&, TGData*, std::vector<float>&)>  postDescentStepCustomBehaviour =
+			[](std::vector<float>& varPCoord, TGData* dataPtr, std::vector<float>& argsRawDelta)->void {
+			glm::vec3 newPos;
+			int D = 3;
+			for (int i = 0; i < dataPtr->pointIndexes.size(); i++) {
+				for (int j = 0; j < D; j++) {
+					if (varPCoord[i * D + j] <= dataPtr->minValues[i * D + j]) {
+						varPCoord[i * D + j] = dataPtr->minValues[i * D + j];
+						argsRawDelta[i * D + j] *= 0.00001f;
+					}
+					newPos[j] = varPCoord[i * D + j];
+				}
+				int pIndex = dataPtr->pointIndexes[i];
+				dataPtr->varCurve->setCurvePoint(pIndex, newPos);
+			}
 		};
 
 		FunctionTerm<TGData> term1(term1Function, term1PartialDerivativeFunction);

@@ -92,9 +92,9 @@ namespace Mona {
 				gradient = computeGradient(args);
 				for (int i = 0; i < args.size(); i++) {
 					if (softenSteps) {
-						if (gradient[i] != 0 && argsRawDelta[i]!=0 && abs(argsRawDelta[i]*10) < abs(gradient[i])) {
-							float sign = gradient[i] / abs(gradient[i]);
-							gradient[i] = abs(argsRawDelta[i] * 10)*sign;
+						if (gradient[i] != 0 && argsRawDelta[i]!=0 && std::abs(argsRawDelta[i]*10) < std::abs(gradient[i])) {
+							float sign = gradient[i] / std::abs(gradient[i]);
+							gradient[i] = std::abs(argsRawDelta[i] * 10)*sign;
 						}
 					}
 					if (descentType == DescentType::REGULAR) {
@@ -108,7 +108,7 @@ namespace Mona {
 				}
 				m_postDescentStepCustomBehaviour(args, m_dataPtr, argsRawDelta);
 				for (int i = 0; i < args.size(); i++) {
-					continueDescent[i] = targetArgDelta < abs(descentRate*argsRawDelta[i]);
+					continueDescent[i] = targetArgDelta < std::abs(descentRate*argsRawDelta[i]);
 				}
 				stepNum += 1;
 			}

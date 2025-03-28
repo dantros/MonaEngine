@@ -10,6 +10,7 @@
 #include <memory>
 
 namespace Mona {
+	class PhysicsCollisionSystem;
 	class DebugDrawingSystem {
 	public:
 		DebugDrawingSystem() = default;

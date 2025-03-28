@@ -23,25 +23,7 @@ namespace Mona {
 
 	// terminos para el descenso de gradiente
 	
-	// termino 1 (seguir la curva deseada para el end effector)
-	std::function<float(const std::vector<float>&, IKData*)> term1Function =
-		[](const std::vector<float>& varAngles, IKData* dataPtr)->float {
-		float result = 0;
-		int eeIndex;
-		glm::vec4 baseVec(0, 0, 0, 1);
-		glm::vec3 eePos;
-		std::vector<JointIndex> endEffectors;
-		for (int c = 0; c < dataPtr->ikChains.size(); c++) {
-			endEffectors.push_back(dataPtr->ikChains[c]->getEndEffector());
-		}
-		std::vector<glm::mat4> forwardModelSpaceTransforms = dataPtr->ikAnimation->getEEListModelSpaceVariableTransforms(endEffectors);
-		for (int c = 0; c < dataPtr->ikChains.size(); c++) {
-			eeIndex = endEffectors[c];
-			eePos = glm::vec3(forwardModelSpaceTransforms[eeIndex] * baseVec);
-			result += glm::length2(eePos - dataPtr->ikChains[c]->getCurrentEETarget(dataPtr->ikAnimation->getAnimationIndex()));
-		}
-		return result;
-	};
+
 
 	std::function<float(const std::vector<float>&, int, IKData*)> term1PartialDerivativeFunction =
 		[](const std::vector<float>& varAngles, int varIndex, IKData* dataPtr)->float {
@@ -162,6 +144,26 @@ namespace Mona {
 	}
 
 	void InverseKinematics::init() {
+		// termino 1 (seguir la curva deseada para el end effector)
+		std::function<float(const std::vector<float>&, IKData*)> term1Function =
+			[](const std::vector<float>& varAngles, IKData* dataPtr)->float {
+			float result = 0;
+			int eeIndex;
+			glm::vec4 baseVec(0, 0, 0, 1);
+			glm::vec3 eePos;
+			std::vector<JointIndex> endEffectors;
+			for (int c = 0; c < dataPtr->ikChains.size(); c++) {
+				endEffectors.push_back(dataPtr->ikChains[c]->getEndEffector());
+			}
+			std::vector<glm::mat4> forwardModelSpaceTransforms = dataPtr->ikAnimation->getEEListModelSpaceVariableTransforms(endEffectors);
+			for (int c = 0; c < dataPtr->ikChains.size(); c++) {
+				eeIndex = endEffectors[c];
+				eePos = glm::vec3(forwardModelSpaceTransforms[eeIndex] * baseVec);
+				result += glm::length2(eePos - dataPtr->ikChains[c]->getCurrentEETarget(dataPtr->ikAnimation->getAnimationIndex()));
+			}
+			return result;
+		};
+
 		FunctionTerm<IKData> term1(term1Function, term1PartialDerivativeFunction);
 		FunctionTerm<IKData> term2(term2Function, term2PartialDerivativeFunction);
 		FunctionTerm<IKData> term3(term3Function, term3PartialDerivativeFunction);

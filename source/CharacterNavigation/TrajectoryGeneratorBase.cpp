@@ -98,19 +98,6 @@ namespace Mona{
 		m_savedPositions = LIC<3>();
 	}
 
-
-	// primer termino: acercar los modulos de las velocidades
-	std::function<float(const std::vector<float>&, TGData*)> term1Function =
-		[](const std::vector<float>& varPCoord, TGData* dataPtr)->float {
-		float result = 0;
-		for (int i = 0; i < dataPtr->pointIndexes.size(); i++) {
-			int pIndex = dataPtr->pointIndexes[i];
-			result += glm::distance2(dataPtr->varCurve->getPointVelocity(pIndex), dataPtr->baseCurve.getPointVelocity(pIndex));
-			result += glm::distance2(dataPtr->varCurve->getPointVelocity(pIndex, true), dataPtr->baseCurve.getPointVelocity(pIndex, true));
-		}
-		return result;
-	};
-
 	std::function<float(const std::vector<float>&, int, TGData*)> term1PartialDerivativeFunction =
 		[](const std::vector<float>& varPCoord, int varIndex, TGData* dataPtr)->float {
 		int D = 3;
@@ -148,6 +135,18 @@ namespace Mona{
 
 
 	void StrideCorrector::init(float rigGlobalHeight) {
+		// primer termino: acercar los modulos de las velocidades
+		std::function<float(const std::vector<float>&, TGData*)> term1Function =
+			[](const std::vector<float>& varPCoord, TGData* dataPtr)->float {
+			float result = 0;
+			for (int i = 0; i < dataPtr->pointIndexes.size(); i++) {
+				int pIndex = dataPtr->pointIndexes[i];
+				result += glm::distance2(dataPtr->varCurve->getPointVelocity(pIndex), dataPtr->baseCurve.getPointVelocity(pIndex));
+				result += glm::distance2(dataPtr->varCurve->getPointVelocity(pIndex, true), dataPtr->baseCurve.getPointVelocity(pIndex, true));
+			}
+			return result;
+		};
+
 		FunctionTerm<TGData> term1(term1Function, term1PartialDerivativeFunction);
 		m_gradientDescent = GradientDescent<TGData>({ term1 }, 0, &m_tgData, postDescentStepCustomBehaviour);
 		m_tgData.descentRate = 1 / pow(10, 3);

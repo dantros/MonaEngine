@@ -32,7 +32,6 @@ namespace MonaECS
         void UnregisterSystem()
         {
             assert(m_systems.find(typeid(SystemType)) != m_systems.end() && "System does not exist");
-            delete m_systems[typeid(SystemType)];
             m_systems.erase(typeid(SystemType));
         }
 

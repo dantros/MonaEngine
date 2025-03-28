@@ -2,6 +2,7 @@
 #ifndef AUDIOCLIP_HPP
 #define AUDIOCLIP_HPP
 #include <string>
+#include <cstdint>
 
 namespace Mona {
 
@@ -37,12 +38,12 @@ namespace Mona {
 		/*
 		* Retorna el número de canales de este AudioClip (Mono = 2, Estereo = 2).
 		*/
-		uint8_t GetChannels() const { return m_channels; }
+		std::uint8_t GetChannels() const { return m_channels; }
 
 		/*
 		* Retorna la frecuencias de muestreo de este AudioClip
 		*/
-		uint32_t GetSampleRate() const { return m_sampleRate; }
+		std::uint32_t GetSampleRate() const { return m_sampleRate; }
 		~AudioClip();
 	private:
 
@@ -58,10 +59,10 @@ namespace Mona {
 		*/
 		void DeleteOpenALBuffer();
 		
-		uint32_t m_sampleRate;
+		std::uint32_t m_sampleRate;
 		float m_totalTime;
 		unsigned int m_alBufferID;
-		uint8_t m_channels;
+		std::uint8_t m_channels;
 	};
 }
 #endif

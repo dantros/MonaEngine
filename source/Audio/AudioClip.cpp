@@ -19,7 +19,7 @@ namespace Mona {
 			unsigned int channels = 0;
 			unsigned int sampleRate = 0;
 			drwav_uint64 totalPCMFrameCount = 0;
-			std::vector<uint16_t> pcmData;
+			std::vector<std::uint16_t> pcmData;
 			drwav_uint64 GetTotalSamples() const { return totalPCMFrameCount * channels; }
 		};
 
@@ -47,8 +47,8 @@ namespace Mona {
 			//Si la carga usando dr_wav fue exitosa se comienza el transpaso de estos datos a OpenAL.
 			audioData.pcmData.resize(size_t(audioData.GetTotalSamples()));
 			m_totalTime = (float) audioData.totalPCMFrameCount / (float) audioData.sampleRate;
-			m_sampleRate = static_cast<uint32_t>(audioData.sampleRate);
-			m_channels = static_cast<uint8_t>(audioData.channels);
+			m_sampleRate = static_cast<std::uint32_t>(audioData.sampleRate);
+			m_channels = static_cast<std::uint8_t>(audioData.channels);
 
 			//Primero se copian todos los datos a un vector de uint16_t, para luego liberar los datos recien copiados.
 			std::memcpy(audioData.pcmData.data(), sampleData, audioData.pcmData.size() * 2);

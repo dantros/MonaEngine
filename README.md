@@ -1,4 +1,7 @@
 # MonaEngine
+
+![example workflow](https://github.com/dantros/MonaEngine/actions/workflows/cmake-multi-platform.yml/badge.svg)
+
 3D Game Engine implementado en C++ con fines académicos. Este motor ha sido probado en Windows y Ubuntu.
 
 ## Screenshots

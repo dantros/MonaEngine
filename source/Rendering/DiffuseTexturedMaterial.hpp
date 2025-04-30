@@ -12,7 +12,7 @@ namespace Mona {
 	public:
 
 		DiffuseTexturedMaterial(const ShaderProgram& shaderProgram, bool isForSkinning) : Material(shaderProgram, isForSkinning), m_diffuseTexture(nullptr), m_materialTint(glm::vec3(1.0f)) {
-			//Dado que las ubicaiones de las texturas nunca cambian solo se configura al momento de construcción
+			//Dado que las ubicaiones de las texturas nunca cambian solo se configura al momento de construcciÃ³n
 			glUseProgram(m_shaderID);
 			glUniform1i(ShaderProgram::DiffuseTextureSamplerShaderLocation, ShaderProgram::DiffuseTextureUnit);
 		}

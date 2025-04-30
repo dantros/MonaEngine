@@ -71,6 +71,17 @@ namespace Mona{
 		glViewport(0, 0, event.width, event.height);
 	}
 
+	int PrimitiveModeToGL(Mesh::PrimitiveMode primitiveMode)
+	{
+		switch (primitiveMode)
+		{
+		case Mesh::PrimitiveMode::Triangles: return GL_TRIANGLES;
+		case Mesh::PrimitiveMode::Lines: return GL_LINES;
+		case Mesh::PrimitiveMode::Points: return GL_POINTS;
+		default: throw; return -1;
+		};
+	}
+
 	void Renderer::Render(EventManager& eventManager,
 		const InnerComponentHandle& cameraHandle,
 		const glm::vec3& ambientLight,
@@ -165,7 +176,8 @@ namespace Mona{
 			//Configuraci�n de la malla a ser renderizada y las uniformes asociadas a su material.
 			glBindVertexArray(staticMesh.GetMeshVAOID());
 			staticMesh.m_materialPtr->SetUniforms(projectionMatrix, viewMatrix, transform->GetModelMatrix(), cameraPosition);
-			glDrawElements(GL_TRIANGLES, staticMesh.GetMeshIndexCount(), GL_UNSIGNED_INT, 0);
+			Mesh::PrimitiveMode primitiveMode = staticMesh.GetPrimitiveMode();
+			glDrawElements(PrimitiveModeToGL(primitiveMode), staticMesh.GetMeshIndexCount(), GL_UNSIGNED_INT, 0);
 			
 		}
 		
@@ -185,7 +197,8 @@ namespace Mona{
 			skeletalMesh.m_materialPtr->SetUniforms(projectionMatrix, viewMatrix, transform->GetModelMatrix(), cameraPosition);
 			animController.GetMatrixPalette(m_currentMatrixPalette);
 			glUniformMatrix4fv(ShaderProgram::BoneTransformShaderLocation, skeletalMesh.GetSkeleton()->JointCount(), GL_FALSE, (GLfloat*) m_currentMatrixPalette.data());
-			glDrawElements(GL_TRIANGLES, skinnedMesh->GetIndexBufferCount(), GL_UNSIGNED_INT, 0);
+			Mesh::PrimitiveMode primitiveMode = Mesh::PrimitiveMode::Triangles; //skeletalMesh.GetPrimitiveMode(); TODO: enable this.
+			glDrawElements(PrimitiveModeToGL(primitiveMode), skinnedMesh->GetIndexBufferCount(), GL_UNSIGNED_INT, 0);
 		}
 		//En no Debub build este llamado es vacio, en caso contrario se renderiza informaci�n de debug
 		m_debugDrawingSystemPtr->Draw(eventManager, viewMatrix, projectionMatrix);

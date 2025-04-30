@@ -11,7 +11,7 @@ namespace Mona {
  
 		UnlitTexturedMaterial(const ShaderProgram& shaderProgram, bool isForSkinning) : Material(shaderProgram, isForSkinning), m_unlitColorTexture(nullptr) {
 			glUseProgram(m_shaderID);
-			//Dado que las ubicaiones de las texturas nunca cambian solo se configura al momento de construcción
+			//Dado que las ubicaiones de las texturas nunca cambian solo se configura al momento de construcciÃ³n
 			glUniform1i(ShaderProgram::UnlitColorTextureSamplerShaderLocation, ShaderProgram::UnlitColorTextureUnit);
 		}
 		virtual void SetMaterialUniforms(const glm::vec3& cameraPosition) {

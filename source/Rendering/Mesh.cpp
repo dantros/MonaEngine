@@ -33,11 +33,12 @@ namespace Mona {
 		m_vertexArrayID = 0;
 	}
 
-	Mesh::Mesh(const std::string& filePath, bool flipUVs) :
+	Mesh::Mesh(const std::string& filePath, PrimitiveMode primitiveMode, bool flipUVs) :
 		m_vertexArrayID(0),
 		m_vertexBufferID(0),
 		m_indexBufferID(0),
-		m_indexBufferCount(0)
+		m_indexBufferCount(0),
+		m_mode(primitiveMode)
 	{
 		Assimp::Importer importer;
 		unsigned int postProcessFlags = flipUVs ? aiProcess_FlipUVs : 0;
@@ -165,6 +166,11 @@ namespace Mona {
 	{
 		switch (type)
 		{
+		case Mona::Mesh::PrimitiveType::Axis:
+		{
+			CreateAxis();
+			break;
+		}
 		case Mona::Mesh::PrimitiveType::Plane:
 		{
 			CreatePlane();
@@ -229,11 +235,12 @@ namespace Mona {
 	}
 
 	Mesh::Mesh(const glm::vec2& minXY, const glm::vec2& maxXY, int numInnerVerticesWidth, int numInnerVerticesHeight,
-		float (*heightFunc)(float, float)) :
+		float (*heightFunc)(float, float), PrimitiveMode primitiveMode) :
 		m_vertexArrayID(0),
 		m_vertexBufferID(0),
 		m_indexBufferID(0),
-		m_indexBufferCount(0)
+		m_indexBufferCount(0),
+		m_mode(primitiveMode)
 	{
 		//Un vertice de la malla se ve como
 		// v = {pos_x, pos_y, pos_z, normal_x, normal_y, normal_z, uv_u, uv_v, tangent_x, tangent_y, tangent_z}
@@ -436,6 +443,7 @@ namespace Mona {
 		m_vertexBufferID = cubeVBO;
 		m_indexBufferID = cubeIBO;
 		m_indexBufferCount = 36;
+		m_mode = PrimitiveMode::Triangles;
 	}
 
 	void Mesh::CreatePlane() noexcept {
@@ -479,10 +487,77 @@ namespace Mona {
 		m_vertexBufferID = planeVBO;
 		m_indexBufferID = planeIBO;
 		m_indexBufferCount = 6;
+		m_mode = PrimitiveMode::Triangles;
+	}
+
+	struct UVInt
+	{
+		unsigned int u, v;
+	};
+	struct UVFloat
+	{
+		float u, v;
+	};
+	UVFloat asFloat(UVInt color, UVInt size)
+	{
+		return {
+			(static_cast<float>(color.u) + .5f) / (size.u) ,
+			(static_cast<float>(color.v) + .5f) / (size.v)
+		};
+	}
+
+	void Mesh::CreateAxis() noexcept
+	{
+		// Considerando la textura aek-32.png de EngineAssets, definimos los siguientes colores planos para que
+		// los ejes XYZ correspondan a RGB
+		UVInt size{8, 4};
+		UVFloat red = asFloat({ 1, 0 }, size);
+		UVFloat green = asFloat({ 6, 3 }, size);
+		UVFloat blue = asFloat({ 1, 1 }, size);
+
+		// Cada vertice tiene la siguiente forma
+		// v = {
+		//     p_x,     p_y,     p_z,   n_x,   n_y,   n_z,    uv_u,    uv_v,  t_x,  t_y,  t_z,  b_x,   b_y,  b_z};
+		float vertices[] = {
+			  0.0f,    0.0f,    0.0f,  0.0f,  0.0f, -1.0f,   red.u,   red.v, 1.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f,
+			100.0f,    0.0f,    0.0f,  0.0f,  0.0f, -1.0f,   red.u,   red.v, 1.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f,
+			  0.0f,    0.0f,    0.0f,  0.0f,  0.0f, -1.0f, green.u, green.v, 1.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f,
+			  0.0f,  100.0f,    0.0f,  0.0f,  0.0f, -1.0f, green.u, green.v, 1.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f,
+			  0.0f,    0.0f,    0.0f,  0.0f,  0.0f, -1.0f,  blue.u,  blue.v, 1.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f,
+			  0.0f,    0.0f,  100.0f,  0.0f,  0.0f, -1.0f,  blue.u,  blue.v, 1.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f
+		};
+		unsigned int indices[] = {
+			0,1,2,3,4,5
+		};
+		unsigned int axisVBO, axisIBO, axisVAO;
+		glGenVertexArrays(1, &axisVAO);
+		glBindVertexArray(axisVAO);
+
+		glGenBuffers(1, &axisVBO);
+		glGenBuffers(1, &axisIBO);
+		glBindBuffer(GL_ARRAY_BUFFER, axisVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, axisIBO);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void*)(3 * sizeof(float)));
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void*)(6 * sizeof(float)));
+		glEnableVertexAttribArray(3);
+		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void*)(8 * sizeof(float)));
+		glEnableVertexAttribArray(4);
+		glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void*)(11 * sizeof(float)));
+		m_vertexArrayID = axisVAO;
+		m_vertexBufferID = axisVBO;
+		m_indexBufferID = axisIBO;
+		m_indexBufferCount = 6;
+		m_mode = PrimitiveMode::Lines;
 	}
 
 	void Mesh::CreateSphere() noexcept {
-		//Esta implementaci�n de la creacion procedural de la malla de una esfera
+		//Esta implementaciï¿½n de la creacion procedural de la malla de una esfera
 		//esta basada en: http://www.songho.ca/opengl/gl_sphere.html
 
 		//Cada vertice debe tener la forma
@@ -591,6 +666,7 @@ namespace Mona {
 		m_vertexBufferID = sphereVBO;
 		m_indexBufferID = sphereIBO;
 		m_indexBufferCount = static_cast<uint32_t>(indices.size());
+		m_mode = PrimitiveMode::Triangles;
 	}
 
 }

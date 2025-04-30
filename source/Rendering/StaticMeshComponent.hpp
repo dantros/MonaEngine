@@ -30,6 +30,10 @@ namespace Mona {
 			return m_meshPtr->GetVertexArrayID();
 		}
 
+		Mesh::PrimitiveMode GetPrimitiveMode() const noexcept {
+			return m_meshPtr->GetPrimitiveMode();
+		}
+
 		std::shared_ptr<Material> GetMaterial() const noexcept {
 			return m_materialPtr;
 		}

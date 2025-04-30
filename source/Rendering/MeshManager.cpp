@@ -25,7 +25,7 @@ namespace Mona {
 		std::srand(std::time(nullptr)); // use current time as seed for random generator
 		int random_variable = std::rand();
 		const std::string& id = std::to_string(random_variable);
-		Mesh* meshPtr = new Mesh(minXY, maxXY, numInnerVerticesWidth, numInnerVerticesHeight, heightFunc);
+		Mesh* meshPtr = new Mesh(minXY, maxXY, numInnerVerticesWidth, numInnerVerticesHeight, heightFunc, Mesh::PrimitiveMode::Triangles);
 		std::shared_ptr<Mesh> sharedPtr = std::shared_ptr<Mesh>(meshPtr);
 		//Antes de retornar la malla recien cargada, insertamos esta al mapa para que cargas futuras sean mucho mas rapidas.
 		m_meshMap.insert({ id, sharedPtr });
@@ -55,7 +55,7 @@ namespace Mona {
 		if (it != m_meshMap.end()) {
 			return it->second;
 		}
-		Mesh* meshPtr = new Mesh(stringPath, flipUVs);
+		Mesh* meshPtr = new Mesh(stringPath, Mesh::PrimitiveMode::Triangles, flipUVs);
 		std::shared_ptr<Mesh> sharedPtr = std::shared_ptr<Mesh>(meshPtr);
 		//Antes de retornar la malla recien cargada, insertamos esta al mapa para que cargas futuras sean mucho mas rapidas.
 		m_meshMap.insert({ stringPath, sharedPtr });

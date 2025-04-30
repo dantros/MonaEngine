@@ -12,32 +12,41 @@ namespace Mona {
 
 	public:
 		enum class PrimitiveType {
+			Axis,
 			Plane,
 			Cube,
 			Sphere,
 			PrimitiveCount
 		};
+		enum class PrimitiveMode {
+			Triangles,
+			Lines,
+			Points
+		};
 		~Mesh();
 		uint32_t GetVertexArrayID() const noexcept { return m_vertexArrayID; }
 		uint32_t GetIndexBufferCount() const noexcept { return m_indexBufferCount; }
+		PrimitiveMode GetPrimitiveMode() const noexcept { return m_mode; }
 		HeightMap* GetHeightMap() {
 			return &m_heightMap;
 		}
 	private:
-		Mesh(const std::string& filePath, bool flipUVs = false);
+		Mesh(const std::string& filePath, PrimitiveMode primitiveMode, bool flipUVs = false);
 		Mesh(PrimitiveType type);
 		Mesh(const glm::vec2& minXY, const glm::vec2& maxXY, int numInnerVerticesWidth, int numInnerVerticesHeight,
-			float (*heightFunc)(float, float));
+			float (*heightFunc)(float, float), PrimitiveMode primitiveMode);
 
 		void ClearData() noexcept;
 		void CreateSphere() noexcept;
 		void CreateCube() noexcept;
 		void CreatePlane() noexcept;
+		void CreateAxis() noexcept;
 
 		uint32_t m_vertexArrayID;
 		uint32_t m_vertexBufferID;
 		uint32_t m_indexBufferID;
 		uint32_t m_indexBufferCount;
+		PrimitiveMode m_mode;
 		HeightMap m_heightMap;
 	};
 }

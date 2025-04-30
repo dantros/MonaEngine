@@ -4,7 +4,37 @@
 #include "Rendering/UnlitTexturedMaterial.hpp"
 #include "Rendering/DiffuseTexturedMaterial.hpp"
 #include "Rendering/DiffuseFlatMaterial.hpp"
+#include "Rendering/UnlitFlatMaterial.hpp"
 #include <imgui.h>
+
+class Axis : public Mona::GameObject {
+public:
+	Axis() {}
+
+	void UserStartUp(Mona::World& world) noexcept override {
+
+		auto& config = Mona::Config::GetInstance();
+		auto& meshManager = Mona::MeshManager::GetInstance();
+		auto& textureManager = Mona::TextureManager::GetInstance();
+
+		auto meshPtr = meshManager.LoadMesh(Mona::Mesh::PrimitiveType::Axis);
+
+		auto material = world.CreateMaterial(Mona::MaterialType::UnlitTextured);
+		auto materialPtr = std::static_pointer_cast<Mona::UnlitTexturedMaterial>(material);
+
+		auto texture = textureManager.LoadTexture(config.getPathOfEngineAsset("Textures/aek-32.png"));
+		materialPtr->SetUnlitColorTexture(texture);
+
+		// siempre necesitamos una transform component para los static mesh
+		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
+
+		m_staticMesh = world.AddComponent<Mona::StaticMeshComponent>(*this, meshPtr, materialPtr);
+	}
+
+private:
+	Mona::TransformHandle m_transform;
+	Mona::StaticMeshHandle m_staticMesh;
+};
 
 class Box : public Mona::GameObject {
 public:
@@ -15,7 +45,7 @@ public:
 	void UserStartUp(Mona::World& world) noexcept override {
 		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
 		m_transform->SetTranslation(glm::vec3(0, 0, 0));
-		m_transform->SetRotation(glm::angleAxis(glm::radians(90.f), glm::vec3(1, 0, 0)));
+		//m_transform->SetRotation(glm::angleAxis(glm::radians(90.f), glm::vec3(1, 0, 0)));
 		m_transform->SetScale(glm::vec3(4, 4, 4));
 
 		auto& config = Mona::Config::GetInstance();
@@ -24,11 +54,11 @@ public:
 
 		auto cubeMesh = meshManager.LoadMesh(Mona::Mesh::PrimitiveType::Cube);
 
-		auto redMaterial = world.CreateMaterial(Mona::MaterialType::DiffuseFlat);
-		auto redMaterialPtr = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(redMaterial);
-		redMaterialPtr->SetDiffuseColor(glm::vec3(1.0f, 0.0f, 0.0f));
+		auto material = world.CreateMaterial(Mona::MaterialType::DiffuseFlat);
+		auto materialPtr = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(material);
+		materialPtr->SetDiffuseColor(glm::vec3(1,0,0));
 		
-		m_staticMesh = world.AddComponent<Mona::StaticMeshComponent>(*this, cubeMesh, redMaterialPtr);
+		m_staticMesh = world.AddComponent<Mona::StaticMeshComponent>(*this, cubeMesh, materialPtr);
 	}
 	void UserUpdate(Mona::World& world, float timeStep) noexcept override {
 
@@ -84,12 +114,13 @@ public:
 		//eventManager.Subscribe(m_windowResizeSubcription, this, &Sandbox::OnWindowResize);
 		//eventManager.Subscribe(m_debugGUISubcription, this, &Sandbox::OnDebugGUIEvent);
 		m_rotatingBox = world.CreateGameObject<Box>(10.f, 1.0f);
+		m_axis = world.CreateGameObject<Axis>();
 
 		// right handed axis for coordinate system reference
 		auto rightHandedAxis = world.CreateGameObject<Mona::GameObject>();
 		world.AddComponent<Mona::TransformComponent>(rightHandedAxis);
 		auto axisMesh = meshManager.LoadMesh(config.getPathOfEngineAsset("Models/axis-right-handed.gltf"), true);
-		auto axisMaterial = world.CreateMaterial(Mona::MaterialType::DiffuseFlat);
+		auto axisMaterial = world.CreateMaterial(Mona::MaterialType::UnlitFlat);
 		auto axisMaterialPtr = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(axisMaterial);
 		world.AddComponent<Mona::StaticMeshComponent>(rightHandedAxis, axisMesh, axisMaterialPtr);
 		
@@ -174,6 +205,7 @@ private:
 	//Mona::SubscriptionHandle m_windowResizeSubcription;
 	//Mona::SubscriptionHandle m_debugGUISubcription;
 	Mona::GameObjectHandle<Box> m_rotatingBox;
+	Mona::GameObjectHandle<Axis> m_axis;
 	Mona::GameObjectHandle<Mona::GameObject> m_camera;
 	float somefloat = 0.0f;
 	int m_currentMaterialIndex;

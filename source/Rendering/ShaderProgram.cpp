@@ -80,7 +80,7 @@ namespace Mona {
 		glCompileShader(shader);
 		GLint isCompiled = 0;
 		glGetShaderiv(shader, GL_COMPILE_STATUS, &isCompiled);
-		//Chequeo de errores de compilación
+		//Chequeo de errores de compilaciÃ³n
 		if (isCompiled == GL_FALSE)
 		{
 			GLint maxLength = 0;

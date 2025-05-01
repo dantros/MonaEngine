@@ -3,8 +3,12 @@
 #define COMPONENTHANDLE_HPP
 #include "GameObjectTypes.hpp"
 #include "ComponentTypes.hpp"
-#include "ComponentManager.hpp"
+
 namespace Mona {
+
+	template <typename ComponentType>
+	class ComponentManager;
+
 	class BaseComponentHandle {
 	public:
 		BaseComponentHandle() : m_innerHandle() {}

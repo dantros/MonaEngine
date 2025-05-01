@@ -1,9 +1,9 @@
-#include "AnimationSystem.hpp"
+ï»¿#include "AnimationSystem.hpp"
 #include "../World/ComponentManager.hpp"
 namespace Mona {
 	void AnimationSystem::UpdateAllPoses(ComponentManager<SkeletalMeshComponent>& skeletalMeshDataManager, float timeStep) noexcept {
-		//Se itera sobre todas las componentes de animación, los animation controller son los responsables de la logica de
-		//actualización.
+		//Se itera sobre todas las componentes de animaciÃ³n, los animation controller son los responsables de la logica de
+		//actualizaciÃ³n.
 		for (uint32_t i = 0; i < skeletalMeshDataManager.GetCount(); i++) {
 			SkeletalMeshComponent& skeletalMesh = skeletalMeshDataManager[i];
 			auto& animationController = skeletalMesh.GetAnimationController();

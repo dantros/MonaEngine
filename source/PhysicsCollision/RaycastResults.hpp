@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef RAYCASTRESULTS_HPP
 #define RAYCASTRESULTS_HPP
 #include <BulletCollision/CollisionDispatch/btCollisionWorld.h>
@@ -8,7 +8,7 @@
 #include "../World/ComponentHandle.hpp"
 namespace Mona {
 	/*
-	* La clase ClosestHitRaycastResult representa el resultado de una consulta de raycast que busca la colisi�n mas cercana.
+	* La clase ClosestHitRaycastResult representa el resultado de una consulta de raycast que busca la colisión mas cercana.
 	*/
 	class ClosestHitRaycastResult {
 	public:

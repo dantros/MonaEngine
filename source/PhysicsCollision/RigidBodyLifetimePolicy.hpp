@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef RIGIDBODYLIFETIMEPOLICY_HPP
 #define RIGIDBODYLIFETIMEPOLICY_HPP
 #include "../World/ComponentManager.hpp"
@@ -19,7 +19,7 @@ namespace Mona {
 
 		void OnAddComponent(GameObject* gameObjectPtr, RigidBodyComponent& rigidBody, const InnerComponentHandle& handle) noexcept {
 			InnerComponentHandle transformHandle = gameObjectPtr->GetInnerComponentHandle<TransformComponent>();
-			//Se configura la informaci�n para poder sincronizar la informacion espacial internal (TransformComponent) 
+			//Se configura la información para poder sincronizar la informacion espacial internal (TransformComponent) 
 			//con la de bullet 
 			rigidBody.InitializeMotionState(transformHandle, m_transformManagerPtr);
 			btRigidBody* rb = rigidBody.m_rigidBodyPtr.get();

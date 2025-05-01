@@ -1,13 +1,13 @@
-#include "AudioClipManager.hpp"
+ï»¿#include "AudioClipManager.hpp"
 #include "../Core/Log.hpp"
 namespace Mona {
 	std::shared_ptr<AudioClip> AudioClipManager::LoadAudioClip(const std::filesystem::path& filePath) noexcept {
 		const std::string stringPath = filePath.string();
-		//Primero se chequea si ya hay una instancia en el mapa de AudioClip con la misma dirección recien entregada
+		//Primero se chequea si ya hay una instancia en el mapa de AudioClip con la misma direcciÃ³n recien entregada
 		auto it = m_audioClipMap.find(stringPath);
 		if (it != m_audioClipMap.end())
 			return it->second;
-		//Si no hay un AudioClip con la dirección entregada entonces se procese a cargar una nueva instancia de AudioClip.
+		//Si no hay un AudioClip con la direcciÃ³n entregada entonces se procese a cargar una nueva instancia de AudioClip.
 		AudioClip* audioClipPtr = new AudioClip(stringPath);
 		std::shared_ptr<AudioClip> audioClipSharedPtr = std::shared_ptr<AudioClip>(audioClipPtr);
 		m_audioClipMap.insert({ stringPath, audioClipSharedPtr});

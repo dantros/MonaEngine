@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #ifndef AUDIOSYSTEM_HPP
 #define AUDIOSYSTEM_HPP
 #include <memory>
@@ -19,17 +19,17 @@ namespace Mona {
 	class AudioSystem {
 	public:
 		/*
-		* Función llamada por el motor que inicializa el sistema de audio, el cual es capaz de reproducir channels audios simultaneamente.
+		* FunciÃ³n llamada por el motor que inicializa el sistema de audio, el cual es capaz de reproducir channels audios simultaneamente.
 		*/
 		void StartUp() noexcept;
 		
 		/*
-		* Libera todos los recuros mantenidos por el sistema de audio, esta función es llamada durante el proceso de cierre del motor.
+		* Libera todos los recuros mantenidos por el sistema de audio, esta funciÃ³n es llamada durante el proceso de cierre del motor.
 		*/
 		void ShutDown() noexcept;
 
 		/*
-		* Función llamada cada iteración del mainloop del motor
+		* FunciÃ³n llamada cada iteraciÃ³n del mainloop del motor
 		*/
 		void Update(const InnerComponentHandle &audioListenerTransformHandle,
 			const glm::fquat &audioListenerOffsetRotation,
@@ -49,7 +49,7 @@ namespace Mona {
 		void SetMasterVolume(float volume) noexcept;
 
 		/*
-		* Crea una FreeAudioSource (fuente libre) la cual sera responsable de intertar reproducir el audioclip entregado con la posición,
+		* Crea una FreeAudioSource (fuente libre) la cual sera responsable de intertar reproducir el audioclip entregado con la posiciÃ³n,
 		* volumen, tono, radio y prioridad tambien entregados. Esta funcion suele ser llamada por medio de la interfaz de la clase World, cuando
 		* el usuerio quiere reproducir un audio3D que no este unido como component a un GameObject.
 		*/
@@ -71,7 +71,7 @@ namespace Mona {
 			AudioSourcePriority priority);
 
 		/*
-		* Libera la fuente de OpenAL que se encuentra en la posición index dentro del arreglo de estas mismas. Esta función es llamada
+		* Libera la fuente de OpenAL que se encuentra en la posiciÃ³n index dentro del arreglo de estas mismas. Esta funciÃ³n es llamada
 		* cada vez que una componente AudioSourceComponent es destruida.
 		*/
 		void RemoveOpenALSource(uint32_t index) noexcept;

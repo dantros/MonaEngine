@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef AUDIOSOURCE_HPP
 #define AUDIOSOURCE_HPP
 #include <memory>
@@ -26,7 +26,7 @@ namespace Mona {
 
 	/*
 	* Enumerador que representa los tipos de fuentes de sonido. Las fuentes 2D se escuchan de igual manera independiente
-	* de la posici�n/velocidad relativa de la fuente y el receptor, en cambio, las fuentes 3D si se ven afectadas por estas
+	* de la posición/velocidad relativa de la fuente y el receptor, en cambio, las fuentes 3D si se ven afectadas por estas
 	* variables.
 	*/
 	enum class SourceType : uint8_t{

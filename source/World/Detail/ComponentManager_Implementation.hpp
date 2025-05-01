@@ -1,4 +1,4 @@
-#pragma once
+Ôªø#pragma once
 #ifndef COMPONENTMANAGER_IMPLEMENTATION_HPP
 #define COMPONENTMANAGER_IMPLEMENTATION_HPP
 #include "../../Core/Log.hpp"
@@ -24,7 +24,7 @@ namespace Mona {
 
 	template <typename ComponentType>
 	void ComponentManager<ComponentType>::ShutDown(EventManager& eventManager) noexcept {
-		//Antes de limpiar las componentes es necesario llamar OnRemoveComponent por temas de liberaciÛn de recursos por ejemplo
+		//Antes de limpiar las componentes es necesario llamar OnRemoveComponent por temas de liberaci√≥n de recursos por ejemplo
 		for (decltype(m_components.size()) i = 0; i < m_components.size(); i++)
 		{
 			HandleEntry handleEntry = m_handleEntries[m_handleEntryIndices[i]];
@@ -95,7 +95,7 @@ namespace Mona {
 		auto& handleEntry = m_handleEntries[index];
 		m_lifetimePolicy.OnRemoveComponent(m_componentOwners[handleEntry.index], m_components[handleEntry.index], handle);
 		//Si la componente a eliminar no es la ultima, las intercambiamos entre estas (la ultima y la que se eliminara)
-		//Asi en ambos casos la componente a eliminar quedara al final del arreglo => eliminaciÛn rapida
+		//Asi en ambos casos la componente a eliminar quedara al final del arreglo => eliminaci√≥n rapida
 		if (handleEntry.index < m_components.size() - 1)
 		{
 			m_components[handleEntry.index] = std::move(m_components.back());

@@ -1,4 +1,4 @@
-#include "AnimationClipManager.hpp"
+ï»¿#include "AnimationClipManager.hpp"
 #include "AnimationClip.hpp"
 #include "Skeleton.hpp"
 namespace Mona {
@@ -8,7 +8,7 @@ namespace Mona {
 	{
 		const std::string& stringPath = filePath.string();
 		//En caso de que ya exista una entrada en el mapa de animaciones con el mismo path, 
-		// entonces se retorna inmediatamente dicha animación.
+		// entonces se retorna inmediatamente dicha animaciÃ³n.
 		auto it = m_animationClipMap.find(stringPath);
 		if (it != m_animationClipMap.end()) {
 			return it->second;
@@ -36,7 +36,7 @@ namespace Mona {
 	}
 
 	void AnimationClipManager::ShutDown() noexcept {
-		//Al cerrar el motor se llama esta función donde se limpia el mapa de animaciones
+		//Al cerrar el motor se llama esta funciÃ³n donde se limpia el mapa de animaciones
 		m_animationClipMap.clear();
 	}
 

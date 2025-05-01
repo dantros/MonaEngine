@@ -1,4 +1,4 @@
-#include "PhysicsCollisionSystem.hpp"
+ï»¿#include "PhysicsCollisionSystem.hpp"
 #include "RigidBodyLifetimePolicy.hpp"
 #include <algorithm>
 #include <vector>
@@ -40,7 +40,7 @@ namespace Mona {
 		CollisionSet currentCollisionSet;
 		
 		auto manifoldNum = m_dispatcherPtr->getNumManifolds();
-		//Primero se pobla currentCollisionSet con las collisiones en esta iteración
+		//Primero se pobla currentCollisionSet con las collisiones en esta iteraciÃ³n
 		for (decltype(manifoldNum) i = 0; i < manifoldNum; i++) {
 			btPersistentManifold* manifoldPtr = m_dispatcherPtr->getManifoldByIndexInternal(i);
 			auto numContacts = manifoldPtr->getNumContacts();
@@ -56,7 +56,7 @@ namespace Mona {
 		}
 
 		CollisionSet newCollisions;
-		//Para encontrar las colisiones nuevas es necesario encontrar las colisiones que estan presentes en la iteración actual
+		//Para encontrar las colisiones nuevas es necesario encontrar las colisiones que estan presentes en la iteraciÃ³n actual
 		//pero no en la anterior.
 		std::set_difference(currentCollisionSet.begin(), currentCollisionSet.end(),
 							m_previousCollisionSet.begin(), m_previousCollisionSet.end(),
@@ -65,7 +65,7 @@ namespace Mona {
 		
 		std::vector<std::tuple<RigidBodyHandle, RigidBodyHandle, bool, CollisionInformation>> newCollisionsInformation;
 		//A partir del conjunto de colisiones nuevas poblado con byRigidBody* se genera un conjunto 
-		// con una representación interna RigidBodyHandle.
+		// con una representaciÃ³n interna RigidBodyHandle.
 		newCollisionsInformation.reserve(newCollisions.size());
 		for (auto& newCollision : newCollisions)
 		{
@@ -80,7 +80,7 @@ namespace Mona {
 		}
 
 		//Se procede a llamar las callbacks correspondientes de cada RigidBodyComponent entrando en una nueva colision.
-		//Este proceso podría hacerse en el paso anterior, pero dado que callbacks podrían eliminar componentes en uso en ese momento
+		//Este proceso podrÃ­a hacerse en el paso anterior, pero dado que callbacks podrÃ­an eliminar componentes en uso en ese momento
 		//es necesario posponer este proceso.
 		for (auto& collisionInformation : newCollisionsInformation) {
 			auto& rb0 = std::get<0>(collisionInformation);

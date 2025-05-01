@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #ifndef AUDIOCLIP_HPP
 #define AUDIOCLIP_HPP
 #include <string>
@@ -19,24 +19,24 @@ namespace Mona {
 		
 		/*
 		* Dado que esta clase contiene recursos que son destruidos durante el llamado al destructor,
-		* para evitar liberación de memoria ya destruida es necesario eliminar tanto el copy constructor
+		* para evitar liberaciÃ³n de memoria ya destruida es necesario eliminar tanto el copy constructor
 		* como el ooperador de copia.
 		*/
 		AudioClip(const AudioClip&) = delete;
 		AudioClip& operator=(const AudioClip&) = delete;
 
 		/*
-		* Retorna el número identificador del buffer de OpenAL.
+		* Retorna el nÃºmero identificador del buffer de OpenAL.
 		*/
 		unsigned int GetBufferID() const { return m_alBufferID; }
 
 		/*
-		* Retorna la duración en segundos de este AudioClip
+		* Retorna la duraciÃ³n en segundos de este AudioClip
 		*/
 		float GetTotalTime() const { return m_totalTime; }
 
 		/*
-		* Retorna el número de canales de este AudioClip (Mono = 2, Estereo = 2).
+		* Retorna el nÃºmero de canales de este AudioClip (Mono = 2, Estereo = 2).
 		*/
 		std::uint8_t GetChannels() const { return m_channels; }
 
@@ -48,13 +48,13 @@ namespace Mona {
 	private:
 
 		/*
-		* Contruye una instancia de AudioClip a partir de un string que contiene la dirección del archivo
-		* con los datos de audio (EJ: "C:/Home/Desktop/Music.wav") . De momento el único formato soporta es wav.
+		* Contruye una instancia de AudioClip a partir de un string que contiene la direcciÃ³n del archivo
+		* con los datos de audio (EJ: "C:/Home/Desktop/Music.wav") . De momento el Ãºnico formato soporta es wav.
 		*/
 		AudioClip(const std::string& audioFilePath);
 
 		/*
-		* Metodo que libera los recursos de OpenAL asociados a esta instancia. Esta función es llamada al momento
+		* Metodo que libera los recursos de OpenAL asociados a esta instancia. Esta funciÃ³n es llamada al momento
 		* que el motor esta preparandose para ser cerrado.
 		*/
 		void DeleteOpenALBuffer();

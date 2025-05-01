@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #ifndef WINDOW_HPP
 #define WINDOW_HPP
 #include <memory>
@@ -8,7 +8,7 @@ namespace Mona
 	class World;
 	class EventManager;
 	/*
-	* La clase Window provee una interfaz que permite al usario configurar y/o consultar información de la ventana de la aplicación.
+	* La clase Window provee una interfaz que permite al usario configurar y/o consultar informaciÃ³n de la ventana de la aplicaciÃ³n.
 	*/
 	class Window {
 	public:
@@ -19,7 +19,7 @@ namespace Mona
 		Window& operator=(const Window& window) = delete;
 
 		/*
-		* Retorna verdadero si la ventana de la aplicación esta en modo pantalla completa.
+		* Retorna verdadero si la ventana de la aplicaciÃ³n esta en modo pantalla completa.
 		*/
 		bool IsFullScreen() const noexcept;
 

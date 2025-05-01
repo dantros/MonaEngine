@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #ifndef APPLICATION_HPP
 #define APPLICATION_HPP
 #include <memory>
@@ -22,8 +22,8 @@ namespace Mona {
 		virtual void UserShutDown(World& world) noexcept = 0;
 		
 		/*
-		* Funcion virtual que el usuario del motor implementar al heredar de esta clase. Este metodo es llamado cada iteración del main loop del motor,
-		* es aqui donde el usuario deberia correr logica general de su aplicación.
+		* Funcion virtual que el usuario del motor implementar al heredar de esta clase. Este metodo es llamado cada iteraciÃ³n del main loop del motor,
+		* es aqui donde el usuario deberia correr logica general de su aplicaciÃ³n.
 		*/
 		virtual void UserUpdate(World& world, float timestep)  noexcept = 0;
 		virtual ~Application() = default;

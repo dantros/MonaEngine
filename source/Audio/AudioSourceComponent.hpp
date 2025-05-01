@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #ifndef AUDIOSOURCECOMPONENT_HPP
 #define AUDIOSOURCECOMPONENT_HPP
 #include <memory>
@@ -40,25 +40,25 @@ namespace Mona {
 		std::shared_ptr<AudioClip> GetAudioClip() const noexcept { return m_audioClip; }
 
 		/*
-		* Ajusta la instancia de AudioClip de esta fuente de audio. Tambien detiene la reproducción del
+		* Ajusta la instancia de AudioClip de esta fuente de audio. Tambien detiene la reproducciÃ³n del
 		* clip anterior.
 		*/
 		void SetAudioClip(std::shared_ptr<AudioClip> audioClip) noexcept;
 
 		/*
 		* Comienza a reproducir el audioclip actual como si fuera emitido por esta fuente de audio. En caso
-		* de que la fuente ya se encontraba reproduciendo este clip la reproducción vuelve a empezar del comienzo.
+		* de que la fuente ya se encontraba reproduciendo este clip la reproducciÃ³n vuelve a empezar del comienzo.
 		*/
 		void Play() noexcept;
 
 		/*
-		* Detiene completamente la reproduccin de audio de esta fuente. La proxima vez que se llame a Play, la reproducción
+		* Detiene completamente la reproduccin de audio de esta fuente. La proxima vez que se llame a Play, la reproducciÃ³n
 		* comenzara desde el principio del clip de audio.
 		*/
 		void Stop() noexcept;
 
 		/*
-		* Detiene la reproducción de audio de esta fuente. La proxima vez que se llame a Play la reproducción sera retomada
+		* Detiene la reproducciÃ³n de audio de esta fuente. La proxima vez que se llame a Play la reproducciÃ³n sera retomada
 		* en el mismo lugar donde se pauso.
 		*/
 		void Pause() noexcept;
@@ -81,7 +81,7 @@ namespace Mona {
 		void SetVolume(float volume) noexcept;
 		
 		/*
-		* Retorna el radio de alcance de esta fuente de audio. Para fuentes 3D a mayor radio de alcance mas lento es el decaimiento del volumen en función
+		* Retorna el radio de alcance de esta fuente de audio. Para fuentes 3D a mayor radio de alcance mas lento es el decaimiento del volumen en funciÃ³n
 		* de la distancia al receptor, fuentes de audio a una distancia mayor que este radio no reproducen sonido.
 		*/
 		float GetRadius() const noexcept { return m_radius; }
@@ -101,13 +101,13 @@ namespace Mona {
 		void SetPitch(float pitch) noexcept;
 
 		/*
-		* Retorna verdadero si el audio clip reproducido por esta fuente esta en repetición.
+		* Retorna verdadero si el audio clip reproducido por esta fuente esta en repeticiÃ³n.
 		*/
 		bool IsLooping() const noexcept { return m_isLooping; }
 
 		/*
 		* Ajusta si el clip de audio siendo reproducido por esta fuente se repite una vez termina su 
-		* reproducción.
+		* reproducciÃ³n.
 		*/
 		void SetIsLooping(bool looping) noexcept;
 

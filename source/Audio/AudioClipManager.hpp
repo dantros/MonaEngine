@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #ifndef AUDIOCLIPMANAGER_HPP
 #define AUDIOCLIPMANAGER_HPP
 #include <memory>
@@ -8,7 +8,7 @@
 #include "AudioClip.hpp"
 namespace Mona {
 	/*
-	* Clase responsable de la creación y administración de instancias de AudioClips
+	* Clase responsable de la creaciÃ³n y administraciÃ³n de instancias de AudioClips
 	*/
 	class AudioClipManager {
 	public:
@@ -18,7 +18,7 @@ namespace Mona {
 		AudioClipManager& operator=(AudioClipManager const&) = delete;
 		/*
 		* Crea o obtiene una instancia de AudioClip asociada al archivo ubicado en filePath.
-		* Si ya se cargo un AudioClip con la misma ubicación el proceso de construccion de la instancia
+		* Si ya se cargo un AudioClip con la misma ubicaciÃ³n el proceso de construccion de la instancia
 		* de AudioClip sera omitida y se entregara un puntero a una instancia previamente creada.
 		*/
 		std::shared_ptr<AudioClip> LoadAudioClip(const std::filesystem::path& filePath) noexcept;

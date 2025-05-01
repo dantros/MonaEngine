@@ -1,4 +1,4 @@
-#include "AudioSystem.hpp"
+ï»¿#include "AudioSystem.hpp"
 #include <algorithm>
 #include "../Core/Log.hpp"
 #include "../Core/Config.hpp"
@@ -11,7 +11,7 @@ namespace Mona {
 		Config& config = Config::GetInstance();
 		const int channels = config.getValueOrDefault<int>("N_OPENAL_SOURCES", 32);
 		MONA_ASSERT(channels > 0, "AudioSystem Error: please request more than zero channels");
-		//Creación de una instancia de ALCdevice y ALCcontext, y posterior chequeo.
+		//CreaciÃ³n de una instancia de ALCdevice y ALCcontext, y posterior chequeo.
 		m_audioDevice = alcOpenDevice(nullptr);
 
 		if (!m_audioDevice) {
@@ -52,7 +52,7 @@ namespace Mona {
 		const ComponentManager<TransformComponent>& transformDataManager,
 		ComponentManager<AudioSourceComponent>& audioDataManager) noexcept {
 
-		//Actualización de la posición del receptor de OpenAL. Usando una instancia de TransformComponent señalada por el usuario
+		//ActualizaciÃ³n de la posiciÃ³n del receptor de OpenAL. Usando una instancia de TransformComponent seÃ±alada por el usuario
 		glm::vec3 listenerPosition = glm::vec3(0.0f);
 		if (transformDataManager.IsValid(audioListenerTransformHandle)) {
 			const TransformComponent* listenerTransform = transformDataManager.GetComponentPointer(audioListenerTransformHandle);
@@ -62,8 +62,8 @@ namespace Mona {
 			UpdateListener(listenerPosition, frontVector, upVector);
 		}
 		else {
-			//En caso de que el usuario no haya asignada ninguna instancia valida de TransformCOmponent como posición del receptor
-			//este es ubicado en la posición (0,0,0)
+			//En caso de que el usuario no haya asignada ninguna instancia valida de TransformCOmponent como posiciÃ³n del receptor
+			//este es ubicado en la posiciÃ³n (0,0,0)
 			UpdateListener(listenerPosition, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		}
 
@@ -74,7 +74,7 @@ namespace Mona {
 		UpdateFreeAudioSourcesTimers(timeStep);
 		UpdateAudioSourceComponentsTimers(timeStep, audioDataManager);
 
-		//Comienza la asignación de fuentes de OpenAL a las fuentes del motor.
+		//Comienza la asignaciÃ³n de fuentes de OpenAL a las fuentes del motor.
 		if (m_freeAudioSources.size() + audioDataManager.GetCount() <= m_openALSources.size()) {
 			//Si la suma de fuentes libres y fuentes ligadas a GameObjects es menor que la cantidad de fuentes de OpenAL disponibles
 			//Asignamos recursos a todas.
@@ -228,7 +228,7 @@ namespace Mona {
 	void AudioSystem::UpdateAudioSourceComponentsTimers(float timeStep, ComponentManager<AudioSourceComponent>& audioDataManager)
 	{
 		//El proceso de actualizar las fuentes de audio usadas como componentes es un poco mas complejo.
-		//Ya que estas pueden estar en repetición, en pausa o detenidas.
+		//Ya que estas pueden estar en repeticiÃ³n, en pausa o detenidas.
 		for (uint32_t i = 0; i < audioDataManager.GetCount(); i++) {
 			auto& audioComponent = audioDataManager[i];
 			if (audioComponent.m_sourceState == AudioSourceState::Paused || audioComponent.m_sourceState == AudioSourceState::Stopped) continue;
@@ -342,7 +342,7 @@ namespace Mona {
 				auto unusedOpenALSource = GetNextFreeSource();
 				audioSource.m_openALsource = unusedOpenALSource;
 				if (audioSource.m_sourceType == SourceType::Source2D) {
-					//En caso de que la fuente sea 2D se le asigna una posición relativa de (0.0,0.0,0.0)
+					//En caso de que la fuente sea 2D se le asigna una posiciÃ³n relativa de (0.0,0.0,0.0)
 					ALCALL(alSourcei(unusedOpenALSource.m_sourceID, AL_SOURCE_RELATIVE, AL_TRUE));
 					ALCALL(alSource3f(unusedOpenALSource.m_sourceID, AL_POSITION, 0.0f, 0.0f, 0.0f));
 				}
@@ -404,8 +404,8 @@ namespace Mona {
 	void AudioSystem::SortFreeAudioSourcesByPriority(std::vector<FreeAudioSource>::iterator end,
 		uint32_t (&outCount)[static_cast<unsigned int>(AudioSourcePriority::PriorityCount)])
 	{
-		//La lista se ordena usando una implementación inplace de count sort
-		// La implementación esta basada en el mensaje de Sebastian Mestre en la siguiente pregunta en stackoverflow
+		//La lista se ordena usando una implementaciÃ³n inplace de count sort
+		// La implementaciÃ³n esta basada en el mensaje de Sebastian Mestre en la siguiente pregunta en stackoverflow
 		// https://stackoverflow.com/questions/30547452/is-stdsort-the-best-choice-to-do-in-place-sort-for-a-huge-array-with-limited-i
 		unsigned int counts[static_cast<unsigned int>(AudioSourcePriority::PriorityCount)] = {};
 		unsigned int offsetCounts[static_cast<unsigned int>(AudioSourcePriority::PriorityCount)] = {};
@@ -435,8 +435,8 @@ namespace Mona {
 		uint32_t lastIndex,
 		uint32_t(&outCount)[static_cast<unsigned int>(AudioSourcePriority::PriorityCount)]) {
 
-		//La lista se ordena usando una implementación inplace de count sort
-		// La implementación esta basada en el mensaje de Sebastian Mestre en la siguiente pregunta en stackoverflow
+		//La lista se ordena usando una implementaciÃ³n inplace de count sort
+		// La implementaciÃ³n esta basada en el mensaje de Sebastian Mestre en la siguiente pregunta en stackoverflow
 		// https://stackoverflow.com/questions/30547452/is-stdsort-the-best-choice-to-do-in-place-sort-for-a-huge-array-with-limited-i
 		unsigned int counts[static_cast<unsigned int>(AudioSourcePriority::PriorityCount)] = {};
 		unsigned int offsetCounts[static_cast<unsigned int>(AudioSourcePriority::PriorityCount)] = {};

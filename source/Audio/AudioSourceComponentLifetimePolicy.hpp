@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef AUDIOSOURCECOMPONENTLIFETIMEPOLICY_HPP
 #define AUDIOSOURCECOMPONENTLIFETIMEPOLICY_HPP
 #include "AudioSystem.hpp"
@@ -15,7 +15,7 @@ namespace Mona {
 		AudioSourceComponentLifetimePolicy() = default;
 		AudioSourceComponentLifetimePolicy(AudioSystem* audioSystem) : m_audioSystem(audioSystem) {}
 		void OnAddComponent(GameObject* gameObjectPtr, AudioSourceComponent& audioSource, const InnerComponentHandle& handle) {
-			//Configura el vamor del handle que representa la transformada para asi poder obtener la informaci�n espacial necesaria
+			//Configura el vamor del handle que representa la transformada para asi poder obtener la información espacial necesaria
 			// para el sistema de audio a partir de la transformada del GameObject al que se le esta agregando esta componente
 			audioSource.SetTransformHandle(gameObjectPtr->GetInnerComponentHandle<TransformComponent>());
 		}

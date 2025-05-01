@@ -1,10 +1,10 @@
-#pragma once
+﻿#pragma once
 #ifndef SHAPETYPES_HPP
 #define SHAPETYPES_HPP
 #include <glm/glm.hpp>
 namespace Mona {
 	/*
-	* Enumerador que representa la alineaci�n de una figura. Por ejemplo, un cono tiene claramente un eje prefencial
+	* Enumerador que representa la alineación de una figura. Por ejemplo, un cono tiene claramente un eje prefencial
 	* este enumerador permite configurar cual es dicho eje.
 	*/
 	enum class ShapeAlignment {

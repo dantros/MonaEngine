@@ -85,6 +85,7 @@ set(MONA_HEADERS
 				DebugDrawing/BulletDebugDraw.hpp
 				DebugDrawing/IKNavigationDebugDraw.hpp
 				Utilities/BasicCameraControllers.hpp
+				Utilities/EngineGameObjects.hpp
 				ECS/ComponentManager.hpp
 				ECS/EventManager.hpp
 				ECS/SystemManager.hpp
@@ -114,6 +115,7 @@ set(MONA_SOURCES
 				Rendering/Texture.cpp
 				Rendering/TextureManager.cpp
 				Rendering/Mesh.cpp
+				Utilities/EngineGameObjects.cpp
 				Animation/AnimationClipManager.cpp
 				Animation/SkeletonManager.cpp
 				Animation/AnimationSystem.cpp

@@ -1,40 +1,12 @@
 #include "MonaEngine.hpp"
 #include "Utilities/BasicCameraControllers.hpp"
+#include "Utilities/EngineGameObjects.hpp"
 #include "Rendering/PBRTexturedMaterial.hpp"
 #include "Rendering/UnlitTexturedMaterial.hpp"
 #include "Rendering/DiffuseTexturedMaterial.hpp"
 #include "Rendering/DiffuseFlatMaterial.hpp"
 #include "Rendering/UnlitFlatMaterial.hpp"
 #include <imgui.h>
-
-class Axis : public Mona::GameObject {
-public:
-	Axis() {}
-
-	void UserStartUp(Mona::World& world) noexcept override {
-
-		auto& config = Mona::Config::GetInstance();
-		auto& meshManager = Mona::MeshManager::GetInstance();
-		auto& textureManager = Mona::TextureManager::GetInstance();
-
-		auto meshPtr = meshManager.LoadMesh(Mona::Mesh::PrimitiveType::Axis);
-
-		auto material = world.CreateMaterial(Mona::MaterialType::UnlitTextured);
-		auto materialPtr = std::static_pointer_cast<Mona::UnlitTexturedMaterial>(material);
-
-		auto texture = textureManager.LoadTexture(config.getPathOfEngineAsset("Textures/aek-32.png"));
-		materialPtr->SetUnlitColorTexture(texture);
-
-		// siempre necesitamos una transform component para los static mesh
-		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
-
-		m_staticMesh = world.AddComponent<Mona::StaticMeshComponent>(*this, meshPtr, materialPtr);
-	}
-
-private:
-	Mona::TransformHandle m_transform;
-	Mona::StaticMeshHandle m_staticMesh;
-};
 
 class Box : public Mona::GameObject {
 public:
@@ -114,7 +86,7 @@ public:
 		//eventManager.Subscribe(m_windowResizeSubcription, this, &Sandbox::OnWindowResize);
 		//eventManager.Subscribe(m_debugGUISubcription, this, &Sandbox::OnDebugGUIEvent);
 		m_rotatingBox = world.CreateGameObject<Box>(10.f, 1.0f);
-		m_axis = world.CreateGameObject<Axis>();
+		m_axis = world.CreateGameObject<Mona::Axis>();
 
 		// right handed axis for coordinate system reference
 		auto rightHandedAxis = world.CreateGameObject<Mona::GameObject>();
@@ -205,7 +177,7 @@ private:
 	//Mona::SubscriptionHandle m_windowResizeSubcription;
 	//Mona::SubscriptionHandle m_debugGUISubcription;
 	Mona::GameObjectHandle<Box> m_rotatingBox;
-	Mona::GameObjectHandle<Axis> m_axis;
+	Mona::GameObjectHandle<Mona::Axis> m_axis;
 	Mona::GameObjectHandle<Mona::GameObject> m_camera;
 	float somefloat = 0.0f;
 	int m_currentMaterialIndex;

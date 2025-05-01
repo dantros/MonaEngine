@@ -1,11 +1,11 @@
-#include "MonaEngine.hpp"
-#include "Utilities/BasicCameraControllers.hpp"
-#include "Utilities/EngineGameObjects.hpp"
-#include "Rendering/PBRTexturedMaterial.hpp"
-#include "Rendering/UnlitTexturedMaterial.hpp"
-#include "Rendering/DiffuseTexturedMaterial.hpp"
-#include "Rendering/DiffuseFlatMaterial.hpp"
-#include "Rendering/UnlitFlatMaterial.hpp"
+#include <MonaEngine.hpp>
+#include <Utilities/BasicCameraControllers.hpp>
+#include <Utilities/EngineGameObjects.hpp>
+#include <Rendering/PBRTexturedMaterial.hpp>
+#include <Rendering/UnlitTexturedMaterial.hpp>
+#include <Rendering/DiffuseTexturedMaterial.hpp>
+#include <Rendering/DiffuseFlatMaterial.hpp>
+#include <Rendering/UnlitFlatMaterial.hpp>
 #include <imgui.h>
 
 class Box : public Mona::GameObject {

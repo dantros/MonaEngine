@@ -90,12 +90,12 @@ public:
 		m_axis = world.CreateGameObject<Mona::Axis>();
 
 		// right handed axis for coordinate system reference
-		auto rightHandedAxis = world.CreateGameObject<Mona::GameObject>();
+		/*auto rightHandedAxis = world.CreateGameObject<Mona::GameObject>();
 		world.AddComponent<Mona::TransformComponent>(rightHandedAxis);
 		auto axisMesh = meshManager.LoadMesh(config.getPathOfEngineAsset("Models/axis-right-handed.gltf"), true);
 		auto axisMaterial = world.CreateMaterial(Mona::MaterialType::UnlitFlat);
 		auto axisMaterialPtr = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(axisMaterial);
-		world.AddComponent<Mona::StaticMeshComponent>(rightHandedAxis, axisMesh, axisMaterialPtr);
+		world.AddComponent<Mona::StaticMeshComponent>(rightHandedAxis, axisMesh, axisMaterialPtr);*/
 		
 		/*
 		m_camera = world.CreateGameObject<Mona::GameObject>();

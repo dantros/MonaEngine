@@ -23,9 +23,9 @@ Para generar el projecto, solución o makefiles se necesita [CMake 3.20+](https:
 
 Es posible utilizar 'CMakePresets.json' para generar la solución de Visual Studio que compilará el motor.
 ```
-cmake --preset vs-debug-examples
+cmake --preset vs-debug
 ```
-Esto compilará la biblioteca estática MonaEngine y los códigos de ejemplo. Si los códigos de ejemplo no son de interés, se puede utilziar el preset `vs-debug`. Para linux existen los presets `linux-debug` y `linux-debug-examples` los cuales generarán los Makefiles correspondientes. Revisar otros presets y detalles en el archivo `CMakePresets.json`.
+Esto compilará la biblioteca estática MonaEngine y un par de códigos de ejemplo que le permitan comenzar a trabajar. En linux puede utilizar el preset `linux-debug`para generar los Makefiles correspondientes. Revisar otros presets y detalles en el archivo `CMakePresets.json`.
 
 Estos presets generarán una carpeta llamada `build` paralela la carpeta MonaEngine donde se encuentra el código fuente. En el nuevo directorio `build` se debe abrir `MonaEngine.sln` con Visual Studio (Windows), o ejecutar `make` para procesar los Makefiles (Linux).
 
@@ -90,7 +90,7 @@ std::string assetPathStr = config.getPathOfApplicationAsset("AudioFiles/music.wa
 ```
 Usualmente una apliación no necesitará assets provistos por el Engine, pero sí se utilizan dentro del motor mismo. Ahí se accede a dichos assets con: `config.getPathOfEngineAsset(Shaders/UnlitFlat.vs)`.
 
-La recomendación para comenzar, es revisar los ejemplos disponibles en la carpeta [examples](examples/README.md) y el repositorio https://github.com/dantros/BreakoutMona, donde se incluye MonaEngine como un submódulo git.
+La recomendación para comenzar, es revisar los ejemplos disponibles en la carpeta [examples](examples/README.md) y el repositorio https://github.com/dantros/MonaEngineDemos, donde se incluye MonaEngine como un submódulo git.
 
 ### Manejo de Assets en tiempo de desarrollo
 

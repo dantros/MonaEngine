@@ -49,9 +49,10 @@ private:
 	
 };
 
-class Boo : public Mona::GameObject {
+class Sprite : public Mona::GameObject {
 	public:
-		Boo()
+		Sprite(const std::string& textureFilename) :
+			m_textureFilename(textureFilename)
 		{
 		}
 
@@ -66,7 +67,7 @@ class Boo : public Mona::GameObject {
 			auto& meshManager = Mona::MeshManager::GetInstance();
 			auto& textureManager = Mona::TextureManager::GetInstance();
 
-			auto booTexture = textureManager.LoadTexture(config.getPathOfEngineAsset("Textures/boo.png"));
+			auto booTexture = textureManager.LoadTexture(config.getPathOfEngineAsset(m_textureFilename));
 			auto quadMesh = meshManager.LoadMesh(config.getPathOfEngineAsset("Models/textured_quad.obj"));
 	
 			auto material = world.CreateMaterial(Mona::MaterialType::UnlitTextured);
@@ -83,8 +84,9 @@ class Boo : public Mona::GameObject {
 		}
 	
 	private:
+		std::string m_textureFilename;
 		Mona::TransformHandle m_transform;
-		Mona::StaticMeshHandle m_staticMesh;		
+		Mona::StaticMeshHandle m_staticMesh;
 	};
 
 class Sandbox : public Mona::Application
@@ -110,10 +112,16 @@ public:
 		//eventManager.Subscribe(m_debugGUISubcription, this, &Sandbox::OnDebugGUIEvent);
 		m_rotatingBox = world.CreateGameObject<Box>(10.f, 1.0f);
 
-		m_boo = world.CreateGameObject<Boo>();
+		m_boo = world.CreateGameObject<Sprite>("Textures/boo.png");
+		m_cg = world.CreateGameObject<Sprite>("Textures/cg_box.png");
+
 		Mona::TransformHandle booTransformHandle = world.GetComponentHandle<Mona::TransformComponent>(m_boo);
-		booTransformHandle->SetTranslation(glm::vec3(0,0,10));
+		booTransformHandle->SetTranslation(glm::vec3(0,20,10));
 		booTransformHandle->SetScale(glm::vec3(10));
+
+		Mona::TransformHandle cgTransformHandle = world.GetComponentHandle<Mona::TransformComponent>(m_cg);
+		cgTransformHandle->SetTranslation(glm::vec3(0,10,10));
+		cgTransformHandle->SetScale(glm::vec3(10));
 
 		m_axis = world.CreateGameObject<Mona::Axis>();
 		
@@ -220,7 +228,8 @@ private:
 	//Mona::SubscriptionHandle m_windowResizeSubcription;
 	//Mona::SubscriptionHandle m_debugGUISubcription;
 	Mona::GameObjectHandle<Box> m_rotatingBox;
-	Mona::GameObjectHandle<Boo> m_boo;
+	Mona::GameObjectHandle<Sprite> m_boo;
+	Mona::GameObjectHandle<Sprite> m_cg;
 	Mona::GameObjectHandle<Mona::Axis> m_axis;
 	Mona::GameObjectHandle<Mona::FlyingCamera> m_camera;
 	float somefloat = 0.0f;

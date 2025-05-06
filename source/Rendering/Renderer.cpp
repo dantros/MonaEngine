@@ -17,6 +17,7 @@
 #include "DiffuseTexturedMaterial.hpp"
 #include "PBRFlatMaterial.hpp"
 #include "PBRTexturedMaterial.hpp"
+#include <vector>
 
 namespace Mona{
 	template
@@ -93,11 +94,8 @@ namespace Mona{
 		ComponentManager<SpotLightComponent>& spotLightDataManager,
 		ComponentManager<PointLightComponent>& pointLightDataManager) noexcept
 	{
-		glClearColor(m_backgroundColor[0], m_backgroundColor[1], m_backgroundColor[2], m_backgroundColor[3]);
-		
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		
+		glClearColor(m_backgroundColor[0], m_backgroundColor[1], m_backgroundColor[2], m_backgroundColor[3]);	
+		glDisable(GL_BLEND);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glm::mat4 viewMatrix;
 		glm::mat4 projectionMatrix;
@@ -168,7 +166,17 @@ namespace Mona{
 		glBindBuffer(GL_UNIFORM_BUFFER, m_lightDataUBO);
 		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(Lights), &lights);
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
-		//Iteraci�n sobre todas las instancias de StaticMeshComponent
+
+		using SizeType = decltype(staticMeshDataManager.GetCount());
+
+		struct TransformedStaticMesh
+		{
+			TransformComponent* transform;
+			StaticMeshComponent* staticMesh;
+		};
+		std::vector<TransformedStaticMesh> transparentStaticMeshes;
+
+		//Iteración sobre todas las instancias de StaticMeshComponent
 		for (decltype(staticMeshDataManager.GetCount()) i = 0;
 			i < staticMeshDataManager.GetCount();
 			i++)
@@ -177,6 +185,26 @@ namespace Mona{
 			GameObject* owner = staticMeshDataManager.GetOwnerByIndex(i);
 			//Se obtiene la informaci�n espacial para configurar la matriz de modelo dentro del shader.
 			TransformComponent* transform = transformDataManager.GetComponentPointer(owner->GetInnerComponentHandle<TransformComponent>());
+
+			std::shared_ptr<Material> materialPtr = staticMesh.GetMaterial();
+			Material* materialRawPtr = materialPtr.get();
+			UnlitTexturedMaterial* unlitTexturedMaterial = dynamic_cast<UnlitTexturedMaterial*>(materialRawPtr);
+
+			if (unlitTexturedMaterial != nullptr)
+			{
+				std::shared_ptr<Texture> texturePtr = unlitTexturedMaterial->GetUnlitColorTexture();
+				uint32_t channels = texturePtr->GetChannels();
+
+				if (channels == 4)
+				{
+					transparentStaticMeshes.emplace_back(transform, &staticMesh);
+
+					// we will process this static mesh later, it has transparencies.
+					// we need to sort this special kind of material to avoid depth inconsistencies.
+					continue;
+				}
+			}
+			
 			//Configuraci�n de la malla a ser renderizada y las uniformes asociadas a su material.
 			glBindVertexArray(staticMesh.GetMeshVAOID());
 			staticMesh.m_materialPtr->SetUniforms(projectionMatrix, viewMatrix, transform->GetModelMatrix(), cameraPosition);
@@ -185,7 +213,7 @@ namespace Mona{
 			
 		}
 		
-		//Iteracion sobre todas las instancias de SkeletalMeshComponent
+		//Iteración sobre todas las instancias de SkeletalMeshComponent
 		for (decltype(skeletalMeshDataManager.GetCount()) i = 0;
 			i < skeletalMeshDataManager.GetCount();
 			i++)
@@ -204,7 +232,37 @@ namespace Mona{
 			Mesh::PrimitiveMode primitiveMode = Mesh::PrimitiveMode::Triangles; //skeletalMesh.GetPrimitiveMode(); TODO: enable this.
 			glDrawElements(PrimitiveModeToGL(primitiveMode), skinnedMesh->GetIndexBufferCount(), GL_UNSIGNED_INT, 0);
 		}
-		//En no Debub build este llamado es vacio, en caso contrario se renderiza informaci�n de debug
+
+		// dibujando StaticMesh transparentes. Notar que se usa una sola posicion para determinar profundidad, no es una revisión por pixel.
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		std::sort(transparentStaticMeshes.begin(), transparentStaticMeshes.end(), [&cameraPosition](const TransformedStaticMesh& lhs, const TransformedStaticMesh& rhs)
+			{
+				glm::vec3 lhsLocation = lhs.transform->GetLocalTranslation();
+				glm::vec3 rhsLocation = rhs.transform->GetLocalTranslation();
+				float lhsDistance2 = glm::distance2(lhsLocation, cameraPosition);
+				float rhsDistance2 = glm::distance2(rhsLocation, cameraPosition);
+				return lhsDistance2 < rhsDistance2;
+			});
+
+		for (SizeType i = 0; i < transparentStaticMeshes.size(); ++i)
+		{
+			TransformedStaticMesh& transparentStaticMesh = transparentStaticMeshes[i];
+			TransformComponent* transform = transparentStaticMesh.transform;
+			StaticMeshComponent* staticMeshPtr = transparentStaticMesh.staticMesh;
+			StaticMeshComponent& staticMesh = *staticMeshPtr;
+
+			//Configuración de la malla a ser renderizada y las uniformes asociadas a su material.
+			glBindVertexArray(staticMesh.GetMeshVAOID());
+			staticMesh.m_materialPtr->SetUniforms(projectionMatrix, viewMatrix, transform->GetModelMatrix(), cameraPosition);
+			Mesh::PrimitiveMode primitiveMode = staticMesh.GetPrimitiveMode();
+			glDrawElements(PrimitiveModeToGL(primitiveMode), staticMesh.GetMeshIndexCount(), GL_UNSIGNED_INT, 0);
+		}
+
+		glDisable(GL_BLEND);
+
+		//En no Debug build este llamado es vacio, en caso contrario se renderiza informaci�n de debug
 		m_debugDrawingSystemPtr->Draw(eventManager, viewMatrix, projectionMatrix);
 		
 	}

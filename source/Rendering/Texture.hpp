@@ -29,6 +29,7 @@ namespace Mona {
 		uint32_t GetWidth() const { return m_width; }
 		uint32_t GetHeight() const { return m_height; }
 		uint32_t GetID() const { return m_ID; }
+		uint32_t GetChannels() const { return m_channels; }
 		void SetSWrapMode(WrapMode wrapMode) noexcept;
 		void SetTWrapMode(WrapMode wrapMode) noexcept;
 		void SetMagnificationFilter(TextureMagnificationFilter magFilter) noexcept;

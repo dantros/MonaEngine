@@ -104,6 +104,8 @@ public:
 		auto& meshManager = Mona::MeshManager::GetInstance();
 		auto& eventManager = world.GetEventManager();
 
+		world.SetBackgroundColor(0.5f, 0.5f, 0.5f);
+
 		//eventManager.Subscribe(m_windowResizeSubcription, this, &Sandbox::OnWindowResize);
 		//eventManager.Subscribe(m_debugGUISubcription, this, &Sandbox::OnDebugGUIEvent);
 		m_rotatingBox = world.CreateGameObject<Box>(10.f, 1.0f);
@@ -114,14 +116,6 @@ public:
 		booTransformHandle->SetScale(glm::vec3(10));
 
 		m_axis = world.CreateGameObject<Mona::Axis>();
-
-		// right handed axis for coordinate system reference
-		/*auto rightHandedAxis = world.CreateGameObject<Mona::GameObject>();
-		world.AddComponent<Mona::TransformComponent>(rightHandedAxis);
-		auto axisMesh = meshManager.LoadMesh(config.getPathOfEngineAsset("Models/axis-right-handed.gltf"), true);
-		auto axisMaterial = world.CreateMaterial(Mona::MaterialType::UnlitFlat);
-		auto axisMaterialPtr = std::static_pointer_cast<Mona::DiffuseFlatMaterial>(axisMaterial);
-		world.AddComponent<Mona::StaticMeshComponent>(rightHandedAxis, axisMesh, axisMaterialPtr);*/
 		
 		/*
 		m_camera = world.CreateGameObject<Mona::GameObject>();

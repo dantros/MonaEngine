@@ -94,6 +94,10 @@ namespace Mona{
 		ComponentManager<PointLightComponent>& pointLightDataManager) noexcept
 	{
 		glClearColor(m_backgroundColor[0], m_backgroundColor[1], m_backgroundColor[2], m_backgroundColor[3]);
+		
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glm::mat4 viewMatrix;
 		glm::mat4 projectionMatrix;

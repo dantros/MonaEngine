@@ -11,14 +11,16 @@
 
 class Box : public Mona::GameObject {
 public:
-	Box(float speed, float rotationSpeed) {
+	Box(float speed, float rotationSpeed)
+	{
 		m_speed = speed;
 		m_rotationSpeed = rotationSpeed;
 	}
-	void UserStartUp(Mona::World& world) noexcept override {
+
+	void UserStartUp(Mona::World& world) noexcept override
+	{
 		m_transform = world.AddComponent<Mona::TransformComponent>(*this);
 		m_transform->SetTranslation(glm::vec3(0, 0, 0));
-		//m_transform->SetRotation(glm::angleAxis(glm::radians(90.f), glm::vec3(1, 0, 0)));
 		m_transform->SetScale(glm::vec3(4, 4, 4));
 
 		auto& config = Mona::Config::GetInstance();
@@ -33,30 +35,10 @@ public:
 		
 		m_staticMesh = world.AddComponent<Mona::StaticMeshComponent>(*this, cubeMesh, materialPtr);
 	}
-	void UserUpdate(Mona::World& world, float timeStep) noexcept override {
 
+	void UserUpdate(Mona::World& world, float timeStep) noexcept override
+	{
 		m_transform->Rotate(glm::vec3(0.0f,0.0f,1.0f), m_rotationSpeed * timeStep);
-		/*
-		auto& input = world.GetInput();
-
-		float deltaMovement = m_speed * timeStep;
-
-		if (input.IsKeyPressed(MONA_KEY_W)) {
-			glm::vec3 translation = m_transform->GetLocalTranslation();
-			m_transform->SetTranslation(translation + deltaMovement * glm::vec3(0.f, 1.f, 0.f));
-		}
-		else if (input.IsKeyPressed(MONA_KEY_A)) {
-			glm::vec3 translation = m_transform->GetLocalTranslation();
-			m_transform->SetTranslation(translation + deltaMovement * glm::vec3(-1.f, 0.f, 0.f));
-		}
-		else if (input.IsKeyPressed(MONA_KEY_S)) {
-			glm::vec3 translation = m_transform->GetLocalTranslation();
-			m_transform->SetTranslation(translation + deltaMovement * glm::vec3(0.f, -1.f, 0.f));
-		}
-		else if (input.IsKeyPressed(MONA_KEY_D)) {
-			glm::vec3 translation = m_transform->GetLocalTranslation();
-			m_transform->SetTranslation(translation + deltaMovement * glm::vec3(1.f, 0.f, 0.f));
-		}*/
 	}
 
 private:
@@ -66,6 +48,44 @@ private:
 	float m_rotationSpeed;
 	
 };
+
+class Boo : public Mona::GameObject {
+	public:
+		Boo()
+		{
+		}
+
+		void UserStartUp(Mona::World& world) noexcept override
+		{
+			m_transform = world.AddComponent<Mona::TransformComponent>(*this);
+			m_transform->SetTranslation(glm::vec3(0, 0, 0));
+			//m_transform->SetRotation(glm::angleAxis(glm::radians(90.f), glm::vec3(1, 0, 0)));
+			m_transform->SetScale(glm::vec3(4, 4, 4));
+	
+			auto& config = Mona::Config::GetInstance();
+			auto& meshManager = Mona::MeshManager::GetInstance();
+			auto& textureManager = Mona::TextureManager::GetInstance();
+
+			auto booTexture = textureManager.LoadTexture(config.getPathOfEngineAsset("Textures/boo.png"));
+			auto quadMesh = meshManager.LoadMesh(config.getPathOfEngineAsset("Models/textured_quad.obj"));
+	
+			auto material = world.CreateMaterial(Mona::MaterialType::UnlitTextured);
+			auto materialPtr = std::static_pointer_cast<Mona::UnlitTexturedMaterial>(material);
+			booTexture->SetMagnificationFilter(Mona::TextureMagnificationFilter::Nearest);
+			materialPtr->SetUnlitColorTexture(booTexture);
+			
+			m_staticMesh = world.AddComponent<Mona::StaticMeshComponent>(*this, quadMesh, materialPtr);
+		}
+
+		void UserUpdate(Mona::World& world, float timeStep) noexcept override
+		{
+			//m_transform->Rotate(glm::vec3(0.0f,0.0f,1.0f), m_rotationSpeed * timeStep);
+		}
+	
+	private:
+		Mona::TransformHandle m_transform;
+		Mona::StaticMeshHandle m_staticMesh;		
+	};
 
 class Sandbox : public Mona::Application
 {
@@ -87,6 +107,12 @@ public:
 		//eventManager.Subscribe(m_windowResizeSubcription, this, &Sandbox::OnWindowResize);
 		//eventManager.Subscribe(m_debugGUISubcription, this, &Sandbox::OnDebugGUIEvent);
 		m_rotatingBox = world.CreateGameObject<Box>(10.f, 1.0f);
+
+		m_boo = world.CreateGameObject<Boo>();
+		Mona::TransformHandle booTransformHandle = world.GetComponentHandle<Mona::TransformComponent>(m_boo);
+		booTransformHandle->SetTranslation(glm::vec3(0,0,10));
+		booTransformHandle->SetScale(glm::vec3(10));
+
 		m_axis = world.CreateGameObject<Mona::Axis>();
 
 		// right handed axis for coordinate system reference
@@ -200,6 +226,7 @@ private:
 	//Mona::SubscriptionHandle m_windowResizeSubcription;
 	//Mona::SubscriptionHandle m_debugGUISubcription;
 	Mona::GameObjectHandle<Box> m_rotatingBox;
+	Mona::GameObjectHandle<Boo> m_boo;
 	Mona::GameObjectHandle<Mona::Axis> m_axis;
 	Mona::GameObjectHandle<Mona::FlyingCamera> m_camera;
 	float somefloat = 0.0f;

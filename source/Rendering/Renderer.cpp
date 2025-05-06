@@ -233,9 +233,11 @@ namespace Mona{
 			glDrawElements(PrimitiveModeToGL(primitiveMode), skinnedMesh->GetIndexBufferCount(), GL_UNSIGNED_INT, 0);
 		}
 
-		// dibujando StaticMesh transparentes. Notar que se usa una sola posicion para determinar profundidad, no es una revisión por pixel.
+		// dibujando StaticMesh transparentes. Notar que se usa una sola posicion para determinar profundidad, no es una revisión por pixel, sin embargo desactivamos escritura en el
+		// deph buffer, lo que permite visualizar bien el solape de texturas transparentes.
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glDepthMask(GL_FALSE);
 
 		std::sort(transparentStaticMeshes.begin(), transparentStaticMeshes.end(), [&cameraPosition](const TransformedStaticMesh& lhs, const TransformedStaticMesh& rhs)
 			{
@@ -260,6 +262,7 @@ namespace Mona{
 			glDrawElements(PrimitiveModeToGL(primitiveMode), staticMesh.GetMeshIndexCount(), GL_UNSIGNED_INT, 0);
 		}
 
+		glDepthMask(GL_TRUE);
 		glDisable(GL_BLEND);
 
 		//En no Debug build este llamado es vacio, en caso contrario se renderiza informaci�n de debug

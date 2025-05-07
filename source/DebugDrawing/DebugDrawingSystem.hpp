@@ -21,27 +21,6 @@ namespace Mona {
 	};
 }
 
-#if NDEBUG
-namespace Mona {
-	class PhysicsCollisionSystem;
-	class DebugDrawingSystem_physics : public DebugDrawingSystem {
-	public:
-		DebugDrawingSystem_physics() = default;
-		void StartUp(PhysicsCollisionSystem* physicsSystemPtr)  noexcept {}
-		void Draw(EventManager& eventManager, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) noexcept {}
-		void ShutDown() noexcept{}
-	};
-	class IKNavigationSystem;
-	class DebugDrawingSystem_ikNav : public DebugDrawingSystem {
-	public:
-		DebugDrawingSystem_ikNav() = default;
-		void StartUp(IKNavigationSystem* ikNavSystemPtr)  noexcept {}
-		void Draw(EventManager& eventManager, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) noexcept {}
-		void ShutDown() noexcept {}
-	};
-}
-#else
-
 class btDynamicsWorld;
 namespace Mona {
 	class PhysicsCollisionSystem;
@@ -73,7 +52,5 @@ namespace Mona {
 		ShaderProgram m_lineShader;
 	};
 }
-
-#endif
 
 #endif

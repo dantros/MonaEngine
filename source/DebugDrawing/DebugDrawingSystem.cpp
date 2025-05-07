@@ -1,8 +1,5 @@
 #include "DebugDrawingSystem.hpp"
 
-
-
-#ifndef NDEBUG
 #include "../Core/Log.hpp"
 #include <imgui.h>
 #include "examples/imgui_impl_glfw.h"
@@ -204,5 +201,3 @@ namespace Mona {
 		m_ikNavDebugDrawPtr.reset();
 	}
 }
-
-#endif

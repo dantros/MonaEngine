@@ -36,8 +36,6 @@ namespace Mona {
 		m_componentManagers[PointLightComponent::componentIndex].reset(new ComponentManager<PointLightComponent>());
 		m_componentManagers[SkeletalMeshComponent::componentIndex].reset(new ComponentManager<SkeletalMeshComponent>());
 		m_componentManagers[IKNavigationComponent::componentIndex].reset(new ComponentManager<IKNavigationComponent>());
-		m_debugDrawingSystemPhysics.reset(new DebugDrawingSystem_physics());
-		m_debugDrawingSystemIKNav.reset(new DebugDrawingSystem_ikNav());
 		
 		auto& transformDataManager = GetComponentManager<TransformComponent>();
 		auto& rigidBodyDataManager = GetComponentManager<RigidBodyComponent>();
@@ -57,13 +55,11 @@ namespace Mona {
 		for (auto& componentManager : m_componentManagers)
 			componentManager->StartUp(m_eventManager, expectedObjects);
 		m_application = std::move(app);
-		m_renderer.StartUp(m_eventManager, m_debugDrawingSystemIKNav.get());
-		//m_renderer.StartUp(m_eventManager, m_debugDrawingSystemPhysics.get());
+		m_renderer.StartUp(m_eventManager);
 		m_audioSystem.StartUp();
-		m_debugDrawingSystemIKNav->StartUp(&m_ikNavigationSystyem);
-		//m_debugDrawingSystemPhysics->StartUp(&m_physicsCollisionSystem);
 		m_application.StartUp(*this);
 	
+		m_debugDrawing = DebugDrawing::None;
 	}
 	
 	World::~World() {
@@ -80,8 +76,6 @@ namespace Mona {
 		SkeletonManager::GetInstance().ShutDown();
 		AnimationClipManager::GetInstance().ShutDown();
 		m_renderer.ShutDown(m_eventManager);
-		m_debugDrawingSystemIKNav->ShutDown();
-		//m_debugDrawingSystemPhysics->ShutDown();
 		m_window.ShutDown();
 		m_input.ShutDown(m_eventManager);
 		m_eventManager.ShutDown();
@@ -300,6 +294,26 @@ namespace Mona {
 			EnableECS();
 		}
 		return m_ecsHandler.get();
+	}
+
+	void World::SetDebugDrawing(DebugDrawing debugDrawing)
+	{
+		switch (debugDrawing)
+		{
+		case DebugDrawing::None:
+			m_renderer.SetPhysicsDebugDrawing(nullptr);
+			m_renderer.SetIKNavDebugDrawing(nullptr);
+			break;
+		case DebugDrawing::Physics:
+			m_renderer.SetPhysicsDebugDrawing(&m_physicsCollisionSystem);
+			break;
+		case DebugDrawing::IKNavigation:
+			m_renderer.SetIKNavDebugDrawing(&m_ikNavigationSystyem);
+			break;
+		default:
+			MONA_ASSERT(true, "Invalid option for DebugDrawing");
+			break;
+		}
 	}
 
 }

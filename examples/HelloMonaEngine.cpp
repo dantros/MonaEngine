@@ -151,7 +151,12 @@ public:
 		auto lightTransform = world.AddComponent<Mona::TransformComponent>(lightObject);
 		lightTransform->Rotate(glm::vec3(1.0f, 0.0f, 0.0f), glm::radians(-135.0f));
 		auto directionalLight = world.AddComponent<Mona::DirectionalLightComponent>(lightObject, 10.f * glm::vec3(1.0f));
-		directionalLight->SetLightColor(glm::vec3(1.0f, 1.0f, 1.0f));
+		directionalLight->SetLightColor(glm::vec3(1.0f, 1.0f, 1.0f)); \
+
+		// Note: at the moment, you can only use one of these. None is the default. Only one can be active at any given time.
+		world.SetDebugDrawing(Mona::DebugDrawing::Physics);
+		world.SetDebugDrawing(Mona::DebugDrawing::IKNavigation);
+		world.SetDebugDrawing(Mona::DebugDrawing::None);
 	}
 
 	virtual void UserShutDown(Mona::World& world) noexcept override {

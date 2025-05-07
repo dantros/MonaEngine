@@ -20,7 +20,8 @@
 
 
 namespace Mona {
-
+	class PhysicsCollisionSystem;
+	class IKNavigationSystem;
 
 	class Renderer {
 	public:
@@ -29,7 +30,7 @@ namespace Mona {
 		static constexpr int NUM_HALF_MAX_SPOT_LIGHTS = 3;
 		static constexpr int NUM_MAX_BONES = 70;
 		Renderer() = default;
-		void StartUp(EventManager& eventManager, DebugDrawingSystem* debugDrawingSystemPtr) noexcept;
+		void StartUp(EventManager& eventManager) noexcept;
 		void Render(EventManager& eventManager,
 					const InnerComponentHandle& cameraHandle,
 					const glm::vec3& ambientLight,
@@ -44,6 +45,8 @@ namespace Mona {
 		void OnWindowResizeEvent(const WindowResizeEvent& event);
 		std::shared_ptr<Material> CreateMaterial(MaterialType type, bool isForSkinning);
 		void SetBackgroundColor(float r, float g, float b, float alpha = 0.0f);
+		void SetPhysicsDebugDrawing(PhysicsCollisionSystem* physicsCollisionSystem);
+		void SetIKNavDebugDrawing(IKNavigationSystem* ikNavigationSystyem);
 	private:
 		struct DirectionalLight
 		{
@@ -81,7 +84,8 @@ namespace Mona {
 		std::array<ShaderProgram, 2 * static_cast<unsigned int>(MaterialType::MaterialTypeCount)> m_shaders;
 		std::vector<glm::mat4> m_currentMatrixPalette;
 		SubscriptionHandle m_onWindowResizeSubscription;
-		DebugDrawingSystem* m_debugDrawingSystemPtr = nullptr;
+		std::unique_ptr<DebugDrawingSystem_physics> m_debugDrawingSystemPhysics;
+		std::unique_ptr<DebugDrawingSystem_ikNav> m_debugDrawingSystemIKNav;
 		unsigned int m_lightDataUBO = 0;
 		glm::vec4 m_backgroundColor = { 0.0f, 0.0f, 0.0f, 0.0f };
 

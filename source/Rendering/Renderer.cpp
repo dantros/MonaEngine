@@ -1,4 +1,4 @@
-#include "Renderer.hpp"
+﻿#include "Renderer.hpp"
 #include <imgui.h>
 #include "examples/imgui_impl_glfw.h"
 #include "examples/imgui_impl_opengl3.h"
@@ -20,17 +20,11 @@
 #include <vector>
 
 namespace Mona{
-	template
-		class ComponentManager<CameraComponent>;
+	template class ComponentManager<CameraComponent>;
+	template class ComponentManager<TransformComponent>;
+	template class ComponentManager<StaticMeshComponent>;
 
-	template
-		class ComponentManager<TransformComponent>;
-	template
-		class ComponentManager<StaticMeshComponent>;
-
-
-
-	void Renderer::StartUp(EventManager& eventManager, DebugDrawingSystem* debugDrawingSystemPtr) noexcept
+	void Renderer::StartUp(EventManager& eventManager) noexcept
 	{
 		auto& config = Mona::Config::GetInstance();
 		constexpr unsigned int offset = static_cast<unsigned int>(MaterialType::MaterialTypeCount);
@@ -51,7 +45,6 @@ namespace Mona{
 		//El sistema de rendering debe subscribirse al cambio de resoluci�n de la ventana para actulizar la resoluci�n
 		//del framebuffer al que OpenGL renderiza.
 		eventManager.Subscribe(m_onWindowResizeSubscription, this, &Renderer::OnWindowResizeEvent);
-		m_debugDrawingSystemPtr = debugDrawingSystemPtr;
 		m_currentMatrixPalette.resize(NUM_MAX_BONES, glm::mat4(1.0f));
 		glEnable(GL_DEPTH_TEST);
 
@@ -61,10 +54,19 @@ namespace Mona{
 		glBufferData(GL_UNIFORM_BUFFER, sizeof(Lights), NULL, GL_DYNAMIC_DRAW);
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 		glBindBufferBase(GL_UNIFORM_BUFFER, 0, m_lightDataUBO);
+
+		m_debugDrawingSystemPhysics = nullptr;
+		m_debugDrawingSystemIKNav = nullptr;
 	}
 	void Renderer::ShutDown(EventManager& eventManager) noexcept {
 		eventManager.Unsubscribe(m_onWindowResizeSubscription);
 		glDeleteBuffers(1, &m_lightDataUBO);
+
+		if (m_debugDrawingSystemIKNav)
+			m_debugDrawingSystemIKNav->ShutDown();
+
+		if (m_debugDrawingSystemPhysics)
+			m_debugDrawingSystemPhysics->ShutDown();
 	}
 	void Renderer::OnWindowResizeEvent(const WindowResizeEvent& event) {
 		if (event.width == 0 || event.height == 0)
@@ -116,8 +118,6 @@ namespace Mona{
 			viewMatrix = glm::mat4(1.0f);
 			projectionMatrix = glm::perspective(glm::radians(50.0f), 16.0f / 9.0f, 0.1f, 100.0f);
 		}
-
-
 
 		//Comienza carga en CPU de la informaci�n lum�nica de la escena
 		Lights lights;
@@ -265,9 +265,11 @@ namespace Mona{
 		glDepthMask(GL_TRUE);
 		glDisable(GL_BLEND);
 
-		//En no Debug build este llamado es vacio, en caso contrario se renderiza informaci�n de debug
-		m_debugDrawingSystemPtr->Draw(eventManager, viewMatrix, projectionMatrix);
+		if (m_debugDrawingSystemPhysics)
+			m_debugDrawingSystemPhysics->Draw(eventManager, viewMatrix, projectionMatrix);
 		
+		if (m_debugDrawingSystemIKNav)
+			m_debugDrawingSystemIKNav->Draw(eventManager, viewMatrix, projectionMatrix);
 	}
 
 	std::shared_ptr<Material> Renderer::CreateMaterial(MaterialType type, bool isForSkinning) {
@@ -305,5 +307,42 @@ namespace Mona{
 
 	void Renderer::SetBackgroundColor(float r, float g, float b, float alpha) {
 		m_backgroundColor = glm::vec4(r, g, b, alpha);
+	}
+	void Renderer::SetPhysicsDebugDrawing(PhysicsCollisionSystem* physicsCollisionSystem)
+	{
+		if (physicsCollisionSystem == nullptr)
+		{
+			if (m_debugDrawingSystemPhysics)
+			{
+				m_debugDrawingSystemPhysics->ShutDown();
+				m_debugDrawingSystemPhysics.reset();
+			}
+			return;
+		}
+
+		// At the moment we only support a single debug drawing system, so we have to shutdown the other one.
+		SetIKNavDebugDrawing(nullptr);
+		
+		m_debugDrawingSystemPhysics.reset(new DebugDrawingSystem_physics());
+		MONA_ASSERT(m_debugDrawingSystemPhysics, "Unable to initialize Debug Drawing System for Physics");
+		m_debugDrawingSystemPhysics->StartUp(physicsCollisionSystem);
+	}
+	void Renderer::SetIKNavDebugDrawing(IKNavigationSystem* ikNavigationSystyem)
+	{
+		if (ikNavigationSystyem == nullptr)
+		{
+			if (m_debugDrawingSystemIKNav)
+			{
+				m_debugDrawingSystemIKNav->ShutDown();
+				m_debugDrawingSystemIKNav.reset();
+			}
+			return;
+		}
+		// At the moment we only support a single debug drawing system, so we have to shutdown the other one.
+		SetPhysicsDebugDrawing(nullptr);
+
+		m_debugDrawingSystemIKNav.reset(new DebugDrawingSystem_ikNav());
+		MONA_ASSERT(m_debugDrawingSystemIKNav, "Unable to initialize Debug Drawing System for IK Navigation");
+		m_debugDrawingSystemIKNav->StartUp(ikNavigationSystyem);
 	}
 }

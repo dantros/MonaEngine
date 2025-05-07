@@ -29,6 +29,8 @@ namespace Mona {
 		glUseProgram(m_lineShader.GetProgramID());
 		glUniformMatrix4fv(0, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 		glUniformMatrix4fv(1, 1, GL_FALSE, glm::value_ptr(viewMatrix));
+
+		MONA_ASSERT(m_physicsWorldPtr, "Invalid pointer");
 		m_physicsWorldPtr->debugDrawWorld();
 
 
@@ -75,6 +77,9 @@ namespace Mona {
 	}
 
 	void DebugDrawingSystem_physics::ShutDown() noexcept {
+		if (m_physicsWorldPtr)
+			m_physicsWorldPtr->setDebugDrawer(nullptr);
+
 		ImGui_ImplOpenGL3_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
@@ -196,7 +201,6 @@ namespace Mona {
 		ImGui_ImplOpenGL3_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
-		glDeleteProgram(m_lineShader.GetProgramID());
 		m_ikNavDebugDrawPtr->ShutDown();	
 		m_ikNavDebugDrawPtr.reset();
 	}

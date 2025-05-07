@@ -6,6 +6,7 @@
 #include "../Rendering/ShaderProgram.hpp"
 #include <glm/glm.hpp>
 #include <memory>
+#include <functional>
 
 namespace Mona
 {
@@ -16,6 +17,9 @@ public:
     void StartUp() noexcept;
     void Draw(EventManager& eventManager) noexcept;
     void ShutDown() noexcept;
+    void SetCallback(std::function<void()> callback);
+private:
+    std::function<void()> m_callback;
 };
 }
 

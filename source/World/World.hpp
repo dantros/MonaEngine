@@ -125,6 +125,8 @@ namespace Mona {
 
 		void SetDebugDrawing(DebugDrawing debugDrawing);
 
+		void SetDearImGuiCallback(std::function<void()> callback);
+
 	private:
 		World(Application& app);
 		~World();

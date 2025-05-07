@@ -375,4 +375,10 @@ namespace Mona{
 		MONA_ASSERT(m_dearImGuiInterface, "Unable to initialize DearImGuiInterface");
 		m_dearImGuiInterface->StartUp();
 	}
+	void Renderer::SetDearImGuiCallback(std::function<void()> callback)
+	{
+		MONA_ASSERT(m_dearImGuiInterface, "You cannot set a callback if DearImGuiInterface is not set");
+
+		m_dearImGuiInterface->SetCallback(callback);
+	}
 }

@@ -15,6 +15,7 @@ void DearImGuiInterface::StartUp() noexcept
     ImGui::StyleColorsDark();
     ImGui_ImplGlfw_InitForOpenGL(glfwGetCurrentContext(), true);
     ImGui_ImplOpenGL3_Init("#version 450");
+    m_callback = [](){};
 }
 
 void DearImGuiInterface::Draw(EventManager& eventManager) noexcept
@@ -27,6 +28,7 @@ void DearImGuiInterface::Draw(EventManager& eventManager) noexcept
         ImGui::Text("DearImGuiInterface");
         ImGui::End();
     }
+    m_callback();
     eventManager.Publish(DebugGUIEvent());
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -37,6 +39,11 @@ void DearImGuiInterface::ShutDown() noexcept
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
+}
+
+void DearImGuiInterface::SetCallback(std::function<void()> callback)
+{
+    m_callback = callback;
 }
 
 }

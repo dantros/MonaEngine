@@ -325,5 +325,10 @@ namespace Mona {
 		}
 	}
 
+	void World::SetDearImGuiCallback(std::function<void()> callback)
+	{
+		m_renderer.SetDearImGuiCallback(callback);
+	}
+
 }
 

@@ -48,6 +48,7 @@ namespace Mona {
 		void SetPhysicsDebugDrawing(PhysicsCollisionSystem* physicsCollisionSystem);
 		void SetIKNavDebugDrawing(IKNavigationSystem* ikNavigationSystyem);
 		void SetDearImGuiInterface(bool active);
+		void SetDearImGuiCallback(std::function<void()> callback);
 	private:
 		struct DirectionalLight
 		{

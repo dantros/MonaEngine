@@ -39,6 +39,17 @@ public:
 	void UserUpdate(Mona::World& world, float timeStep) noexcept override
 	{
 		m_transform->Rotate(glm::vec3(0.0f,0.0f,1.0f), m_rotationSpeed * timeStep);
+		glm::fquat rotation = m_transform->GetLocalRotation();
+		std::cout << "-- " << glm::to_string(rotation) << std::endl;
+		auto imGuiCallback = [&]()
+			{
+				std::cout << glm::to_string(rotation) << std::endl;
+				ImGui::Begin("Additional Window");
+				ImGui::Text("rotation = %s", glm::to_string(rotation).c_str());
+				ImGui::End();
+			};
+
+		world.SetDearImGuiCallback(imGuiCallback);
 	}
 
 private:
@@ -158,6 +169,8 @@ public:
 		//world.SetDebugDrawing(Mona::DebugDrawing::IKNavigation);
 		//world.SetDebugDrawing(Mona::DebugDrawing::None);
 		world.SetDebugDrawing(Mona::DebugDrawing::DearImGuiInterface);
+
+		
 	}
 
 	virtual void UserShutDown(Mona::World& world) noexcept override {

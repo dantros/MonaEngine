@@ -56,6 +56,7 @@ set(MONA_HEADERS
 				Rendering/DirectionalLightComponent.hpp
 				Rendering/SpotLightComponent.hpp
 				Rendering/PointLightComponent.hpp
+				Rendering/DearImGuiInterface.hpp
 				Animation/JointPose.hpp
 				Animation/AnimationClip.hpp
 				Animation/Skeleton.hpp
@@ -115,6 +116,7 @@ set(MONA_SOURCES
 				Rendering/Texture.cpp
 				Rendering/TextureManager.cpp
 				Rendering/Mesh.cpp
+				Rendering/DearImGuiInterface.cpp
 				Utilities/EngineGameObjects.cpp
 				Animation/AnimationClipManager.cpp
 				Animation/SkeletonManager.cpp

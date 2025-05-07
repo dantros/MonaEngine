@@ -16,7 +16,7 @@
 #include "PointLightComponent.hpp"
 #include "Material.hpp"
 #include "../DebugDrawing/DebugDrawingSystem.hpp"
-
+#include "DearImGuiInterface.hpp"
 
 
 namespace Mona {
@@ -47,6 +47,7 @@ namespace Mona {
 		void SetBackgroundColor(float r, float g, float b, float alpha = 0.0f);
 		void SetPhysicsDebugDrawing(PhysicsCollisionSystem* physicsCollisionSystem);
 		void SetIKNavDebugDrawing(IKNavigationSystem* ikNavigationSystyem);
+		void SetDearImGuiInterface(bool active);
 	private:
 		struct DirectionalLight
 		{
@@ -86,6 +87,7 @@ namespace Mona {
 		SubscriptionHandle m_onWindowResizeSubscription;
 		std::unique_ptr<DebugDrawingSystem_physics> m_debugDrawingSystemPhysics;
 		std::unique_ptr<DebugDrawingSystem_ikNav> m_debugDrawingSystemIKNav;
+		std::unique_ptr<DearImGuiInterface> m_dearImGuiInterface;
 		unsigned int m_lightDataUBO = 0;
 		glm::vec4 m_backgroundColor = { 0.0f, 0.0f, 0.0f, 0.0f };
 

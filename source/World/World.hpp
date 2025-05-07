@@ -19,6 +19,7 @@
 #include "../Rendering/PointLightComponent.hpp"
 #include "../Rendering/SpotLightComponent.hpp"
 #include "../Rendering/Renderer.hpp"
+#include "../Rendering/DearImGuiInterface.hpp"
 #include "../PhysicsCollision/RigidBodyComponent.hpp"
 #include "../PhysicsCollision/RigidBodyLifetimePolicy.hpp"
 #include "../PhysicsCollision/RaycastResults.hpp"
@@ -44,7 +45,7 @@ namespace MonaECS
 
 namespace Mona {
 
-	enum class DebugDrawing {None, Physics, IKNavigation};
+	enum class DebugDrawing {None, Physics, IKNavigation, DearImGuiInterface};
 
 	class Material;
 	class World {

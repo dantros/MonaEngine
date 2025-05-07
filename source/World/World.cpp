@@ -316,6 +316,9 @@ namespace Mona {
 		case DebugDrawing::IKNavigation:
 			m_renderer.SetIKNavDebugDrawing(&m_ikNavigationSystyem);
 			break;
+		case DebugDrawing::DearImGuiInterface:
+			m_renderer.SetDearImGuiInterface(true);
+			break;
 		default:
 			MONA_ASSERT(true, "Invalid option for DebugDrawing");
 			break;

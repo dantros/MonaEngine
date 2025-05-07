@@ -58,6 +58,7 @@ namespace Mona{
 
 		m_debugDrawingSystemPhysics = nullptr;
 		m_debugDrawingSystemIKNav = nullptr;
+		m_dearImGuiInterface = nullptr;
 	}
 	void Renderer::ShutDown(EventManager& eventManager) noexcept {
 		eventManager.Unsubscribe(m_onWindowResizeSubscription);
@@ -68,6 +69,9 @@ namespace Mona{
 
 		if (m_debugDrawingSystemPhysics)
 			m_debugDrawingSystemPhysics->ShutDown();
+
+		if (m_dearImGuiInterface)
+			m_dearImGuiInterface->ShutDown();
 	}
 	void Renderer::OnWindowResizeEvent(const WindowResizeEvent& event) {
 		if (event.width == 0 || event.height == 0)
@@ -272,6 +276,9 @@ namespace Mona{
 		
 		if (m_debugDrawingSystemIKNav)
 			m_debugDrawingSystemIKNav->Draw(eventManager, viewMatrix, projectionMatrix);
+
+		if (m_dearImGuiInterface)
+			m_dearImGuiInterface->Draw(eventManager);
 	}
 
 	std::shared_ptr<Material> Renderer::CreateMaterial(MaterialType type, bool isForSkinning) {
@@ -322,8 +329,9 @@ namespace Mona{
 			return;
 		}
 
-		// At the moment we only support a single debug drawing system, so we have to shutdown the other one.
+		// At the moment we only support a single debug drawing system, so we have to shutdown the other ones.
 		SetIKNavDebugDrawing(nullptr);
+		SetDearImGuiInterface(false);
 		
 		m_debugDrawingSystemPhysics.reset(new DebugDrawingSystem_physics());
 		MONA_ASSERT(m_debugDrawingSystemPhysics, "Unable to initialize Debug Drawing System for Physics");
@@ -340,11 +348,31 @@ namespace Mona{
 			}
 			return;
 		}
-		// At the moment we only support a single debug drawing system, so we have to shutdown the other one.
+		// At the moment we only support a single debug drawing system, so we have to shutdown the other ones.
 		SetPhysicsDebugDrawing(nullptr);
+		SetDearImGuiInterface(false);
 
 		m_debugDrawingSystemIKNav.reset(new DebugDrawingSystem_ikNav());
 		MONA_ASSERT(m_debugDrawingSystemIKNav, "Unable to initialize Debug Drawing System for IK Navigation");
 		m_debugDrawingSystemIKNav->StartUp(ikNavigationSystyem);
+	}
+	void Renderer::SetDearImGuiInterface(bool active)
+	{
+		if (not active)
+		{
+			if (m_dearImGuiInterface)
+			{
+				m_dearImGuiInterface->ShutDown();
+				m_dearImGuiInterface.reset();
+			}
+			return;
+		}
+		// At the moment we only support a single debug drawing system, so we have to shutdown the other ones.
+		SetPhysicsDebugDrawing(nullptr);
+		SetIKNavDebugDrawing(nullptr);
+
+		m_dearImGuiInterface.reset(new DearImGuiInterface());
+		MONA_ASSERT(m_dearImGuiInterface, "Unable to initialize DearImGuiInterface");
+		m_dearImGuiInterface->StartUp();
 	}
 }

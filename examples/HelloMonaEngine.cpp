@@ -154,9 +154,10 @@ public:
 		directionalLight->SetLightColor(glm::vec3(1.0f, 1.0f, 1.0f)); \
 
 		// Note: at the moment, you can only use one of these. None is the default. Only one can be active at any given time.
-		world.SetDebugDrawing(Mona::DebugDrawing::Physics);
-		world.SetDebugDrawing(Mona::DebugDrawing::IKNavigation);
-		world.SetDebugDrawing(Mona::DebugDrawing::None);
+		//world.SetDebugDrawing(Mona::DebugDrawing::Physics);
+		//world.SetDebugDrawing(Mona::DebugDrawing::IKNavigation);
+		//world.SetDebugDrawing(Mona::DebugDrawing::None);
+		world.SetDebugDrawing(Mona::DebugDrawing::DearImGuiInterface);
 	}
 
 	virtual void UserShutDown(Mona::World& world) noexcept override {

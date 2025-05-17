@@ -12,6 +12,7 @@
 #include "../Animation/AnimationController.hpp"
 #include "../ECS/ECS.hpp"
 #include <chrono>
+#include <tracy/Tracy.hpp>
 namespace Mona {
 	
 	World::World(Application& app) : 
@@ -144,6 +145,7 @@ namespace Mona {
 
 	void World::Update(float timeStep) noexcept
 	{
+		ZoneScoped;
 		auto &transformDataManager = GetComponentManager<TransformComponent>();
 		auto &staticMeshDataManager = GetComponentManager<StaticMeshComponent>();
 		auto &cameraDataManager = GetComponentManager<CameraComponent>();
@@ -164,7 +166,10 @@ namespace Mona {
 			timeStep);
 		m_animationSystem.UpdateAllPoses(skeletalMeshDataManager, timeStep);
 		m_objectManager.UpdateGameObjects(*this, m_eventManager, timeStep);
-		m_application.UserUpdate(*this, timeStep);
+		{
+			ZoneScopedN("Application::UserUpdate");
+			m_application.UserUpdate(*this, timeStep);
+		}
 		m_audioSystem.Update(m_audoListenerTransformHandle,
 			m_audioListenerOffsetRotation,
 			timeStep,
@@ -181,6 +186,7 @@ namespace Mona {
 			spotLightDataManager,
 			pointLightDataManager);
 		m_window.Update();
+		FrameMark;
 	}
 
 	void World::SetMainCamera(const ComponentHandle<CameraComponent>& cameraHandle) noexcept {

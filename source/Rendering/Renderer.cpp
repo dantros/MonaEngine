@@ -18,6 +18,7 @@
 #include "PBRFlatMaterial.hpp"
 #include "PBRTexturedMaterial.hpp"
 #include <vector>
+#include <tracy/Tracy.hpp>
 
 namespace Mona{
 	template class ComponentManager<CameraComponent>;
@@ -96,6 +97,7 @@ namespace Mona{
 		ComponentManager<SpotLightComponent>& spotLightDataManager,
 		ComponentManager<PointLightComponent>& pointLightDataManager) noexcept
 	{
+		ZoneScoped;
 		glClearColor(m_backgroundColor[0], m_backgroundColor[1], m_backgroundColor[2], m_backgroundColor[3]);	
 		glDisable(GL_BLEND);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

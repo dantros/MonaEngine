@@ -28,3 +28,6 @@
 [submodule "thirdParty/eigen"]
 	path = thirdParty/eigen
 	url = https://gitlab.com/libeigen/eigen.git
+[submodule "thirdParty/tracy"]
+	path = thirdParty/tracy
+	url = https://github.com/wolfpld/tracy.git

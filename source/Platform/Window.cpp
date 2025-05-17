@@ -9,6 +9,7 @@
 #ifndef _WINDOWS_
 #undef APIENTRY
 #endif
+#include <tracy/Tracy.hpp>
 
 namespace Mona {
 	static void GLFWErrorCallback(int error, const char* description)
@@ -79,7 +80,8 @@ namespace Mona {
 		}
 		void Update() noexcept
 		{
-			glfwSwapBuffers(m_windowHandle);		
+			ZoneScopedN("Idle");
+			glfwSwapBuffers(m_windowHandle);
 		}
 		bool IsFullScreen() const noexcept
 		{
@@ -157,6 +159,7 @@ namespace Mona {
 
 	void Window::Update() noexcept
 	{
+		ZoneScoped;
 		p_Impl->Update();
 	}
 

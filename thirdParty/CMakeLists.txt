@@ -15,6 +15,7 @@ endfunction()
 add_subdirectory_with_folder("thirdParty" glad)
 
 option(GLFW_INSTALL "" OFF)
+option(GLFW_BUILD_DOCS "" OFF)
 add_subdirectory_with_folder("thirdParty/GLFW" glfw)
 
 add_subdirectory_with_folder("thirdParty" imgui-1.78)
@@ -53,3 +54,8 @@ add_subdirectory_with_folder("thirdParty/assimp" assimp)
 add_subdirectory_with_folder("thirdParty" stb)
 add_subdirectory_with_folder("thirdParty" debug-draw)
 add_subdirectory_with_folder("thirdParty" whereami2cpp)
+
+option(TRACY_ENABLE "" ON)
+option(TRACY_ON_DEMAND "" ON)
+option(TRACY_NO_BROADCAST "" ON)
+add_subdirectory_with_folder("thirdParty" tracy)

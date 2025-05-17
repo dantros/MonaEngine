@@ -23,6 +23,7 @@ set(THIRD_PARTY_INCLUDE_DIRECTORIES
 	"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/whereami2cpp/source"
 	"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/json/include"
 	"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/entt/single_include"
+	"${CMAKE_CURRENT_SOURCE_DIR}/thirdParty/tracy/public"
 )
 
 set(MONA_INCLUDE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/source")
@@ -35,9 +36,9 @@ list (APPEND BULLET_LIBRARIES BulletCollision)
 list (APPEND BULLET_LIBRARIES LinearMath)
 
 if(MSVC)
-	set(THIRD_PARTY_LIBRARIES glad glfw ${OPENGL_LIBRARIES} ImGui ${BULLET_LIBRARIES} OpenAL dr_wav assimp stb debug-draw whereami2cpp)
+	set(THIRD_PARTY_LIBRARIES glad glfw ${OPENGL_LIBRARIES} ImGui ${BULLET_LIBRARIES} OpenAL dr_wav assimp stb debug-draw whereami2cpp Tracy::TracyClient)
 else()
-	set(THIRD_PARTY_LIBRARIES glad glfw ${OPENGL_LIBRARIES} ImGui ${BULLET_LIBRARIES} stdc++fs OpenAL dr_wav assimp stb debug-draw whereami2cpp)
+	set(THIRD_PARTY_LIBRARIES glad glfw ${OPENGL_LIBRARIES} ImGui ${BULLET_LIBRARIES} stdc++fs OpenAL dr_wav assimp stb debug-draw whereami2cpp Tracy::TracyClient)
 endif(MSVC)
 
 add_subdirectory(thirdParty)

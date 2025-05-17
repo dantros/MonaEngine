@@ -1,6 +1,7 @@
 #include "GameObjectManager.hpp"
 #include "../Event/EventManager.hpp"
 #include "../Core/Log.hpp"
+#include <tracy/Tracy.hpp>
 namespace Mona {
 
 	GameObjectManager::GameObjectManager() :
@@ -91,7 +92,9 @@ namespace Mona {
 			return false;
 		return true;
 	}
-	void GameObjectManager::UpdateGameObjects(World& world, EventManager& eventManager, float timeStep) noexcept {
+	void GameObjectManager::UpdateGameObjects(World& world, EventManager& eventManager, float timeStep) noexcept
+	{
+		ZoneScoped;
 		auto const count = GetCount();
 		for (decltype(GetCount()) i = 0; i < count; i++) {
 			m_gameObjects[i]->Update(world, timeStep);

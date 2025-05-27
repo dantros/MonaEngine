@@ -5,6 +5,7 @@
 #include "../Event/Events.hpp"
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
+#include <tracy/Tracy.hpp>
 namespace Mona
 {
 	class Input::InputImplementation {
@@ -91,6 +92,7 @@ namespace Mona
 
 	void Input::Update() noexcept
 	{
+		ZoneScoped;
 		p_Impl->Update();
 	}
 

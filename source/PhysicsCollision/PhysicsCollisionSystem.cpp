@@ -6,8 +6,10 @@
 #include "../PhysicsCollision/PhysicsCollisionEvents.hpp"
 #include "../World/ComponentHandle.hpp"
 #include "../Event/EventManager.hpp"
+#include <tracy/Tracy.hpp>
 namespace Mona {
 	void PhysicsCollisionSystem::StepSimulation(float timeStep) noexcept {
+		ZoneScoped;
 		m_worldPtr->stepSimulation(timeStep);	
 	}
 
@@ -37,6 +39,7 @@ namespace Mona {
 		EventManager& eventManager,
 		ComponentManager<RigidBodyComponent>& rigidBodyDatamanager) noexcept
 	{
+		ZoneScoped;
 		CollisionSet currentCollisionSet;
 		
 		auto manifoldNum = m_dispatcherPtr->getNumManifolds();

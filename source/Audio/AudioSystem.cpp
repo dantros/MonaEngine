@@ -6,6 +6,7 @@
 #include "AudioMacros.hpp"
 #include "AudioSourceComponentLifetimePolicy.hpp"
 #include <stdio.h>
+#include <tracy/Tracy.hpp>
 namespace Mona {
 	void AudioSystem::StartUp() noexcept {
 		Config& config = Config::GetInstance();
@@ -50,7 +51,9 @@ namespace Mona {
 		const glm::fquat& audioListenerOffsetRotation,
 		float timeStep,
 		const ComponentManager<TransformComponent>& transformDataManager,
-		ComponentManager<AudioSourceComponent>& audioDataManager) noexcept {
+		ComponentManager<AudioSourceComponent>& audioDataManager) noexcept
+	{
+		ZoneScoped;
 
 		//Actualización de la posición del receptor de OpenAL. Usando una instancia de TransformComponent señalada por el usuario
 		glm::vec3 listenerPosition = glm::vec3(0.0f);

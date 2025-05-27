@@ -1,4 +1,4 @@
-#include "SkinnedMesh.hpp"
+ï»¿#include "SkinnedMesh.hpp"
 
 #include "../Core/Log.hpp"
 #include "../Core/AssimpTransformations.hpp"
@@ -66,7 +66,7 @@ namespace Mona {
 		size_t numVertices = 0;
 		size_t numFaces = 0;
 		//El primer paso consiste en contar el numero de vertices y caras totales
-		//de esta manera se puede reservar memoria inmediatamente evitando realocación de memoria
+		//de esta manera se puede reservar memoria inmediatamente evitando realocaciÃ³n de memoria
 		for (uint32_t i = 0; i < scene->mNumMeshes; i++) {
 			numVertices += scene->mMeshes[i]->mNumVertices;
 			numFaces += scene->mMeshes[i]->mNumFaces;
@@ -80,7 +80,7 @@ namespace Mona {
 		std::stack<aiMatrix4x4> sceneTransforms;
 		std::unordered_map<std::string, aiMatrix4x4> boneInfo;
 
-		//Luego pusheamos información asociada a la raiz del grafo
+		//Luego pusheamos informaciÃ³n asociada a la raiz del grafo
 		sceneNodes.push(scene->mRootNode);
 		sceneTransforms.push(scene->mRootNode->mTransformation);
 		unsigned int offset = 0;
@@ -146,7 +146,7 @@ namespace Mona {
 
 
 			for (uint32_t j = 0; j < currentNode->mNumChildren; j++) {
-				//Pusheamos los hijos y acumulamos la matrix de transformación
+				//Pusheamos los hijos y acumulamos la matrix de transformaciÃ³n
 				sceneNodes.push(currentNode->mChildren[j]);
 				sceneTransforms.push(currentNode->mChildren[j]->mTransformation * currentTransform);
 			}

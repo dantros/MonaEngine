@@ -1,4 +1,4 @@
-#include "SkeletonManager.hpp"
+﻿#include "SkeletonManager.hpp"
 #include "Skeleton.hpp"
 namespace Mona {
 	std::shared_ptr<Skeleton> SkeletonManager::LoadSkeleton(const std::filesystem::path& filePath) noexcept {
@@ -33,7 +33,7 @@ namespace Mona {
 	}
 
 	void SkeletonManager::ShutDown() noexcept {
-		//Al cerrar el motor se llama esta funci�n donde se limpia el mapa de equeletos
+		//Al cerrar el motor se llama esta función donde se limpia el mapa de equeletos
 		m_skeletonMap.clear();
 	}
 }

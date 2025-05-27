@@ -1,4 +1,4 @@
-#include "AnimationController.hpp"
+ï»¿#include "AnimationController.hpp"
 #include "AnimationClip.hpp"
 #include "Skeleton.hpp"
 #include <glm/gtx/matrix_decompose.hpp>
@@ -65,7 +65,7 @@ namespace Mona {
 	}
 
 	void AnimationController::UpdateCurrentPose(float timeStep) noexcept {
-		//Se avanza el tiempo pasado en la animación objetivo
+		//Se avanza el tiempo pasado en la animaciÃ³n objetivo
 		//Si ya ha transcurrido el tiempo dado de reproduccion de la animacion objetivo, esta pasa a ser la principal.
 		if (!m_crossfadeTarget.IsNullTarget()) {
 			m_crossfadeTarget.m_elapsedTime += timeStep;
@@ -103,14 +103,14 @@ namespace Mona {
 				playbackFactorClip = 0.0f;
 			}
 
-			//Muestreo de la animación principal
+			//Muestreo de la animaciÃ³n principal
 			m_sampleTime = m_animationClipPtr->Sample(m_currentPose,
 				m_sampleTime + timeStep * m_playRate * playbackFactorClip,
 				m_isLooping);
 
 			auto& targetPose = m_crossfadeTarget.m_currentPose;
 			std::fill(targetPose.begin(), targetPose.end(), JointPose());
-			//Muestreo de la animación objetivo
+			//Muestreo de la animaciÃ³n objetivo
 			m_crossfadeTarget.m_sampleTime = m_crossfadeTarget.m_targetClip->Sample(targetPose,
 				m_crossfadeTarget.m_sampleTime + timeStep * m_playRate * playbackFactorTarget,
 				m_crossfadeTarget.m_isLooping);
@@ -137,7 +137,7 @@ namespace Mona {
 		auto skeleton = m_animationClipPtr->GetSkeleton();
 		auto& invBindPoseMatrices = skeleton->GetInverseBindPoseMatrices();
 		//Se expresan las poses como matrices y se multiplican por la inverse bind pose antes de enviar
-		// la información al renderer.
+		// la informaciÃ³n al renderer.
 		for (uint32_t i = 0; i < skeleton->JointCount(); i++) {
 			outMatrixPalette[i] = JointPoseToMat4(m_currentPose[i]) * invBindPoseMatrices[i];
 		}

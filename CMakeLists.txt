@@ -41,6 +41,8 @@ else()
 	set(THIRD_PARTY_LIBRARIES glad glfw ${OPENGL_LIBRARIES} ImGui ${BULLET_LIBRARIES} stdc++fs OpenAL dr_wav assimp stb debug-draw whereami2cpp Tracy::TracyClient)
 endif(MSVC)
 
+# If you want to profile your application with tracy, just change this option to ON
+option(TRACY_ENABLE "" OFF)
 add_subdirectory(thirdParty)
 add_subdirectory(source)
 

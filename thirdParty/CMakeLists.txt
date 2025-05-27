@@ -55,7 +55,8 @@ add_subdirectory_with_folder("thirdParty" stb)
 add_subdirectory_with_folder("thirdParty" debug-draw)
 add_subdirectory_with_folder("thirdParty" whereami2cpp)
 
-option(TRACY_ENABLE "" ON)
+# We mantain tracy disabled by default. It needs to be enabled by the parent CMake file.
+option(TRACY_ENABLE "" OFF)
 option(TRACY_ON_DEMAND "" ON)
 option(TRACY_NO_BROADCAST "" ON)
 add_subdirectory_with_folder("thirdParty" tracy)

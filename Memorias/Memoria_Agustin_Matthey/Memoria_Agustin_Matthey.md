@@ -2124,141 +2124,35 @@ el terreno paso
 
 StrideCorrector. A su vez, la clase StrideCorrector, guarda una instancia de GradientDescent,
 la cual utiliza para adaptar la forma de una trayectoria dinámica al terreno. Lo que hace, es
-asignar una altura mínima para cada punto de la trayectoria input, que considera la altura de
-soporte, y la altura del terreno. Entonces, cada punto p⃗ de la trayectoria S , exceptuando
-input
-el inicio y el final, que ya fueron calculados correctamente, deben estar por encima de la
+asignar una altura mínima para cada punto de la trayectoria input, que considera la altura de soporte, y la altura del terreno. Entonces, cada punto $\vec{p}$ de la trayectoria $S_\text{input}$, exceptuando el inicio y el final, que ya fueron calculados correctamente, deben estar por encima de la
 altura mínima hMin = hTerrain + hSupport, donde hTerrain es la altura del terreno, y
 hSupport la altura de soporte.
 El concepto utilizado en este caso por GradientDescent, es el de acercar la forma de una
 curva a la de otra lo más posible. Para ello, se busca acercar las velocidades locales de las
 curvas, punto a punto, lo que implica orientar de forma similar los segmentos que componen
 las curvas. Lo que se modifica son las posiciones de los puntos, coordenada a coordenada.
-Se tiene una curva base S , la cual se busca imitar, y una curva objetivo S , la cual
-base target
-se busca ajustar. La utilidad de este enfoque recae en que pueden establecerse puntos fijos
-en S , de tal manera de que haya una diferencia que se mantiene inalterada con S en
-target base
-esos puntos, mientras que el resto de los puntos son ajustados. De esta forma se genera una
-curva restringida parcialmente, que es lo más parecida posible a la curva base. La funcíon a
-minimizar es entonces:
-n
-∑[ ]
-f(P
-) = ||lV el(p
-T ) − lV el(p
-B
-)||2
-+ ||rV el(p
-T ) − rV el(p
-B
-)||2
-(4.15)
-T
-i i i i
-i=1
-La letra T mayúscula, hace referencia a la curva S , y la letra B mayúscula a la curva
-target
-S . La norma (|| · ||) usada es la norma euclidiana. Son n los puntos de la curva objetivo
-base
-S , cuyas coordenadas se quieren ajustar para acercarse a los velocidades de n puntos
-target
+Se tiene una curva base $S_\text{base}$, la cual se busca imitar, y una curva objetivo $S_\text{target}$, la cual se busca ajustar. La utilidad de este enfoque recae en que pueden establecerse puntos fijos en $S_\text{target}$, de tal manera de que haya una diferencia que se mantiene inalterada con $S_\text{base}$ en esos puntos, mientras que el resto de los puntos son ajustados. De esta forma se genera una curva restringida parcialmente, que es lo más parecida posible a la curva base. La funcíon a minimizar es entonces:
 
+$$f(\vec{P}_T) = \sum_{i=1}^{n} \left[ \|lVel(\vec{p}^T_i) - lVel(\vec{p}^B_i)\|^2 + \|rVel(\vec{p}^T_i) - rVel(\vec{p}^B_i)\|^2 \right] \tag{4.15}$$
+La letra T mayúscula, hace referencia a la curva $S_\text{target}$, y la letra B mayúscula a la curva $S_\text{base}$. La norma ($\|\cdot\|$) usada es la norma euclidiana. Son $n$ los puntos de la curva objetivo $S_\text{target}$, cuyas coordenadas se quieren ajustar para acercarse a las velocidades de $n$ puntos paralelos de la curva base $S_\text{base}$. El vector $\vec{P}_T$, del cual depende la función a minimizar, contiene todas las coordenadas de los $n$ puntos de la curva objetivo:
 
-pararelos de la curva base S . El vector P , del cual depende la función a minimizar,
-base T
-contiene todas las coordenadas de los n puntos de la curva objetivo:
-⃗ ⃗ ⃗ ⃗
-P = {...,pT ,pT ,pT ,...}
-T
-ix iy iz
-lV el y rV el, son las velocidades por la izquierda y por la derecha respectivamente (4.8.1).
-Se utilizan ambas velocidades, porque se quiere corregir la relación de cada punto con sus
-dos vecinos. La derivada parcial de f se calcula con respecto a cada coordenada w de cada
-un de los n puntos pT :
+$$\vec{P}_T = \{\ldots,\, p^T_{ix},\, p^T_{iy},\, p^T_{iz},\,\ldots\}$$
 
-[ ]
-⃗ ⃗ ⃗ ⃗ ⃗
-∂f(P ) lV el(pT ) − lV el(pB ) rV el(pT ) − rV el(pB )
-T
-= 2
+$lVel$ y $rVel$ son las velocidades por la izquierda y por la derecha respectivamente (4.8.1). Se utilizan ambas velocidades, porque se quiere corregir la relación de cada punto con sus dos vecinos. La derivada parcial de $f$ se calcula con respecto a cada coordenada $w$ de cada uno de los $n$ puntos $\vec{p}^T_i$:
 
-w
-
-w
-+
-
-w
-
-w
-(4.16)
-∂p
-T
-t
-
-− t
-i−1
-t
-
-− t
-i+1
-iw
-La variable t , es el instante de tiempo asociado al i-ésimo punto. Notar que la curva base y
-
-la curva objetivo deben compartir los mismos instantes de tiempo para todos sus puntos, por
-⃗ ⃗
-lo que t aplica para ambos pT y pB . Además, es muy importante que ambas curvas tengan
-
-i i
-las mismas orientaciones generales en el espacio, para que el ajuste de velocidades realmente
-genere similitud entre sus formas.
+$$\frac{\partial f(\vec{P}_T)}{\partial p^T_{iw}} = 2\left[\frac{lVel(\vec{p}^T_i)_w - lVel(\vec{p}^B_i)_w}{t_i - t_{i-1}} + \frac{rVel(\vec{p}^T_i)_w - rVel(\vec{p}^B_i)_w}{t_i - t_{i+1}}\right] \tag{4.16}$$
+La variable $t_i$ es el instante de tiempo asociado al i-ésimo punto. Notar que la curva base y la curva objetivo deben compartir los mismos instantes de tiempo para todos sus puntos, por lo que $t_i$ aplica para ambos $\vec{p}^T_i$ y $\vec{p}^B_i$. Además, es muy importante que ambas curvas tengan las mismas orientaciones generales en el espacio, para que el ajuste de velocidades realmente genere similitud entre sus formas.
 El subíndice w se aplica a las velocidades, indicando que se está usando esa coordenada del
 vector velocidad.
-La velocidad por la izquierda de un punto p⃗ , se superpone con la velocidad por la derecha
-
-de p⃗ , y la velocidad por la derecha de p⃗ , se superpone con la velocidad por la izquierda
-i+1 i
-de p⃗ , lo que implica que las derivadas parciales de p⃗ dependen tambíen de velocidades
-i+1 i
-calculadas para p⃗ y p⃗ . Como la dependencia es simétrica, esos valores se omiten al
-i+1 i−1
+La velocidad por la izquierda de un punto $\vec{p}_i$ se superpone con la velocidad por la derecha de $\vec{p}_{i+1}$, y la velocidad por la derecha de $\vec{p}_i$ se superpone con la velocidad por la izquierda de $\vec{p}_{i+1}$, lo que implica que las derivadas parciales de $\vec{p}_i$ dependen tambíen de velocidades calculadas para $\vec{p}_{i+1}$ y $\vec{p}_{i-1}$. Como la dependencia es simétrica, esos valores se omiten al
 definir la derivada parcial para simplificarla. Este cambio genera una reducción uniforme de
 las componentes del gradiente, lo que no afecta significativamente el proceso de descenso.
-En este contexto, S es la curva dinámica generada, que está posicionada correctamente,
-base
-pero que atraviesa el terreno. Se dice que está posicionada correctamente, porque su inicio y
-su final ya fueron determinados según la elevacíon de terreno. Esos dos puntos se mantienen
-fijos en el proceso de ajuste. La curva S se inicializa con S . Se quiere que S tenga
-target base target
-una forma lo más similar a S , pero que respete las alturas mínimas permitidas.
-base
+En este contexto, $S_\text{base}$ es la curva dinámica generada, que está posicionada correctamente, pero que atraviesa el terreno. Se dice que está posicionada correctamente, porque su inicio y su final ya fueron determinados según la elevacíon de terreno. Esos dos puntos se mantienen fijos en el proceso de ajuste. La curva $S_\text{target}$ se inicializa con $S_\text{base}$. Se quiere que $S_\text{target}$ tenga una forma lo más similar a $S_\text{base}$, pero que respete las alturas mínimas permitidas.
 La función postDescentCustomBehaviour cumple el objetivo de asegurar que las alturas de los
 puntos se mantengan por sobre sus alturas mínimas asignadas. Se chequea que la coordenada
-z de cada punto pT , esté por encima del valor mínimo permitido hMin . Si z está por
-i i i i
-debajo del mínimo, se le asigna el valor hMin . Además se altera artificialmente el valor de
+$z_i$ de cada punto $\vec{p}^T_i$, esté por encima del valor mínimo permitido $hMin_i$. Si $z_i$ está por debajo del mínimo, se le asigna el valor $hMin_i$. Además se altera artificialmente el valor de $argsDelta_i$, para indicarle a computeArgsMin que la variable está cerca de su valor objetivo (aunque no lo esté según el gradiente calculado). Aquí entra en uso la modalidad de descenso de gradiente con momentum explicada en 4.5. Al modificar $argsDelta_i$, se altera el registro histórico del gradiente, lo que influye en el cálculo del gradiente de la siguiente iteracíon. Como cada vez que se fuerza $z_i$ a tener el valor $hMin_i$ se disminuye $argsDelta_i$, el gradiente se va acercando forzadamente a valores más bajos, y computeArgsMin cree que $hMin_i$ es el valor correcto para $z_i$.
 
-argsDelta , para indicarle a computeArgsMin que la variable está cerca de su valor objetivo
-
-(aunque no lo esté según el gradiente calculado). Aquí entra en uso la modalidad de descenso
-de gradiente con momentum explicada en 4.5. Al modificar argsDelta , se altera el registro
-
-histórico del gradiente, lo que influye en el cálculo del gradiente de la siguiente iteracíon.
-Como cada vez que se fuerza z a tener el valor hMin se disminuye argsDelta , el gradiente
-i i i
-se va acercando forzadamente a valores más bajos, y computeArgsMin cree que hMin es el
-
-valor correcto para z .
-
-De igual forma que en 4.6.2, la función computeArgsMin solo cumple con modificar el vector
-de variables P , por lo que postDescentCustomBehaviour se encarga de ajustar las posiciones
-T
-de los puntos en S usando los delta calculados.
-target
-La combinación de ajustar las alturas de la curva, y de acercar las velocidades de S a
-target
-S , genera una curva con una forma apropiada, que no atraviesa el terreno (figura 4.10).
-base
+De igual forma que en 4.6.2, la función computeArgsMin solo cumple con modificar el vector de variables $\vec{P}_T$, por lo que postDescentCustomBehaviour se encarga de ajustar las posiciones de los puntos en $S_\text{target}$ usando los delta calculados. La combinación de ajustar las alturas de la curva, y de acercar las velocidades de $S_\text{target}$ a $S_\text{base}$, genera una curva con una forma apropiada, que no atraviesa el terreno (figura 4.10).
 
 
 Irregularidad en

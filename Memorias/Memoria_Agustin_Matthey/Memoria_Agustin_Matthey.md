@@ -1803,15 +1803,7 @@ Para poder generar las trayectorias que guían a los end-effectors del rig, es n
 un conocimiento del terreno que está siendo recorrido. Para ello, se extiende la clase Mesh,
 cuyas instancias se usan para contener la información de una malla estática. Se incluye un
 nuevo constructor de Mesh, especialmente creado para la generacíon de terrenos en base a
-mapas de altura. Para construir el terreno se solicita: una funcíon h(x,y) = z sobreyectiva
-(e idealmente continua), los límites del dominio de h, y el número de vértices de ancho y
-
-
-de profundidad que tendrá la malla. Para crear la malla, se distribuye de manera uniforme
-la cantidad de vértices indicada en el constructor, en el plano (x,y,0). A cada vértice ⃗v =
-{v ,v ,0}, se le asigna una altura, tal que ⃗v = {v ,v ,h(v ,v )}. La funcíon h es encapsulada
-x y x y x y
-en una instancia de la clase HeightMap, que además guarda los valores mínimos y máximos
+mapas de altura. Para construir el terreno se solicita: una funcíon $h(x,y) = z$ sobreyectiva (e idealmente continua), los límites del dominio de $h$, y el número de vértices de ancho y de profundidad que tendrá la malla. Para crear la malla, se distribuye de manera uniforme la cantidad de vértices indicada en el constructor, en el plano $(x,y,0)$. A cada vértice $\vec{v} = \{v_x, v_y, 0\}$, se le asigna una altura, tal que $\vec{v} = \{v_x, v_y, h(v_x, v_y)\}$. La funcíon $h$ es encapsulada en una instancia de la clase HeightMap, que además guarda los valores mínimos y máximos
 de x e y para la malla creada. La instancia de HeightMap se almacena como un miembro de
 la clase Mesh. Como la malla se construye en base a la función h, pueden hacerse consultas
 a la instancia de HeightMap para obtener de forma precisa la altura de cada punto x,y de

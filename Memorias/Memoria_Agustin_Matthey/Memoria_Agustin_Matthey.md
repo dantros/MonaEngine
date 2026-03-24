@@ -1626,43 +1626,11 @@ reducir la cantidad de argumentos de la función objetivo y simplificar la deriv
 cial, disminuyendo el costo del algoritmo. Por otro lado, las posiciones y escalamientos
 no cambian como ya se ha mencionado. Por esto, las únicas variables a considerar son
 los ángulos contenidos en el vector θ.
-Para calcular la derivada parcial de f ,
-∂f1(θ⃗),
-se reformula el cálculo de f (θ
-), separando
-
-∂θ
-
-k
-las partes dependientes de variable θ del resto de los valores, que en este contexto son
-k
-constantes. Notar primero que $\overrightarrow{eePos}(\vec{\theta})$ puede descomponerse de la siguiente manera:
+Para calcular la derivada parcial de $f_1$, $\frac{\partial f_1(\vec{\theta})}{\partial \theta_k}$, se reformula el cálculo de $f_1(\vec{\theta})$, separando las partes dependientes de variable $\theta_k$ del resto de los valores, que en este contexto son constantes. Notar primero que $\overrightarrow{eePos}(\vec{\theta})$ puede descomponerse de la siguiente manera:
 
 $$\overrightarrow{eePos}(\vec{\theta}) = \hat{M}_A T_{\theta_k} R_{\theta_k} S_{\theta_k} \hat{M}_B \hat{\vec{b}} \tag{4.2}$$
-Recordar que para calcular la posición de una articulación en el espacio del modelo,
-deben multiplicarse en cadena las transformaciones desde la articulacíon en cuestión
-hasta la raíz del esqueleto. La ecuación 4.2 contiene precisamente ese cálculo, donde
-las matrices de transformación han sido agrupadas de forma conveniente. En primer
-ˆ
-lugar, el vector b = {0,0,0,1}, tiene ese valor porque es la posición del end-effector en
-su propio espacio local.
-Mθ
-k
-es la matriz de transformación local de la articulación j
-k
-asociada a la variable θ . Esta matriz se descompone en sus tres subtransformaciones,
-k
-con lo que
-Mθ
-k
-=
-Tθ kRθ kSθ
-k. Esta descomposición se realiza porque la única de ellas
-ˆ ˆ
-que varía es la matriz de rotación. MA y MB son simplemente las transformaciones
-acumuladas de las demás articulaciones en torno a la articulación j . Se agrupan las
-k
-constantes, quedando $M_A = \hat{M}_A T_{\theta_k}$ y $\vec{b} = S_{\theta_k} \hat{M}_B \hat{\vec{b}} = \{b_0, b_1, b_2, b_3\}$:
+
+Recordar que para calcular la posición de una articulación en el espacio del modelo, deben multiplicarse en cadena las transformaciones desde la articulacíon en cuestión hasta la raíz del esqueleto. La ecuación 4.2 contiene precisamente ese cálculo, donde las matrices de transformación han sido agrupadas de forma conveniente. En primer lugar, el vector $\hat{\vec{b}} = \{0,0,0,1\}$, tiene ese valor porque es la posición del end-effector en su propio espacio local. $M_{\theta_k}$ es la matriz de transformación local de la articulación $j_k$ asociada a la variable $\theta_k$. Esta matriz se descompone en sus tres subtransformaciones, con lo que $M_{\theta_k} = T_{\theta_k} R_{\theta_k} S_{\theta_k}$. Esta descomposición se realiza porque la única de ellas que varía es la matriz de rotación. $\hat{M}_A$ y $\hat{M}_B$ son simplemente las transformaciones acumuladas de las demás articulaciones en torno a la articulación $j_k$. Se agrupan las constantes, quedando $M_A = \hat{M}_A T_{\theta_k}$ y $\vec{b} = S_{\theta_k} \hat{M}_B \hat{\vec{b}} = \{b_0, b_1, b_2, b_3\}$:
 
 $$\overrightarrow{eePos}(\vec{\theta}) = M_A R_{\theta_k} \vec{b} \tag{4.3}$$
 
@@ -1680,12 +1648,8 @@ $$f_1(\vec{\theta}) = \sum_{k=0}^{3} \left[\sum_{j=0}^{3}\sum_{i=0}^{3} [M_A R_{
 Con esto, la parte variable de $f_1$ queda claramente separada en $[R_{\theta_k}]_{ij}$, y calcular la derivada parcial resulta más fácil:
 
 $$\frac{\partial f_1(\vec{\theta})}{\partial \theta_k} = 2 \sum_{k=0}^{3}\sum_{j=0}^{3}\sum_{i=0}^{3} \left(\sum_{j=0}^{3}\sum_{i=0}^{3} [M_A R_{\theta_k}]_{ki}\, b_{ij} - eeTarget_k\right) [M_A]_{ki}\, \frac{\partial [R_{\theta_k}]_{ij}}{\partial \theta_k} \tag{4.7}$$
-∂R
-θk
-Para obtener ij , se requiere poder calcular los elementos de una matriz de rotación
-∂θ
-k
-de 4x4, en función de un ángulo y un eje rotacíon. La matriz buscada y su derivada se
+
+Para obtener $\frac{\partial [R_{\theta_k}]_{ij}}{\partial \theta_k}$, se requiere poder calcular los elementos de una matriz de rotación de 4x4, en función de un ángulo y un eje rotacíon. La matriz buscada y su derivada se
 presentan en el anexo B.1.
 2. Segundo término: En segundo lugar, se quiere que los ángulos calculados sean similares
 a los de las rotaciones originales para el frame objetivo. La función escogida es:
@@ -1722,7 +1686,7 @@ ficativamente el tiempo de cálculo. Se escoge entonces inicializar el vector de
 $$\vec{\theta} = \vec{\gamma}$$
 Dado que los movimientos en una buena animación deben ser lo más suaves y continuos
 posibles, es natural esperar que los valores para el frame actual sean similares a los del frame
-anterior. Por esto se usa ⃗γ, el vector de valores de frame anterior, que tambíen se usa en 4.10,
+anterior. Por esto se usa $\vec{\gamma}$, el vector de valores de frame anterior, que tambíen se usa en 4.10,
 para marcar donde comienza el descenso.
 La funcíon final $F$ a minimizar es:
 
@@ -1739,21 +1703,14 @@ la altura del rig en el espacio del modelo, mencionado en 4.2.1. El valor δp co
 un valor directamente proporcional al pequeño cambio de posición que sufre, en promedio,
 un end-effector en una iteracíon del descenso de gradiente, al ir modificando los ángulos de
 rotación de las articulaciones.
-Dado que lo importante es mantener estable la relacíon entre las magnitudes de af (θ),
-
-⃗ ⃗
-bf (θ), y cf (θ), hay que considerar el efecto que puede tener la variación de la altura del
-2 3
-rig, que puede ser distinta dependiendo del modelo articulado usado. La altura del rig sirve
+Dado que lo importante es mantener estable la relacíon entre las magnitudes de $a f_1(\vec{\theta})$, $b f_2(\vec{\theta})$, y $c f_3(\vec{\theta})$, hay que considerar el efecto que puede tener la variación de la altura del rig, que puede ser distinta dependiendo del modelo articulado usado. La altura del rig sirve
 para tener una noción de distancias relativas en el espacio del modelo (y espacio global si se
 incluye la escala). En particular, es posible tener una noción de la distancia que recorren los
 end-effectors en cada paso dado por el rig al caminar. Lo anterior se explica porque que los
 largos de las piernas del rig, y su altura rigHeight, tienen una relacíon de proporcionalidad
 directa (si se consideran modelos de proporciones humanoides), y, sumado a lo anterior, los
 largos de las piernas determinan la distancia que puede ser abarcada con un paso.
-En el caso de f y f , sus derivadas representan tasas de cambio para valores de ángulos (al
-2 3
-cuadrado)(4.9 y 4.11) con respecto a cada componente del vector de ángulos variables θ. Es
+En el caso de $f_2$ y $f_3$, sus derivadas representan tasas de cambio para valores de ángulos (al cuadrado) (4.9 y 4.11) con respecto a cada componente del vector de ángulos variables θ. Es
 decir, se calculan variaciones de ángulos en funcíon de otros ángulos. Esto implica que una
 variacíon de rigHeight no tiene influencia en sus magnitudes, y por ello b y c tienen valores
 
@@ -1762,9 +1719,7 @@ constantes.
 Por otro lado, al derivar f se obtiene una tasa de cambio de distancias al cuadrado con
 
 respecto a ángulos. Al calcular la variacíon de la posición del end-effector con respecto a la
-variacíon del ángulo θ asociado a la k-ésima articulación, se puede imaginar, como aproxi-
-k
-mación, que se está rotando un segmento de largo fijo en torno a su inicio para reposicionar
+variacíon del ángulo $\theta_k$ asociado a la k-ésima articulación, se puede imaginar, como aproximación, que se está rotando un segmento de largo fijo en torno a su inicio para reposicionar
 su final. Considérese un segmento s de largo fijo l, cuyo extremo quiere cambiarse de posición
 desde una posicíon inicial, mediante una rotacíon en un ángulo δθ. Esta rotacíon ocurre en
 torno a un eje perpendicular a s situado en su comienzo. La distancia δp (nombrada así
@@ -1775,29 +1730,21 @@ $$l \approx \frac{\delta p}{\delta\theta} \tag{4.13}$$
 
 $$l\,\delta p \approx \frac{\delta p^2}{\delta\theta} \tag{4.14}$$
 La ecuación 4.14 indica que, de manera simplificada y aproximada, la tasa de cambio de
-distancia al cuadrado en relación a un ángulo de rotacíon, asociada a la función f , es direc-
-
-tamente proporcional al largo del segmento rotado (y en consecuencia a rigHeight), multi-
+distancia al cuadrado en relación a un ángulo de rotacíon, asociada a la función $f_1$, es directamente proporcional al largo del segmento rotado (y en consecuencia a rigHeight), multi-
 plicado por el valor de cambio de la distancia. Además, si se considera δθ como un ángulo
 fijo, entonces se desprende de 4.13, que δp y l son directamente proporcionales, lo que implica
-que δp y rigHeight tambíen lo son. Con esto, se define heurísticamente que δp =
-rigHeight.
+que δp y rigHeight tambíen lo son. Con esto, se define heurísticamente que $\delta p = \text{rigHeight}$.
 
 Los cálculos anteriores permiten establecer un valor razonable para el coeficiente a.
 Para estudiar el funcionamiento del proceso de descenso de gradiente con las funciones
-y los coeficientes planteados, se recopilan datos que ilustran el rango de valores de los f
-
-multiplicados por sus coeficientes respectivos. Los valores son extraídos a lo largo de múltiples
+y los coeficientes planteados, se recopilan datos que ilustran el rango de valores de los $f_i$ multiplicados por sus coeficientes respectivos. Los valores son extraídos a lo largo de múltiples
 iteraciones completas del descenso de gradiente. Tambíen se incluyen datos sobre la cantidad
 de iteraciones requeridas para completar el proceso de descenso. Se presentan los datos en las
 tablas 4.1, y 4.2. La información es recopilada al hacer caminar a un modelo articulado por
 un terreno bastante irregular durante alrededor de 60 segundos. El proceso de recopilación
 se realiza dos veces, difiriendo únicamente el valor de rigHeight entre ambas ejecuciones del
-programa, para demostrar que se logra mantener estable la relación entre los valores af (θ),
+programa, para demostrar que se logra mantener estable la relación entre los valores $a f_1(\vec{\theta})$, $b f_2(\vec{\theta})$, y $c f_3(\vec{\theta})$.
 
-⃗ ⃗
-bf (θ), y cf (θ).
-2 3
 Se define maxIt = 300 como el máximo número de iteraciones permitido, y lr = 0,01
 como tasa de descenso (o aprendizaje). Además, targetDelta = 0,001 es el valor que, al ser
 alcanzado por todas las componentes del vector gradiente multiplicadas por lr, determina el
@@ -1806,35 +1753,21 @@ Los dos valores escogidos de rigHeight para la recopilación difieren en órdene
 para asegurar un mínimo de robustez. Para el primer caso se usa rigHeight = 189,83, que
 es la altura original del modelo de prueba. Para el segundo caso se escala el modelo y sus
 animaciones en 150, para obtener un valor de rigHeight = 28474,5.
-Para cada valor de rigHeight, tambíen se guardan los valores de una única ejecucíon del
-⃗ ⃗ ⃗ ⃗
-descenso de gradiente, para ilustrar cómo convergen los valores af (θ), bf (θ), cf (θ) y F(θ),
-1 2 3
-a medida que se ajusta el vector θ. Los datos se muestran en las figuras 4.7 y 4.8. Notar que
+Para cada valor de rigHeight, tambíen se guardan los valores de una única ejecucíon del descenso de gradiente, para ilustrar cómo convergen los valores $a f_1(\vec{\theta})$, $b f_2(\vec{\theta})$, $c f_3(\vec{\theta})$ y $F(\vec{\theta})$, a medida que se ajusta el vector $\vec{\theta}$. Los datos se muestran en las figuras 4.7 y 4.8. Notar que
 las subfunciones no necesariamente deben decrecer en todo momento, ya que muchas veces,
 
 
-Promedio Desviacíon Mínimo Máximo
-estándar
-af (θ) 0.6984 1.5523 0.0170 16.4533
+| | Promedio | Desviacíon estándar | Mínimo | Máximo |
+|---|---|---|---|---|
+| $a f_1(\vec{\theta})$ | 0.6984 | 1.5523 | 0.0170 | 16.4533 |
+| $b f_2(\vec{\theta})$ | 0.3749 | 0.9152 | 0.0005 | 9.0186 |
+| $c f_3(\vec{\theta})$ | 0.0910 | 0.1835 | 0.0006 | 2.8177 |
+| $F(\vec{\theta})$ | 1.1642 | 2.3392 | 0.0479 | 23.0851 |
+| Número de pasos por ejecución del descenso | 27.0242 | 13.9022 | 3 | 28 |
 
-bf (θ) 0.3749 0.9152 0.0005 9.0186
-
-cf (θ) 0.0910 0.1835 0.0006 2.8177
-
-F(θ) 1.1642 2.3392 0.0479 23.0851
-Número de pasos por 27.0242 13.9022 3 28
-cada ejecución del des-
-censo
-Tabla 4.1: Valores de referencia recolectados a lo largo de múltiples ejecuciones completas del
-descenso de gradiente para IK. Con rigHeight = 189,83.
+*Tabla 4.1: Valores de referencia recolectados a lo largo de múltiples ejecuciones completas del descenso de gradiente para IK. Con rigHeight = 189,83.*
 aumentar una de ellas permite que otra disminuya, reduciendo la suma total. Por ejemplo,
-ya que el vector θ es inicializado con los ángulos de rotación del frame anterior γ, antes de
-la primera iteración del descenso, se cumple que f (θ) = 0, que es el valor más bajo que
-
-podría tener. Su única opción, al ser siempre positiva, es aumentar, para dejar espacio de
-ajuste para f y f . Los valores iniciales de las funciones (anteriores a la primera iteración)
-1 2
+ya que el vector $\vec{\theta}$ es inicializado con los ángulos de rotación del frame anterior $\vec{\gamma}$, antes de la primera iteración del descenso, se cumple que $f_3(\vec{\theta}) = 0$, que es el valor más bajo que podría tener. Su única opción, al ser siempre positiva, es aumentar, para dejar espacio de ajuste para $f_1$ y $f_2$. Los valores iniciales de las funciones (anteriores a la primera iteración)
 no son incluidos en 4.7 y 4.8, porque representan el cambio más brusco en el proceso, y
 generan que el resto de la curva respectiva se aplane bastante y se superponga con las demás,
 disminuyendo la calidad de la visualizacíon. En cualquier caso, los valores iniciales coinciden,
@@ -1847,20 +1780,15 @@ una ejecucíon completa de descenso de gradiente aplicado a cinemática inversa.
 de iteraciones es 23, con rigHeight = 189,83.
 
 
-Promedio Desviacíon Mínimo Máximo
-estándar
-af (θ) 0.8005 1.7585 0.0248 24.4570
+| | Promedio | Desviacíon estándar | Mínimo | Máximo |
+|---|---|---|---|---|
+| $a f_1(\vec{\theta})$ | 0.8005 | 1.7585 | 0.0248 | 24.4570 |
+| $b f_2(\vec{\theta})$ | 0.4230 | 0.9268 | 0.0008 | 9.4162 |
+| $c f_3(\vec{\theta})$ | 0.0974 | 0.1876 | 0.0003 | 2.2687 |
+| $F(\vec{\theta})$ | 1.3208 | 2.4802 | 0.0684 | 25.5004 |
+| Número de pasos por ejecución del descenso | 27.4569 | 13.6283 | 3 | 31 |
 
-bf (θ) 0.4230 0.9268 0.0008 9.4162
-
-cf (θ) 0.0974 0.1876 0.0003 2.2687
-
-F(θ) 1.3208 2.4802 0.0684 25.5004
-Número de pasos por 27.4569 13.6283 3 31
-cada ejecución del des-
-censo
-Tabla 4.2: Valores de referencia recolectados a lo largo de múltiples ejecuciones completas del
-descenso de gradiente para IK. Con rigHeight = 28474,5.
+*Tabla 4.2: Valores de referencia recolectados a lo largo de múltiples ejecuciones completas del descenso de gradiente para IK. Con rigHeight = 28474,5.*
 
 ![Figura 4.8](figures/figura_4_8.png)
 *Figura 4.8: Valores por iteracíon de F y sus subfunciones (considerando coeficientes), para*

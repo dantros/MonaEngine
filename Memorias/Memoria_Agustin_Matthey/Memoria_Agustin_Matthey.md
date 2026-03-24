@@ -428,13 +428,7 @@ el sistema usado para ordenar e interpretar las matrices en memoria. Existen dos
 principales [22]: row-major y column-major.
 1. Row-major: Este es el sistema más intuitivo, en que los elementos contiguos de una
 matriz en la memoria pertenecen a una misma fila. Los vectores en un sistema row-major
-son vectores fila, y por lo tanto, son post-multiplicados por matrices. Considérense el
-vector fila ⃗v de dimensiones 1x4, y una matriz M de dimensiones 4x4, en un sistema
-row-major. El vector transformado
-v⃗′,
-de dimensiones 1x4 se obtiene de la ecuación
-v⃗′
-= ⃗vM. Para mantener el orden de aplicacíon de subtransformaciones planteado, si
+son vectores fila, y por lo tanto, son post-multiplicados por matrices. Considérense el vector fila $\vec{v}$ de dimensiones 1×4, y una matriz $M$ de dimensiones 4×4, en un sistema row-major. El vector transformado $\vec{v}'$ de dimensiones 1×4 se obtiene de la ecuación $\vec{v}' = \vec{v}M$. Para mantener el orden de aplicacíon de subtransformaciones planteado, si
 
 
 ![Figura 2.1](figures/figura_2_1.png)
@@ -443,66 +437,25 @@ v⃗′
 maciones, y su efecto en los distintos ejes cartesianos. Fuente:
 www. developer. unigine.
 com .
-dividimos M, la ecuación queda:
-⃗v′
-= ⃗vSRT (2.1)
+dividimos $M$, la ecuación queda:
+
+$$\vec{v}' = \vec{v}\,S\,R\,T \tag{2.1}$$
 2. Column-major: Al contrario que en row-major, los elementos contiguos en memoria se
-leen como columnas, y los vectores son vectores columna. Considérese ahora un vector
-columna v⃗ de dimensiones 4x1, y una matriz M de dimensiones 4x4. M y v⃗ son la
-c c c c
-matriz M y el vector ⃗v respectivamente, pero interpretados según un sistema column-
-major. Notar que esto implica que los valores de las columnas y las filas se intercambian,
-por lo que se está realizando una operacíon de transposicíon. Entonces se cumple que
-M =
-MT
-y v⃗ =
-⃗vT.
-Para traspasar la ecuacíon 2.1 al sistema column-major, se debe
-c c
-transponer:
-⃗v′T
-=
-(⃗vSRT)T
-Aplicando la propiedad de la multiplicacíon de matrices, que indica que la transpuesta
-del producto es el producto de las transpuestas con los factores invertidos
-(AB)T
-=
-BTAT,
-se obtiene:
-⃗v′T
-=
-TTRTST⃗vT
+leen como columnas, y los vectores son vectores columna. Considérese ahora un vector columna $\vec{v}_c$ de dimensiones 4×1, y una matriz $M_c$ de dimensiones 4×4. $M_c$ y $\vec{v}_c$ son la matriz $M$ y el vector $\vec{v}$ respectivamente, pero interpretados según un sistema column-major. Notar que esto implica que los valores de las columnas y las filas se intercambian, por lo que se está realizando una operacíon de transposicíon. Entonces se cumple que $M_c = M^T$ y $\vec{v}_c = \vec{v}^T$. Para traspasar la ecuacíon 2.1 al sistema column-major, se debe transponer:
+$$\vec{v}^{\prime T} = (\vec{v}\,S\,R\,T)^T$$
+
+Aplicando la propiedad de la multiplicacíon de matrices, que indica que la transpuesta del producto es el producto de las transpuestas con los factores invertidos $(AB)^T = B^T A^T$, se obtiene:
+
+$$\vec{v}^{\prime T} = T^T R^T S^T \vec{v}^T$$
+
 Que equivale a:
-v⃗
-′
-= T R S v⃗
-c c c c c
+
+$$\vec{v}'_c = T_c\, R_c\, S_c\, \vec{v}_c$$
 En este informe se aplican las transformaciones espaciales según un sistema column-major.
 Las matrices se indexan como es usual: por filas y luego columnas.
-En el caso del espacio tridimensional, las transformaciones de traslación y escalamiento se
-construyen a partir de vectores de tres dimensiones,
-⃗t
-= {t ,t ,t } y ⃗s = {s ,s ,s } respec-
-1 2 3 1 2 3
-tivamente. Las matrices de rotación son construidas en base a cuaterniones [15], particular-
+En el caso del espacio tridimensional, las transformaciones de traslación y escalamiento se construyen a partir de vectores de tres dimensiones, $\vec{t} = \{t_1, t_2, t_3\}$ y $\vec{s} = \{s_1, s_2, s_3\}$ respectivamente. Las matrices de rotación son construidas en base a cuaterniones [15], particular-
 mente cuaterniones unitarios.
-Un cuaternión q = {q ,q ,q ,q }, tiene la apariencia de un vector de 4 dimensiones, pero se
-x y z w
-comporta de forma bastante distinta. Los cuaterniones son en realidad una extensión de los
-números complejos. Que sea unitario, significa que q cumple que sus componentes se ajustan
-a la ecuación
-q2
-+
-q2
-+
-q2
-+
-q2
-= 1. Sin entrar en mayor detalle, q puede descomponerse en
-x y z w
-
-
-un eje de rotación ⃗a y un ángulo de rotación θ, que juntos forman una rotacíon en el espacio
+Un cuaternión $q = \{q_x, q_y, q_z, q_w\}$, tiene la apariencia de un vector de 4 dimensiones, pero se comporta de forma bastante distinta. Los cuaterniones son en realidad una extensión de los números complejos. Que sea unitario, significa que $q$ cumple que sus componentes se ajustan a la ecuación $q_x^2 + q_y^2 + q_z^2 + q_w^2 = 1$. Sin entrar en mayor detalle, $q$ puede descomponerse en un eje de rotación $\vec{a}$ y un ángulo de rotación $\theta$, que juntos forman una rotacíon en el espacio
 3D. Si se multiplica un punto p⃗ por el cuaterníon q, se le está aplicando una rotación en un
 ángulo θ en torno al eje ⃗a, como se muestra en la figura 2.2.
 
@@ -529,8 +482,7 @@ rencia cartesiano al que un punto está asociado. Lo que hace entonces, es trans
 espacio local. Si se tiene la transformación que relaciona a un sistema de referencia S con otro
 sistema P, es posible mover un punto del espacio local de S al espacio local de P aplicando
 esta transformacíon.
-Las matrices y los vectores utilizados pertenecen a un sistema de coordenadas homogéneas,
-lo que explica que tengan dimensiones 4x4 y 4x1, en lugar de 3x3 y 3x1 respectivamente. El
+Las matrices y los vectores utilizados pertenecen a un sistema de coordenadas homogéneas, lo que explica que tengan dimensiones 4×4 y 4×1, en lugar de 3x3 y 3x1 respectivamente. El
 sistema de coordenadas homogéneas permite aplicar transformaciones de traslacíon mediante
 multiplicación matricial, en conjunto con las transformaciones de escalamiento y rotación.
 Más información sobre este tema puede explorarse en [14].
@@ -753,36 +705,19 @@ articulaciones asociadas. Además, la clase Skeleton, por representar un modelo 
 
 guarda las relaciones padre-hijo entre los nodos. Estas relaciones, y en general, la forma en
 la que esta estructurado un grafo, se denomina la topología del grafo.
-Sea entonces un esqueleto S con un conjunto de articulaciones J , y un AnimationClip A,
-s
-asociable al esqueleto S. A está constituido por n AnimationTracks, cada una de las cuales
-está asociada a una articulación perteneciente al conjunto J . Se cumple que J ∈ J .
-a a s
+Sea entonces un esqueleto $S$ con un conjunto de articulaciones $J_s$, y un AnimationClip $A$, asociable al esqueleto $S$. $A$ está constituido por $n$ AnimationTracks, cada una de las cuales está asociada a una articulación perteneciente al conjunto $J_a$. Se cumple que $J_a \in J_s$.
 Cada AnimationTrack T del AnimationClip A tiene información de transformación local
 
-para su articulacíon asociada, teniendo un arreglo de traslaciones P , uno de rotaciones R
-i i
-(en formato cuaternión), y uno de escalamientos S . Estos tres arreglos dentro del Anima-
-
-tionTrack tienen un tamaño arbitrario. Cada uno de los arreglos tiene un arreglo paralelo del
+para su articulacíon asociada, teniendo un arreglo de traslaciones $P_i$, uno de rotaciones $R_i$ (en formato cuaternión), y uno de escalamientos $S_i$. Estos tres arreglos dentro del AnimationTrack tienen un tamaño arbitrario. Cada uno de los arreglos tiene un arreglo paralelo del
 mismo tamaño, que contiene sus timeStamps, o marcas de tiempo. Cada timeStamp, indica
-el tiempo dentro del intervalo de duración d de la animación A, para el que el valor de su
-A
+el tiempo dentro del intervalo de duración $d_A$ de la animación $A$, para el que el valor de su
 arreglo paralelo está destinado. En el contexto de este informe, al índice de una timeStamp
 se le denomina frame. Por lo tanto, si una animacíon tiene n timeStamps de rotación para
 una articulación j, entonces se tienen n frames asociados, que van de 0 a n − 1. Notar que
 el número de frames para distintas articulaciones no necesariamente es el mismo. Tambíen
 puede darse que una misma articulación tenga distinto número de frames de rotación, tras-
 lación y escalamiento.
-Se desea extraer del clip de animación, una pose a asignar al esqueleto, asociada a un instan-
-te arbitrario t perteneciente al intervalo [0,d ]. Para ello se recorre cada AnimationTrack, y
-A
-por cada uno de sus arreglos de timeStamps tA, se busca el intervalo más pequeño tal que
-tA ≤ t ≤ tA . Usando las distancias relativas entre tA , t y tA , se interpola lineal-
-i i+1 i i+1
-mente entre los valores de transformación asociados a tA , y tA , para generar un valor de
-i i+1
-transformación para t. Al final del proceso de recolección, se tiene una transformación espa-
+Se desea extraer del clip de animación, una pose a asignar al esqueleto, asociada a un instante arbitrario $t$ perteneciente al intervalo $[0, d_A]$. Para ello se recorre cada AnimationTrack, y por cada uno de sus arreglos de timeStamps $t^A$, se busca el intervalo más pequeño tal que $t^A_i \leq t \leq t^A_{i+1}$. Usando las distancias relativas entre $t^A_i$, $t$ y $t^A_{i+1}$, se interpola linealmente entre los valores de transformación asociados a $t^A_i$ y $t^A_{i+1}$, para generar un valor de transformación para $t$. Al final del proceso de recolección, se tiene una transformación espa-
 cial local por cada AnimationTrack. El proceso de renderizado del modelo, requiere que las
 transformaciones sean pasadas a espacio del modelo (y más tarde a espacio global). Tal como
 se indica en la sección 2.2, la concatenacíon de las transformaciones de las articulaciones a
@@ -862,8 +797,7 @@ Recordando el planteamiento original de IK (2.4.3), se busca solucionar la ecuac
 Se puede escribir el jacobiano del vector $\vec{\theta}$ como $J(\vec{\theta}) = \left(\dfrac{\partial s_i}{\partial \theta_j}\right)_{ij}$. Las entradas de la matriz $J$ pueden calcularse como $\left(\dfrac{\partial \vec{s}_i}{\partial \theta_j}\right)_{ij} = \vec{v}_j \times (\vec{s}_i - \vec{p}_j)$, donde $\vec{v}_j$ es el vector unitario que apunta en la dirección del eje actual de rotación de la $j$-ésima articulación, y $\vec{p}_j$ es su posición actual. Además la derivada de $\vec{s}$ con respecto al tiempo puede escribirse como $\dot{\vec{s}} = J(\vec{\theta})\dot{\vec{\theta}}$. Con esto, una pequeña variación del vector $\vec{s}$ puede aproximarse como $\Delta\vec{s} \approx J\Delta\vec{\theta}$. La idea es elegir un vector $\Delta\vec{\theta}$ que haga que $\Delta\vec{s}$ se aproxime lo más posible a $\vec{e}$, logrando así un acercamiento a la posicíon objetivo con ese pequeño cambio. Por último, se puede obtener la variación de $\vec{\theta}$ requerida si se calcula el inverso del jacobiano $J$, ya que $\Delta\vec{\theta} = J^{-1}\vec{e}$. Para resolver esta ecuacíon en general se buscan alternativas que eviten tener
 que calcular la inversa directamente. Problemas comunes al usar métodos que involucren el
 uso del jacobiano son la aparición de singularidades, y crecimiento explosivo del valor de
-la función en torno a ellas. Las singularidades son zonas en el espacio de la ecuación en las
-cuales no es posible encontrar una variación ∆⃗s que genere un acercamiento al ∆θ buscado. El
+la función en torno a ellas. Las singularidades son zonas en el espacio de la ecuación en las cuales no es posible encontrar una variación $\Delta\vec{s}$ que genere un acercamiento al $\Delta\theta$ buscado. El
 crecimiento explosivo mencionado genera variaciones erráticas en los valores de las rotaciones,
 lo que lleva a resultados poco creíbles en el proceso de animacíon. A continuacíon se presentan
 dos ejemplos (existen varios más) de reemplazantes para la inversa del jacobiano:
@@ -894,41 +828,14 @@ And Backward Reaching Inverse Kinematics“ (o FABRIK).
 i CCD: En el caso de CCD, la idea es aplicar pequeñas transformaciones a cada nodo,
 partiendo desde el end-effector, de tal manera de acercarse lo más posible a la posición
 objetivo con cada cambio. Se parte por el end-effector, que se encuentra al final de la
-cadena. Se llama a este nodo p y t a la posición objetivo. Lo siguiente es considerar los
-n
-vectores (p − p ) (vector del nodo anterior al actual) y (t − p ) (vector del nodo
-n n−1 n−1
-anterior al objetivo). El paso clave consiste en modificar la rotación asociada al nodo
-p , para alinear los dos vectores recíen mencionados, tal como se ve en la figura 3.2.
-n−1
-Esto se repite hasta que p corresponda al nodo raíz, terminando así una iteración de
-n−1
-CCD. Pueden llevarse a cabo tantas iteraciones como se quiera, fijando un valor de error
+cadena. Se llama a este nodo $p_n$ y $t$ a la posición objetivo. Lo siguiente es considerar los vectores $(p_n - p_{n-1})$ (vector del nodo anterior al actual) y $(t - p_{n-1})$ (vector del nodo anterior al objetivo). El paso clave consiste en modificar la rotación asociada al nodo $p_{n-1}$, para alinear los dos vectores recíen mencionados, tal como se ve en la figura 3.2. Esto se repite hasta que $p_{n-1}$ corresponda al nodo raíz, terminando así una iteración de CCD. Pueden llevarse a cabo tantas iteraciones como se quiera, fijando un valor de error
 aceptable para marcar el término del proceso.
 
 
 ![Figura 3.2](figures/figura_3_2.png)
 *Figura 3.2: Ejemplo de una iteracíon de CCD sobre una cadena articulada. Fuente: [1]*
 
-ii FABRIK: Supóngase que se tiene una cadena cuyos nodos tienen posiciones p , p , p y
-1 2 3
-p , donde p es la base de la cadena, que se encuentra fija, y p es el end-effector que
-4 1 4
-quiere llevarse a la posicíon objetivo t. Los largos de los tramos que unen los nodos son d
-
-(p -¿p ), d (p -¿p ) y d (p -¿p ). Ahora, poco a poco se irán transformando las posiciones
-1 2 2 2 3 3 3 4
-hasta obtener un resultado suficientemente bueno. Como se ve en la figura 3.3, se mueve
-p a la posicíon objetivo. Luego se genera p ′, tomando la direccíon del vector (p − p ′)
-4 3 3 4
-y amplificándola por d . p ′ es ahora la nueva posicíon objetivo, y p el nodo que se debe
-3 3 3
-desplazar. Se repite esto hasta obtener p ′, posicionado a distancia d de p ′ en dirección
-1 1 2
-(p − p ′), y luego desplazar p . Luego se realiza el proceso en dirección opuesta, hacia
-1 2 1
-el end-effector, tomando la base original de la cadena (que debe mantenerse fija) como
-primer objetivo. Se itera hasta obtener un resultado satisfactorio, indicando tambíen un
+ii FABRIK: Supóngase que se tiene una cadena cuyos nodos tienen posiciones $p_1, p_2, p_3$ y $p_4$, donde $p_1$ es la base de la cadena, que se encuentra fija, y $p_4$ es el end-effector que quiere llevarse a la posicíon objetivo $t$. Los largos de los tramos que unen los nodos son $d_1$ ($p_1$–$p_2$), $d_2$ ($p_2$–$p_3$) y $d_3$ ($p_3$–$p_4$). Ahora, poco a poco se irán transformando las posiciones hasta obtener un resultado suficientemente bueno. Como se ve en la figura 3.3, se mueve $p_4$ a la posicíon objetivo. Luego se genera $p_3'$, tomando la direccíon del vector $(p_3 - p_4')$ y amplificándola por $d_3$. $p_3'$ es ahora la nueva posicíon objetivo, y $p_3$ el nodo que se debe desplazar. Se repite esto hasta obtener $p_1'$, posicionado a distancia $d_1$ de $p_2'$ en dirección $(p_1 - p_2')$, y luego desplazar $p_1$. Luego se realiza el proceso en dirección opuesta, hacia el end-effector, tomando la base original de la cadena (que debe mantenerse fija) como primer objetivo. Se itera hasta obtener un resultado satisfactorio, indicando tambíen un
 valor de error máximo para señalar cuando debe detenerse el algoritmo.
 Ambos algoritmos son bastante rápidos dentro del mundo de los métodos numéricos (espe-
 cialmente FABRIK), pero muchas veces sufren de movimientos erráticos.
@@ -1097,204 +1004,11 @@ se hace explícito cuáles son las articulaciones a modificar mediante IK, estan
 en IKChains, que son la implementacíon del concepto de cadena articulada planteado en
 2.4.1. En particular al construir una instancia del IKRig, se guardan dos cadenas, una por
 
-
-Gameplay Foundations
-Modelo de
-World Sistema de eventos
-GameObject
-Sistema de S i s t e ma de S i s t e m a de S i s t e ma de S i s t e ma de
-renderizado a nimación n a v egación IK f ísica y audio
-colisiones
-Fuentes de luz
-Carga y manejo
-P r eprocesamiento y
-de esqueletos
-validación de
-animaciones
-Cuerpos rígidos
-y primitivas de
-Fuentes de sonido
-colisiones
-Renderizado
-básicas
-de mallas de
-esqueletos Generación de
-trayectorias para end- Receptor
-effectors y cadera
-Eventos de
-Materiales
-Carga y
-colisiones
-manejo de
-clips de
-Carga y manejo de
-animación
-Espacialización sonora
-texturas
-Ajuste de rotaciones de
-Consultas de
-articulaciones objetivo
-raycasting
-Manejo, carga y
-Int
-c
-e
-á
-rp
-lc
-o
-u
-la
-lo
-c
-d
-ió
-e
-n y
-en animaciones
-renderizado de
-poses de los Carga y manejo de
-mallas
-esqueletos
-Simulación física
-archivos de audio
-Transform Component
-Sistemas Core
-Manejo de ventana Input Log / Assertions
-Bibliotecas de terceros
-dr_wav
-imgui
-debug_draw glm
-spdlog
-console_color
-ooppeennAALL
-stl
-stb
-bulletPhysics glfw assimp
-OS / Driver
-Hardware
-
-*Figura 4.1: Arquitectura externa en la que se inserta la solucíon. Diagrama basado en el*
-
-presentado en la memoria original del MonaEngine [6].
+![Figura 4.1](figures/figura_4_1.png)
+*Figura 4.1: Arquitectura externa en la que se inserta la solucíon. Diagrama basado en el presentado en la memoria original del MonaEngine [6].*
 
 
-Sistema de navegación IK
-Actualización de
-IKRigControllers
-IKNavigationComponent
-Interfaz entre el usuario y
-el sistema IK
-IKRigController
-Actualización de
-IKAnimations /
-Preprocesamiento de
-Actualización del
-AnimationClips
-animaciones
-IKRig
-AnimationValidator IKRig
-Validación de
-C o r r e c ción de Representación del esqueleto a
-animaciones
-a n imaciones animar con IK
-IKAnimation
-IKChain
-T rajectoryGenerator F o r w ardKinematics I n v e rseKinematics
-Extracción de
-subtrayectorias de una
-C álculo de
-Generación de
-Representación
-R e p r e sentación
-animación
-transformaciones
-á n g ulos de rotación
-a
-d e
-m
-u
-o
-n
-d
-a
-if ic
-a
-a
-n
-r
-im
-co
-a
-n
-ci ó
-IK
-n
-d e
-a
-u
-r
-n
-t ic
-a
-u
-c
-la
-a
-d
-d
-a
-e n a
-articu
-p
-l
-a
-a
-r
-c
-a
-io n e s
-pa
-s
-r
-e
-a
-g
-a
-ú
-r
-n
-ti c
-o
-u
-b
-l
-j
-a
-e
-c
-ti
-
-
-o
-o
-n
-s
-e s
-Generación de
-para end-effectors
-trayectorias para end-
-effectors y cadera
-EnvironmentData
-Extracción de
-información de los
-mapas de altura
-apropiados
-Terrain
-Vínculo con el mapa
-de altura asociado
-a una malla estática
-
+![Figura 4.2](figures/figura_4_2.png)
 *Figura 4.2: Arquitectura interna del sistema de navegacíon IK.*
 
 
@@ -1367,11 +1081,7 @@ La posición y orientacíon del IKRig son únicamente modificadas a nivel global
 cambios al TransformComponent del game object al que está asociado el rig. Por lo anterior,
 localmente, el IKRig (más precisamente la raíz del esqueleto asociado) no sufre ningún cam-
 bio de orientacíon o posición.
-Los cambios en la orientacíon global, están limitados a la rotación del vector front V =
-f
-{0,1,0}, en un ángulo rotationAngle contenido en el IKRig. Esto implica que el vector up
-V = {0,0,1} global se mantiene constante, ya que solo es posible la rotación en el plano XY.
-z
+Los cambios en la orientacíon global, están limitados a la rotación del vector front $V_f = \{0,1,0\}$, en un ángulo rotationAngle contenido en el IKRig. Esto implica que el vector up $V_z = \{0,0,1\}$ global se mantiene constante, ya que solo es posible la rotación en el plano XY.
 
 ### 4.4. Tiempos del sistema
 Como se adelantó en 4.2.2, el tiempo del sistema debe avanzar de manera coherente, y
@@ -1385,129 +1095,52 @@ musculoskeletalkey. com/ biomechanics-of-the-spinal-motion-segment/
 
 #### 4.4.1. Tiempo de animacíon
 El animationTime, es el tiempo interno de una animación, e indica cual es la porcíon
-de ella que se está reproduciendo actualmente. El valor del animationTime t pertenece
-a
-al intervalo [0,d ], donde d es la duracíon del clip de animación. El animationTime es
-A A
-animationTime
-trayectoria 1
-trayectoria 1
-trayectoria 2
-0 t t d
-a b A
+de ella que se está reproduciendo actualmente. El valor del animationTime $t_a$ pertenece al intervalo $[0, d_A]$, donde $d_A$ es la duracíon del clip de animación. El animationTime es equivalente al sampleTime llevado por la clase AnimationController 2.8.4 y al sampleTime de CrossFadeTarget.
 
 ![Figura 4.4](figures/figura_4_4.png)
-*Figura 4.4: Diagrama simplificado de una animación y su animationTime, dividida en sub-*
+*Figura 4.4: Diagrama simplificado de una animación y su animationTime, dividida en subtrayectorias como se explica en la seccíon 4.8.2.*
 
-trayectorias como se explica en la seccíon 4.8.2.
-equivalente al sampleTime llevado por la clase AnimationController 2.8.4 y al sampleTime
-de CrossFadeTarget.
+El animationTime es equivalente al sampleTime llevado por la clase AnimationController (2.8.4) y al sampleTime de CrossFadeTarget.
 
 
 #### 4.4.2. Tiempo de animacíon extendido
 Como su nombre lo dice, el extendedAnimationTime, es el tiempo de la animacíon en
 su versíon extendida. Se considera que el intervalo de tiempo de animationTime se amplía
-en ambas direcciones, repitíendose la duracíon de la animación d un número arbitrario de
-A
-veces. A pesar de que se trabaje con un intervalo extendido, la información a la que se hace
+en ambas direcciones, repitíendose la duracíon de la animación $d_A$ un número arbitrario de veces. A pesar de que se trabaje con un intervalo extendido, la información a la que se hace
 referencia dentro del clip es la misma. Se puede imaginar que el clip se está repitiendo sin
 cambios una y otra vez.
-Para todo extendedAnimationTime tExt , existe un animationTime t que hace referencia
-a a
-a la misma informacíon del clip de animación. Para pasar de extendedAnimationTime a
+Para todo extendedAnimationTime $t^\text{Ext}_a$, existe un animationTime $t_a$ que hace referencia a la misma informacíon del clip de animación. Para pasar de extendedAnimationTime a
 animationTime se consideran tres casos:
-1. tExt < 0: En este caso se suma d a tExt tantas veces como sea necesario para
-a A a
-dejarlo en el intervalo [0,d ]
-A
-2. d < tExt : De forma análoga, se resta d a tExt tantas veces como sea necesario
-A a A a
-para dejarlo en el intervalo [0,d ]
-A
-3. 0 ≤ tExt ≤ d : No es necesario hacer ningún cambio.
-a A
+1. $t^\text{Ext}_a < 0$: En este caso se suma $d_A$ a $t^\text{Ext}_a$ tantas veces como sea necesario para dejarlo en el intervalo $[0, d_A]$
+2. $d_A < t^\text{Ext}_a$: De forma análoga, se resta $d_A$ a $t^\text{Ext}_a$ tantas veces como sea necesario para dejarlo en el intervalo $[0, d_A]$
+3. $0 \leq t^\text{Ext}_a \leq d_A$: No es necesario hacer ningún cambio.
 La utilidad de extendedAnimationTime queda más clara en la sección 4.8.2.
-extendedAnimationTime
-trayectoria 1 trayectoria 1
-trayectoria 2
-t
-b
-- d
-A
-0 t
-a
-t
-b
-d
-A
-t
-a
-+ d
-A
 
-*Figura 4.5: Diagrama simplificado de una animación y su extendedAnimationTime, dividida*
-
-en subtrayectorias como se explica en la sección 4.8.2.
+![Figura 4.5](figures/figura_4_5.png)
+*Figura 4.5: Diagrama simplificado de una animación y su extendedAnimationTime, dividida en subtrayectorias como se explica en la sección 4.8.2.*
 
 #### 4.4.3. Tiempo de reproducción
 El reproductionTime, es el tiempo que avanza constantemente desde que comienza la eje-
 cución. Su avance depende del tiempo del programa (2.8.3), y del playRate (tasa de reproduc-
 ción) definido en la clase AnimationController (2.8.4). Es similar a extendedAnimationTime
 en el sentido de que se construye en base a una repetición de la duracíon del clip de animación
-d . De hecho, para llevar la cuenta, IKAnimation contiene una variable reproductionCount,
-A
-que indica cuantas veces se ha reproducido la animación completa. El reproductionTime
-actual t , puede calcularse como t = d reproductionCount + t , donde t es el tiempo
-rep rep A a a
-interno actual de la animacíon. La diferencia con extendedAnimationTime, es que reproduc-
+$d_A$. De hecho, para llevar la cuenta, IKAnimation contiene una variable reproductionCount, que indica cuantas veces se ha reproducido la animación completa. El reproductionTime actual $t_\text{rep}$, puede calcularse como $t_\text{rep} = d_A \cdot \text{reproductionCount} + t_a$, donde $t_a$ es el tiempo interno actual de la animacíon. La diferencia con extendedAnimationTime, es que reproduc-
 tionTime hace referencia a información que sí evoluciona en el tiempo. La información que
 
 
-puede extraerse del tiempo actual t , no necesariamente es la misma que en t − d .
-rep rep A
+puede extraerse del tiempo actual $t_\text{rep}$, no necesariamente es la misma que en $t_\text{rep} - d_A$.
 La generacíon de trayectorias explicada en la seccíon 4.8, depende de la relación entre anima-
 tionTime/extendedAnimationTime y reproductionTime. Toda trayectoria creada se inserta
 en la linea temporal del reproductionTime, pero se basa en una curva original extraída de
 extendedAnimationTime, y tiene su misma duracíon. De esta manera, existe un paralelismo
 temporal permanente entre las trayectorias originales y las trayectorias generadas.
-reproductionTime
-trayectoria 3
-trayectoria 1
-trayectoria 4
-trayectoria 2
-t
-b
-- d
-A
-0 t
-a
-t
-b
-d
-A
-t
-a
-+ d
-A
-t
-b
-+ d
-A
 
-*Figura 4.6: Diagrama simplificado de las trayectorias generadas por TrajectoryGenerator*
-
-(4.8), distribuidas a lo largo del reproductionTime. Notar el paralelismo temporal con las
-curvas de las figuras 4.4 y 4.5.
+![Figura 4.6](figures/figura_4_6.png)
+*Figura 4.6: Diagrama simplificado de las trayectorias generadas por TrajectoryGenerator (4.8), distribuidas a lo largo del reproductionTime. Notar el paralelismo temporal con las curvas de las figuras 4.4 y 4.5.*
 
 #### 4.4.4. Reproduccíon de frames
 Como se explicó en 2.8.4, un frame es el índice de una timeStamp de una pista de anima-
-ción (AnimationTrack). Sea t el valor actual de animationTime, la información de transfor-
-mación extraída para una articulacíon, se consigue interpolando entre los valores asociados
-a los timeStamps vecinos de t: t y t . Entonces, t ≤ t ≤ t es el intervalo formado por
-i i+1 i i+1
-timeStamps más pequeño que contiene a t. i e i + 1 son los frames asociados a t y t
-i i+1
-respectivamente. En este caso, se dice que el frame actual es i, y el frame siguiente es i + 1.
+ción (AnimationTrack). Sea $t$ el valor actual de animationTime, la información de transformación extraída para una articulacíon, se consigue interpolando entre los valores asociados a los timeStamps vecinos de $t$: $t_i$ y $t_{i+1}$. Entonces, $t_i \leq t \leq t_{i+1}$ es el intervalo formado por timeStamps más pequeño que contiene a $t$. $i$ e $i+1$ son los frames asociados a $t_i$ y $t_{i+1}$ respectivamente. En este caso, se dice que el frame actual es i, y el frame siguiente es i + 1.
 En caso de que i sea el último frame de la animacíon ( n − 1), entonces el frame siguiente es
 el frame 0.
 

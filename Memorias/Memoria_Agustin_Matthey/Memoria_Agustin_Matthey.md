@@ -229,7 +229,6 @@ El número de iteraciones es 20, con rigHeight = 28474,5. . . . . . . . . . . 41
 4.9. Trayectoria dinámica (paso de la caminata), que atraviesa una porcíon del
 terreno. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 48
 4.10. Trayectoria dinámica corregida con descenso de gradiente. . . . . . . . . . . 50
-⃗
 
 ### 4.11. Plano de rotacíon generado al rotar un punto P mediante un cuaterníon.
 
@@ -592,30 +591,11 @@ articulaciones de la cadena. Como se mencionó en 2.4.1, las posiciones relativa
 culaciones de una cadena articulada solo pueden ser modificadas alterando sus rotaciones,
 por lo que conocíendose las distancias de una articulación a otra, basta con saber los ejes y
 ángulos de rotación momento a momento, para poder calcular la posición del end-effector.
-Considérese una cadena articulada con articulaciones j ,...,j ,...,j , cada una con una trans-
-1 i n
-formación M asociada , donde la articulacíon j es la base de la cadena y j es el end-effector.
-i 1 n
-Para cada transformación M , variable en el tiempo, se cumple que M (t) = T (t)R (t)S (t),
-i i i i i
-donde T ,R ,S son las subtransformaciones de traslacíon, rotación y escalamiento respecti-
-i i i
-vamente. T y S se mantienen fijas para mantener las distancias relativas, y R es variable
-i i i
-en el tiempo, por lo que M (t) = T R (t)S . La posicíon del end-effector en el espacio padre
-i i i i
-de la base de la cadena se calcula como:
-(cid:34) (cid:35)
-n
-(cid:89)
-Pos (t) = T R (t)S p⃗ (2.2)
-ee i i i
-i=1
-El vector p⃗ = {0,0,0,1}, es la posición del end-effector en su propio espacio local. Dado
-que el end-effector se encuentra en el origen de su propio sistema de referencia, aplicarle
-una rotacíon a su posicíon local no genera en ella ningún cambio. Para cualquier matriz
-de rotacíon R, se cumple que p⃗ = Rp⃗. Esto implica que modificar la rotación asociada al
-end-effector, no altera el resultado de la ecuación 2.2.
+Considérese una cadena articulada con articulaciones $j_1, \ldots, j_i, \ldots, j_n$, cada una con una transformación $M_i$ asociada, donde la articulación $j_1$ es la base de la cadena y $j_n$ es el end-effector. Para cada transformación $M_i$, variable en el tiempo, se cumple que $M_i(t) = T_i(t) R_i(t) S_i(t)$, donde $T_i, R_i, S_i$ son las subtransformaciones de traslacíon, rotación y escalamiento respectivamente. $T_i$ y $S_i$ se mantienen fijas para mantener las distancias relativas, y $R_i$ es variable en el tiempo, por lo que $M_i(t) = T_i R_i(t) S_i$. La posicíon del end-effector en el espacio padre de la base de la cadena se calcula como:
+
+$$\text{Pos}_{ee}(t) = \prod_{i=1}^n T_i R_i(t) S_i \, \vec{p} \tag{2.2}$$
+
+El vector $\vec{p} = \{0,0,0,1\}$, es la posición del end-effector en su propio espacio local. Dado que el end-effector se encuentra en el origen de su propio sistema de referencia, aplicarle una rotacíon a su posicíon local no genera en ella ningún cambio. Para cualquier matriz de rotacíon $R$, se cumple que $\vec{p} = R\vec{p}$. Esto implica que modificar la rotación asociada al end-effector, no altera el resultado de la ecuación 2.2.
 
 
 #### 2.4.3. Cinemática inversa
@@ -627,25 +607,11 @@ una posicíon objetivo. Así, al contrario de la cinemática directa, que encuen
 objetivo para el end-effector a partir de la configuracíon de cada una de las rotaciones, la
 técnica de IK descifra cuales deben ser las rotaciones para que la posición del end-effector
 sea igual a la posición objetivo.
-⃗
-Defínase θ, como el vector que contiene un ángulo θ por cada articulación j de la cadena
-i i
-K, que indica cuanto ha rotado j desde su estado de reposo en un determinado plano de
+Defínase $\vec{\theta}$, como el vector que contiene un ángulo $\theta_i$ por cada articulación $j_i$ de la cadena K, que indica cuanto ha rotado $j$ desde su estado de reposo en un determinado plano de rotación. El vector $\vec{\theta}$ permite determinar completamente el estado de la cadena, teníendose como base las distancias fijas entre las articulaciones. Con cinemática directa (FK) puede tomarse esta informacíon rotacional, y obtenerse la posición del end-effector en el espacio de la base de la cadena. Se puede expresar entonces la posición del end-effector en función de las rotaciones de las articulaciones como $\vec{s} = f(\vec{\theta})$, usando FK. Resolver el problema de IK consiste en obtener la función inversa, tal que
 
-⃗
-rotación. El vector θ permite determinar completamente el estado de la cadena, teníendose
-como base las distancias fijas entre las articulaciones. Con cinemática directa (FK) puede
-tomarse esta informacíon rotacional, y obtenerse la posición del end-effector en el espacio
-de la base de la cadena. Se puede expresar entonces la posición del end-effector en función
-⃗
-de las rotaciones de las articulaciones como ⃗s = f(θ), usando FK. Resolver el problema de
-IK consiste en obtener la función inversa, tal que
-f−1(⃗s)
-= θ
-⃗
-.
-f−1
-es una función altamente
+$$f^{-1}(\vec{s}) = \vec{\theta}$$
+
+$f^{-1}$ es una función altamente
 no lineal y difícil de obtener. Dependiendo de la cantidad de nodos y DoF asociados a la
 cadena en particular para la que se trate de resolver el problema, puede haber una solución,
 múltiples soluciones o incluso ninguna (figura 2.4).
@@ -677,70 +643,19 @@ adecuadas soluciona este problema.
 ### 2.5. Curvas linealmente interpoladas
 Una curva linealmente interpolada, o LIC como se le llama en este informe por sus siglas en
 inglés, es un conjunto discreto de puntos que existen en un espacio n-dimensional, donde cada
-punto está asociado a un valor específico de un parámetro escalar t. Una curva linealmente
-interpolada es en realidad una spline lineal [21]. Si una LIC l posee k puntos p , con sus
+punto está asociado a un valor específico de un parámetro escalar t. Una curva linealmente interpolada es en realidad una spline lineal [21]. Si una LIC $l$ posee $k$ puntos $p_i$, con sus respectivos valores del parámetro $t$, $t_1, \ldots, t_i, \ldots, t_k$, se genera un intervalo de tiempo $[t_1, t_k]$ para $l$. Es posible obtener un punto de la curva para cualquier instante de tiempo $\hat{t}$ perteneciente a ese intervalo, simulando continuidad. Si se da que $\exists\, i: \hat{t} = t_i$, entonces obtenemos directamente el punto asociado a $t_i$ y $l(\hat{t}) = p_i$. En otro caso, buscamos el subintervalo más pequeño que contenga a $\hat{t}$, tal que $t_i < \hat{t} < t_{i+1}$ e interpolamos linealmente entre los puntos $p_i$ y $p_{i+1}$ utilizando la relacíon entre $t_i$, $\hat{t}$ y $t_{i+1}$ como referencia, obteníendose que:
 
-respectivos valores del parámetro t, t ,...,t ,...,t , se genera un intervalo de tiempo [t ,t ] para
-1 i k 1 k
-l. Es posible obtener un punto de la curva para cualquier instante de tiempo
-tˆperteneciente
-a
-ese intervalo, simulando continuidad. Si se da que ∃i
-tˆ=
-t , entonces obtenemos directamente
-
-el punto asociado a t y
-l(tˆ)
-= p . En otro caso, buscamos el subintervalo más pequeño que
-i i
-contenga a
-tˆ,
-tal que t <
-tˆ
-< t e interpolamos linealmente entre los puntos p y p
-i i+1 i i+1
-utilizando la relacíon entre t ,
-tˆ
-y t como referencia, obteníendose que:
-i i+1
-tˆ−
-t
-l(tˆ)
-= p + (p − p )
-
-i i+1 i
-t − t
-i+1 i
+$$l(\hat{t}) = p_i + (p_{i+1} - p_i)\,\frac{\hat{t} - t_i}{t_{i+1} - t_i}$$
 
 
 ### 2.6. Descenso de gradiente
-El descenso de gradiente [5] es una técnica de optimizacíon iterativa, que permite en-
-contrar mínimos locales en una función escalar, multivariable, y diferenciable. Si se tiene
-una función F, que cumple con las características anteriores, se quiere encontrar un vector
-⃗x = {x ,...,x ,...,x } tal que F(⃗x) sea un mínimo local. En cada iteración debe calcularse el
-1 i n
-gradiente de F evaluado en ⃗x:
- 
-∂F(⃗x)
-∂x1
-
-...
-
- 
-∇F(⃗x) =
-∂F(⃗x)
-
-
-∂xi
-
-
-...
- 
-∂F(⃗x)
-∂xn
-El gradiente de F evaluado en ⃗x es un vector, e indica la dirección de máximo crecimiento
-de F. Teniendo calculado el gradiente, se actualiza el valor de ⃗x:
-⃗x := ⃗x − λ∇F(⃗x)
+El descenso de gradiente [5] es una técnica de optimizacíon iterativa, que permite encontrar mínimos locales en una función escalar, multivariable, y diferenciable. Si se tiene una función $F$, que cumple con las características anteriores, se quiere encontrar un vector $\vec{x} = \{x_1, \ldots, x_i, \ldots, x_n\}$ tal que $F(\vec{x})$ sea un mínimo local. En cada iteración debe calcularse el gradiente de $F$ evaluado en $\vec{x}$:
+
+$$\nabla F(\vec{x}) = \begin{pmatrix} \dfrac{\partial F(\vec{x})}{\partial x_1} \\ \vdots \\ \dfrac{\partial F(\vec{x})}{\partial x_i} \\ \vdots \\ \dfrac{\partial F(\vec{x})}{\partial x_n} \end{pmatrix}$$
+
+El gradiente de $F$ evaluado en $\vec{x}$ es un vector, e indica la dirección de máximo crecimiento de $F$. Teniendo calculado el gradiente, se actualiza el valor de $\vec{x}$:
+
+$$\vec{x} := \vec{x} - \lambda\nabla F(\vec{x})$$
 Un paso del descenso de gradiente consiste en mover a ⃗x en la dirección opuesta a la direccíon
 de máximo crecimiento local de F, aplicando un factor λ al valor del gradiente llamado
 tasa de aprendizaje, que controla la velocidad del descenso. A medida que ⃗x se acerca a
@@ -940,111 +855,35 @@ analítica. Fuente [2]
 #### 3.1.2. Métodos numéricos
 Los métodos numéricos trabajan aproximando soluciones. Deben ser escogidos y configu-
 rados con cuidado para evitar resultados erráticos e inconsistentes.
-Recordando el planteamiento original de IK (2.4.3), se busca solucionar la ecuación
-f−1(⃗s)
-=
-⃗ ⃗
-θ. Generalizando, θ es el vector de rotaciones, y ⃗s es un vector con las posiciones de un
-número arbitrario end-effectors. Si se considera ⃗s como las posiciones actuales, y
-⃗t
-como las
-posiciones objetivo, se puede definir un vector de error ⃗e, tal que ⃗e =
-⃗t−⃗s.
-Se quiere usar los
-métodos numéricos para modificar ⃗s, acercándolo a
-⃗t
-lo más posible y minimizando el error
-⃗e.
-Métodos basados en la inversíon del Jacobiano
-Se puede escribir el jacobiano del vector θ como J(θ
-⃗
-) =
-(∂si
-) . Las entradas de la
-ij
-∂θj
-ij
-matriz J pueden calcularse como
-(∂s⃗i
-) = v × (s⃗ − p⃗ ), donde v⃗ es el vector unitario
-∂θj
-ij j i j j
-que apunta en la direccíon del eje actual de rotacíon de la j-ésima articulación, y p⃗ es
-j
-su posición actual. Además la derivada de ⃗s con respecto al tiempo puede escribirse como
-˙
-˙
-⃗ ⃗
-⃗s = J(θ)θ. Con esto, una pequeña variación del vector ⃗s puede aproximarse como ∆⃗s ≈
-⃗ ⃗
-J∆θ. La idea es elegir un vector ∆θ que haga que ∆⃗s se aproxime lo más posible a ⃗e,
-logrando así un acercamiento a la posicíon objetivo con ese pequeño cambio. Por último,
-⃗
-se puede obtener la variación de θ requerida si se calcula el inverso del jacobiano J, ya que
-∆θ
-⃗
-=
-J−1⃗e.
-Para resolver esta ecuacíon en general se buscan alternativas que eviten tener
+Recordando el planteamiento original de IK (2.4.3), se busca solucionar la ecuación $f^{-1}(\vec{s}) = \vec{\theta}$. Generalizando, $\vec{\theta}$ es el vector de rotaciones, y $\vec{s}$ es un vector con las posiciones de un número arbitrario end-effectors. Si se considera $\vec{s}$ como las posiciones actuales, y $\vec{t}$ como las posiciones objetivo, se puede definir un vector de error $\vec{e}$, tal que $\vec{e} = \vec{t} - \vec{s}$. Se quiere usar los métodos numéricos para modificar $\vec{s}$, acercándolo a $\vec{t}$ lo más posible y minimizando el error $\vec{e}$.
+
+**Métodos basados en la inversíon del Jacobiano**
+
+Se puede escribir el jacobiano del vector $\vec{\theta}$ como $J(\vec{\theta}) = \left(\dfrac{\partial s_i}{\partial \theta_j}\right)_{ij}$. Las entradas de la matriz $J$ pueden calcularse como $\left(\dfrac{\partial \vec{s}_i}{\partial \theta_j}\right)_{ij} = \vec{v}_j \times (\vec{s}_i - \vec{p}_j)$, donde $\vec{v}_j$ es el vector unitario que apunta en la dirección del eje actual de rotación de la $j$-ésima articulación, y $\vec{p}_j$ es su posición actual. Además la derivada de $\vec{s}$ con respecto al tiempo puede escribirse como $\dot{\vec{s}} = J(\vec{\theta})\dot{\vec{\theta}}$. Con esto, una pequeña variación del vector $\vec{s}$ puede aproximarse como $\Delta\vec{s} \approx J\Delta\vec{\theta}$. La idea es elegir un vector $\Delta\vec{\theta}$ que haga que $\Delta\vec{s}$ se aproxime lo más posible a $\vec{e}$, logrando así un acercamiento a la posicíon objetivo con ese pequeño cambio. Por último, se puede obtener la variación de $\vec{\theta}$ requerida si se calcula el inverso del jacobiano $J$, ya que $\Delta\vec{\theta} = J^{-1}\vec{e}$. Para resolver esta ecuacíon en general se buscan alternativas que eviten tener
 que calcular la inversa directamente. Problemas comunes al usar métodos que involucren el
 uso del jacobiano son la aparición de singularidades, y crecimiento explosivo del valor de
 la función en torno a ellas. Las singularidades son zonas en el espacio de la ecuación en las
-⃗
 cuales no es posible encontrar una variación ∆⃗s que genere un acercamiento al ∆θ buscado. El
 crecimiento explosivo mencionado genera variaciones erráticas en los valores de las rotaciones,
 lo que lleva a resultados poco creíbles en el proceso de animacíon. A continuacíon se presentan
 dos ejemplos (existen varios más) de reemplazantes para la inversa del jacobiano:
 
 
-i Transpuesta del jacobiano: Se modifica la ecuacíon para reemplazar
-J−1,
-quedando como
-∆θ
-⃗
-=
-αJT⃗e,
-donde
-JT
-es la transpuesta de J y α es un escalar que puede calcularse como
-α =
-⃗e·JJT⃗e
-, siendo · el producto punto. Esta solución suele requerir muchas iteraciones
-JJT⃗e·JJT⃗e
-⃗
-(cálculos consecutivos de valores pequeños ∆θ) para acercarse de forma aceptable al
-objetivo
-⃗t,
-y es común que genere poses poco creíbles y movimientos faltos de fluidez.
-Estos problemas se dan principalmente cuando el objetivo esta muy lejos de la posicíon
-inicial. Para evitar problemas es tambíen ideal que el valor de α sea pequeño.
-ii Pseudo-inversa del jacobiano: En este caso la ecuacíon es ∆θ
-⃗
-=
-αJpi⃗e,
-donde
-Jpi
-es la
-pseudo-inversa del jacobiano o inversa Moore-Penrose. La pseudo-inversa puede calcularse
-como
-Jpi
-=
-JT(JJT)−1.
-Esta solución, en caso de estar cerca de una singularidad es
-especialmente propensa a generar cambios drásticos en los ángulos de las articulaciones
-aunque el cambio en la posicíon del end-effector sea muy pequeño.
+i) **Transpuesta del jacobiano:** Se modifica la ecuacíon para reemplazar $J^{-1}$, quedando como $\Delta\vec{\theta} = \alpha J^T\vec{e}$, donde $J^T$ es la transpuesta de $J$ y $\alpha$ es un escalar que puede calcularse como
+
+$$\alpha = \frac{\vec{e} \cdot JJ^T\vec{e}}{JJ^T\vec{e} \cdot JJ^T\vec{e}}$$
+
+siendo $\cdot$ el producto punto. Esta solución suele requerir muchas iteraciones (cálculos consecutivos de valores pequeños $\Delta\vec{\theta}$) para acercarse de forma aceptable al objetivo $\vec{t}$, y es común que genere poses poco creíbles y movimientos faltos de fluidez. Estos problemas se dan principalmente cuando el objetivo esta muy lejos de la posicíon inicial. Para evitar problemas es tambíen ideal que el valor de $\alpha$ sea pequeño.
+
+ii) **Pseudo-inversa del jacobiano:** En este caso la ecuacíon es $\Delta\vec{\theta} = \alpha J_{pi}\vec{e}$, donde $J_{pi}$ es la pseudo-inversa del jacobiano o inversa Moore-Penrose. La pseudo-inversa puede calcularse como $J_{pi} = J^T(JJ^T)^{-1}$. Esta solución, en caso de estar cerca de una singularidad es especialmente propensa a generar cambios drásticos en los ángulos de las articulaciones aunque el cambio en la posicíon del end-effector sea muy pequeño.
 Descenso de gradiente
 Tambíen es posible aplicar el método del descenso de gradiente descrito en 2.6, para
 resolver este problema. Basta para ello definir una función F a minimizar, que represente
 la distancia entre las posiciones actuales de los end-effectors y sus posiciones objetivo, en
 función de los valores de rotación de las articulaciones del modelo articulado. Puede por
 ejemplo, usarse la siguiente función:
-F(θ
-⃗
-) = ||⃗s(θ
-⃗
-)
-−⃗t||2
-(3.1)
+
+$$F(\vec{\theta}) = ||\vec{s}(\vec{\theta}) - \vec{t}||^2 \tag{3.1}$$
 Se explicita en la ecuacíon 3.1, la dependencia de las posiciones de los end-effectors hacia las
 rotaciones de las articulaciones. La norma usada es la norma euclidiana.
 Métodos heurísticos
@@ -1528,11 +1367,9 @@ La posición y orientacíon del IKRig son únicamente modificadas a nivel global
 cambios al TransformComponent del game object al que está asociado el rig. Por lo anterior,
 localmente, el IKRig (más precisamente la raíz del esqueleto asociado) no sufre ningún cam-
 bio de orientacíon o posición.
-⃗
 Los cambios en la orientacíon global, están limitados a la rotación del vector front V =
 f
 {0,1,0}, en un ángulo rotationAngle contenido en el IKRig. Esto implica que el vector up
-⃗
 V = {0,0,1} global se mantiene constante, ya que solo es posible la rotación en el plano XY.
 z
 
@@ -1677,73 +1514,31 @@ el frame 0.
 ### 4.5. Descenso de gradiente
 La clase que implementa el descenso de gradiente, GradientDescent, se construye en en
 base a instancias de la clase FunctionTerm que representa sumandos a utilizar para generar la
-función final a la que se aplicará la técnica de descenso de gradiente. Considérese que se quiere
-aplicar la técnica a las funciones f ,...,f ,...,f en conjunto, ya que cada una de ellas tiene
-1 i n
-un significado en el contexto del problema a resolver. Estas funciones dependen del mismo
-vector de variables ⃗x = {x ,...,x ,...,x }. Se construye una función total F(⃗x) =
-(cid:80)n
-f (⃗x),
-1 k m
-i=1
+función final a la que se aplicará la técnica de descenso de gradiente. Considérese que se quiere aplicar la técnica a las funciones $f_1, \ldots, f_i, \ldots, f_n$ en conjunto, ya que cada una de ellas tiene un significado en el contexto del problema a resolver. Estas funciones dependen del mismo vector de variables $\vec{x} = \{x_1, \ldots, x_k, \ldots, x_m\}$. Se construye una función total
 
-a la que finalmente se aplica el descenso de gradiente. Cada subfunción (o término) f , se
+$$F(\vec{x}) = \sum_{i=1}^n f_i(\vec{x})$$
 
-⃗
-encapsula en un FunctionTerm que permite calcular su valor f (xˆ), y su derivada parcial
+a la que finalmente se aplica el descenso de gradiente. Cada subfunción (o término) $f_i$ se encapsula en un FunctionTerm que permite calcular su valor $f_i(\hat{\vec{x}})$, y su derivada parcial $\dfrac{\partial f_i(\hat{\vec{x}})}{\partial \hat{x}_k}$. Cada término tiene tambíen asignado un peso $w_i$, que determina su importancia para el cálculo del valor final.
 
-∂fi(⃗xˆ).
-Cada término tiene tambíen asignado un peso w , que determina su importancia para
-∂xˆ
+La clase GradientDescent utiliza la funcíon de derivada parcial en cada término para construir el vector gradiente:
 
-k
-el cálculo del valor final.
+$$\nabla F(\vec{x}) = \sum_{i=1}^n w_i \begin{pmatrix} \dfrac{\partial f_i(\vec{x})}{\partial x_1} \\ \vdots \\ \dfrac{\partial f_i(\vec{x})}{\partial x_k} \\ \vdots \\ \dfrac{\partial f_i(\vec{x})}{\partial x_m} \end{pmatrix}$$
 
+Recordando lo expuesto en 2.6, el vector $\vec{x}$ que minimiza localmente la función $F$ se actualiza como sigue:
 
-La clase GradientDescent utiliza la funcíon de derivada parcial en cada término para
-construir el vector gradiente:
- 
-∂fi(⃗x)
-∂x1
- ... 
-(cid:88)
-n
- 
-∇F(⃗x) = w
-∂fi(⃗x)
-i 
-∂x
-
-
-k
-
-i=1
-...
- 
-∂fi(⃗x)
-∂xm
-Recordando lo expuesto en 2.6, el vector ⃗x que minimiza localmente la función F se actualiza
-como sigue:
-⃗x := ⃗x − λ∇F(⃗x)
-Esta es la forma regular de actualizar el gradiente, pero existen muchas variantes. La clase
-GradientDescent, además del método regular, puede utilizar la técnica de descenso de gra-
-diente con momentum, en que los cálculos de iteraciones pasadas tienen un peso en el cálculo
-del valor actual del gradiente. El valor almacenado del gradiente, ∇F(⃗x) , se actualiza de
-saved
-la siguiente manera utilizando momentum:
-∇F(⃗x) := α∇F(⃗x) + (1 − α)∇F(⃗x)
-saved saved
-α es el factor que indica cúanto pesa el gradiente histórico ∇F(⃗x) , en relación al gradiente
-saved
-calculado en la iteracíon actual ∇F(⃗x). En este caso particular, se utiliza α = 0,8. El vector
-⃗x se actualiza como sigue usando momentum:
-⃗x := ⃗x − λ∇F(⃗x)
-saved
+$$\vec{x} := \vec{x} - \lambda\nabla F(\vec{x})$$
+
+Esta es la forma regular de actualizar el gradiente, pero existen muchas variantes. La clase GradientDescent, además del método regular, puede utilizar la técnica de descenso de gradiente con momentum, en que los cálculos de iteraciones pasadas tienen un peso en el cálculo del valor actual del gradiente. El valor almacenado del gradiente, $\nabla F(\vec{x})_{saved}$, se actualiza de la siguiente manera utilizando momentum:
+
+$$\nabla F(\vec{x})_{saved} := \alpha\nabla F(\vec{x})_{saved} + (1 - \alpha)\nabla F(\vec{x})$$
+
+$\alpha$ es el factor que indica cúanto pesa el gradiente histórico $\nabla F(\vec{x})_{saved}$, en relación al gradiente calculado en la iteracíon actual $\nabla F(\vec{x})$. En este caso particular, se utiliza $\alpha = 0{,}8$. El vector $\vec{x}$ se actualiza como sigue usando momentum:
+
+$$\vec{x} := \vec{x} - \lambda\nabla F(\vec{x})_{saved}$$
 Para poder contener la información necesaria para realizar los distintos cálculos en el
 proceso iterativo, la clase GradientDescent guarda un puntero a una clase de tipo arbitrario
 dataT.
 La funcíon que realiza el proceso de descenso de gradiente se llama computeArgsMin, y en
-⃗
 cada iteración genera mediante el uso del gradiente, un vector argsDelta, que contiene el
 cambio a aplicar a cada una de las coordenadas del vector objetivo ⃗x para ir acercándolo
 al valor que minimice la funcíon F. Entre sus parámetros se encuentran maxIterations y
@@ -1751,17 +1546,14 @@ targetArgDelta. maxIterations es el número de iteraciones máximo permitido. Si
 este número el proceso se detiene.
 A medida que avanza el proceso iterativo, y los argumentos van acercando la funcíon a su
 mínimo, las magnitudes de las derivadas parciales, y por lo tanto los valores contenidos en
-⃗
 argsDelta, son menores. Dado que se puede interpretar un valor bajo para el cambio que se
 debe aplicar al vector ⃗x, como una mayor cercanía al término del proceso, targetArgDelta
 cumple la función de especificar el valor de cambio objetivo para cada una de las coordenadas
-⃗
 de ⃗x. Si en una iteracíon dada, todos los valores del vector argsDelta están por debajo de
 targetArgDelta, el proceso iterativo se detiene.
 Para construir una instancia de GradientDescent, tambíen se requiere una funcíon postDes-
 centStepCustomBehaviour, que es ejecutada al final de cada iteración, y contiene cualquier
 comportamiento especial que se quiera. Esta funcíon, recibe una referencia vector ⃗x actuali-
-⃗
 zado, un puntero a la instancia de dataT y una referencia a argsDelta.
 
 
@@ -1815,26 +1607,15 @@ dientDescent según tres requisitos, cada uno de los cuales es encapsulado en un
 1. Primer término: El primer requisito, y el más importante, es el de acercar el end-effector
 de cada IKChain a su posicíon objetivo. Para esto, la funcíon que se quiere minimizar
 es:
-f (θ
-⃗
-) = ||eeP
-⃗
-os(θ
-⃗
-) − eeTa
-⃗
-rget||2
-(4.1)
 
-⃗ ⃗ ⃗
-Donde eePos(θ) es la posición actual del end-effector, y eeTarget es la posición a la que
+$$f_1(\vec{\theta}) = ||\overrightarrow{eePos}(\vec{\theta}) - \overrightarrow{eeTarget}\,||^2 \tag{4.1}$$
+
+Donde $\overrightarrow{eePos}(\vec{\theta})$ es la posición actual del end-effector, y $\overrightarrow{eeTarget}$ es la posición a la que
 se quiere llevar. La posición del end-effector en el espacio del modelo, depende de los
 ángulos de rotación de todas las articulaciones por encima de él en la jerarquía (desde
 él hasta la raíz). Dado que solo se modifican los ángulos de las articulaciones de las
-⃗
 IKChains (excluyendo el end-effector), el vector θ = {θ ,...,θ ,...,θ } contiene única-
 1 k m
-⃗
 mente esos ángulos. Es decir, cada variable θ del vector θ, es un ángulo de rotación
 k
 asociado a una articulación j presente en una de las cadenas (no se repiten en caso de
@@ -1844,12 +1625,10 @@ fijos. Los ejes de rotación de todas las articulaciones tambíen se mantienen f
 reducir la cantidad de argumentos de la función objetivo y simplificar la derivada par-
 cial, disminuyendo el costo del algoritmo. Por otro lado, las posiciones y escalamientos
 no cambian como ya se ha mencionado. Por esto, las únicas variables a considerar son
-⃗
 los ángulos contenidos en el vector θ.
 Para calcular la derivada parcial de f ,
 ∂f1(θ⃗),
 se reformula el cálculo de f (θ
-⃗
 ), separando
 
 ∂θ
@@ -1857,26 +1636,13 @@ se reformula el cálculo de f (θ
 k
 las partes dependientes de variable θ del resto de los valores, que en este contexto son
 k
-⃗
-constantes. Notar primero que eePos(θ) puede descomponerse de la siguiente manera:
-eeP
-⃗
-os(θ
-⃗
-) = M
-ˆ
-ATθ kRθ kSθ
-kM
-ˆ
-B
-⃗
-ˆ
-b (4.2)
+constantes. Notar primero que $\overrightarrow{eePos}(\vec{\theta})$ puede descomponerse de la siguiente manera:
+
+$$\overrightarrow{eePos}(\vec{\theta}) = \hat{M}_A T_{\theta_k} R_{\theta_k} S_{\theta_k} \hat{M}_B \hat{\vec{b}} \tag{4.2}$$
 Recordar que para calcular la posición de una articulación en el espacio del modelo,
 deben multiplicarse en cadena las transformaciones desde la articulacíon en cuestión
 hasta la raíz del esqueleto. La ecuación 4.2 contiene precisamente ese cálculo, donde
 las matrices de transformación han sido agrupadas de forma conveniente. En primer
-⃗
 ˆ
 lugar, el vector b = {0,0,0,1}, tiene ese valor porque es la posición del end-effector en
 su propio espacio local.
@@ -1896,179 +1662,24 @@ k. Esta descomposición se realiza porque la única de ellas
 que varía es la matriz de rotación. MA y MB son simplemente las transformaciones
 acumuladas de las demás articulaciones en torno a la articulación j . Se agrupan las
 k
-constantes, quedando
-MA
-= M
-ˆ
-ATθ
-k
-y
-⃗
-b =
-Sθ
-kM
-ˆ
-B
-⃗
-ˆ
-b = {b ,b ,b ,b }:
-0 1 2 3
-eeP
-⃗
-os(θ
-⃗
-) =
-MARθ
-k
-⃗
-b (4.3)
+constantes, quedando $M_A = \hat{M}_A T_{\theta_k}$ y $\vec{b} = S_{\theta_k} \hat{M}_B \hat{\vec{b}} = \{b_0, b_1, b_2, b_3\}$:
+
+$$\overrightarrow{eePos}(\vec{\theta}) = M_A R_{\theta_k} \vec{b} \tag{4.3}$$
 
 
 Los elementos de los factores de la ecuación 4.3 se agrupan con sumatorias:
- 
-b
-MARθ
-k
-j
-0i ij
-(cid:88)
 
-(cid:88)
-
-b
-MARθ
-k
-eeP
-⃗
-os(θ
-⃗
-) =
-
-j
-1i
-ij
-
-(4.4)
-b
-MARθ
-k
-
-j=0 i=0
- j
-2i ij
-
-b
-MARθ
-k
-j
-3i ij
+$$\overrightarrow{eePos}(\vec{\theta}) = \begin{pmatrix} \sum_{j=0}^{3}\sum_{i=0}^{3} [M_A R_{\theta_k}]_{0i}\, b_{ij} \\ \sum_{j=0}^{3}\sum_{i=0}^{3} [M_A R_{\theta_k}]_{1i}\, b_{ij} \\ \sum_{j=0}^{3}\sum_{i=0}^{3} [M_A R_{\theta_k}]_{2i}\, b_{ij} \\ \sum_{j=0}^{3}\sum_{i=0}^{3} [M_A R_{\theta_k}]_{3i}\, b_{ij} \end{pmatrix} \tag{4.4}$$
 Substrayendo la posicíon objetivo:
- 
-b
-MARθ
-k −
-eeTarget0
-j
-0i ij
 
-(cid:88)
+$$\overrightarrow{eePos}(\vec{\theta}) - \overrightarrow{eeTarget} = \begin{pmatrix} \sum_{j=0}^{3}\sum_{i=0}^{3} [M_A R_{\theta_k}]_{0i}\, b_{ij} - eeTarget_0 \\ \sum_{j=0}^{3}\sum_{i=0}^{3} [M_A R_{\theta_k}]_{1i}\, b_{ij} - eeTarget_1 \\ \sum_{j=0}^{3}\sum_{i=0}^{3} [M_A R_{\theta_k}]_{2i}\, b_{ij} - eeTarget_2 \\ \sum_{j=0}^{3}\sum_{i=0}^{3} [M_A R_{\theta_k}]_{3i}\, b_{ij} - eeTarget_3 \end{pmatrix} \tag{4.5}$$
 
-(cid:88)
+Finalmente la funcíon $f_1$ reconstruida queda de la siguiente forma:
 
-b
-MARθ
-k
-−
-eeTarget1
-eeP
-⃗
-os(θ
-⃗
-) − eeTa
-⃗
-rget =
-
-j
-1i ij
+$$f_1(\vec{\theta}) = \sum_{k=0}^{3} \left[\sum_{j=0}^{3}\sum_{i=0}^{3} [M_A R_{\theta_k}]_{ki}\, b_{ij} - eeTarget_k\right]^2 \tag{4.6}$$
+Con esto, la parte variable de $f_1$ queda claramente separada en $[R_{\theta_k}]_{ij}$, y calcular la derivada parcial resulta más fácil:
 
-
-(4.5)
-b
-MARθ
-k
-−
-eeTarget2
-
-j=0 i=0
- j
-2i ij
-
-
-b
-MARθ
-k −
-eeTarget3
-j
-3i ij
-
-Finalmente la funcíon f reconstruida queda de la siguiente forma:
-
-(cid:34) (cid:35)2
-3 3 3
-(cid:88) (cid:88)(cid:88)
-eeTarget
-f (θ
-⃗
-) = (b
-MARθ
-k −
-k
-) (4.6)
-1 j
-ki ij
-
-k=0 j=0 i=0
-Con esto, la parte variable de f queda claramente separada en
-Rθ
-k, y calcular la
-
-ij
-derivada parcial resulta más fácil:
-(cid:34) (cid:35)
-∂f (θ
-⃗
-)
-(cid:88)
-
-(cid:88)
-
-(cid:88)
-
-eeTarget
-(cid:88)
-
-(cid:88)
-3 ∂Rθ
-k
-
-= 2 (b
-MARθ
-k
-−
-k
-) b
-MA
-ij
-(4.7)
-∂θ
-j
-ki ij
-
-j
-ki
-∂θ
-k k
-k=0 j=0 i=0 j=0 i=0
+$$\frac{\partial f_1(\vec{\theta})}{\partial \theta_k} = 2 \sum_{k=0}^{3}\sum_{j=0}^{3}\sum_{i=0}^{3} \left(\sum_{j=0}^{3}\sum_{i=0}^{3} [M_A R_{\theta_k}]_{ki}\, b_{ij} - eeTarget_k\right) [M_A]_{ki}\, \frac{\partial [R_{\theta_k}]_{ij}}{\partial \theta_k} \tag{4.7}$$
 ∂R
 θk
 Para obtener ij , se requiere poder calcular los elementos de una matriz de rotación
@@ -2078,74 +1689,44 @@ de 4x4, en función de un ángulo y un eje rotacíon. La matriz buscada y su der
 presentan en el anexo B.1.
 2. Segundo término: En segundo lugar, se quiere que los ángulos calculados sean similares
 a los de las rotaciones originales para el frame objetivo. La función escogida es:
-f (θ
-⃗
-) = ||θ
-⃗
-−
-ω⃗||2
-(4.8)
 
-El vector constante ω⃗ contiene, por cada θ , el ángulo ω original de la animacíon en
-k k
-el frame objetivo para la misma articulación j . La derivada es simple de calcular:
-k
-⃗
-∂f (θ)
+$$f_2(\vec{\theta}) = ||\vec{\theta} - \vec{\omega}\,||^2 \tag{4.8}$$
 
-= 2(θ − ω ) (4.9)
-k k
-∂θ
-k
+El vector constante $\vec{\omega}$ contiene, por cada $\theta_k$, el ángulo $\omega_k$ original de la animacíon en el frame objetivo para la misma articulación $j_k$. La derivada es simple de calcular:
+
+$$\frac{\partial f_2(\vec{\theta})}{\partial \theta_k} = 2(\theta_k - \omega_k) \tag{4.9}$$
 3. Tercer término: El último término tiene el objetivo de mantener estabilidad temporal
 en los valores calculados. Se quiere que los valores calculados para el frame actual no
-difieran excesivamente de los valores calculados para el frame anterior. Las ecuaciones
-son análogas a las del segundo término:
-f (θ
-⃗
-) = ||θ
-⃗
-−
-⃗γ||2
-(4.10)
+difieran excesivamente de los valores calculados para el frame anterior. Las ecuaciones son análogas a las del segundo término:
 
-En este caso, el vector constante ⃗γ, en lugar de contener los valores originales, contiene
-los valores de frame anterior para cada j .
-k
-⃗
-∂f (θ)
+$$f_3(\vec{\theta}) = ||\vec{\theta} - \vec{\gamma}\,||^2 \tag{4.10}$$
 
-= 2(θ − γ ) (4.11)
-k k
-∂θ
-k
+En este caso, el vector constante $\vec{\gamma}$, en lugar de contener los valores originales, contiene los valores de frame anterior para cada $j_k$.
+
+$$\frac{\partial f_3(\vec{\theta})}{\partial \theta_k} = 2(\theta_k - \gamma_k) \tag{4.11}$$
 
 
 Al final de cada iteración, dentro de la funcíon postDescentStepCustomBehaviour, se recal-
 culan las transformaciones requeridas por 4.7, de forma que luego no tengan que rehacerse
 cálculos para generar información que es compartida por distintas articulaciones.
 Tambíen es importante notar, que computeArgsMin (4.5), solo se encarga de ajustar el vector
-⃗
 θ, y no de modificar los valores reales de los ángulos de rotacíon, guardados en el vector de
 rotaciones variables de la IKAnimation, que se usan para calcular las transformaciones de las
 articulaciones en cada paso del descenso. Por esto, postDescentStepCustomBehaviour debe
 encargarse de realizar esa actualización.
 Para aplicar el descenso de gradiente de manera óptima, es importante escoger de manera
-⃗
 inteligente los valores iniciales de las componentes del vector θ. Si al iniciar el proceso, los
 valores ya se encuentran relativamente cerca del resultado deseado, se puede disminuir signi-
-ficativamente el tiempo de cálculo. Se escoge entonces inicializar el vector de variables como
-sigue:
-⃗
-θ = ⃗γ
+ficativamente el tiempo de cálculo. Se escoge entonces inicializar el vector de variables como sigue:
+
+$$\vec{\theta} = \vec{\gamma}$$
 Dado que los movimientos en una buena animación deben ser lo más suaves y continuos
 posibles, es natural esperar que los valores para el frame actual sean similares a los del frame
 anterior. Por esto se usa ⃗γ, el vector de valores de frame anterior, que tambíen se usa en 4.10,
 para marcar donde comienza el descenso.
-La funcíon final F a minimizar es:
-⃗ ⃗ ⃗ ⃗
-F(θ) = af (θ) + bf (θ) + cf (θ) (4.12)
-1 2 3
+La funcíon final $F$ a minimizar es:
+
+$$F(\vec{\theta}) = a\,f_1(\vec{\theta}) + b\,f_2(\vec{\theta}) + c\,f_3(\vec{\theta}) \tag{4.12}$$
 Los coeficientes a, b, y c, se determinan mediante ensayo y error, buscando un resultado
 óptimo a nivel visual. Al ir probando valores, se tiene siempre en mente cuál es el significado
 de cada término f , y qúe es lo que se quiere lograr visualmente. Por ejemplo, si a tiene un
@@ -2153,15 +1734,11 @@ de cada término f , y qúe es lo que se quiere lograr visualmente. Por ejemplo,
 valor muy alto, se siguen las trayectorias objetivo con mayor precisíon, pero los movimientos
 se vuelven menos creíbles. Por el contrario, si b tiene un valor muy alto, los movimientos son
 tan similares a la animación original que se pierde la capacidad de adaptación al terreno.
-Los valores usados son a =
-
-, b = 2, y c = 4. El valor rigHeight corresponde a
-[rigHeight][δp]
+Los valores usados son $a = \dfrac{1}{rigHeight \cdot \delta_p}$, $b = 2$, y $c = 4$. El valor $rigHeight$ corresponde a
 la altura del rig en el espacio del modelo, mencionado en 4.2.1. El valor δp corresponde a
 un valor directamente proporcional al pequeño cambio de posición que sufre, en promedio,
 un end-effector en una iteracíon del descenso de gradiente, al ir modificando los ángulos de
 rotación de las articulaciones.
-⃗
 Dado que lo importante es mantener estable la relacíon entre las magnitudes de af (θ),
 
 ⃗ ⃗
@@ -2176,7 +1753,6 @@ directa (si se consideran modelos de proporciones humanoides), y, sumado a lo an
 largos de las piernas determinan la distancia que puede ser abarcada con un paso.
 En el caso de f y f , sus derivadas representan tasas de cambio para valores de ángulos (al
 2 3
-⃗
 cuadrado)(4.9 y 4.11) con respecto a cada componente del vector de ángulos variables θ. Es
 decir, se calculan variaciones de ángulos en funcíon de otros ángulos. Esto implica que una
 variacíon de rigHeight no tiene influencia en sus magnitudes, y por ello b y c tienen valores
@@ -2193,18 +1769,11 @@ su final. Considérese un segmento s de largo fijo l, cuyo extremo quiere cambia
 desde una posicíon inicial, mediante una rotacíon en un ángulo δθ. Esta rotacíon ocurre en
 torno a un eje perpendicular a s situado en su comienzo. La distancia δp (nombrada así
 para hacer un símil con lo planteado al definir a) entre la posición inicial y la posicíon final
-alcanzada, se calcula como δp =
-2lsin(δθ).
-Al ser δθ pequeño, puede aproximarse la función
+alcanzada, se calcula como $\delta p = 2l\sin(\delta\theta)$. Al ser $\delta\theta$ pequeño, puede aproximarse la función seno a su argumento, con lo que $\delta p \approx l\delta\theta$. Reordenando y considerando el cuadrado de la distancia:
 
-seno a su argumento, con lo que δp ≈ lδθ. Reordenando y considerando el cuadrado de la
-distancia:
-δp
-l ≈ (4.13)
-δθ
-δp2
-lδp ≈ (4.14)
-δθ
+$$l \approx \frac{\delta p}{\delta\theta} \tag{4.13}$$
+
+$$l\,\delta p \approx \frac{\delta p^2}{\delta\theta} \tag{4.14}$$
 La ecuación 4.14 indica que, de manera simplificada y aproximada, la tasa de cambio de
 distancia al cuadrado en relación a un ángulo de rotacíon, asociada a la función f , es direc-
 
@@ -2224,7 +1793,6 @@ de iteraciones requeridas para completar el proceso de descenso. Se presentan lo
 tablas 4.1, y 4.2. La información es recopilada al hacer caminar a un modelo articulado por
 un terreno bastante irregular durante alrededor de 60 segundos. El proceso de recopilación
 se realiza dos veces, difiriendo únicamente el valor de rigHeight entre ambas ejecuciones del
-⃗
 programa, para demostrar que se logra mantener estable la relación entre los valores af (θ),
 
 ⃗ ⃗
@@ -2242,23 +1810,18 @@ Para cada valor de rigHeight, tambíen se guardan los valores de una única ejec
 ⃗ ⃗ ⃗ ⃗
 descenso de gradiente, para ilustrar cómo convergen los valores af (θ), bf (θ), cf (θ) y F(θ),
 1 2 3
-⃗
 a medida que se ajusta el vector θ. Los datos se muestran en las figuras 4.7 y 4.8. Notar que
 las subfunciones no necesariamente deben decrecer en todo momento, ya que muchas veces,
 
 
 Promedio Desviacíon Mínimo Máximo
 estándar
-⃗
 af (θ) 0.6984 1.5523 0.0170 16.4533
 
-⃗
 bf (θ) 0.3749 0.9152 0.0005 9.0186
 
-⃗
 cf (θ) 0.0910 0.1835 0.0006 2.8177
 
-⃗
 F(θ) 1.1642 2.3392 0.0479 23.0851
 Número de pasos por 27.0242 13.9022 3 28
 cada ejecución del des-
@@ -2266,9 +1829,7 @@ censo
 Tabla 4.1: Valores de referencia recolectados a lo largo de múltiples ejecuciones completas del
 descenso de gradiente para IK. Con rigHeight = 189,83.
 aumentar una de ellas permite que otra disminuya, reduciendo la suma total. Por ejemplo,
-⃗
 ya que el vector θ es inicializado con los ángulos de rotación del frame anterior γ, antes de
-⃗
 la primera iteración del descenso, se cumple que f (θ) = 0, que es el valor más bajo que
 
 podría tener. Su única opción, al ser siempre positiva, es aumentar, para dejar espacio de
@@ -2288,16 +1849,12 @@ de iteraciones es 23, con rigHeight = 189,83.
 
 Promedio Desviacíon Mínimo Máximo
 estándar
-⃗
 af (θ) 0.8005 1.7585 0.0248 24.4570
 
-⃗
 bf (θ) 0.4230 0.9268 0.0008 9.4162
 
-⃗
 cf (θ) 0.0974 0.1876 0.0003 2.2687
 
-⃗
 F(θ) 1.3208 2.4802 0.0684 25.5004
 Número de pasos por 27.4569 13.6283 3 31
 cada ejecución del des-
@@ -2370,19 +1927,7 @@ las siguientes capacidades:
 0 m
 2. getPointVelocity: Calcular la velocidad de un punto p⃗ por la izquierda y por la derecha,
 k
-donde las ecuaciones son
-p⃗
-k
-−p⃗
-k−1
-y
-p⃗
-k+1
-−p⃗
-k
-respectivamente.
-t −t t −t
-k k−1 k+1 k
+donde las ecuaciones son $\dfrac{\vec{p}_k - \vec{p}_{k-1}}{t_k - t_{k-1}}$ y $\dfrac{\vec{p}_{k+1} - \vec{p}_k}{t_{k+1} - t_k}$ respectivamente.
 3. scale, translate y rotate: Escalar, trasladar y rotar la curva. Se aplica una transformación
 de escalamiento, traslacíon o rotacíon a todos los puntos simultáneamente.
 4. setCurvePoint: Cambiar el valor de un punto particular de la curva.
@@ -2411,7 +1956,6 @@ cantidad de puntos interpolados.
 12. fitEnds: Adaptar la curva para que su inicio y su final calcen con los puntos arbitrarios
 ⃗v y ⃗v respectivamente. Para esto, se lleva la curva al origen, y se rota para
 start end
-⃗
 alinear su direccíon d = p⃗ − p⃗ con la direccíon objetivo d = ⃗v − ⃗v .
 original m 0 target end start
 Luego, se traslada la curva completa en ⃗v , con lo que ⃗v se vuelve el nuevo punto
@@ -2591,7 +2135,6 @@ x e y, teniendo con esto una posición actual de referencia en el plano, p⃗os 
 XYref
 se toma la direccíon de S en el plano XY, y se rota según la direccíon global de
 original
-⃗
 movimiento del IKRig. Con esto se obtiene d , la dirección XY tentativa de la
 XYTarget
 trayectoria final (puede variar).
@@ -2601,7 +2144,6 @@ tExtAnim , y S evaluada en tAnim . Se quiere que el tramo análogo de
 0 original current
 S (entre tRep y tRep ) tenga una distancia en XY lo más similar posible.
 target 0 current
-⃗
 Dada la direccíon objetivo −d , la distancia objetivo, y el punto de referencia
 XYTarget
 p⃗os , se puede calcular el punto inicial para S . Se calcula un número arbitra-
@@ -2681,19 +2223,14 @@ esos puntos, mientras que el resto de los puntos son ajustados. De esta forma se
 curva restringida parcialmente, que es lo más parecida posible a la curva base. La funcíon a
 minimizar es entonces:
 n
-(cid:88)(cid:104) (cid:105)
+∑[ ]
 f(P
-⃗
 ) = ||lV el(p
-⃗
 T ) − lV el(p
-⃗
 B
 )||2
 + ||rV el(p
-⃗
 T ) − rV el(p
-⃗
 B
 )||2
 (4.15)
@@ -2708,7 +2245,6 @@ S , cuyas coordenadas se quieren ajustar para acercarse a los velocidades de n p
 target
 
 
-⃗
 pararelos de la curva base S . El vector P , del cual depende la función a minimizar,
 base T
 contiene todas las coordenadas de los n puntos de la curva objetivo:
@@ -2719,10 +2255,9 @@ ix iy iz
 lV el y rV el, son las velocidades por la izquierda y por la derecha respectivamente (4.8.1).
 Se utilizan ambas velocidades, porque se quiere corregir la relación de cada punto con sus
 dos vecinos. La derivada parcial de f se calcula con respecto a cada coordenada w de cada
-⃗
 un de los n puntos pT :
 
-(cid:34) (cid:35)
+[ ]
 ⃗ ⃗ ⃗ ⃗ ⃗
 ∂f(P ) lV el(pT ) − lV el(pB ) rV el(pT ) − rV el(pB )
 T
@@ -2738,7 +2273,6 @@ w
 w
 (4.16)
 ∂p
-⃗
 T
 t
 
@@ -2780,7 +2314,6 @@ una forma lo más similar a S , pero que respete las alturas mínimas permitidas
 base
 La función postDescentCustomBehaviour cumple el objetivo de asegurar que las alturas de los
 puntos se mantengan por sobre sus alturas mínimas asignadas. Se chequea que la coordenada
-⃗
 z de cada punto pT , esté por encima del valor mínimo permitido hMin . Si z está por
 i i i i
 debajo del mínimo, se le asigna el valor hMin . Además se altera artificialmente el valor de
@@ -2798,7 +2331,6 @@ se va acercando forzadamente a valores más bajos, y computeArgsMin cree que hMi
 valor correcto para z .
 
 De igual forma que en 4.6.2, la función computeArgsMin solo cumple con modificar el vector
-⃗
 de variables P , por lo que postDescentCustomBehaviour se encarga de ajustar las posiciones
 T
 de los puntos en S usando los delta calculados.
@@ -3137,7 +2669,6 @@ del plano principal de movimiento (y por lo tanto la posicíon objetivo), entonc
 trayectorias generadas no podrán ser seguidas correctamente.
 
 
-⃗
 
 ![Figura 4.11](figures/figura_4_11.png)
 *Figura 4.11: Plano de rotacíon generado al rotar un punto P mediante un cuaterníon. Fuente:*
@@ -3731,81 +3262,13 @@ Anexo B
 
 ### B.1. Matriz de rotacíon en funcíon de un ángulo y eje
 arbitrarios
-De [24] se extrae la ecuación para una matriz de 3x3, donde ⃗a es el eje de rotación y θ el
-ángulo:
- 
-cosθ +
-a2(1
-− cosθ) a a (1 − cosθ) − a sinθ a a (1 − cosθ) + a sinθ
+De [24] se extrae la ecuación para una matriz de 3x3, donde $\vec{a} = (a_0, a_1, a_2)$ es el eje de rotación y $\theta$ el ángulo:
 
-0 1 2 0 2 1
-R(θ,⃗a) = a
+$$R(\theta,\vec{a}) = \begin{pmatrix} \cos\theta + a_0^2(1-\cos\theta) & a_0 a_1(1-\cos\theta) - a_2\sin\theta & a_0 a_2(1-\cos\theta) + a_1\sin\theta \\ a_1 a_0(1-\cos\theta) + a_2\sin\theta & \cos\theta + a_1^2(1-\cos\theta) & a_1 a_2(1-\cos\theta) - a_0\sin\theta \\ a_2 a_0(1-\cos\theta) - a_1\sin\theta & a_2 a_1(1-\cos\theta) + a_0\sin\theta & \cos\theta + a_2^2(1-\cos\theta) \end{pmatrix}$$
 
-a
+Expandiendo a 4x4 y derivando con respecto a $\theta$:
 
-(1 − cosθ) + a
-
-sinθ cosθ +
-a2
-
-(1 − cosθ) a
-
-a
-
-(1 − cosθ) − a
-
-sinθ
-a a (1 − cosθ) − a sinθ a a (1 − cosθ) + a sinθ cosθ +
-a2(1
-− cosθ)
-0 2 1 1 2 0
-
-Expandiendo a 4x4 y derivando con respecto a θ:
- 
-−sinθ +
-a2sinθ
-a a sinθ − a cosθ a a sinθ + a cosθ 0
-
-0 1 2 0 2 1
-∂R(θ,⃗a)
-=
-
-
-a
-
-a
-
-sinθ + a
-
-cosθ −sinθ +
-a2
-
-sinθ a
-
-a
-
-sinθ − a
-
-cosθ 0
-
-∂θ
-a
-
-a
-
-sinθ − a
-
-cosθ a
-
-a
-
-sinθ + a
-
-cosθ −sinθ +
-a2
-
-sinθ 0
-0 0 0 0
+$$\frac{\partial R(\theta,\vec{a})}{\partial\theta} = \begin{pmatrix} -\sin\theta + a_0^2\sin\theta & a_0 a_1\sin\theta - a_2\cos\theta & a_0 a_2\sin\theta + a_1\cos\theta & 0 \\ a_1 a_0\sin\theta + a_2\cos\theta & -\sin\theta + a_1^2\sin\theta & a_1 a_2\sin\theta - a_0\cos\theta & 0 \\ a_2 a_0\sin\theta - a_1\cos\theta & a_2 a_1\sin\theta + a_0\cos\theta & -\sin\theta + a_2^2\sin\theta & 0 \\ 0 & 0 & 0 & 0 \end{pmatrix}$$
 
 ### B.2. Enlace al repositorio de la solucíon
 El trabajo presentado en este informe se encuentra en el siguiente enlace: https://

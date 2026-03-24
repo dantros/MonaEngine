@@ -37,7 +37,7 @@ produciendo una alta demanda de experiencias interactivas de las que se espera c
 atractivo y realismo. Tradicionalmente (,y en oposicíon a esa expectativa), cada animación
 usada para dar vida a algún personaje de un juego, contiene un único movimiento o accíon,
 que se repite inalteradamente en distintas situaciones. Por ejemplo, es usual que un personaje
-solo sea capaz de recorrer terrenos planos (sin elevación) de manera créıble, porque la ani-
+solo sea capaz de recorrer terrenos planos (sin elevación) de manera creíble, porque la ani-
 mación utilizada fue diseñada de esa manera. No es posible crear manualmente animaciones
 que se adapten a todos los contextos, por lo que sistemas que modifiquen las animaciones en
 tiempo real para volverlas más dinámicas son muy requeridos.
@@ -48,8 +48,8 @@ de caminar a terrenos irregulares generados mediante funciones de elevación. La
 son modificadas mediante cálculos de cinemática inversa basados en el método de descenso
 de gradiente.
 Se logra generar animaciones que se adaptan al terreno de manera básica, modificando las
-rotacionesdelasarticulacionesdelaspiernasdelmodeloarticuladoobjetivo.Lasmodificacio-
-nes realizadas se basan en la información de movimiento original de la animación, extráıda en
+rotaciones de las articulaciones de las piernas del modelo articulado objetivo. Las modificacio-
+nes realizadas se basan en la información de movimiento original de la animación, extraída en
 un paso previo del sistema. El uso de descenso de gradiente, y la consideracíon del movimien-
 to original de la animación permiten, en conjunto, lograr que las animaciones modificadas
 preserven la esencia de las animaciones originales.
@@ -134,7 +134,7 @@ notado por los usuarios de prueba del sistema, y queda marcado como trabajo futu
 4.9.1. IKNavigationComponent . . . . . . . . . . . . . . . . . . . . . . . . . 51
 4.9.2. IKRigController . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 53
 4.9.3. IKNavigationSystem . . . . . . . . . . . . . . . . . . . . . . . . . . . 55
-4.10.Preprocesamiento de las animaciones . . . . . . . . . . . . . . . . . . . . . . 56
+4.10. Preprocesamiento de las animaciones . . . . . . . . . . . . . . . . . . . . . . 56
 4.10.1. Validacíon . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 56
 4.10.2. Descompresión de las rotaciones . . . . . . . . . . . . . . . . . . . . . 58
 5. Validación 59
@@ -179,18 +179,22 @@ Indice de Ilustraciones
 1.1. Dos poses de un modelo articulado generadas con distintas configuraciones de
 las articulaciones. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 2
 1.2. Clip de animacíon simplificado de un personaje corriendo. El clip tiene 5 se-
-gundos de duracíon y cuenta con 5 poses o muestras. Fuente: www.mixamo.com. 3
+gundos de duracíon y cuenta con 5 poses o muestras. Fuente:
+www. mixamo. com
+. 3
 2.1. Subdivisíon gráfica de una transformacíon espacial tridimensional en subtrans-
-formaciones,ysuefectoenlosdistintosejescartesianos. Fuente:www.developer.
-unigine.com. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 7
+formaciones, y su efecto en los distintos ejes cartesianos. Fuente:
+www. developer.
+unigine. com . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 7
 2.2. Rotacíon generada por un cuaterníon, de un punto p⃗ en un ángulo θ en torno a
-uneje. Fuente:https://danceswithcode.net/engineeringnotes/quaternions/
-quaternions.html. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 8
-2.3. Ejemplo de cadena articulada. Imagen basada en figura extráıda de [12]. . . . 10
+un eje. Fuente: https: // danceswithcode. net/ engineeringnotes/ quaternions/
+quaternions. html
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 8
+2.3. Ejemplo de cadena articulada. Imagen basada en figura extraída de [12]. . . . 10
 2.4. Ejemplos de cadenas articuladas y sus soluciones posibles. (a) No es posible
 alcanzar el objetivo.(b) Existe una única solucíon. (c) Existen múltiples solu-
 ciones (es así en la mayoría de los casos). Fuente: [1] . . . . . . . . . . . . . 11
-2.5. Figurahumanacomounconjuntodecadenasarticuladas. Fuente:www.3dkingdoms.
+2.5. Figura humana como un conjunto de cadenas articuladas. Fuente: www. 3dkingdoms.
 com . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 12
 2.6. Movimiento de péndulo invertido en la caminata humana. Fuente [19] . . . . 14
 3.1. Caso de cadena articulada en el que únicamente hay dos soluciones posibles
@@ -205,8 +209,9 @@ presentado en la memoria original del MonaEngine [6]. . . . . . . . . . . . . 27
 ```
 
 
-4.3. OrientacíonenelespaciodelmodelodelIKRig. Fuente:https://musculoskeletalkey.
-com/biomechanics-of-the-spinal-motion-segment/ . . . . . . . . . . . 31
+4.3. Orientacíon en el espacio del modelo del IKRig. Fuente: https: // musculoskeletalkey.
+com/ biomechanics-of-the-spinal-motion-segment/
+. . . . . . . . . . . 31
 
 ### 4.4. Diagrama simplificado de una animación y su animationTime, dividida en
 subtrayectorias como se explica en la seccíon 4.8.2. . . . . . . . . . . . . . . 31
@@ -223,16 +228,18 @@ una ejecucíon completa de descenso de gradiente aplicado a cinemática inversa.
 El número de iteraciones es 20, con rigHeight = 28474,5. . . . . . . . . . . 41
 4.9. Trayectoria dinámica (paso de la caminata), que atraviesa una porcíon del
 terreno. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 48
-4.10.Trayectoria dinámica corregida con descenso de gradiente. . . . . . . . . . . 50
+4.10. Trayectoria dinámica corregida con descenso de gradiente. . . . . . . . . . . 50
 ⃗
-4.11.Plano de rotacíon generado al rotar un punto P mediante un cuaterníon.
 
-Fuente:https://ece.montana.edu/seniordesign/archive/SP14/UnderwaterNavigation/
-Quaternions.html. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 57
-4.12.Caminata en el espacio local del IKRig, con ángulos de rotacíon para las
+### 4.11. Plano de rotacíon generado al rotar un punto P mediante un cuaterníon.
+
+Fuente: https: // ece. montana. edu/ seniordesign/ archive/ SP14/ UnderwaterNavigation/
+Quaternions. html
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 57
+4.12. Caminata en el espacio local del IKRig, con ángulos de rotacíon para las
 articulaciones j y j , de la cadena asociada a la pierna derecha. Fuente:
 1 2
-https://www.dimensions.com/collection/people-walking . . . . . . 57
+https: // www. dimensions. com/ collection/ people-walking . . . . . . 57
 5.1. Ejemplo con un único personaje y un único terreno. . . . . . . . . . . . . . . 60
 5.2. Ejemplo con múltiples terrenos. . . . . . . . . . . . . . . . . . . . . . . . . . 60
 5.3. Ejemplo con más de un personaje. . . . . . . . . . . . . . . . . . . . . . . . . 61
@@ -264,9 +271,9 @@ y desventajas. En general nos enfrentamos a trade-offs que involucran realismo, 
 ejecución y dificultad de implementación y/o puesta en práctica.
 Actualmente, el ramo CC-5512 Arquitectura de Motores de Juegos dictado por el profesor
 Daniel Calderón, utiliza como apoyo a la docencia el MonaEngine [7], motor de renderizado
-3DdesarrolladoporByronCornejoparasutrabajodetítulo,conelprofesorCalderóntambíen
-como gúıa. Motores de nivel profesional utilizados ampliamente en la industria, como Unity y
-Unreal Enginedejan en claro cuánto puedellegar a crecer unmotor, y la cantidad de opciones
+3D desarrollado por Byron Cornejo para su trabajo de título, con el profesor Calderón tambíen
+como guía. Motores de nivel profesional utilizados ampliamente en la industria, como Unity y
+Unreal Engine dejan en claro cuánto puede llegar a crecer un motor, y la cantidad de opciones
 que puede llegar a proveer a los usuarios. El MonaEngine, al haber sido desarrollado por una
 sola persona a lo largo de un semestre, tiene mucho espacio para ampliarse. En particular,
 para este trabajo de título, se plantea extender el módulo de animaciones para permitir
@@ -296,7 +303,7 @@ lograr una pose general determinada (Figura 1.1).
 *Figura 1.1: Dos poses de un modelo articulado generadas con distintas configuraciones de las*
 
 articulaciones.
-El siguiente paso, es agrupar una serie de poses que sirvan de gúıa para un movimiento dado.
+El siguiente paso, es agrupar una serie de poses que sirvan de guía para un movimiento dado.
 Podemos tener por ejemplo, 5 poses que marquen los puntos importantes de la acción de
 correr (Figura 1.2). Cada pose se asocia a un momento en el tiempo t dentro de la animacíon
 “correr“. Esta serie de poses asociadas a valores de tiempo forman un “Clip de Animación“.
@@ -308,14 +315,14 @@ recurso fijo, que contiene movimientos que han de usarse de manera inalterada au
 contextos en que se usan puedan ser infinitamente variados.
 El mundo de los videojuegos es uno de emociones, y de conexíon con la experiencia que el
 creador quiere entregar a los jugadores. Es por esto que es importante contar con animaciones
-dinámicas, atractivas y créıbles. Esto último no es fácil de lograr si se depende únicamente
+dinámicas, atractivas y creíbles. Esto último no es fácil de lograr si se depende únicamente
 de interpolación de poses prehechas, o de secuencias de imágenes importadas (sprites) para
 
 
 ![Figura 1.2](figures/figura_1_2.png)
-*Figura1.2:Clip de animacíon simplificado de un personaje corriendo. El clip tiene 5 segundos*
+*Figura 1.2: Clip de animacíon simplificado de un personaje corriendo. El clip tiene 5 segundos*
 
-de duracíon y cuenta con 5 poses o muestras. Fuente: www.mixamo.com.
+de duracíon y cuenta con 5 poses o muestras. Fuente: www. mixamo. com .
 simular el movimiento de los personajes. Los recursos prehechos funcionan, pero su uso di-
 recto permite generar una cantidad muy limitada de movimientos, que no pueden ajustarse
 dinámicamente a distintos contextos. Los límites de lo que se puede lograr con este tipo de
@@ -332,11 +339,11 @@ Objetivo General
 El objetivo general de este trabajo de título es añadir al MonaEngine la posibilidad de
 utilizar animaciones dinámicas que se adapten al entorno, modificadas procedimentalmente
 mediante cinemática inversa. Es decir, se quiere que las animaciones varíen en tiempo real, y
-seadecúenalasvariacionesdeterrenoeneljuegocreado.Conestoseobtendríananimaciones
+se adecúen a las variaciones de terreno en el juego creado. Con esto se obtendrían animaciones
 más naturales y libres, reduciendo al mismo tiempo la carga de los desarrolladores.
-Seplanteatrabajarsobreunaanimacíonbaseingresadaporelusuario,ymodificarlamomento
+Se plantea trabajar sobre una animacíon base ingresada por el usuario, y modificarla momento
 a momento. Esto en oposición a generar la animación desde cero mediante IK. De esta forma,
-lasanimacionesfinalesgeneradasporelsistemaseránmáscontroladas,yaqueestaránbasadas
+las animaciones finales generadas por el sistema serán más controladas, ya que estarán basadas
 en la animacíon input escogida. La animacíon base deberá ser una animación de caminar
 relativamente simple.
 
@@ -346,11 +353,11 @@ Objetivos Específicos
 una figura articulada humanoide, y una dirección global de movimiento, se debe poder
 ajustar una animación de “caminar“ simple, de tal forma que las piernas de la figura
 articulada se adapten a las irregularidades del terreno.
-2. Escogerunalgoritmodecinemáticainversaadecuado,quepermitaajustarlaanimacíon
+2. Escoger un algoritmo de cinemática inversa adecuado, que permita ajustar la animacíon
 base en tiempo real.
 3. La animación generada debe presentar un nivel de realismo y atractivo suficiente. No se
-esperagenerarunmovimientodecaminataperfecto,perosedebemantenerlaesenciade
-laanimaciónbase,ylogrartransmitirlasensacióndecaminarenunterrenoirregular.Si
+espera generar un movimiento de caminata perfecto, pero se debe mantener la esencia de
+la animación base, y lograr transmitir la sensación de caminar en un terreno irregular. Si
 se mantiene la esencia de la animacíon base, el usuario puede tener una buena noción de
 como se verá la animacíon final generada, permitíendole controlar mejor los resultados.
 Además, la idiosincrasia de la caminata en sí, está contenida en la animación original,
@@ -369,7 +376,7 @@ esto no se logra, no puede cumplirse el propósito de usar las animaciones en vi
 La solucíon obtenida se integra en el MonaEngine en forma de un nuevo sistema, llamado
 Sistema de Navegacíon IK. Un game object que represente un personaje animado dentro del
 mundo del juego, puede utilizar el IKNavigationComponent para adaptar una o más anima-
-cionesaunoomásterrenoscreadosconfuncionesdeelevación.Lasanimacionespuedenserde
+ciones a uno o más terrenos creados con funciones de elevación. Las animaciones pueden ser de
 tipo idle, o contener movimientos de caminata, lo que permite usar la capacidad de transicíon
 entre animaciones del MonaEngine, al mismo tiempo que las animaciones son adaptadas al
 terreno. El concepto para las clases base del sistema, IKRig e IKChain, está basado en las
@@ -400,7 +407,7 @@ rados tengan al mismo tiempo un parecido con los de la animacíon original.
 Capítulo 2
 Marco téorico
 En las siguientes subsecciones se introducen los conceptos que dan forma a la solución
-presentadaenesteinforme.Lasexplicacionessedanconsiderandoelcontextodelaanimacíon
+presentada en este informe. Las explicaciones se dan considerando el contexto de la animacíon
 por computador y los videojuegos.
 
 ### 2.1. Transformaciones espaciales
@@ -421,42 +428,62 @@ Para definir cómo se aplicará una cadena de transformaciones a un vector, debe
 el sistema usado para ordenar e interpretar las matrices en memoria. Existen dos sistemas
 principales [22]: row-major y column-major.
 1. Row-major: Este es el sistema más intuitivo, en que los elementos contiguos de una
-matrizenlamemoriapertenecenaunamismafila.Losvectoresenunsistemarow-major
+matriz en la memoria pertenecen a una misma fila. Los vectores en un sistema row-major
 son vectores fila, y por lo tanto, son post-multiplicados por matrices. Considérense el
 vector fila ⃗v de dimensiones 1x4, y una matriz M de dimensiones 4x4, en un sistema
-row-major. El vector transformado v⃗′, de dimensiones 1x4 se obtiene de la ecuación
-v⃗′ = ⃗vM. Para mantener el orden de aplicacíon de subtransformaciones planteado, si
+row-major. El vector transformado
+v⃗′,
+de dimensiones 1x4 se obtiene de la ecuación
+v⃗′
+= ⃗vM. Para mantener el orden de aplicacíon de subtransformaciones planteado, si
 
 
 ![Figura 2.1](figures/figura_2_1.png)
 *Figura 2.1: Subdivisíon gráfica de una transformacíon espacial tridimensional en subtransfor-*
 
-maciones, y su efecto en los distintos ejes cartesianos. Fuente: www.developer.unigine.
-com.
+maciones, y su efecto en los distintos ejes cartesianos. Fuente:
+www. developer. unigine.
+com .
 dividimos M, la ecuación queda:
-⃗v′ =⃗vSRT (2.1)
+⃗v′
+= ⃗vSRT (2.1)
 2. Column-major: Al contrario que en row-major, los elementos contiguos en memoria se
 leen como columnas, y los vectores son vectores columna. Considérese ahora un vector
 columna v⃗ de dimensiones 4x1, y una matriz M de dimensiones 4x4. M y v⃗ son la
 c c c c
 matriz M y el vector ⃗v respectivamente, pero interpretados según un sistema column-
-major.Notarqueestoimplicaquelosvaloresdelascolumnasylasfilasseintercambian,
+major. Notar que esto implica que los valores de las columnas y las filas se intercambian,
 por lo que se está realizando una operacíon de transposicíon. Entonces se cumple que
-M = MT y v⃗ = ⃗vT. Para traspasar la ecuacíon 2.1 al sistema column-major, se debe
+M =
+MT
+y v⃗ =
+⃗vT.
+Para traspasar la ecuacíon 2.1 al sistema column-major, se debe
 c c
 transponer:
-⃗v′T = (⃗vSRT)T
+⃗v′T
+=
+(⃗vSRT)T
 Aplicando la propiedad de la multiplicacíon de matrices, que indica que la transpuesta
-del producto es el producto de las transpuestas con los factores invertidos (AB)T =
-BTAT, se obtiene:
-⃗v′T = TTRTST⃗vT
+del producto es el producto de las transpuestas con los factores invertidos
+(AB)T
+=
+BTAT,
+se obtiene:
+⃗v′T
+=
+TTRTST⃗vT
 Que equivale a:
-v⃗′ = T R S v⃗
+v⃗
+′
+= T R S v⃗
 c c c c c
 En este informe se aplican las transformaciones espaciales según un sistema column-major.
 Las matrices se indexan como es usual: por filas y luego columnas.
 En el caso del espacio tridimensional, las transformaciones de traslación y escalamiento se
-construyen a partir de vectores de tres dimensiones, ⃗t = {t ,t ,t } y ⃗s = {s ,s ,s } respec-
+construyen a partir de vectores de tres dimensiones,
+⃗t
+= {t ,t ,t } y ⃗s = {s ,s ,s } respec-
 1 2 3 1 2 3
 tivamente. Las matrices de rotación son construidas en base a cuaterniones [15], particular-
 mente cuaterniones unitarios.
@@ -464,19 +491,28 @@ Un cuaternión q = {q ,q ,q ,q }, tiene la apariencia de un vector de 4 dimensio
 x y z w
 comporta de forma bastante distinta. Los cuaterniones son en realidad una extensión de los
 números complejos. Que sea unitario, significa que q cumple que sus componentes se ajustan
-a la ecuación q2 +q2 +q2 +q2 = 1. Sin entrar en mayor detalle, q puede descomponerse en
+a la ecuación
+q2
++
+q2
++
+q2
++
+q2
+= 1. Sin entrar en mayor detalle, q puede descomponerse en
 x y z w
 
 
-un eje de rotación⃗a y un ángulo de rotación θ, que juntos forman una rotacíon en el espacio
+un eje de rotación ⃗a y un ángulo de rotación θ, que juntos forman una rotacíon en el espacio
 3D. Si se multiplica un punto p⃗ por el cuaterníon q, se le está aplicando una rotación en un
 ángulo θ en torno al eje ⃗a, como se muestra en la figura 2.2.
 
 ![Figura 2.2](figures/figura_2_2.png)
 *Figura 2.2: Rotacíon generada por un cuaterníon, de un punto p⃗ en un ángulo θ en torno*
 
-a un eje. Fuente: https://danceswithcode.net/engineeringnotes/quaternions/
-quaternions.html.
+a un eje. Fuente: https: // danceswithcode. net/ engineeringnotes/ quaternions/
+quaternions. html
+.
 Los tres espacios más importantes a considerar son:
 1. Espacio local: Dado un punto p posicionado en el espacio, decimos que otro punto está
 en su espacio local, si su posición se especifica en relación al sistema de coordenadas
@@ -488,7 +524,7 @@ objetos, donde cada uno de ellos tiene su espacio local. Si un punto p está pos
 en relación a m, podemos decir que está en el espacio local de m y a su vez que está
 en el espacio del modelo de m.
 3. Espacio global: El espacio global es el espacio vinculado al sistema de referencia basal.
-No existen otros sistemas de referencia más arriba en la jerarqúıa.
+No existen otros sistemas de referencia más arriba en la jerarquía.
 La aplicacíon de una transformacíon espacial, conceptualmente modifica el sistema de refe-
 rencia cartesiano al que un punto está asociado. Lo que hace entonces, es transformar todo el
 espacio local. Si se tiene la transformación que relaciona a un sistema de referencia S con otro
@@ -508,8 +544,8 @@ espacio local, con el espacio local de su nodo padre. Al ser un árbol, los nodo
 pueden tener múltiples nodos hijos, pero sólo un nodo padre. Al aplicar la transformación
 de un nodo a un punto p que está en su espacio local, p es llevado al espacio local de su
 padre. Al concatenar las transformaciones en orden jerárquico, desde el nodo actual hasta la
-ráız del esqueleto, obtenemos la posición del nodo en el espacio del modelo, que tambíen es
-el espacio local del nodo ráız. Entonces, el espacio del modelo es el espacio más cercano al
+raíz del esqueleto, obtenemos la posición del nodo en el espacio del modelo, que tambíen es
+el espacio local del nodo raíz. Entonces, el espacio del modelo es el espacio más cercano al
 espacio global. Típicamente, cada articulación es identificada con un nombre.
 
 ### 2.3. Mapas de altura
@@ -519,7 +555,7 @@ p⃗ = (x,y) que existen en un plano bidimensional, y a cada punto se le asigna 
 que puede ser visualizado como la altura del punto en el espacio tridimensional. Esto implica
 que por cada valor en el plano, existe un único punto en el espacio tridimensional. En otras
 palabras un mapa de altura es una función h(x,y) = z, donde las coordenadas x,y conforman
-lospuntosquepertenecenaldominiobidimensionaldeh.Losmapasdealturatienenvariadas
+los puntos que pertenecen al dominio bidimensional de h. Los mapas de altura tienen variadas
 aplicaciones, pero en este informe se utilizan para la generación de terrenos.
 
 ### 2.4. Cinemática
@@ -532,7 +568,7 @@ de las articulaciones caen en el ámbito de la cinemática.
 Una cadena articulada [3] se define como un subgrupo de articulaciones pertenecientes a
 un modelo articulado, que están conectadas en serie mediante segmentos. Una cadena posee
 una base, que es la denominación que se le da en este informe a la articulacíon que se en-
-cuentra más arriba en su jerarqúıa, y un end-effector, abreviado usualmente como ee, que se
+cuentra más arriba en su jerarquía, y un end-effector, abreviado usualmente como ee, que se
 encuentra en el extremo opuesto (figura 2.3).
 En el contexto de querer controlar los movimientos de una cadena articulada, el end-effector
 es la articulación que quiere llevarse a una posicíon objetivo, para posiblemente ejecutar al-
@@ -546,7 +582,7 @@ Las distancias entre las articulaciones se mantienen fijas, por lo que solo se p
 posicíon relativa entre ellas sea modificada mediante rotaciones.
 
 ![Figura 2.3](figures/figura_2_3.png)
-*Figura 2.3: Ejemplo de cadena articulada. Imagen basada en figura extráıda de [12].*
+*Figura 2.3: Ejemplo de cadena articulada. Imagen basada en figura extraída de [12].*
 
 
 #### 2.4.2. Cinemática directa
@@ -603,7 +639,13 @@ tomarse esta informacíon rotacional, y obtenerse la posición del end-effector 
 de la base de la cadena. Se puede expresar entonces la posición del end-effector en función
 ⃗
 de las rotaciones de las articulaciones como ⃗s = f(θ), usando FK. Resolver el problema de
-IK consiste en obtener la función inversa, tal que f−1(⃗s) = θ ⃗ . f−1 es una función altamente
+IK consiste en obtener la función inversa, tal que
+f−1(⃗s)
+= θ
+⃗
+.
+f−1
+es una función altamente
 no lineal y difícil de obtener. Dependiendo de la cantidad de nodos y DoF asociados a la
 cadena en particular para la que se trate de resolver el problema, puede haber una solución,
 múltiples soluciones o incluso ninguna (figura 2.4).
@@ -629,30 +671,45 @@ manoide, la pierna se flecte de manera que la rodilla vaya hacia atrás. Usar la
 ![Figura 2.5](figures/figura_2_5.png)
 *Figura 2.5: Figura humana como un conjunto de cadenas articuladas. Fuente: www.*
 
-3dkingdoms.com
+3dkingdoms. com
 adecuadas soluciona este problema.
 
 ### 2.5. Curvas linealmente interpoladas
-Unacurvalinealmenteinterpolada,oLIC comoselellamaenesteinformeporsussiglasen
+Una curva linealmente interpolada, o LIC como se le llama en este informe por sus siglas en
 inglés, es un conjunto discreto de puntos que existen en un espacio n-dimensional, donde cada
 punto está asociado a un valor específico de un parámetro escalar t. Una curva linealmente
 interpolada es en realidad una spline lineal [21]. Si una LIC l posee k puntos p , con sus
 
-respectivosvaloresdelparámetrot,t ,...,t ,...,t ,segeneraunintervalodetiempo[t ,t ]para
+respectivos valores del parámetro t, t ,...,t ,...,t , se genera un intervalo de tiempo [t ,t ] para
 1 i k 1 k
-l. Es posible obtener un punto de la curva para cualquier instante de tiempo tˆperteneciente a
-ese intervalo, simulando continuidad. Si se da que ∃i tˆ= t , entonces obtenemos directamente
+l. Es posible obtener un punto de la curva para cualquier instante de tiempo
+tˆperteneciente
+a
+ese intervalo, simulando continuidad. Si se da que ∃i
+tˆ=
+t , entonces obtenemos directamente
 
-el punto asociado a t y l(tˆ) = p . En otro caso, buscamos el subintervalo más pequeño que
+el punto asociado a t y
+l(tˆ)
+= p . En otro caso, buscamos el subintervalo más pequeño que
 i i
-contenga a tˆ, tal que t < tˆ < t e interpolamos linealmente entre los puntos p y p
+contenga a
+tˆ,
+tal que t <
+tˆ
+< t e interpolamos linealmente entre los puntos p y p
 i i+1 i i+1
-utilizando la relacíon entre t , tˆy t como referencia, obteníendose que:
+utilizando la relacíon entre t ,
+tˆ
+y t como referencia, obteníendose que:
 i i+1
-tˆ−t
-l(tˆ) = p +(p −p ) i
+tˆ−
+t
+l(tˆ)
+= p + (p − p )
+
 i i+1 i
-t −t
+t − t
 i+1 i
 
 
@@ -666,12 +723,16 @@ gradiente de F evaluado en ⃗x:
  
 ∂F(⃗x)
 ∂x1
- ... 
+
+...
+
  
-∇F(⃗x) = ∂F(⃗x)
+∇F(⃗x) =
+∂F(⃗x)
 
 
-∂xi 
+∂xi
+
 
 ...
  
@@ -679,8 +740,8 @@ gradiente de F evaluado en ⃗x:
 ∂xn
 El gradiente de F evaluado en ⃗x es un vector, e indica la dirección de máximo crecimiento
 de F. Teniendo calculado el gradiente, se actualiza el valor de ⃗x:
-⃗x := ⃗x−λ∇F(⃗x)
-Un paso del descenso de gradiente consiste en mover a⃗x en la dirección opuesta a la direccíon
+⃗x := ⃗x − λ∇F(⃗x)
+Un paso del descenso de gradiente consiste en mover a ⃗x en la dirección opuesta a la direccíon
 de máximo crecimiento local de F, aplicando un factor λ al valor del gradiente llamado
 tasa de aprendizaje, que controla la velocidad del descenso. A medida que ⃗x se acerca a
 un mínimo local, las coordenadas del gradiente presentan valores más y más cercanos a 0,
@@ -690,7 +751,7 @@ llegar a un número especificado de iteraciones, o si las coordenadas del gradie
 valores suficientemente cercanos a 0 según lo requerido en el caso de uso particular.
 
 ### 2.7. La caminata humana
-Lacaminatahumana(ensuversiónpromedio),esdefinidacomounmovimientodepéndu-
+La caminata humana (en su versión promedio), es definida como un movimiento de péndu-
 lo invertido. Conceptualmente, en cada paso dado, el pie de apoyo es el soporte del péndulo,
 la pierna conectada a ese pie es la cuerda, y la cadera es el peso oscilante. Mientras la cadera
 se encuentra cayendo (u oscilando), el pie opuesto al de apoyo, que se encuentra en movi-
@@ -709,7 +770,7 @@ al encontrarse en torno al punto de soporte, donde se detiene por un instante.
 ### 2.8. El MonaEngine
 El motor dentro del cual se desarrolla el trabajo de esta memoria es el MonaEngine [7],
 un motor simple, que tiene lo necesario para transmitir lo que es un motor de juegos y como
-puedeestructurarseaunnivelmásbienminimalista.EstáescritoenC++,esmultiplataforma
+puede estructurarse a un nivel más bien minimalista. Está escrito en C++, es multiplataforma
 y de código abierto. Cuenta con un sistema de audio, uno de renderizado 3D, uno de eventos,
 uno de física y colisiones, y uno de animacíon, además de un modelo de game objects para
 representar a las entidades que existen en el mundo del juego. A continuación se explican
@@ -792,9 +853,9 @@ tionTrack tienen un tamaño arbitrario. Cada uno de los arreglos tiene un arregl
 mismo tamaño, que contiene sus timeStamps, o marcas de tiempo. Cada timeStamp, indica
 el tiempo dentro del intervalo de duración d de la animación A, para el que el valor de su
 A
-arreglo paralelo está destinado. En el contexto de este informe, alíndice de una timeStamp
+arreglo paralelo está destinado. En el contexto de este informe, al índice de una timeStamp
 se le denomina frame. Por lo tanto, si una animacíon tiene n timeStamps de rotación para
-una articulación j, entonces se tienen n frames asociados, que van de 0 a n−1. Notar que
+una articulación j, entonces se tienen n frames asociados, que van de 0 a n − 1. Notar que
 el número de frames para distintas articulaciones no necesariamente es el mismo. Tambíen
 puede darse que una misma articulación tenga distinto número de frames de rotación, tras-
 lación y escalamiento.
@@ -811,7 +872,7 @@ cial local por cada AnimationTrack. El proceso de renderizado del modelo, requie
 transformaciones sean pasadas a espacio del modelo (y más tarde a espacio global). Tal como
 se indica en la sección 2.2, la concatenacíon de las transformaciones de las articulaciones a
 animar, transforma los puntos desde el espacio de las articulaciones, hasta los espacios de sus
-padres, y los padres de sus padres, hasta llegar al espacio de la ráız del esqueleto, o espacio
+padres, y los padres de sus padres, hasta llegar al espacio de la raíz del esqueleto, o espacio
 del modelo.
 Para construir un game object que represente a un modelo animado, se requiere un Skele-
 talMeshComponent, y un TransformComponent para la informacíon de transformacíon glo-
@@ -824,7 +885,7 @@ modelo será afectada por la iluminacíon.
 Pueden asignarse varias animaciones a un mismo esqueleto. La reproducción de un clip de
 animación en particular, y la transicíon entre distintas animaciones, es manejada por la
 clase AnimationController. Esta clase guarda un puntero al clip de animacíon que se está
-reproduciendoactualmente,yalclipdeanimacíonalquesetransicionará(encasodehaberlo),
+reproduciendo actualmente, y al clip de animacíon al que se transicionará (en caso de haberlo),
 llamado CrossFadeTarget.
 
 
@@ -844,14 +905,14 @@ Capítulo 3
 ## Estado del arte
 
 ### 3.1. Métodos para resolver el problema de IK
-ElproblemadeIKpuederesolversedemuchasmaneras,quevaríanencomplejidadytiem-
-po de ejecución. La siguiente es una recopilación de esos métodos, extráıda principalmente
+El problema de IK puede resolverse de muchas maneras, que varían en complejidad y tiem-
+po de ejecución. La siguiente es una recopilación de esos métodos, extraída principalmente
 del trabajo de Aristidou y Lasenby [2]:
 
 #### 3.1.1. Métodos analíticos
-LassolucionesanalíticasalproblemadeIKconsistenenfuncionesqueentregandemanera
+Las soluciones analíticas al problema de IK consisten en funciones que entregan de manera
 inmediata (sin necesidad de un proceso iterativo), todas las configuraciones (conjunto de ro-
-tacionesparalasarticulaciones)quellevanal(los)end-effector(s)al(los)punto(s)objetivo(s).
+taciones para las articulaciones) que llevan al(los) end-effector(s) al (los) punto(s) objetivo(s).
 Estas funciones entregan resultados a partir de los largos de los segmentos, la configuración
 rotacional base, y las constraints de rotación (Ejemplo: figura 3.1).
 La solución generada es global (obtenemos de una sola vez los valores para todas las articu-
@@ -879,52 +940,96 @@ analítica. Fuente [2]
 #### 3.1.2. Métodos numéricos
 Los métodos numéricos trabajan aproximando soluciones. Deben ser escogidos y configu-
 rados con cuidado para evitar resultados erráticos e inconsistentes.
-Recordando el planteamiento original de IK (2.4.3), se busca solucionar la ecuación f−1(⃗s) =
+Recordando el planteamiento original de IK (2.4.3), se busca solucionar la ecuación
+f−1(⃗s)
+=
 ⃗ ⃗
 θ. Generalizando, θ es el vector de rotaciones, y ⃗s es un vector con las posiciones de un
-número arbitrario end-effectors. Si se considera ⃗s como las posiciones actuales, y ⃗t como las
-posiciones objetivo, se puede definir un vector de error ⃗e, tal que ⃗e =⃗t−⃗s. Se quiere usar los
-métodos numéricos para modificar ⃗s, acercándolo a ⃗t lo más posible y minimizando el error
+número arbitrario end-effectors. Si se considera ⃗s como las posiciones actuales, y
+⃗t
+como las
+posiciones objetivo, se puede definir un vector de error ⃗e, tal que ⃗e =
+⃗t−⃗s.
+Se quiere usar los
+métodos numéricos para modificar ⃗s, acercándolo a
+⃗t
+lo más posible y minimizando el error
 ⃗e.
 Métodos basados en la inversíon del Jacobiano
-Se puede escribir el jacobiano del vector θ como J(θ ⃗ ) = (∂si) . Las entradas de la
-ij ∂θj ij
-matriz J pueden calcularse como (∂s⃗i) = v × (s⃗ − p⃗ ), donde v⃗ es el vector unitario
-∂θj ij j i j j
+Se puede escribir el jacobiano del vector θ como J(θ
+⃗
+) =
+(∂si
+) . Las entradas de la
+ij
+∂θj
+ij
+matriz J pueden calcularse como
+(∂s⃗i
+) = v × (s⃗ − p⃗ ), donde v⃗ es el vector unitario
+∂θj
+ij j i j j
 que apunta en la direccíon del eje actual de rotacíon de la j-ésima articulación, y p⃗ es
 j
 su posición actual. Además la derivada de ⃗s con respecto al tiempo puede escribirse como
 ˙
-˙ ⃗ ⃗
+˙
+⃗ ⃗
 ⃗s = J(θ)θ. Con esto, una pequeña variación del vector ⃗s puede aproximarse como ∆⃗s ≈
 ⃗ ⃗
 J∆θ. La idea es elegir un vector ∆θ que haga que ∆⃗s se aproxime lo más posible a ⃗e,
 logrando así un acercamiento a la posicíon objetivo con ese pequeño cambio. Por último,
 ⃗
 se puede obtener la variación de θ requerida si se calcula el inverso del jacobiano J, ya que
-∆θ ⃗ = J−1⃗e. Para resolver esta ecuacíon en general se buscan alternativas que eviten tener
+∆θ
+⃗
+=
+J−1⃗e.
+Para resolver esta ecuacíon en general se buscan alternativas que eviten tener
 que calcular la inversa directamente. Problemas comunes al usar métodos que involucren el
 uso del jacobiano son la aparición de singularidades, y crecimiento explosivo del valor de
 la función en torno a ellas. Las singularidades son zonas en el espacio de la ecuación en las
 ⃗
-cualesnoesposibleencontrarunavariación∆⃗squegenereunacercamientoal∆θ buscado.El
-crecimientoexplosivomencionadogeneravariacioneserráticasenlosvaloresdelasrotaciones,
-loquellevaaresultadospococréıblesenelprocesodeanimacíon.Acontinuacíonsepresentan
+cuales no es posible encontrar una variación ∆⃗s que genere un acercamiento al ∆θ buscado. El
+crecimiento explosivo mencionado genera variaciones erráticas en los valores de las rotaciones,
+lo que lleva a resultados poco creíbles en el proceso de animacíon. A continuacíon se presentan
 dos ejemplos (existen varios más) de reemplazantes para la inversa del jacobiano:
 
 
-i Transpuesta del jacobiano: Se modifica la ecuacíon para reemplazar J−1, quedando como
-∆θ ⃗ = αJT⃗e, donde JT es la transpuesta de J y α es un escalar que puede calcularse como
-α = ⃗e·JJT⃗e , siendo · el producto punto. Esta solución suele requerir muchas iteraciones
+i Transpuesta del jacobiano: Se modifica la ecuacíon para reemplazar
+J−1,
+quedando como
+∆θ
+⃗
+=
+αJT⃗e,
+donde
+JT
+es la transpuesta de J y α es un escalar que puede calcularse como
+α =
+⃗e·JJT⃗e
+, siendo · el producto punto. Esta solución suele requerir muchas iteraciones
 JJT⃗e·JJT⃗e
 ⃗
 (cálculos consecutivos de valores pequeños ∆θ) para acercarse de forma aceptable al
-objetivo ⃗t, y es común que genere poses poco créıbles y movimientos faltos de fluidez.
+objetivo
+⃗t,
+y es común que genere poses poco creíbles y movimientos faltos de fluidez.
 Estos problemas se dan principalmente cuando el objetivo esta muy lejos de la posicíon
 inicial. Para evitar problemas es tambíen ideal que el valor de α sea pequeño.
-ii Pseudo-inversa del jacobiano: En este caso la ecuacíon es ∆θ ⃗ = αJpi⃗e, donde Jpi es la
-pseudo-inversadeljacobianooinversaMoore-Penrose.Lapseudo-inversapuedecalcularse
-como Jpi = JT(JJT)−1. Esta solución, en caso de estar cerca de una singularidad es
+ii Pseudo-inversa del jacobiano: En este caso la ecuacíon es ∆θ
+⃗
+=
+αJpi⃗e,
+donde
+Jpi
+es la
+pseudo-inversa del jacobiano o inversa Moore-Penrose. La pseudo-inversa puede calcularse
+como
+Jpi
+=
+JT(JJT)−1.
+Esta solución, en caso de estar cerca de una singularidad es
 especialmente propensa a generar cambios drásticos en los ángulos de las articulaciones
 aunque el cambio en la posicíon del end-effector sea muy pequeño.
 Descenso de gradiente
@@ -933,7 +1038,13 @@ resolver este problema. Basta para ello definir una función F a minimizar, que 
 la distancia entre las posiciones actuales de los end-effectors y sus posiciones objetivo, en
 función de los valores de rotación de las articulaciones del modelo articulado. Puede por
 ejemplo, usarse la siguiente función:
-F(θ ⃗ ) = ||⃗s(θ ⃗ )−⃗t||2 (3.1)
+F(θ
+⃗
+) = ||⃗s(θ
+⃗
+)
+−⃗t||2
+(3.1)
 Se explicita en la ecuacíon 3.1, la dependencia de las posiciones de los end-effectors hacia las
 rotaciones de las articulaciones. La norma usada es la norma euclidiana.
 Métodos heurísticos
@@ -951,7 +1062,7 @@ n n−1 n−1
 anterior al objetivo). El paso clave consiste en modificar la rotación asociada al nodo
 p , para alinear los dos vectores recíen mencionados, tal como se ve en la figura 3.2.
 n−1
-Esto se repite hasta que p corresponda al nodo ráız, terminando así una iteración de
+Esto se repite hasta que p corresponda al nodo raíz, terminando así una iteración de
 n−1
 CCD. Pueden llevarse a cabo tantas iteraciones como se quiera, fijando un valor de error
 aceptable para marcar el término del proceso.
@@ -966,10 +1077,10 @@ p , donde p es la base de la cadena, que se encuentra fija, y p es el end-effect
 4 1 4
 quiere llevarse a la posicíon objetivo t. Los largos de los tramos que unen los nodos son d
 
-(p -¿p ),d (p -¿p )yd (p -¿p ).Ahora,pocoapocoseirántransformandolasposiciones
+(p -¿p ), d (p -¿p ) y d (p -¿p ). Ahora, poco a poco se irán transformando las posiciones
 1 2 2 2 3 3 3 4
 hasta obtener un resultado suficientemente bueno. Como se ve en la figura 3.3, se mueve
-p a la posicíon objetivo. Luego se genera p ′, tomando la direccíon del vector (p −p ′)
+p a la posicíon objetivo. Luego se genera p ′, tomando la direccíon del vector (p − p ′)
 4 3 3 4
 y amplificándola por d . p ′ es ahora la nueva posicíon objetivo, y p el nodo que se debe
 3 3 3
@@ -1000,7 +1111,7 @@ del conjunto y se obtiene un resultado mediante interpolación. Tambíen se han 
 distribuciones de probabilidad sobre el espacio de poses, que permiten recuperar la pose
 más probable dada una serie de condiciones y constraints. Los métodos basados en datos
 presentan la ventaja de entregar poses realistas y plausibles de forma natural, ya que se
-basan en ejemplos extráıdos del mundo real. Una desventaja característica es la de tender a
+basan en ejemplos extraídos del mundo real. Una desventaja característica es la de tender a
 entregar poses similares a los ejemplos con alta frecuencia, siendo por lo tanto una solución
 algo más restringida.
 Métodos basados en redes neuronales
@@ -1012,19 +1123,19 @@ para los inputs entregados. En contraste con el método anterior, la red no apun
 una pose completa directamente obtenida de los ejemplos, sino que descompone las poses en
 movimientos simples y los asocia a ciertos parámetros. Así, con informacíon sobre constraints
 y posiciones objetivo, la red puede construir una pose completamente distinta a los ejemplos
-entregados, basándose en las reglas generales extráıdas del proceso de aprendizaje.
+entregados, basándose en las reglas generales extraídas del proceso de aprendizaje.
 
 #### 3.1.4. Métodos híbridos
 Los métodos híbridos consisten en alguna combinación de los métodos anteriores. Por
 ejemplo, se ha planteado resolver el problema de IK para la figura humana, dividíendolo
 
 
-en 3 subproblemas [25]. La primera parte consiste en estimar la posición del nodo ráız del
+en 3 subproblemas [25]. La primera parte consiste en estimar la posición del nodo raíz del
 modelo, usualmente posicionado en la cadera, movíendolo de tal manera que se satisfagan las
 constraints lo mejor posible, y los objetivos de los end-effectors sean alcanzables. Una vez se
 estima este valor, ya se tiene una primera aproximacíon de la pose general. El segundo paso
-es un ajuste de la postura del esqueleto. Puede que al posicionar el nodo ráız algunos de los
-objetivos sigan sin poder alcanzarse. Para solucionar esto, se reajusta el nodo ráız, modifican-
+es un ajuste de la postura del esqueleto. Puede que al posicionar el nodo raíz algunos de los
+objetivos sigan sin poder alcanzarse. Para solucionar esto, se reajusta el nodo raíz, modifican-
 do su posición y orientacíon, y además se ajusta la postura del tronco del modelo articulado.
 Los ajustes necesarios se realizan mediante métodos numéricos (estimativos). El paso final es
 el de fijar las posiciones de las extremidades. Dado que las extremidades son cadenas articu-
@@ -1037,7 +1148,7 @@ al aplicarlo al subproblema más adecuado. Así es posible conseguir soluciones 
 
 ### 3.2. Uso de IK para generar movimientos de locomo-
 ción bípeda
-Lainvestigacióndecomosimularmovimientoscomplejosdelocomoción,talescomocorrer
+La investigación de como simular movimientos complejos de locomoción, tales como correr
 o caminar, ha avanzado mucho en las últimas dos décadas, con la popularización creciente
 de los videojuegos y el desarrollo del campo de la robótica. Dado que el corazón de la ci-
 nemática inversa recae en ajustar valores de rotacíon local de articulaciones, para alcanzar
@@ -1049,7 +1160,7 @@ generado mediante simulación física, no se preocupa de posiciones objetivo par
 del modelo articulado, y simplemente modifica la configuración del modelo en respuesta a las
 fuerzas presentes en la simulación.
 Una exploración superficial de las publicaciones ligadas al área de animación de movimientos
-delocomocíon,indicaqueenlosúltimosañoshasidolainteligenciaartificiallaquehatomado
+de locomocíon, indica que en los últimos años ha sido la inteligencia artificial la que ha tomado
 protagonismo. Las técnicas que involucran métodos numéricos, que aparecen repetidamente
 en trabajos previos al año 2010, han sido reemplazadas por métodos basados en datos. Una
 recopilación de avances basados en deep learning fueron presentados por Gabriel State en la
@@ -1106,7 +1217,7 @@ la animacíon original se realizan considerando una serie de reglas, que hacen q
 pueda adaptarse al entorno con un estilo particular.
 Otro enfoque para adaptar animaciones a distintos contextos mediante métodos numéricos
 requiriendo solo unas pocas de ellas, es el de modificar las animaciones momento a momento
-en base a ciertos parámetros extráıdos previamente. En Automated Semi-Procedural Anima-
+en base a ciertos parámetros extraídos previamente. En Automated Semi-Procedural Anima-
 tion for Character Locomotion [20], el autor extrae valores clave de las animaciones, como
 puntos de apoyo de los pies en el piso, y largo, rapidez y direccíon de las trayectorias, entre
 otros. En tiempo de ejecucíon, se escogen combinaciones de las animaciones base (e.g. correr
@@ -1114,7 +1225,7 @@ y caminar) según la velocidad lineal y angular del modelo, y se adaptan al terr
 
 
 una técnica de cinemática inversa no explicitada, utilizando al mismo tiempo los parámetros
-extráıdos en la etapa previa de análisis de las animaciones.
+extraídos en la etapa previa de análisis de las animaciones.
 
 
 Capítulo 4
@@ -1122,10 +1233,10 @@ Solucíon
 
 ### 4.1. Arquitectura de la solución
 El sistema de navegación IK se inserta dentro de la arquitectura [6] del ya existente
-MonaEngine,porloquetomalugarcomounodesuscomponentes,manteniendolaestructura
+MonaEngine, por lo que toma lugar como uno de sus componentes, manteniendo la estructura
 general del motor. Se añaden además dos librerías que tienen el propósito de asistir el proceso
-dedepuración:debug-draw yconsole−color.Lafigura4.1muestracómoseinsertalasolucíon
-dentro del motor. La figura 4.2 introduce los componentes de la solucíon y su jerarqúıa. Cada
+de depuración: debug-draw y console−color. La figura 4.1 muestra cómo se inserta la solucíon
+dentro del motor. La figura 4.2 introduce los componentes de la solucíon y su jerarquía. Cada
 una de las clases presentadas en el diagrama de la arquitectura interna, es explorada en
 alguna de las secciones siguientes del informe. Se incluye tambíen un diagrama UML simple
 en el anexo, para presentar una relación más clara entre las clases (figura A.1).
@@ -1136,7 +1247,7 @@ en el anexo, para presentar una relación más clara entre las clases (figura A.
 El IKRig (tambíen llamado simplemente rig en este informe), se encarga de representar
 al esqueleto articulado dentro del marco del sistema IK. Por esta razón guarda un puntero al
 esqueleto original, y extrae de él las relaciones padre-hijo de los nodos. No obstante, el IKRig
-noessolouncontenedorparaelesqueleto:suobjetivoestransformarlo(yporlotantotambíen
+no es solo un contenedor para el esqueleto: su objetivo es transformarlo (y por lo tanto tambíen
 al personaje humanoide al que pertenece), en una entidad que pueda desplazarse por el
 mundo del juego. La clase contiene para esto vectores de referencia, que indican la orientación
 global del rig, y su dirección de movimiento; una posición inicial global; variables de rapidez
@@ -1155,24 +1266,36 @@ GameObject
 Sistema de S i s t e ma de S i s t e m a de S i s t e ma de S i s t e ma de
 renderizado a nimación n a v egación IK f ísica y audio
 colisiones
-Fuentes de luz Carga y manejo P r eprocesamiento y
-de esqueletos validación de
-animaciones Cuerpos rígidos
-y primitivas de Fuentes de sonido
+Fuentes de luz
+Carga y manejo
+P r eprocesamiento y
+de esqueletos
+validación de
+animaciones
+Cuerpos rígidos
+y primitivas de
+Fuentes de sonido
 colisiones
 Renderizado
 básicas
 de mallas de
 esqueletos Generación de
 trayectorias para end- Receptor
-effectors y cadera Eventos de
-Materiales Carga y colisiones
+effectors y cadera
+Eventos de
+Materiales
+Carga y
+colisiones
 manejo de
 clips de
-Carga y manejo de animación
+Carga y manejo de
+animación
 Espacialización sonora
-texturas Ajuste de rotaciones de Consultas de
-articulaciones objetivo raycasting
+texturas
+Ajuste de rotaciones de
+Consultas de
+articulaciones objetivo
+raycasting
 Manejo, carga y
 Int
 c
@@ -1188,17 +1311,26 @@ c
 d
 ió
 e
-n y en animaciones
+n y
+en animaciones
 renderizado de
 poses de los Carga y manejo de
-mallas esqueletos Simulación física archivos de audio
+mallas
+esqueletos
+Simulación física
+archivos de audio
 Transform Component
 Sistemas Core
 Manejo de ventana Input Log / Assertions
 Bibliotecas de terceros
-dr_wav imgui debug_draw glm spdlog console_color
+dr_wav
+imgui
+debug_draw glm
+spdlog
+console_color
 ooppeennAALL
-stl stb
+stl
+stb
 bulletPhysics glfw assimp
 OS / Driver
 Hardware
@@ -1216,15 +1348,29 @@ Interfaz entre el usuario y
 el sistema IK
 IKRigController
 Actualización de
-IKAnimations / Preprocesamiento de Actualización del
-AnimationClips animaciones IKRig
+IKAnimations /
+Preprocesamiento de
+Actualización del
+AnimationClips
+animaciones
+IKRig
 AnimationValidator IKRig
-Validación de C o r r e c ción de Representación del esqueleto a
-animaciones a n imaciones animar con IK
-IKAnimation IKChain T rajectoryGenerator F o r w ardKinematics I n v e rseKinematics
+Validación de
+C o r r e c ción de Representación del esqueleto a
+animaciones
+a n imaciones animar con IK
+IKAnimation
+IKChain
+T rajectoryGenerator F o r w ardKinematics I n v e rseKinematics
 Extracción de
-subtrayectorias de una C álculo de Generación de
-Representación R e p r e sentación animación transformaciones á n g ulos de rotación
+subtrayectorias de una
+C álculo de
+Generación de
+Representación
+R e p r e sentación
+animación
+transformaciones
+á n g ulos de rotación
 a
 d e
 m
@@ -1244,7 +1390,8 @@ a
 n
 ci ó
 IK
-n d e
+n
+d e
 a
 u
 r
@@ -1295,7 +1442,8 @@ o
 n
 s
 e s
-Generación de para end-effectors
+Generación de
+para end-effectors
 trayectorias para end-
 effectors y cadera
 EnvironmentData
@@ -1311,7 +1459,7 @@ a una malla estática
 *Figura 4.2: Arquitectura interna del sistema de navegacíon IK.*
 
 
-cada pierna del esqueleto. Además se incluye elíndice de la articulación de la cadera, que es
+cada pierna del esqueleto. Además se incluye el índice de la articulación de la cadera, que es
 a partir de donde se controla la trayectoria global del rig; un InnerComponentHandle para
 acceder a la transformación global del game object; y la altura del esqueleto (espacio del
 modelo) en conjunto con su escala global, para tener una nocíon de distancia relativa. Por
@@ -1336,16 +1484,16 @@ iniciar la animacíon, además de ser requerido por la clase InverseKinematics. 
 un arreglo dedicado a almacenar rotaciones variables arbitrarias, que se usan para realizar
 cálculos necesarios para el ajuste con IK. Un historial de ángulos calculados en el pasado
 reciente tambíen es mantenido para ser usado por FK e IK.
-LaotrafuncióndeunaIKAnimation,esladellevarregistrodeltiempodereproduccíonde
+La otra función de una IKAnimation, es la de llevar registro del tiempo de reproduccíon de
 la animación, y del frame que está siendo reproducido. Para que la generación de trayectorias
 mantenga una temporalidad coherente, debe establecerse una línea de tiempo desde que
-empezóareproducirselaanimación,loqueselograllevandolacuentaenelreproductionTime.
+empezó a reproducirse la animación, lo que se logra llevando la cuenta en el reproductionTime.
 Por otro lado lado, la animacíon tiene su propio tiempo interno, que va desde 0 hasta la
 duración de la animación. Este tiempo se denomina animationTime, y es necesario para
 determinar que parte de la animación se está reproduciendo. IKAnimation mantiene una
 relación entre estos dos tiempos, pudiendo pasar de uno al otro según sea necesario.
-Algenerartrayectorias,sisequierepuederealizarseunavalidaciónbásicadelatrayectoria
-generada.Silatrayectorianoesválida,sefijalaanimacíon,establecíendoselosmismosvalores
+Al generar trayectorias, si se quiere puede realizarse una validación básica de la trayectoria
+generada. Si la trayectoria no es válida, se fija la animacíon, establecíendose los mismos valores
 de rotación para todos los frames para que el movimiento se detenga. El frame que se replica
 en el resto de la animacíon, llamado fixedMovementFrame, tambíen se almacena en esta clase.
 Por último, se especifica el tipo de clip de animacíon guardado en la IKAnimation, que
@@ -1356,8 +1504,8 @@ sistema.
 #### 4.2.3. IKChain
 IKChain es la implementacíon del concepto de cadena articulada. Una IKChain, tiene un
 nombre, que hace referencia a la parte del esqueleto a la que pertenece (e.g.: leftLeg); un
-arreglo con losíndices de las articulaciones que conforman la cadena, ordenadas jerárquica-
-mente; elíndice de la articulación padre de la cadena en la jerarqúıa, que permite conectar
+arreglo con los índices de las articulaciones que conforman la cadena, ordenadas jerárquica-
+mente; el índice de la articulación padre de la cadena en la jerarquía, que permite conectar
 la cadena con el resto de la topología directamente; un puntero a la IKChain opuesta (e.g.
 pierna derecha, en el caso de la pierna izquierda), lo que es útil para cálculos que requieran
 posiciones relativas entre cadenas; y el objetivo actual, por cada IKAnimation, al que debe
@@ -1365,7 +1513,7 @@ ser llevado el end-effector de la cadena. Las articulaciones de la cadena son la
 cuyos ángulos de rotacíon pueden ser modificados por IK. Como se explica en 2.4.2, la rota-
 ción del end-effector no tiene efecto en su posición, por lo que su ángulo no se modifica. Debe
 tenerse en cuenta que la posicíon del end-effector se maneja en el espacio del modelo, y no
-en el espacio de la base de la cadena, por lo que las articulaciones superiores en la jerarqúıa,
+en el espacio de la base de la cadena, por lo que las articulaciones superiores en la jerarquía,
 de haberlas, tambíen se utilizan en los cálculos.
 En esta solución se construyen dos cadenas, una por cada pierna. Para cada cadena, el end-
 effector se encuentra aproximadamente a la altura del tobillo. Cada vez que se hace mencíon
@@ -1373,12 +1521,12 @@ a end-effectors a lo largo de la sección de la solución en este informe, se es
 esas articulaciones en particular.
 
 ### 4.3. Orientación global y sistema de referencia
-El IKRig se orienta en su espacio local (2.1), de forma que mira en la dirección +Y, y
+El IKRig se orienta en su espacio local (2.1), de forma que mira en la dirección +Y , y
 el vector que conecta los pies con la cabeza apunta en la dirección +Z, como aparece en la
 figura 4.3.
 La posición y orientacíon del IKRig son únicamente modificadas a nivel global, mediante
 cambios al TransformComponent del game object al que está asociado el rig. Por lo anterior,
-localmente, el IKRig (más precisamente la ráız del esqueleto asociado) no sufre ningún cam-
+localmente, el IKRig (más precisamente la raíz del esqueleto asociado) no sufre ningún cam-
 bio de orientacíon o posición.
 ⃗
 Los cambios en la orientacíon global, están limitados a la rotación del vector front V =
@@ -1394,9 +1542,9 @@ para ello debe llevarse un registro adecuado de en qúe momento del tiempo se es
 ordenamiento temporal se definen tres tipos de tiempo:
 
 
-*Figura 4.3: Orientacíon en el espacio del modelo del IKRig. Fuente: https://*
+*Figura 4.3: Orientacíon en el espacio del modelo del IKRig. Fuente: https: //*
 
-musculoskeletalkey.com/biomechanics-of-the-spinal-motion-segment/
+musculoskeletalkey. com/ biomechanics-of-the-spinal-motion-segment/
 
 #### 4.4.1. Tiempo de animacíon
 El animationTime, es el tiempo interno de una animación, e indica cual es la porcíon
@@ -1478,14 +1626,15 @@ interno actual de la animacíon. La diferencia con extendedAnimationTime, es que
 tionTime hace referencia a información que sí evoluciona en el tiempo. La información que
 
 
-puede extraerse del tiempo actual t , no necesariamente es la misma que en t −d .
+puede extraerse del tiempo actual t , no necesariamente es la misma que en t − d .
 rep rep A
 La generacíon de trayectorias explicada en la seccíon 4.8, depende de la relación entre anima-
 tionTime/extendedAnimationTime y reproductionTime. Toda trayectoria creada se inserta
-en la linea temporal del reproductionTime, pero se basa en una curva original extráıda de
+en la linea temporal del reproductionTime, pero se basa en una curva original extraída de
 extendedAnimationTime, y tiene su misma duracíon. De esta manera, existe un paralelismo
 temporal permanente entre las trayectorias originales y las trayectorias generadas.
-reproductionTime trayectoria 3
+reproductionTime
+trayectoria 3
 trayectoria 1
 trayectoria 4
 trayectoria 2
@@ -1514,28 +1663,30 @@ A
 curvas de las figuras 4.4 y 4.5.
 
 #### 4.4.4. Reproduccíon de frames
-Como se explicó en 2.8.4, un frame es elíndice de una timeStamp de una pista de anima-
+Como se explicó en 2.8.4, un frame es el índice de una timeStamp de una pista de anima-
 ción (AnimationTrack). Sea t el valor actual de animationTime, la información de transfor-
-mación extráıda para una articulacíon, se consigue interpolando entre los valores asociados
+mación extraída para una articulacíon, se consigue interpolando entre los valores asociados
 a los timeStamps vecinos de t: t y t . Entonces, t ≤ t ≤ t es el intervalo formado por
 i i+1 i i+1
 timeStamps más pequeño que contiene a t. i e i + 1 son los frames asociados a t y t
 i i+1
-respectivamente. En este caso, se dice que el frame actual es i, y el frame siguiente es i+1.
-En caso de que i sea el último frame de la animacíon ( n−1), entonces el frame siguiente es
+respectivamente. En este caso, se dice que el frame actual es i, y el frame siguiente es i + 1.
+En caso de que i sea el último frame de la animacíon ( n − 1), entonces el frame siguiente es
 el frame 0.
 
 ### 4.5. Descenso de gradiente
 La clase que implementa el descenso de gradiente, GradientDescent, se construye en en
-baseainstanciasdelaclaseFunctionTerm querepresentasumandosautilizarparagenerarla
-funciónfinalalaqueseaplicarálatécnicadedescensodegradiente.Considéresequesequiere
+base a instancias de la clase FunctionTerm que representa sumandos a utilizar para generar la
+función final a la que se aplicará la técnica de descenso de gradiente. Considérese que se quiere
 aplicar la técnica a las funciones f ,...,f ,...,f en conjunto, ya que cada una de ellas tiene
 1 i n
 un significado en el contexto del problema a resolver. Estas funciones dependen del mismo
-vectordevariables⃗x = {x ,...,x ,...,x }.SeconstruyeunafuncióntotalF(⃗x) =
+vector de variables ⃗x = {x ,...,x ,...,x }. Se construye una función total F(⃗x) =
 (cid:80)n
 f (⃗x),
-1 k m i=1 i
+1 k m
+i=1
+
 a la que finalmente se aplica el descenso de gradiente. Cada subfunción (o término) f , se
 
 ⃗
@@ -1543,7 +1694,8 @@ encapsula en un FunctionTerm que permite calcular su valor f (xˆ), y su derivad
 
 ∂fi(⃗xˆ).
 Cada término tiene tambíen asignado un peso w , que determina su importancia para
-∂xˆ i
+∂xˆ
+
 k
 el cálculo del valor final.
 
@@ -1554,30 +1706,38 @@ construir el vector gradiente:
 ∂fi(⃗x)
 ∂x1
  ... 
-(cid:88) n  
-∇F(⃗x) = w ∂fi(⃗x)
-i ∂x 
- k 
-i=1 ...
+(cid:88)
+n
+ 
+∇F(⃗x) = w
+∂fi(⃗x)
+i 
+∂x
+
+
+k
+
+i=1
+...
  
 ∂fi(⃗x)
 ∂xm
 Recordando lo expuesto en 2.6, el vector ⃗x que minimiza localmente la función F se actualiza
 como sigue:
-⃗x := ⃗x−λ∇F(⃗x)
+⃗x := ⃗x − λ∇F(⃗x)
 Esta es la forma regular de actualizar el gradiente, pero existen muchas variantes. La clase
 GradientDescent, además del método regular, puede utilizar la técnica de descenso de gra-
 diente con momentum, en que los cálculos de iteraciones pasadas tienen un peso en el cálculo
 del valor actual del gradiente. El valor almacenado del gradiente, ∇F(⃗x) , se actualiza de
 saved
 la siguiente manera utilizando momentum:
-∇F(⃗x) := α∇F(⃗x) +(1−α)∇F(⃗x)
+∇F(⃗x) := α∇F(⃗x) + (1 − α)∇F(⃗x)
 saved saved
-αeselfactorqueindicacúantopesaelgradientehistórico∇F(⃗x) ,enrelaciónalgradiente
+α es el factor que indica cúanto pesa el gradiente histórico ∇F(⃗x) , en relación al gradiente
 saved
 calculado en la iteracíon actual ∇F(⃗x). En este caso particular, se utiliza α = 0,8. El vector
 ⃗x se actualiza como sigue usando momentum:
-⃗x := ⃗x−λ∇F(⃗x)
+⃗x := ⃗x − λ∇F(⃗x)
 saved
 Para poder contener la información necesaria para realizar los distintos cálculos en el
 proceso iterativo, la clase GradientDescent guarda un puntero a una clase de tipo arbitrario
@@ -1608,7 +1768,7 @@ zado, un puntero a la instancia de dataT y una referencia a argsDelta.
 ### 4.6. Cinemática
 Las clases que se introducirán a continuacíon, comparten la característica de ser depen-
 dientes de un IKRig y de una IKAnimation en particular para realizar sus cálculos, ya que se
-basan en los valores de transformación de las articulaciones y de su jerarqúıa. Ambas clases
+basan en los valores de transformación de las articulaciones y de su jerarquía. Ambas clases
 guardan por lo tanto un puntero al IKRig asociado para poder acceder directamente a su
 estructura y sus animaciones.
 
@@ -1623,45 +1783,54 @@ tion, por lo que los cálculos pueden realizarse para distintos momentos en el t
 a reproductionTime 4.2.2), para un rango temporal acotado (del que se tiene registro). Estas
 transformaciones permiten generar las posiciones que realmente han tenido las articulaciones
 en el periodo registrado.
-Ambasmodalidades,simpleyvariable,cuentanconlosvaloresfijosdeescalamientoyposicíon
+Ambas modalidades, simple y variable, cuentan con los valores fijos de escalamiento y posicíon
 de cada articulacíon.
 Las clases que dependen de ForwardKinematics necesitan las transformaciones para un
-grupo específico de articulaciones: las articulaciones que van desde la ráız hasta cada uno
+grupo específico de articulaciones: las articulaciones que van desde la raíz hasta cada uno
 de los end-effectors. Para realizar el cálculo, para cada end-effector ee, se calculan las trans-
-formaciones locales que están en el camino desde ee hasta la ráız. Estas transformaciones
+formaciones locales que están en el camino desde ee hasta la raíz. Estas transformaciones
 locales tambíen son útiles, así que se guardan en un vector de salida que es un parámetro
 opcional de la función. Cuando se tienen las transformaciones locales de la cadena completa
-hasta la ráız, se acumulan las transformaciones para pasarlas desde el espacio local hasta
+hasta la raíz, se acumulan las transformaciones para pasarlas desde el espacio local hasta
 el espacio del modelo. Tambíen se les aplica una transformacíon base que puede utilizarse
 para transformar a un espacio arbitrario ( generalmente el espacio global). Al calcular las
 transformaciones para cada end-effector, se cuida de no repetir cálculos que ya se hayan rea-
-lizado, en caso de que dos end-effectors compartan articulaciones en su camino hasta la ráız.
+lizado, en caso de que dos end-effectors compartan articulaciones en su camino hasta la raíz.
 El resultado del cálculo (tambíen en el caso del vector de salida de transformaciones locales),
 es un vector del tamaño de la topología del esqueleto, que guarda según el índice de cada
-articulación su transformación. En losíndices de las articulaciones para las que no se calculó
+articulación su transformación. En los índices de las articulaciones para las que no se calculó
 nada, simplemente se guarda la transformación identidad.
 
 #### 4.6.2. Cinemática inversa
 La clase InverseKinematics se encarga de calcular ángulos apropiados para las articu-
-laciones contenidas en las IKChains del IKRig, utilizando la informacíon extráıda de una
+laciones contenidas en las IKChains del IKRig, utilizando la informacíon extraída de una
 IKAnimation en particular. Los cálculos se hacen para un frame específico: el frame siguiente
 
 
 a reproducir del clip de animación asociado a la IKAnimation. Para calcular los ángulos, In-
 verseKinematics guarda una instancia de la clase GradientDescent, y utiliza el struct IKData
 como contenedor de la información para el descenso. Los ángulos son calculados por Gra-
-dientDescentsegúntresrequisitos,cadaunodeloscualesesencapsuladoenunFunctionTerm
-(4.5). La norma (||·||) usada en los términos es la norma euclidiana.
-1. Primertérmino:Elprimerrequisito,yelmásimportante,eseldeacercarelend-effector
+dientDescent según tres requisitos, cada uno de los cuales es encapsulado en un FunctionTerm
+(4.5). La norma (|| · ||) usada en los términos es la norma euclidiana.
+1. Primer término: El primer requisito, y el más importante, es el de acercar el end-effector
 de cada IKChain a su posicíon objetivo. Para esto, la funcíon que se quiere minimizar
 es:
-f (θ ⃗ ) = ||eeP ⃗ os(θ ⃗ )−eeTa ⃗ rget||2 (4.1)
+f (θ
+⃗
+) = ||eeP
+⃗
+os(θ
+⃗
+) − eeTa
+⃗
+rget||2
+(4.1)
 
 ⃗ ⃗ ⃗
 Donde eePos(θ) es la posición actual del end-effector, y eeTarget es la posición a la que
 se quiere llevar. La posición del end-effector en el espacio del modelo, depende de los
-ángulos de rotación de todas las articulaciones por encima de él en la jerarqúıa (desde
-él hasta la ráız). Dado que solo se modifican los ángulos de las articulaciones de las
+ángulos de rotación de todas las articulaciones por encima de él en la jerarquía (desde
+él hasta la raíz). Dado que solo se modifican los ángulos de las articulaciones de las
 ⃗
 IKChains (excluyendo el end-effector), el vector θ = {θ ,...,θ ,...,θ } contiene única-
 1 k m
@@ -1677,76 +1846,227 @@ cial, disminuyendo el costo del algoritmo. Por otro lado, las posiciones y escal
 no cambian como ya se ha mencionado. Por esto, las únicas variables a considerar son
 ⃗
 los ángulos contenidos en el vector θ.
-Paracalcularladerivadaparcialdef ,
-∂f1(θ⃗),sereformulaelcálculodef
-(θ
+Para calcular la derivada parcial de f ,
+∂f1(θ⃗),
+se reformula el cálculo de f (θ
 ⃗
-),separando
-1 ∂θ 1
+), separando
+
+∂θ
+
 k
 las partes dependientes de variable θ del resto de los valores, que en este contexto son
 k
 ⃗
 constantes. Notar primero que eePos(θ) puede descomponerse de la siguiente manera:
-eeP ⃗ os(θ ⃗ ) = M ˆ ATθ kRθ kSθ kM ˆ B ⃗ ˆ b (4.2)
+eeP
+⃗
+os(θ
+⃗
+) = M
+ˆ
+ATθ kRθ kSθ
+kM
+ˆ
+B
+⃗
+ˆ
+b (4.2)
 Recordar que para calcular la posición de una articulación en el espacio del modelo,
 deben multiplicarse en cadena las transformaciones desde la articulacíon en cuestión
-hasta la ráız del esqueleto. La ecuación 4.2 contiene precisamente ese cálculo, donde
+hasta la raíz del esqueleto. La ecuación 4.2 contiene precisamente ese cálculo, donde
 las matrices de transformación han sido agrupadas de forma conveniente. En primer
 ⃗
 ˆ
 lugar, el vector b = {0,0,0,1}, tiene ese valor porque es la posición del end-effector en
-su propio espacio local. Mθ k es la matriz de transformación local de la articulación j
+su propio espacio local.
+Mθ
+k
+es la matriz de transformación local de la articulación j
 k
 asociada a la variable θ . Esta matriz se descompone en sus tres subtransformaciones,
 k
-con lo que Mθ k = Tθ kRθ kSθ k. Esta descomposición se realiza porque la única de ellas
+con lo que
+Mθ
+k
+=
+Tθ kRθ kSθ
+k. Esta descomposición se realiza porque la única de ellas
 ˆ ˆ
 que varía es la matriz de rotación. MA y MB son simplemente las transformaciones
 acumuladas de las demás articulaciones en torno a la articulación j . Se agrupan las
 k
-constantes, quedando MA = M ˆ ATθ k y ⃗ b = Sθ kM ˆ B ⃗ ˆ b = {b ,b ,b ,b }:
+constantes, quedando
+MA
+= M
+ˆ
+ATθ
+k
+y
+⃗
+b =
+Sθ
+kM
+ˆ
+B
+⃗
+ˆ
+b = {b ,b ,b ,b }:
 0 1 2 3
-eeP ⃗ os(θ ⃗ ) = MARθ k ⃗ b (4.3)
+eeP
+⃗
+os(θ
+⃗
+) =
+MARθ
+k
+⃗
+b (4.3)
 
 
 Los elementos de los factores de la ecuación 4.3 se agrupan con sumatorias:
  
-b MARθ k
-j 0i ij
-(cid:88) 3 (cid:88) 3 b MARθ k
-eeP ⃗ os(θ ⃗ ) =  j 1i ij (4.4)
-b MARθ
+b
+MARθ
+k
+j
+0i ij
+(cid:88)
+
+(cid:88)
+
+b
+MARθ
+k
+eeP
+⃗
+os(θ
+⃗
+) =
+
+j
+1i
+ij
+
+(4.4)
+b
+MARθ
 k
 
-j=0 i=0  j 2i ij
-b MARθ k
-j 3i ij
+j=0 i=0
+ j
+2i ij
+
+b
+MARθ
+k
+j
+3i ij
 Substrayendo la posicíon objetivo:
  
-b MARθ k − eeTarget0
-j 0i ij 16
-(cid:88) 3 (cid:88) 3 b MARθ k − eeTarget1
-eeP ⃗ os(θ ⃗ )−eeTa ⃗ rget =  j 1i ij 16  (4.5)
-b MARθ k − eeTarget2 
-j=0 i=0  j 2i ij 16 
-b MARθ k − eeTarget3
-j 3i ij 16
+b
+MARθ
+k −
+eeTarget0
+j
+0i ij
+
+(cid:88)
+
+(cid:88)
+
+b
+MARθ
+k
+−
+eeTarget1
+eeP
+⃗
+os(θ
+⃗
+) − eeTa
+⃗
+rget =
+
+j
+1i ij
+
+
+(4.5)
+b
+MARθ
+k
+−
+eeTarget2
+
+j=0 i=0
+ j
+2i ij
+
+
+b
+MARθ
+k −
+eeTarget3
+j
+3i ij
+
 Finalmente la funcíon f reconstruida queda de la siguiente forma:
 
 (cid:34) (cid:35)2
 3 3 3
-(cid:88) (cid:88)(cid:88) eeTarget
-f (θ ⃗ ) = (b MARθ k − k ) (4.6)
-1 j ki ij 16
+(cid:88) (cid:88)(cid:88)
+eeTarget
+f (θ
+⃗
+) = (b
+MARθ
+k −
+k
+) (4.6)
+1 j
+ki ij
+
 k=0 j=0 i=0
-Con esto, la parte variable de f queda claramente separada en Rθ k, y calcular la
-1 ij
+Con esto, la parte variable de f queda claramente separada en
+Rθ
+k, y calcular la
+
+ij
 derivada parcial resulta más fácil:
 (cid:34) (cid:35)
-∂f (θ ⃗ ) (cid:88) 3 (cid:88) 3 (cid:88) 3 eeTarget (cid:88) 3 (cid:88) 3 ∂Rθ k
-1 = 2 (b MARθ k − k ) b MA ij (4.7)
-∂θ j ki ij 16 j ki ∂θ
+∂f (θ
+⃗
+)
+(cid:88)
+
+(cid:88)
+
+(cid:88)
+
+eeTarget
+(cid:88)
+
+(cid:88)
+3 ∂Rθ
+k
+
+= 2 (b
+MARθ
+k
+−
+k
+) b
+MA
+ij
+(4.7)
+∂θ
+j
+ki ij
+
+j
+ki
+∂θ
 k k
 k=0 j=0 i=0 j=0 i=0
 ∂R
@@ -1758,7 +2078,13 @@ de 4x4, en función de un ángulo y un eje rotacíon. La matriz buscada y su der
 presentan en el anexo B.1.
 2. Segundo término: En segundo lugar, se quiere que los ángulos calculados sean similares
 a los de las rotaciones originales para el frame objetivo. La función escogida es:
-f (θ ⃗ ) = ||θ ⃗ −ω⃗||2 (4.8)
+f (θ
+⃗
+) = ||θ
+⃗
+−
+ω⃗||2
+(4.8)
 
 El vector constante ω⃗ contiene, por cada θ , el ángulo ω original de la animacíon en
 k k
@@ -1767,7 +2093,7 @@ k
 ⃗
 ∂f (θ)
 
-= 2(θ −ω ) (4.9)
+= 2(θ − ω ) (4.9)
 k k
 ∂θ
 k
@@ -1775,7 +2101,13 @@ k
 en los valores calculados. Se quiere que los valores calculados para el frame actual no
 difieran excesivamente de los valores calculados para el frame anterior. Las ecuaciones
 son análogas a las del segundo término:
-f (θ ⃗ ) = ||θ ⃗ −⃗γ||2 (4.10)
+f (θ
+⃗
+) = ||θ
+⃗
+−
+⃗γ||2
+(4.10)
 
 En este caso, el vector constante ⃗γ, en lugar de contener los valores originales, contiene
 los valores de frame anterior para cada j .
@@ -1783,7 +2115,7 @@ k
 ⃗
 ∂f (θ)
 
-= 2(θ −γ ) (4.11)
+= 2(θ − γ ) (4.11)
 k k
 ∂θ
 k
@@ -1805,23 +2137,25 @@ valores ya se encuentran relativamente cerca del resultado deseado, se puede dis
 ficativamente el tiempo de cálculo. Se escoge entonces inicializar el vector de variables como
 sigue:
 ⃗
-θ =⃗γ
+θ = ⃗γ
 Dado que los movimientos en una buena animación deben ser lo más suaves y continuos
 posibles, es natural esperar que los valores para el frame actual sean similares a los del frame
-anterior. Por esto se usa⃗γ, el vector de valores de frame anterior, que tambíen se usa en 4.10,
+anterior. Por esto se usa ⃗γ, el vector de valores de frame anterior, que tambíen se usa en 4.10,
 para marcar donde comienza el descenso.
 La funcíon final F a minimizar es:
 ⃗ ⃗ ⃗ ⃗
-F(θ) = af (θ)+bf (θ)+cf (θ) (4.12)
+F(θ) = af (θ) + bf (θ) + cf (θ) (4.12)
 1 2 3
 Los coeficientes a, b, y c, se determinan mediante ensayo y error, buscando un resultado
 óptimo a nivel visual. Al ir probando valores, se tiene siempre en mente cuál es el significado
 de cada término f , y qúe es lo que se quiere lograr visualmente. Por ejemplo, si a tiene un
 
 valor muy alto, se siguen las trayectorias objetivo con mayor precisíon, pero los movimientos
-se vuelven menos créıbles. Por el contrario, si b tiene un valor muy alto, los movimientos son
+se vuelven menos creíbles. Por el contrario, si b tiene un valor muy alto, los movimientos son
 tan similares a la animación original que se pierde la capacidad de adaptación al terreno.
-Los valores usados son a = 1 , b = 2, y c = 4. El valor rigHeight corresponde a
+Los valores usados son a =
+
+, b = 2, y c = 4. El valor rigHeight corresponde a
 [rigHeight][δp]
 la altura del rig en el espacio del modelo, mencionado en 4.2.1. El valor δp corresponde a
 un valor directamente proporcional al pequeño cambio de posición que sufre, en promedio,
@@ -1859,7 +2193,9 @@ su final. Considérese un segmento s de largo fijo l, cuyo extremo quiere cambia
 desde una posicíon inicial, mediante una rotacíon en un ángulo δθ. Esta rotacíon ocurre en
 torno a un eje perpendicular a s situado en su comienzo. La distancia δp (nombrada así
 para hacer un símil con lo planteado al definir a) entre la posición inicial y la posicíon final
-alcanzada, se calcula como δp = 2lsin(δθ). Al ser δθ pequeño, puede aproximarse la función
+alcanzada, se calcula como δp =
+2lsin(δθ).
+Al ser δθ pequeño, puede aproximarse la función
 
 seno a su argumento, con lo que δp ≈ lδθ. Reordenando y considerando el cuadrado de la
 distancia:
@@ -1875,13 +2211,14 @@ distancia al cuadrado en relación a un ángulo de rotacíon, asociada a la func
 tamente proporcional al largo del segmento rotado (y en consecuencia a rigHeight), multi-
 plicado por el valor de cambio de la distancia. Además, si se considera δθ como un ángulo
 fijo, entonces se desprende de 4.13, que δp y l son directamente proporcionales, lo que implica
-que δp y rigHeight tambíen lo son. Con esto, se define heurísticamente que δp = rigHeight.
+que δp y rigHeight tambíen lo son. Con esto, se define heurísticamente que δp =
+rigHeight.
 
 Los cálculos anteriores permiten establecer un valor razonable para el coeficiente a.
 Para estudiar el funcionamiento del proceso de descenso de gradiente con las funciones
 y los coeficientes planteados, se recopilan datos que ilustran el rango de valores de los f
 
-multiplicadosporsuscoeficientesrespectivos.Losvaloressonextráıdosalolargodemúltiples
+multiplicados por sus coeficientes respectivos. Los valores son extraídos a lo largo de múltiples
 iteraciones completas del descenso de gradiente. Tambíen se incluyen datos sobre la cantidad
 de iteraciones requeridas para completar el proceso de descenso. Se presentan los datos en las
 tablas 4.1, y 4.2. La información es recopilada al hacer caminar a un modelo articulado por
@@ -1924,7 +2261,7 @@ cf (θ) 0.0910 0.1835 0.0006 2.8177
 ⃗
 F(θ) 1.1642 2.3392 0.0479 23.0851
 Número de pasos por 27.0242 13.9022 3 28
-cadaejecucióndeldes-
+cada ejecución del des-
 censo
 Tabla 4.1: Valores de referencia recolectados a lo largo de múltiples ejecuciones completas del
 descenso de gradiente para IK. Con rigHeight = 189,83.
@@ -1963,7 +2300,7 @@ cf (θ) 0.0974 0.1876 0.0003 2.2687
 ⃗
 F(θ) 1.3208 2.4802 0.0684 25.5004
 Número de pasos por 27.4569 13.6283 3 31
-cadaejecucióndeldes-
+cada ejecución del des-
 censo
 Tabla 4.2: Valores de referencia recolectados a lo largo de múltiples ejecuciones completas del
 descenso de gradiente para IK. Con rigHeight = 28474,5.
@@ -1977,7 +2314,7 @@ de iteraciones es 20, con rigHeight = 28474,5.
 ### 4.7. Informacíon del entorno
 
 #### 4.7.1. Mapas de altura
-Para poder generar las trayectorias que gúıan a los end-effectors del rig, es necesario tener
+Para poder generar las trayectorias que guían a los end-effectors del rig, es necesario tener
 un conocimiento del terreno que está siendo recorrido. Para ello, se extiende la clase Mesh,
 cuyas instancias se usan para contener la información de una malla estática. Se incluye un
 nuevo constructor de Mesh, especialmente creado para la generacíon de terrenos en base a
@@ -1987,7 +2324,7 @@ mapas de altura. Para construir el terreno se solicita: una funcíon h(x,y) = z 
 
 de profundidad que tendrá la malla. Para crear la malla, se distribuye de manera uniforme
 la cantidad de vértices indicada en el constructor, en el plano (x,y,0). A cada vértice ⃗v =
-{v ,v ,0}, se le asigna una altura, tal que⃗v = {v ,v ,h(v ,v )}. La funcíon h es encapsulada
+{v ,v ,0}, se le asigna una altura, tal que ⃗v = {v ,v ,h(v ,v )}. La funcíon h es encapsulada
 x y x y x y
 en una instancia de la clase HeightMap, que además guarda los valores mínimos y máximos
 de x e y para la malla creada. La instancia de HeightMap se almacena como un miembro de
@@ -2031,12 +2368,22 @@ las siguientes capacidades:
 1. evalCurve: Evaluar la curva para un valor arbitrario de t en el intervalo permitido
 [t ,t ].
 0 m
-2. getPointVelocity:Calcularlavelocidaddeunpuntop⃗ porlaizquierdayporladerecha,
+2. getPointVelocity: Calcular la velocidad de un punto p⃗ por la izquierda y por la derecha,
 k
-donde las ecuaciones son p⃗ k −p⃗ k−1 y p⃗ k+1 −p⃗ k respectivamente.
+donde las ecuaciones son
+p⃗
+k
+−p⃗
+k−1
+y
+p⃗
+k+1
+−p⃗
+k
+respectivamente.
 t −t t −t
 k k−1 k+1 k
-3. scale, translate y rotate:Escalar,trasladaryrotarlacurva.Seaplicaunatransformación
+3. scale, translate y rotate: Escalar, trasladar y rotar la curva. Se aplica una transformación
 de escalamiento, traslacíon o rotacíon a todos los puntos simultáneamente.
 4. setCurvePoint: Cambiar el valor de un punto particular de la curva.
 5. offsetTValues: Desplazar con un offset los valores del parámetro t.
@@ -2052,8 +2399,11 @@ k k k
 suficientemente distinto a los ya presentes (usando epsilon).
 10. transition: Transicionar de una curva a otra, especificando el valor del parámetro t
 durante el que se quiere transicionar. Ambas curvas deben incluir el valor de transicíon
-ensupropiorangodelparámetrot.Enlacurvafinalgenerada,elvalordepuntoasociado
-al valor de transición tˆindicado, es una interpolación entre los puntos asociados a tˆde
+en su propio rango del parámetro t. En la curva final generada, el valor de punto asociado
+al valor de transición
+tˆindicado,
+es una interpolación entre los puntos asociados a
+tˆde
 las curvas input.
 11. transitionSoft: Equivalente a transition, pero usa un rango de valores al transicionar,
 en lugar de uno solo, permitiendo que la curva final generada contenga una mayor
@@ -2062,12 +2412,12 @@ cantidad de puntos interpolados.
 ⃗v y ⃗v respectivamente. Para esto, se lleva la curva al origen, y se rota para
 start end
 ⃗
-alinear su direccíon d = p⃗ −p⃗ con la direccíon objetivo d = ⃗v −⃗v .
+alinear su direccíon d = p⃗ − p⃗ con la direccíon objetivo d = ⃗v − ⃗v .
 original m 0 target end start
-Luego, se traslada la curva completa en⃗v , con lo que⃗v se vuelve el nuevo punto
+Luego, se traslada la curva completa en ⃗v , con lo que ⃗v se vuelve el nuevo punto
 start start
 inicial de la curva. El último paso consiste en escalar la curva para que se cumpla que
-||d || = ||d ||, donde ||·|| es la norma euclidiana, para que el final de la curva
+||d || = ||d ||, donde || · || es la norma euclidiana, para que el final de la curva
 original target
 coincida con ⃗v .
 end
@@ -2098,7 +2448,7 @@ los frames de soporte se ajustan para que los end-effectors de cadenas opuestas 
 izquierda y pierna derecha) tengan frames de soporte complementarios. Es decir, si un frame
 es de soporte para un end-effector, para el ee de su IKChain opuesta no lo es. Las trayectorias
 originales se almacenan de acuerdo a lo que se detalla a continuación.
-1. Trayectorias originales de ee’s:Enelcasodelosend-effectors,lastrayectoriasoriginales
+1. Trayectorias originales de ee’s: En el caso de los end-effectors, las trayectorias originales
 se subdividen en tramos, tomando en cuenta los puntos de soporte ya calculados. La
 trayectoria total del end-effector se subdivide en subtrayectorias estáticas y dinámicas.
 Una subtrayectoria estática, está compuesta por una porcíon de la trayectoria en la
@@ -2107,7 +2457,7 @@ una trayectoria dinámica presenta un desplazamiento significativo del ee, ya qu
 conformada únicamente por frames que no son de soporte.
 Para construir las subtrayectorias, se van chequeando uno a uno los frames. Si el si-
 guiente frame no es de soporte, se comienza a generar una trayectoria dinámica, y en
-casocontrariounaestática.Unasubtrayectoriasecompletacuandoseagotanlosframes
+caso contrario una estática. Una subtrayectoria se completa cuando se agotan los frames
 que deben ser chequeados, o cuando se da la condición para empezar una trayectoria del
 tipo opuesto. Al chequear los frames, se toma en cuenta que las animaciones utilizadas
 son circulares, y que por lo tanto, una subtrayectoria puede comenzar en un frame y
@@ -2147,7 +2497,7 @@ a la IKChain opuesta. EEGlobalTrajectoryData tambíen guarda las alturas de sopo
 del ee, y un historial de posiciones análogo al historial de rotaciones en IKAnimation.
 Un arreglo con cada EEGlobalTrajectoryData generado (uno por IKChain), es alma-
 cenado en la instancia de IKAnimation asociada al clip de animacíon de donde fueron
-extráıdas las trayectorias.
+extraídas las trayectorias.
 2. Trayectoria original de la cadera: El almacenamiento de la trayectoria de la cadera es
 simple, ya que no requiere subdivisiones. Las posiciones globales se almacenan tal como
 vienen en una única LIC tridimensional.
@@ -2160,16 +2510,16 @@ contiene el historial de posiciones globales de la cadera.
 #### 4.8.3. TrajectoryGenerator
 La clase TrajectoryGenerator es la encargada de generar las trayectorias a seguir por los
 end-effectors y la cadera, tendiendo en cuenta la información entregada por su instancia de
-EnvironmentDatasobrelaselevacionesdelterreno.TrajectoryGeneratortambíencontieneun
+EnvironmentData sobre las elevaciones del terreno. TrajectoryGenerator tambíen contiene un
 puntero al IKRig, para poder acceder a las IKAnimations, IKChains y a la informacíon de
-orientaciónglobaldelrig.Lastrayectoriasobjetivogeneradas,almacenadasenLICstridimen-
+orientación global del rig. Las trayectorias objetivo generadas, almacenadas en LICs tridimen-
 sionales, existen en reproductionTime, lo que permite mantener una continuidad temporal,
 e insertar una trayectoria despúes de otra de manera constante. A pesar de que la anima-
 
 
 ción original existe en animationTime, y las trayectorias objetivo en reproductionTime, las
 trayectorias objetivo avanzan de forma paralela a la animacíon. Cada trayectoria objetivo
-generada está basada en una de las trayectorias originales extráıdas del clip, y tiene su misma
+generada está basada en una de las trayectorias originales extraídas del clip, y tiene su misma
 duración. De esta manera las temporalidades entre la animacíon y los movimientos del IKRig
 se mantienen consistentes.
 Las trayectorias nuevas se crean tomando como puntos de partida las posiciones históricas
@@ -2214,7 +2564,7 @@ un punto de inicio y un punto final para S . Estos puntos deben adaptarse a la a
 target
 terreno, y considerar el largo de la subtrayectoria S .
 original
-Considéreseunaterceracurva,S ,queesunasubcurvaextráıdadelasposicioneshistóricas
+Considérese una tercera curva, S , que es una subcurva extraída de las posiciones históricas
 saved
 de ee (guardadas en su EEGlobalTrajectoryData), y existe en reproductionTime al igual que
 
@@ -2255,7 +2605,8 @@ target 0 current
 Dada la direccíon objetivo −d , la distancia objetivo, y el punto de referencia
 XYTarget
 p⃗os , se puede calcular el punto inicial para S . Se calcula un número arbitra-
-XYref target
+XYref
+target
 rio de puntos candidatos a lo largo de la direccíon objetivo, partiendo desde el punto
 de referencia, asignándoles sus alturas correspondientes en el terreno. Se selecciona el
 punto candidato que tenga la distancia con el punto de referencia más cercana a la
@@ -2277,11 +2628,11 @@ la cadera para el tiempo tRep , y se aplica el offset original con ee para calcu
 n i
 posicíon objetivo ee . La dirección objetivo en el plano XY para el cálculo
 candidateXYEnd
-de la posición final de la trayectoria, se calcula como ee −targetStartXY,
+de la posición final de la trayectoria, se calcula como ee −targetStartXY ,
 candidateXYEnd
 donde targetStartXY es la proyección de la posicíon inicial ya calculada en el plano
 XY. Como se indicó, el proceso para calcular la posición final targetEnd, es análogo al
-procesodecálculodelinicio.Ladiferenciaprincipalrecaeenqueenestecaso,ademásde
+proceso de cálculo del inicio. La diferencia principal recae en que en este caso, además de
 considerar las alturas del terreno para la recoleccíon de puntos candidatos, se toman en
 cuenta las alturas de soporte asociadas a la curva S . Recordar que las alturas de
 original
@@ -2300,14 +2651,14 @@ sea el caso.
 
 #### 4.8.5. Correccíon de trayectorias dinámicas
 A pesar de que la trayectoria generada para un paso de la caminata sea ajustada en su
-puntoinicialyfinaldemaneracorrectaalterreno,puedequelasalturasintermediasoriginales
+punto inicial y final de manera correcta al terreno, puede que las alturas intermedias originales
 de la trayectoria no sean suficientes para superar la altura del terreno, como se observa en la
 figura 4.9.
 Para solucionar este problema, la clase TrajectoryGenerator guarda una instancia de la clase
 Irregularidad en Trayectoria del
 el terreno paso
 
-*Figura4.9:Trayectoria dinámica (paso de la caminata), que atraviesa una porcíon del terreno.*
+*Figura 4.9: Trayectoria dinámica (paso de la caminata), que atraviesa una porcíon del terreno.*
 
 StrideCorrector. A su vez, la clase StrideCorrector, guarda una instancia de GradientDescent,
 la cual utiliza para adaptar la forma de una trayectoria dinámica al terreno. Lo que hace, es
@@ -2331,12 +2682,27 @@ curva restringida parcialmente, que es lo más parecida posible a la curva base.
 minimizar es entonces:
 n
 (cid:88)(cid:104) (cid:105)
-f(P ⃗ ) = ||lVel(p ⃗ T )−lVel(p ⃗ B )||2 +||rVel(p ⃗ T )−rVel(p ⃗ B )||2 (4.15)
-T i i i i
+f(P
+⃗
+) = ||lV el(p
+⃗
+T ) − lV el(p
+⃗
+B
+)||2
++ ||rV el(p
+⃗
+T ) − rV el(p
+⃗
+B
+)||2
+(4.15)
+T
+i i i i
 i=1
 La letra T mayúscula, hace referencia a la curva S , y la letra B mayúscula a la curva
 target
-S . La norma (||·||) usada es la norma euclidiana. Son n los puntos de la curva objetivo
+S . La norma (|| · ||) usada es la norma euclidiana. Son n los puntos de la curva objetivo
 base
 S , cuyas coordenadas se quieren ajustar para acercarse a los velocidades de n puntos
 target
@@ -2348,8 +2714,9 @@ base T
 contiene todas las coordenadas de los n puntos de la curva objetivo:
 ⃗ ⃗ ⃗ ⃗
 P = {...,pT ,pT ,pT ,...}
-T ix iy iz
-lVel y rVel, son las velocidades por la izquierda y por la derecha respectivamente (4.8.1).
+T
+ix iy iz
+lV el y rV el, son las velocidades por la izquierda y por la derecha respectivamente (4.8.1).
 Se utilizan ambas velocidades, porque se quiere corregir la relación de cada punto con sus
 dos vecinos. La derivada parcial de f se calcula con respecto a cada coordenada w de cada
 ⃗
@@ -2357,16 +2724,38 @@ un de los n puntos pT :
 
 (cid:34) (cid:35)
 ⃗ ⃗ ⃗ ⃗ ⃗
-∂f(P ) lVel(pT ) −lVel(pB ) rVel(pT ) −rVel(pB )
-T = 2 i w i w + i w i w (4.16)
-∂p ⃗ T t i −t i−1 t i −t i+1
+∂f(P ) lV el(pT ) − lV el(pB ) rV el(pT ) − rV el(pB )
+T
+= 2
+
+w
+
+w
++
+
+w
+
+w
+(4.16)
+∂p
+⃗
+T
+t
+
+− t
+i−1
+t
+
+− t
+i+1
 iw
 La variable t , es el instante de tiempo asociado al i-ésimo punto. Notar que la curva base y
 
 la curva objetivo deben compartir los mismos instantes de tiempo para todos sus puntos, por
 ⃗ ⃗
 lo que t aplica para ambos pT y pB . Además, es muy importante que ambas curvas tengan
-i i i
+
+i i
 las mismas orientaciones generales en el espacio, para que el ajuste de velocidades realmente
 genere similitud entre sus formas.
 El subíndice w se aplica a las velocidades, indicando que se está usando esa coordenada del
@@ -2389,7 +2778,7 @@ fijos en el proceso de ajuste. La curva S se inicializa con S . Se quiere que S 
 target base target
 una forma lo más similar a S , pero que respete las alturas mínimas permitidas.
 base
-LafunciónpostDescentCustomBehaviour cumpleelobjetivodeasegurarquelasalturasdelos
+La función postDescentCustomBehaviour cumple el objetivo de asegurar que las alturas de los
 puntos se mantengan por sobre sus alturas mínimas asignadas. Se chequea que la coordenada
 ⃗
 z de cada punto pT , esté por encima del valor mínimo permitido hMin . Si z está por
@@ -2398,7 +2787,7 @@ debajo del mínimo, se le asigna el valor hMin . Además se altera artificialmen
 
 argsDelta , para indicarle a computeArgsMin que la variable está cerca de su valor objetivo
 
-(aunque no lo esté según el gradiente calculado). Aqúı entra en uso la modalidad de descenso
+(aunque no lo esté según el gradiente calculado). Aquí entra en uso la modalidad de descenso
 de gradiente con momentum explicada en 4.5. Al modificar argsDelta , se altera el registro
 
 histórico del gradiente, lo que influye en el cálculo del gradiente de la siguiente iteracíon.
@@ -2431,7 +2820,7 @@ paso corregida
 Luego de que han sido calculadas las trayectorias de los end-effectors, se calcula la trayec-
 toria de la cadera. Se escoge la trayectoria calculada eeS , que es la trayectoria a la que le
 base
-quedamástiempoparaterminardeserrecorrida,yperteneceunend-effectoree .Comoseex-
+queda más tiempo para terminar de ser recorrida, y pertenece un end-effector ee . Como se ex-
 
 plica en 4.8.4, las trayectorias calculadas para los end-effectors existen en reproductionTime.
 [tRep ,tRep ] es el intervalo de tiempo en el que existe eeS , y [tExtAnim ,tExtAnim ]
@@ -2455,7 +2844,7 @@ punto correspondiente al tiempo de inicio de hipS , y el punto correspondiente a
 original
 animationTime actual de hipS . Una vez se tiene el punto de inicio targetStart,
 original
-ya sea extráıdo del historial de posiciones, o recíen calculado en el plano XY, se rota
+ya sea extraído del historial de posiciones, o recíen calculado en el plano XY, se rota
 hipS para ajustarla a la dirección global de movimiento, y se traslada su comienzo
 target
 a targetStart.
@@ -2464,11 +2853,11 @@ hipS . Esta corrección se hace utilizando la curva eeS y la curva eeS ,
 target base opposite
 que es la curva objetivo del end-effector opuesto a ee . Para cada punto p⃗ a ajustar,
 i i
-asociadoaunreproductionTimetRep pertenecientea[tRep ,tRep ],lafuncióncalcHi-
+asociado a un reproductionTime tRep perteneciente a [tRep ,tRep ], la función calcHi-
 i 0 n
 pAdjustedHeight, recupera la diferencia de altura original entre los end-effectors recíen
 mencionados, y la cadera. Mediante un proceso iterativo simple, busca la mayor altura
-posiblez paraelpuntop⃗ ,talquenieeS evaluadaentRep ,nieeS evaluadaen
+posible z para el punto p⃗ , tal que ni eeS evaluada en tRep , ni eeS evaluada en
 i i base i opposite
 tRep , tengan una diferencia de altura mayor con la cadera, que la diferencia de altura
 
@@ -2479,15 +2868,15 @@ la animación original, calculada en base a las posiciones objetivo de los end-e
 Esto permite subir y bajar por el terreno, siguiendo el movimiento generado para los ee.
 La funcíon calcHipAdjustedHeight se utiliza para ajustar todos los puntos de hipS ,
 target
-a excepción del primero (targetStart), en caso de que haya sido extráıdo del historial
+a excepción del primero (targetStart), en caso de que haya sido extraído del historial
 de posiciones, ya que entonces su altura no requiere ajuste.
 Una vez que hipS ha sido calculada completamente, se asigna como nueva curva objetivo
 target
-aHipGlobalTrajectoryData,mediantereemplazootransicíondesdelacurvaobjetivoanterior,
+a HipGlobalTrajectoryData, mediante reemplazo o transicíon desde la curva objetivo anterior,
 según sea el caso.
 
 #### 4.8.7. Trayectorias fijas y validacíon de trayectorias dinámicas
-Lastrayectoriasfijas,sontrayectoriasquemantienenunamismaposicíonparalatotalidad
+Las trayectorias fijas, son trayectorias que mantienen una misma posicíon para la totalidad
 de su duración. Cuando se determina que la trayectoria de un end-effector debe ser fija,
 entonces se asignan trayectorias fijas a los demás end-effectors y tambíen a la cadera, ya
 que el movimiento siempre debe detenerse por completo (y no parcialmente). Se utilizan las
@@ -2495,7 +2884,7 @@ trayectorias fijas en dos casos:
 1. Animaciones tipo IDLE: Si la animacíon para la que se está calculando una trayectoria
 es tipo IDLE, significa que no representa una caminata, sino una pose estática, por lo
 que siempre se le asignan trayectorias fijas.
-2. Trayectorias dinámicas inválidas:Sialcalcularelpuntofinaldeunatrayectoriadinámi-
+2. Trayectorias dinámicas inválidas: Si al calcular el punto final de una trayectoria dinámi-
 ca, se determina que el cambio de elevacíon del paso a dar será demasiado grande,
 entonces se decide que la trayectoria es inválida debido a un exceso de pendiente en
 el terreno. En ese caso (y si la variable enableStrideValidation tiene el valor true), en
@@ -2527,7 +2916,7 @@ usar una articulacíon en la zona donde comienza el pie, a la altura del tobillo
 piernas no pueden comenzar en la cadera, ya que la cadera se utiliza para controlar la
 trayectoria global del IKRig. Se requiere además que no haya superposicíon entre las
 articulaciones de la pierna izquierda y las de la pierna derecha.
-3. LainformacíondetransformaciónglobalparaelIKRig,queincluyeelánguloderotacíon
+3. La informacíon de transformación global para el IKRig, que incluye el ángulo de rotacíon
 inicial, la posición inicial, y la escala.
 Una vez que el IKNavigationComponent ha sido asignado al game object, el componente le
 da las siguientes posibilidades al usuario:
@@ -2549,7 +2938,7 @@ frame siga siendo considerado de soporte. Esto determina cuan largas son las tra
 rias estáticas en relación a las dinámicas (4.8.2). En general es suficiente con dejar este
 parámetro en su valor por defecto 1,0.
 Como se indica en 4.3, el problema de la caminata se soluciona considerando el eje Z+
-como up, y el eje Y+ como front, por lo que es necesario que las animaciones utiliza-
+como up, y el eje Y + como front, por lo que es necesario que las animaciones utiliza-
 das sean ajustadas a esta condicíon. Al incorporar la animación al sistema, deben ser
 previamente ajustadas por el usuario mediante el método Reorient de la clase Anima-
 tionClip (en caso de ser necesario).
@@ -2561,14 +2950,14 @@ sando el puntero al clip de animación.
 
 
 3. Agregar un terreno: Un terreno, a nivel de la interfaz de usuario, es un game object que
-contieneunStaticMeshComponent,cuyoobjetoMeshfueconstruidomedianteunafun-
+contiene un StaticMeshComponent, cuyo objeto Mesh fue construido mediante una fun-
 ción de elevación (4.7.1). Solo luego de asignado el terreno al IKNavigationComponent,
 el IKRig tendrá acceso a la informacíon de elevación.
 4. Eliminar un terreno: Se puede desvincular un terreno del componente ingresando la
 misma referencia usada para agregarlo.
 5. Activar y desactivar la cinemática inversa: Se puede activar o desactivar la parte del
 sistema que ajusta las animaciones mediante cinemática inversa. Con esto, se generarán
-nuevastrayectorias,peronosellevaráalosend-effectorsalasposicionesobjetivo.Como
+nuevas trayectorias, pero no se llevará a los end-effectors a las posiciones objetivo. Como
 el seguir la trayectoria objetivo de la cadera no depende de los cálculos de cinemática
 inversa (que sólo van dirigidos a los end-effectors), el movimiento general por el terreno
 se mantiene. Tambíen se mantiene la actualización de la orientación del IKRig según
@@ -2576,7 +2965,7 @@ la rapidez angular.
 6. Activar y desactivar la corrección de trayectorias: Puede activarse y desactivarse la
 corrección de trayectorias dinámicas descrita en 4.8.5.
 7. Activar y desactivar la validacíon de trayectorias: Puede activarse y desactivarse la
-validacíondetrayectoriasdescritaen4.8.7.Silavalidacióndetrayectoriasestáactivada,
+validacíon de trayectorias descrita en 4.8.7. Si la validación de trayectorias está activada,
 el movimiento del IKRig se detendrá al acercarse a zonas con pendientes demasiado
 elevadas. Aunque el rig esté detenido, puede girarse, y retomará el movimiento si la
 pendiente no es tan grande en la nueva dirección.
@@ -2589,16 +2978,16 @@ El IKNavigationComponent contiene una instancia de la clase IKRigController, que
 contiene y maneja la instancia del IKRig.
 
 #### 4.9.2. IKRigController
-LaclaseIKRigController cumpleelroldecoordinarlaspiezasclavedelasolución.Contie-
+La clase IKRigController cumple el rol de coordinar las piezas clave de la solución. Contie-
 ne la instancia del IKRig, y la actualiza en cada iteracíon del motor, utilizando la informacíon
 generada por las clases InverseKinematics y TrajectoryGenerator. En cada iteración del loop
-principaldelmotor,IKRigControllerrecibeelvalordecambiodetiempo∆T indicado(2.8.3),
+principal del motor, IKRigController recibe el valor de cambio de tiempo ∆T indicado (2.8.3),
 y lo modifica considerando la tasa de reproduccíon p de AnimationController, obteníendose
 el cambio de tiempo de animación ∆T = p∆T. Teniendo este valor, IKRigController realiza
 a
 los siguientes pasos en orden (visualizacíon en el anexo (figura A.2)):
 1. Actualizacíon del tiempo de las IKAnimations:
-RecordarqueelIKRigcontieneunarreglodeIKAnimations,dondecadaunarepresenta
+Recordar que el IKRig contiene un arreglo de IKAnimations, donde cada una representa
 
 
 una animacíon vinculada al esqueleto del IKRig, a la que se le puede aplicar cinemática
@@ -2615,17 +3004,17 @@ recupera el desfase correcto. Puede que a no contenga ni al clip actual, ni al c
 
 transición, y en ese caso no se realiza ningún ajuste. Los desfases ocurren precisamente
 cuando se transiciona de una animacíon a otra.
-Enestaetapa,tambíensesetealavariabledeIKAnimationonNewFrame,quedetermina
+En esta etapa, tambíen se setea la variable de IKAnimation onNewFrame, que determina
 si el frame actual a reproducir es distinto al frame que se estaba reproduciendo en la
 iteración pasada.
 2. Actualizacíon de la direccíon global de movimiento:
 Una instancia de IKRig posee un ángulo de rotacíon rotationAngle, y una rapidez
 angular rotationSpeed. El ángulo de rotación, define la dirección global de movimiento,
-al usarse para rotar la dirección de movimiento basal (frontVector = {0,1,0}). En
+al usarse para rotar la dirección de movimiento basal (frontV ector = {0,1,0}). En
 cada iteracíon, IKRigController utiliza el avance de tiempo de la animacíon ∆T para
 a
 actualizar el ángulo de rotacíon:
-rotationAngle := rotationAngle+∆T rotationSpeed
+rotationAngle := rotationAngle + ∆T rotationSpeed
 a
 3. Actualizacíon del estado de activacíon de las IKAnimations:
 Para definir si es necesario calcular trayectorias y ángulos ajustados para una IKAni-
@@ -2675,7 +3064,7 @@ extrae la posicíon correspondiente al reproductionTime actual para asignarla al
 formComponent.
 En caso de que este ocurriendo una transicíon entre animaciones, se debe considerar
 tambíen la trayectoria generada para el IKAnimation que contiene el clip al que se va
-a transicionar. Simplemente se promedian las dos posiciones extráıdas para calcular la
+a transicionar. Simplemente se promedian las dos posiciones extraídas para calcular la
 traslación final.
 6. Actualizacíon de las animaciones:
 Al igual que en la actualizacíon de trayectorias, la actualización de animaciones sólo
@@ -2690,7 +3079,7 @@ siguiente, se modifica el animationClip, asignando los ángulos al frame corresp
 para todas las articulaciones objetivo (que son todas las articulaciones de las IKChains
 excluyendo sus end-effectors).
 Ya que el sistema de animacíon genera informacíon de transformacíon para las articula-
-ciones,interpolandoentreelframeactualyelframesiguiente,noesnecesarioactualizar
+ciones, interpolando entre el frame actual y el frame siguiente, no es necesario actualizar
 las rotaciones al estar entre un frame y otro. Lo importante es que al llegar a un nuevo
 frame, se calculen los ángulos para el frame siguiente.
 Como es posible que haya saltos de frames por mal rendimiento del programa, siem-
@@ -2718,9 +3107,9 @@ ceptuando la cadera. La cadera se excluye porque su movimiento es el que genera 
 trayectoria principal de la caminata. Como se indica en la sección 2.4, las articulaciones
 deben tener distancias fijas entre si para los cálculos de cinemática, y para esto, sus
 escalamientos y posiciones no pueden cambiar.
-2. No poseer rotaciones ni traslaciones por encima de la cadera en la jerarqúıa. Esto se
+2. No poseer rotaciones ni traslaciones por encima de la cadera en la jerarquía. Esto se
 debe a que el movimiento principal de la animacíon debe venir de la cadera para poder
-serprocesadocorrectamente.Sepermitenarticulacionessobrelacaderaquenocumplan
+ser procesado correctamente. Se permiten articulaciones sobre la cadera que no cumplan
 la funcíon de generar movimiento.
 3. Ser circular. La animacíon debe venir en formato loop, ya que el sistema mantiene la
 continuidad de movimiento utilizando la misma animación una y otra vez, asumiendo
@@ -2751,18 +3140,18 @@ trayectorias generadas no podrán ser seguidas correctamente.
 ⃗
 
 ![Figura 4.11](figures/figura_4_11.png)
-*Figura4.11:Plano de rotacíon generado al rotar un punto P mediante un cuaterníon. Fuente:*
+*Figura 4.11: Plano de rotacíon generado al rotar un punto P mediante un cuaterníon. Fuente:*
 
 
-https://ece.montana.edu/seniordesign/archive/SP14/UnderwaterNavigation/
-Quaternions.html.
+https: // ece. montana. edu/ seniordesign/ archive/ SP14/ UnderwaterNavigation/
+Quaternions. html .
 
 ![Figura 4.12](figures/figura_4_12.png)
 *Figura 4.12: Caminata en el espacio local del IKRig, con ángulos de rotacíon para las ar-*
 
-ticulaciones j y j , de la cadena asociada a la pierna derecha. Fuente: https://www.
+ticulaciones j y j , de la cadena asociada a la pierna derecha. Fuente: https: // www.
 1 2
-dimensions.com/collection/people-walking
+dimensions. com/ collection/ people-walking
 Considérese el caso de una animacíon con vector up Z y vector front Y como se ve en
 la figura 4.12. Su plano principal de movimiento es YZ. Para poder sacar el máximo
 provecho al alcance de las articulaciones j y j de la figura, es ideal que el plano de
@@ -2786,11 +3175,11 @@ Es posible que haya otras formas de determinar si las articulaciones pueden ser 
 nejadas correctamente por el sistema IK, y tambíen que este método no sea efectivo
 en la totalidad de los casos, ya que la relación entre el movimiento local y global es
 compleja, y depende de la interrelacíon entre las rotaciones y posiciones locales, de unas
-articulaciones con otras en la jerarqúıa.
+articulaciones con otras en la jerarquía.
 
 #### 4.10.2. Descompresión de las rotaciones
 En un clip de animación, el número de timeStamps por articulacíon no es uniforme: algu-
-nasarticulacionestienenmásqueotras.Parapoderindexarlasrotacionesdelasarticulaciones
+nas articulaciones tienen más que otras. Para poder indexar las rotaciones de las articulaciones
 por frame (4.4.4) de manera consistente, se requiere que todas las articulaciones tengan el
 mismo número de timeStamps de rotación. Esto se hace recorriendo todos los arreglos de
 timeStamps de forma paralela, e insertando cada vez el timeStamp con el valor más bajo de
@@ -2857,12 +3246,16 @@ Para comprobar el cumplimiento de este requisito, se midieron los frames por seg
 tenidos al correr el sistema con el software FRAPS, obtenido gratuitamente de https:
 //fraps.com/. Las aplicaciones de ejemplo fueron ejecutadas en modo release, por alrededor
 de 1 minuto cada una, en un notebook con las siguientes especificaciones de hardware:
-• Procesador: Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz
-• Memoria Ram: 16gb
-• Tipo de disco duro: SSD
+•
+Procesador: Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz
+•
+Memoria Ram: 16gb
+•
+Tipo de disco duro: SSD
 
 
-• GPU: NVIDIA GeForce GTX 1660 Ti
+•
+GPU: NVIDIA GeForce GTX 1660 Ti
 La parte más demandante del sistema es la de llevar a los end-effectors a sus posiciones ob-
 jetivo. Si las posiciones objetivo difieren mucho de las posiciones de la animacíon original, el
 descenso de gradiente tarda más en converger. Por esto, se utiliza un terreno muy irregular
@@ -2899,7 +3292,7 @@ Se obtiene un promedio de 140fps, un mínimo de 122fps, y un máximo de 145fps.
 3. Prueba número 3:
 Baseline: Promedio de 114fps, mínimo de 107fps, y máximo de 119fps.
 La tercera prueba se realiza con dos personajes (y con el largo usual de las cadenas,
-llegandohastaeltobillo).Considerandoelcasobase,nuevamenteseobtienenresultados
+llegando hasta el tobillo). Considerando el caso base, nuevamente se obtienen resultados
 muy favorables, con un promedio de 112 fps, un mínimo de 104fps, y un máximo de
 115fps.
 
@@ -2968,7 +3361,7 @@ caminata, pero se ajusta pésimamente al terreno
 Estoy ligeramente de acuerdo, puedo ver que sólo en 1
 algunos momentos la caminata se ajusta bien al terreno
 Estoy de acuerdo, aunque no es totalmente realista, me 6
-parece que es una animacíon créıble
+parece que es una animacíon creíble
 Estoy muy de acuerdo, la animación ajustada simula 0
 perfectamente una caminata en un terreno irregular
 Tabla 5.3: Percepcíon de los usuarios sobre la calidad de la adaptacíon al terreno conseguida.
@@ -2978,19 +3371,19 @@ juegos, y sobre qúe mejoras son las que requiere principalmente esta solucíon.
 se presenta un resumen general de las respuestas entregadas:
 1. ¿Pudiste notar claramente la diferencia entre ambos ejemplos?
 La diferencia resulta notoria, especialmente cuando el personaje se acerca a zonas muy
-irregularesdelterreno.Enesosmomentoslaspiernasdelpersonajeatraviesanelterreno
+irregulares del terreno. En esos momentos las piernas del personaje atraviesan el terreno
 cuando el sistema IK no está activado.
 2. ¿Consideras que el uso de esta técnica puede añadir más realismo y disfrutabilidad a
 los videojuegos?
 La respuesta es sí. Se enfatiza la importancia de mantener la verosimilitud en los juegos
-paraquelasemocionesgeneradasseanmásfuertes.Elusodecinemáticainversapermite
+para que las emociones generadas sean más fuertes. El uso de cinemática inversa permite
 lograr mejores interacciones entre los personajes y su entorno, y evitar situaciones que
 
 
 rompan la credibilidad del mundo del juego, y por lo tanto, la conexión jugador-juego.
 3. De los problemas que pudiste percibir en el ejemplo con IK (si es que consideras que
 los hay), ¿qúe consideras prioritario mejorar?
-Elproblemamásmencionadoeseldelafaltadeajustedelospiesalterreno.Lasolución
+El problema más mencionado es el de la falta de ajuste de los pies al terreno. La solución
 presentada en este informe sólo se encarga de llevar las piernas a una altura adecuada,
 pero el ajuste preciso de los pies no está incluido.
 Por otro lado, se menciona el hecho de que el comportamiento del personaje es poco
@@ -3054,7 +3447,7 @@ las articulaciones de las piernas del personaje para mejorar la interacción de 
 original y el terreno. Además, se logra mantener la esencia de la animación original. Estas
 aseveraciones son respaldadas por las respuestas entregadas por los usuarios de prueba en la
 sección 5.2.
-Elsistemapuedecatalogarsecomounmínimoviable,encuantoaqueentregaunabasesólida,
+El sistema puede catalogarse como un mínimo viable, en cuanto a que entrega una base sólida,
 estructural y cualitativamente. Si se exploran con detenimiento las aplicaciones de ejemplo,
 podrán notarse ciertas discontinuidades en el movimiento, y momentos en las trayectorias
 objetivo no son seguidas con precisíon (figura 6.1). Por ejemplo la transicíon entre anima-
@@ -3134,7 +3527,7 @@ animaciones (4.10.1) sería cumplido siempre, porque se asumió que dado que el 
 de las piernas ocurre en el plano principal de movimiento (4.10.1), entonces necesariamen-
 te las rotaciones locales deberían tener ejes de rotacíon con cierta perpendicularidad a ese
 plano, para que el movimiento fuera posible. Lamentablemente, las interacciones entre ro-
-taciones y traslaciones locales en la jerarqúıa dan lugar a mucha variabilidad en cuanto a
+taciones y traslaciones locales en la jerarquía dan lugar a mucha variabilidad en cuanto a
 los ejes de rotacíon, y esa suposición no generaliza bien. Este descubrimiento fue hecho más
 bien tarde en el desarrollo, y no hubo tiempo de generar una solución adecuada, que per-
 mitiera corregir animaciones que no cumplieran con el requisito, por lo que en la situacíon
@@ -3143,7 +3536,7 @@ el sistema IK. De esto se desprende la importancia de hacer un estudio más rigu
 las características de los recursos que usará un sistema, antes de adentrarse demasiado en
 
 
-la implementación, para prevenir problemas comóeste, que pueden llegar a ser mucho peores.
+la implementación, para prevenir problemas como éste, que pueden llegar a ser mucho peores.
 
 ### 6.3. Trabajo futuro
 Este sistema, aunque tiene varias cualidades positivas, tiene mucho espacio para mejorar.
@@ -3167,7 +3560,7 @@ que no lo atraviesen. Además de solucionar el problema de la orientación, qued
 el mejorar la precisíon de seguimiento de las trayectorias objetivo. Solucionando esos dos
 problemas, debería obtenerse un posicionamiento más adecuado de los pies.
 Lo siguiente, que ya es algo más abierto, sería lograr un mayor dinamismo de los movimientos
-con alguna de las alternativas planteadas en 6.2. La opción de establecer reglas, que gúıen
+con alguna de las alternativas planteadas en 6.2. La opción de establecer reglas, que guíen
 el comportamiento de la animacíon a un nivel más fino parece óptima, ya que permitiría
 mantener el uso de una única animación base. Nuevamente, esta idea se extrae de la charla
 de Alexander Bereznyak en la GDC 2016 [4].
@@ -3179,7 +3572,7 @@ se, porque el hecho de mantener constantemente un parecido entre la animacíon g
 la animación original parece evitar que se generen poses extremas de ese tipo. En el estado
 en que estaba, pareció más sensato no incluir la aplicación de restricciones de movimiento,
 porque no parecía aportar lo suficiente. De todas maneras, si este sistema llega ampliarse,
-sería sensatotenerestacaracterísticaenconsideración, paraquelacalidad delasanimaciones
+sería sensato tener esta característica en consideración, para que la calidad de las animaciones
 generadas sea más robusta.
 Para guiar el proceso de crecimiento del sistema, sería tambíen importante estudiar al-
 gunos ámbitos de este con mayor profundidad, para lograr comprender mejor sus defectos y
@@ -3199,7 +3592,7 @@ Asimismo, queda pendiente comparar de manera explícita, el enfoque de generaci�
 yectorias utilizado en este sistema, con otros enfoques que tambíen solucionen el problema
 de locomoción bípeda en terrenos irregulares, para así lograr una noción más clara de las
 virtudes y defectos de la solución presentada en esta memoria en un contexto más amplio.
-Serecalcaqueenunsistemaquegeneraresultadosanivelvisualcomoeste,siemprequeda
+Se recalca que en un sistema que genera resultados a nivel visual como este, siempre queda
 trabajo por hacer.
 
 
@@ -3245,7 +3638,7 @@ trol. In ACM Transactions on Graphics, volume 36, 2017.
 [19] Michael Richard Isaacs. Partitioning The Mechanical Cost Of Human Walking: Unvei-
 ling Cost Asymmetries For Bionic Technologies. PhD thesis, University of Nevada, Las
 Vegas, 2020.
-[20] RuneSkovboJohansen. Automatedsemi-proceduralanimationforcharacterlocomotion.
+[20] Rune Skovbo Johansen. Automated semi-procedural animation for character locomotion.
 Master’s thesis, Department of Information and Media Studies, Aarhus University, 2009.
 [21] Jim Lambers. Linear interpolating splines. The University of Southern Mississippi,
 School of Mathematics and Natural Sciences, 2010. págs. 1-3.
@@ -3283,16 +3676,21 @@ EEGlobalTrajectoryData HipGlobalTrajectoryData
 Skeleton
 * * 1 *
 IKAnimation IKRig
-* 1 1
+* 1
+
 AnimationClip
-2 1 1 1
-1 StaticMesh game
+2 1 1
+
+
+StaticMesh game
 IKChain ForwardKinematics InverseKinematics TrajectoryGenerator
 object
 
 1 1 1 *
 1 1 1
-1 1 *
+
+
+*
 GradientDescent StrideCorrector E nvironmentData
 Figura A.1: Diagrama UML básico de la solucíon.
 
@@ -3333,46 +3731,78 @@ Anexo B
 
 ### B.1. Matriz de rotacíon en funcíon de un ángulo y eje
 arbitrarios
-De [24] se extrae la ecuación para una matriz de 3x3, donde⃗a es el eje de rotación y θ el
+De [24] se extrae la ecuación para una matriz de 3x3, donde ⃗a es el eje de rotación y θ el
 ángulo:
  
-cosθ+a2(1−cosθ) a a (1−cosθ)−a sinθ a a (1−cosθ)+a sinθ
-0 0 1 2 0 2 1
+cosθ +
+a2(1
+− cosθ) a a (1 − cosθ) − a sinθ a a (1 − cosθ) + a sinθ
+
+0 1 2 0 2 1
 R(θ,⃗a) = a
 
 a
 
-(1−cosθ)+a
+(1 − cosθ) + a
 
-sinθ cosθ+a2
+sinθ cosθ +
+a2
 
-(1−cosθ) a
+(1 − cosθ) a
 
 a
 
-(1−cosθ)−a
+(1 − cosθ) − a
 
 sinθ
-a a (1−cosθ)−a sinθ a a (1−cosθ)+a sinθ cosθ+a2(1−cosθ)
-0 2 1 1 2 0 2
+a a (1 − cosθ) − a sinθ a a (1 − cosθ) + a sinθ cosθ +
+a2(1
+− cosθ)
+0 2 1 1 2 0
+
 Expandiendo a 4x4 y derivando con respecto a θ:
  
-−sinθ+a2sinθ a a sinθ−a cosθ a a sinθ+a cosθ 0
-0 0 1 2 0 2 1
-∂R(θ,⃗a) =   a 0 a 1 sinθ+a 2 cosθ −sinθ+a2 1 sinθ a 1 a 2 sinθ−a 0 cosθ 0 
-∂θ a
+−sinθ +
+a2sinθ
+a a sinθ − a cosθ a a sinθ + a cosθ 0
+
+0 1 2 0 2 1
+∂R(θ,⃗a)
+=
+
+
+a
 
 a
 
-sinθ−a
+sinθ + a
+
+cosθ −sinθ +
+a2
+
+sinθ a
+
+a
+
+sinθ − a
+
+cosθ 0
+
+∂θ
+a
+
+a
+
+sinθ − a
 
 cosθ a
 
 a
 
-sinθ+a
+sinθ + a
 
-cosθ −sinθ+a2
+cosθ −sinθ +
+a2
 
 sinθ 0
 0 0 0 0
